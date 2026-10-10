@@ -11,6 +11,7 @@ function request(requestId: number, gameVersion = 0): SearchRequest {
     board: createBoard(),
     player: BLACK,
     difficulty: 'easy',
+    purpose: 'play',
   }
 }
 
@@ -25,6 +26,8 @@ function response(requestId: number, move: Point | null = { x: 7, y: 7 }): Searc
     elapsedMs: 1,
     confidence: 'exact',
     reason: 'search',
+    candidates: [],
+    urgency: 'normal',
   }
 }
 

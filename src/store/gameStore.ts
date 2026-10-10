@@ -10,7 +10,14 @@ import {
 } from '../core/game'
 import { BLACK, type Player, type Point } from '../core/types'
 import type { AiEngine } from '../ai/engine'
-import type { Confidence, Difficulty, SearchReason, SearchResponse } from '../ai/types'
+import type {
+  Confidence,
+  Difficulty,
+  MoveSuggestion,
+  SearchReason,
+  SearchResponse,
+  Urgency,
+} from '../ai/types'
 import type { PersistedSession } from '../persist/storage'
 
 export type GameMode = 'pve' | 'pvp'
@@ -36,6 +43,18 @@ export interface GameStore {
   /** 当前在飞的 AI 请求；null 表示没有。用于作废过期响应。 */
   readonly pendingRequestId: number | null
 
+  /**
+   * AI 提示。
+   *
+   * 与落子请求走同一条引擎、同一套过期校验，但**提示响应只写这里，绝不落子**。
+   * 局面一变（落子 / 悔棋 / 重开 / 认输）就清空——高亮必须跟着局面失效。
+   */
+  readonly hint: readonly MoveSuggestion[] | null
+  readonly hintUrgency: Urgency | null
+  readonly hintThinking: boolean
+  readonly hintError: string | null
+  readonly pendingHintRequestId: number | null
+
   newGame(options?: { mode?: GameMode; humanColor?: Player; difficulty?: Difficulty }): void
   /** 从本地存档恢复。传 null 表示没有存档，保持当前状态。 */
   restore(session: PersistedSession | null): void
@@ -50,7 +69,27 @@ export interface GameStore {
   requestAiMove(): void
   applyAiResponse(response: SearchResponse): void
   dismissAiError(): void
+  requestHint(): void
+  applyHintResponse(response: SearchResponse): void
+  clearHint(): void
 }
+
+/**
+ * 提示能用的时间预算。
+ *
+ * 比正式走子短得多：玩家求提示是在等一个建议，不是在等一场深算。
+ * 它同样只读，不会挤占落子请求的预算。
+ */
+const HINT_BUDGET_MS = 800
+
+/** 局面一变就要把提示整体清掉。 */
+const HINT_CLEARED = {
+  hint: null,
+  hintUrgency: null,
+  hintThinking: false,
+  hintError: null,
+  pendingHintRequestId: null,
+} as const
 
 /** 第 index 手（0-based）由谁落子。 */
 export function moverAt(index: number, firstPlayer: Player): Player {
@@ -129,6 +168,7 @@ export function createGameStore(engine: AiEngine): UseBoundStore<StoreApi<GameSt
       aiError: null,
       aiInfo: null,
       pendingRequestId: null,
+      ...HINT_CLEARED,
 
       newGame(options = {}) {
         const current = get()
@@ -141,6 +181,7 @@ export function createGameStore(engine: AiEngine): UseBoundStore<StoreApi<GameSt
           aiError: null,
           aiInfo: null,
           pendingRequestId: null,
+          ...HINT_CLEARED,
         })
 
         get().requestAiMove()
@@ -163,6 +204,7 @@ export function createGameStore(engine: AiEngine): UseBoundStore<StoreApi<GameSt
           aiError: null,
           aiInfo: null,
           pendingRequestId: null,
+          ...HINT_CLEARED,
         })
 
         // 存档时若正轮到 AI（刷新页面时它还在思考），恢复后要接着把这局走完。
@@ -188,7 +230,8 @@ export function createGameStore(engine: AiEngine): UseBoundStore<StoreApi<GameSt
         const outcome = applyMove(current.game, point)
         if (!outcome.ok) return
 
-        set({ game: outcome.state, aiError: null })
+        // 提示是按旧局面算的，落子之后就不再适用了。
+        set({ game: outcome.state, aiError: null, ...HINT_CLEARED })
         get().requestAiMove()
       },
 
@@ -203,6 +246,7 @@ export function createGameStore(engine: AiEngine): UseBoundStore<StoreApi<GameSt
           aiError: null,
           aiInfo: null,
           pendingRequestId: null,
+          ...HINT_CLEARED,
         })
 
         get().requestAiMove()
@@ -217,6 +261,7 @@ export function createGameStore(engine: AiEngine): UseBoundStore<StoreApi<GameSt
           aiThinking: false,
           aiInfo: null,
           pendingRequestId: null,
+          ...HINT_CLEARED,
         })
       },
 
@@ -236,6 +281,7 @@ export function createGameStore(engine: AiEngine): UseBoundStore<StoreApi<GameSt
             board: game.board,
             player: game.current,
             difficulty: current.difficulty,
+            purpose: 'play',
           })
           .then(
             (response) => get().applyAiResponse(response),
@@ -300,6 +346,63 @@ export function createGameStore(engine: AiEngine): UseBoundStore<StoreApi<GameSt
 
       dismissAiError() {
         set({ aiError: null })
+      },
+
+      requestHint() {
+        const current = get()
+        if (current.game.status !== 'playing') return
+        // 提示是给「该走的人」看的。AI 正在思考时轮不到玩家，求提示没有意义。
+        if (current.aiThinking || current.hintThinking) return
+
+        const requestId = nextRequestId++
+        const { game } = current
+
+        set({ hintThinking: true, hintError: null, pendingHintRequestId: requestId })
+
+        void engine
+          .search({
+            requestId,
+            gameVersion: game.version,
+            board: game.board,
+            player: game.current,
+            difficulty: current.difficulty,
+            budgetMs: HINT_BUDGET_MS,
+            purpose: 'hint',
+          })
+          .then(
+            (response) => get().applyHintResponse(response),
+            (error: unknown) => {
+              if (get().pendingHintRequestId !== requestId) return
+              set({
+                hintThinking: false,
+                pendingHintRequestId: null,
+                hintError: error instanceof Error ? error.message : String(error),
+              })
+            },
+          )
+      },
+
+      applyHintResponse(response) {
+        const current = get()
+
+        if (response.requestId !== current.pendingHintRequestId) return
+        if (response.gameVersion !== current.game.version) {
+          set({ hintThinking: false, pendingHintRequestId: null })
+          return
+        }
+
+        // 只写提示状态。这里**没有** applyMove，提示永远不改变棋局。
+        set({
+          hint: response.candidates,
+          hintUrgency: response.urgency,
+          hintThinking: false,
+          pendingHintRequestId: null,
+          hintError: null,
+        })
+      },
+
+      clearHint() {
+        set(HINT_CLEARED)
       },
     }
   })

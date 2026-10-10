@@ -3,7 +3,15 @@ import { BOARD_SIZE, type Board, type Player, type Point } from '../core/types'
 import { candidateMoves } from './candidates'
 import { DIFFICULTY_PARAMS, type DifficultyParams } from './difficulty'
 import { evaluateBoard, WIN_SCORE } from './evaluate'
-import { analyzeFast, isWinningPoint, threatAt, threatScoreWith } from './patterns'
+import {
+  analyzeFast,
+  analyzePoint,
+  dominantThreat,
+  isWinningPoint,
+  shapeScore,
+  threatAt,
+  threatScoreWith,
+} from './patterns'
 import { findForcedWin } from './threat'
 import {
   computeKey,
@@ -14,7 +22,14 @@ import {
   type TtFlag,
   type ZobristKey,
 } from './transposition'
-import type { Confidence, SearchReason, SearchRequest, SearchResponse } from './types'
+import type {
+  Confidence,
+  MoveSuggestion,
+  SearchReason,
+  SearchRequest,
+  SearchResponse,
+  Urgency,
+} from './types'
 
 const CENTER: Point = { x: Math.floor(BOARD_SIZE / 2), y: Math.floor(BOARD_SIZE / 2) }
 
@@ -48,6 +63,13 @@ export interface SearchOptions {
   readonly threatPlies: number
   /** 算杀是否允许活三（VCT）。关掉即纯 VCF。 */
   readonly threatThrees: boolean
+  /**
+   * 是否额外算出提示用的候选与紧急度。
+   *
+   * 这是**要额外花钱**的：候选要跑完整棋型分析（含精确三判定），紧急度要
+   * 扫一遍对手的活四可能。出着法时完全不需要，所以做成可选项而不是默认开启。
+   */
+  readonly diagnostics?: boolean
 }
 
 export interface SearchOutcome {
@@ -59,6 +81,10 @@ export interface SearchOutcome {
   /** 置换表命中次数，用于判断置换表是否真的在起作用。 */
   readonly ttHits: number
   readonly reason: SearchReason
+  /** 按推荐度降序，最多 3 条。未开启 diagnostics 时是空数组。 */
+  readonly candidates: readonly MoveSuggestion[]
+  /** 未开启 diagnostics 时是 'normal'。 */
+  readonly urgency: Urgency
 }
 
 interface OrderedMoves {
@@ -145,6 +171,46 @@ function orderMoves(
 
   scored.sort((a, b) => b.score - a.score)
   return { points: scored.slice(0, width).map((entry) => entry.point), winNow: null }
+}
+
+/**
+ * 提示用的候选着法。
+ *
+ * 这里**用完整棋型分析**（含精确三判定与隔子型）——它不是搜索热路径，
+ * 一次只算几十个点，换取更准的攻防标注是划算的。
+ */
+function buildSuggestions(board: Board, player: Player, limit = 3): MoveSuggestion[] {
+  const opponent = opponentOf(player)
+
+  const scored = candidateMoves(board).map((point) => {
+    const attack = analyzePoint(board, point, player)
+    const defense = analyzePoint(board, point, opponent)
+    return {
+      move: point,
+      score: shapeScore(attack) + shapeScore(defense),
+      attack: dominantThreat(attack),
+      defense: dominantThreat(defense),
+    }
+  })
+
+  scored.sort((a, b) => b.score - a.score)
+  return scored.slice(0, limit)
+}
+
+/** 当前局面对该走的一方的紧急程度。 */
+function computeUrgency(board: Board, player: Player): Urgency {
+  const opponent = opponentOf(player)
+  const near = candidateMoves(board, 1)
+
+  if (near.some((point) => isWinningPoint(board, point, player))) return 'win'
+  if (near.some((point) => isWinningPoint(board, point, opponent))) return 'mustBlock'
+
+  // 对手一手就能做出活四，说明防线已经漏了
+  for (const point of candidateMoves(board)) {
+    if (analyzeFast(board, point, opponent).winningPoints.length >= 2) return 'danger'
+  }
+
+  return 'normal'
 }
 
 /**
@@ -352,8 +418,13 @@ export function searchBoard(
   const own = board.slice()
   const opponent = opponentOf(player)
 
+  const diagnostics =
+    options.diagnostics === true
+      ? { candidates: buildSuggestions(own, player), urgency: computeUrgency(own, player) }
+      : { candidates: [] as readonly MoveSuggestion[], urgency: 'normal' as Urgency }
+
   // 三条捷径都不做搜索，因此节点数与置换表命中数都是 0。
-  const shortcut = { depth: 0, nodes: 0, ttHits: 0 } as const
+  const shortcut = { depth: 0, nodes: 0, ttHits: 0, ...diagnostics } as const
 
   if (!own.some((cell) => cell !== 0)) {
     return { ...shortcut, move: CENTER, score: 0, reason: 'opening' }
@@ -398,6 +469,7 @@ export function searchBoard(
         nodes: forced.nodes,
         ttHits: 0,
         reason: 'win',
+        ...diagnostics,
       }
     }
   }
@@ -438,6 +510,7 @@ export function searchBoard(
     nodes: ctx.nodes,
     ttHits: ctx.ttHits,
     reason: timedOut ? 'timeout' : 'search',
+    ...diagnostics,
   }
 }
 
@@ -460,6 +533,7 @@ export function chooseMove(request: SearchRequest): SearchResponse {
       transposition: true,
       threatPlies: params.threatPlies,
       threatThrees: params.threatThrees,
+      diagnostics: request.purpose === 'hint',
     },
     Date.now,
   )
@@ -476,5 +550,7 @@ export function chooseMove(request: SearchRequest): SearchResponse {
     elapsedMs: Date.now() - startedAt,
     confidence,
     reason: outcome.reason,
+    candidates: outcome.candidates,
+    urgency: outcome.urgency,
   }
 }

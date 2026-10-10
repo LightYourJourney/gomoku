@@ -26,6 +26,32 @@ export type SearchReason =
  */
 export type Confidence = 'exact' | 'heuristic'
 
+/** 棋型等级，由高到低。提示界面按它显示中文说明。 */
+export type ThreatKind = 'five' | 'openFour' | 'four' | 'openThree' | 'three' | 'none'
+
+/** 一条推荐着法，带攻防两面的棋型标注。 */
+export interface MoveSuggestion {
+  readonly move: Point
+  /** 综合推荐度，越大越推荐 */
+  readonly score: number
+  /** 我在这里落子能形成的最好棋型 */
+  readonly attack: ThreatKind
+  /** 对手在这里落子能形成的最好棋型，也就是我这一手堵掉了什么 */
+  readonly defense: ThreatKind
+}
+
+/** 当前局面对「该我走」的一方有多紧急。 */
+export type Urgency = 'win' | 'mustBlock' | 'danger' | 'normal'
+
+/**
+ * 请求用途。
+ *
+ * - `play`：出着法。
+ * - `hint`：只做分析，**绝不落子**。走同一条引擎、同一套过期校验，
+ *   但响应只写提示状态，不碰棋局。
+ */
+export type RequestPurpose = 'play' | 'hint'
+
 export interface SearchRequest {
   readonly requestId: number
   /** 对应的棋局版本。主线程据此作废过期响应。 */
@@ -36,6 +62,7 @@ export interface SearchRequest {
   readonly difficulty: Difficulty
   /** 覆盖难度自带的时间预算，单位毫秒。 */
   readonly budgetMs?: number
+  readonly purpose: RequestPurpose
 }
 
 export interface SearchResponse {
@@ -50,4 +77,13 @@ export interface SearchResponse {
   readonly elapsedMs: number
   readonly confidence: Confidence
   readonly reason: SearchReason
+  /**
+   * 按推荐度降序，最多 3 条。
+   *
+   * 必填而非可选：可选会让每个消费点都要处理 `undefined`，而「没有候选」
+   * 本来就有「空数组」这个自然表示。`purpose` 为 `play` 时是空数组。
+   */
+  readonly candidates: readonly MoveSuggestion[]
+  /** `purpose` 为 `play` 时为 `normal`。 */
+  readonly urgency: Urgency
 }

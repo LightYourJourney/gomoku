@@ -19,6 +19,7 @@ function ask(board: Board, difficulty: (typeof DIFFICULTIES)[number]) {
     difficulty,
     // 预算给足，让深度成为约束，避免结果依赖机器快慢
     budgetMs: 30_000,
+    purpose: 'play',
   })
 }
 

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import type { AiEngine } from '../ai/engine'
-import type { SearchRequest, SearchResponse } from '../ai/types'
+import type { MoveSuggestion, SearchRequest, SearchResponse } from '../ai/types'
 import { idx } from '../core/board'
 import { BLACK, WHITE, type Point } from '../core/types'
 import { SCHEMA_VERSION, type PersistedSession } from '../persist/storage'
@@ -27,6 +27,8 @@ function makeResponse(requestId: number, gameVersion: number, move: Point | null
     elapsedMs: 5,
     confidence: 'exact',
     reason: 'search',
+    candidates: [],
+    urgency: 'normal',
   }
 }
 
@@ -66,11 +68,28 @@ class FakeEngine implements AiEngine {
 
   /** 用任意响应兑现最近一次请求，用来构造 requestId 或 gameVersion 对不上的迟到响应。 */
   respond(response: SearchResponse): void {
-    const request = this.lastRequest
-    const entry = this.pending.get(request.requestId)
-    if (entry === undefined) throw new Error(`请求 ${request.requestId} 已经不在挂起列表里`)
-    this.pending.delete(request.requestId)
+    this.respondTo(this.lastRequest.requestId, response)
+  }
+
+  /**
+   * 按 requestId 指名兑现某一次请求。
+   *
+   * 提示请求与落子请求可以同时在飞，此时「最近一次请求」指向谁并不确定，
+   * 必须能指名道姓地应答。
+   */
+  respondTo(requestId: number, response: SearchResponse): void {
+    const entry = this.pending.get(requestId)
+    if (entry === undefined) throw new Error(`请求 ${requestId} 已经不在挂起列表里`)
+    this.pending.delete(requestId)
     entry.resolve(response)
+  }
+
+  /** 按 requestId 指名让某一次请求失败。 */
+  failTo(requestId: number, error: Error): void {
+    const entry = this.pending.get(requestId)
+    if (entry === undefined) throw new Error(`请求 ${requestId} 不在挂起列表里`)
+    this.pending.delete(requestId)
+    entry.reject(error)
   }
 
   fail(error: Error): void {
@@ -691,5 +710,275 @@ describe('newGame', () => {
 
     expect(state().difficulty).toBe('beginner')
     expect(state().game.moves).toHaveLength(1)
+  })
+})
+
+describe('AI 提示', () => {
+  const SUGGESTIONS: readonly MoveSuggestion[] = [
+    { move: { x: 7, y: 7 }, score: 120_000, attack: 'openFour', defense: 'none' },
+    { move: { x: 8, y: 8 }, score: 10_000, attack: 'openThree', defense: 'openThree' },
+  ]
+
+  /**
+   * 用一份**带真实着法**的响应兑现最近的提示请求。
+   *
+   * 故意让 move 非 null：引擎实际就会这么返回（chooseMove 不区分用途）。
+   * 于是「提示响应被误当成落子响应处理」这类错误会直接在棋盘上留下棋子，
+   * 而不是被 `move === null` 顺手挡掉。
+   */
+  function replyHint(overrides: Partial<SearchResponse> = {}): void {
+    const request = engine.lastRequest
+    engine.respondTo(request.requestId, {
+      ...makeResponse(request.requestId, request.gameVersion, { x: 5, y: 5 }),
+      candidates: SUGGESTIONS,
+      urgency: 'danger',
+      ...overrides,
+    })
+  }
+
+  it('提示请求打上 hint 用途，玩家执子、当前手番', () => {
+    state().requestHint()
+
+    expect(engine.requests).toHaveLength(1)
+    expect(engine.lastRequest.purpose).toBe('hint')
+    expect(engine.lastRequest.player).toBe(BLACK)
+    expect(engine.lastRequest.gameVersion).toBe(0)
+    expect(state().hintThinking).toBe(true)
+  })
+
+  it('提示的时间预算远短于正式走子', () => {
+    state().requestHint()
+
+    expect(engine.lastRequest.budgetMs).toBeLessThan(1000)
+  })
+
+  it('提示响应只写提示状态，绝不落子', async () => {
+    state().requestHint()
+    replyHint()
+    await engine.flush()
+
+    expect(state().hint).toEqual(SUGGESTIONS)
+    expect(state().hintUrgency).toBe('danger')
+    expect(state().hintThinking).toBe(false)
+    expect(state().game.moves).toHaveLength(0)
+    expect(state().game.board[idx(5, 5)]).toBe(0)
+    expect(state().game.current).toBe(BLACK)
+    expect(state().game.version).toBe(0)
+  })
+
+  it('提示在飞时玩家仍然可以落子，两者互不挤占', async () => {
+    state().requestHint()
+    const hintRequestId = engine.lastRequest.requestId
+
+    state().playHuman({ x: 3, y: 3 })
+
+    // 落子立刻生效，没有被在飞的提示挡住；AI 请求也照常发出。
+    expect(state().game.moves).toEqual([{ x: 3, y: 3 }])
+    expect(state().aiThinking).toBe(true)
+    expect(engine.requests).toHaveLength(2)
+    expect(engine.requests[1]!.purpose).toBe('play')
+
+    // 局面已经变了，这份提示作废；但它只是被丢掉，绝不碰棋局。
+    engine.respondTo(hintRequestId, {
+      ...makeResponse(hintRequestId, 0, { x: 5, y: 5 }),
+      candidates: SUGGESTIONS,
+      urgency: 'danger',
+    })
+    await engine.flush()
+
+    expect(state().hint).toBeNull()
+    expect(state().hintThinking).toBe(false)
+    expect(state().game.moves).toEqual([{ x: 3, y: 3 }])
+    expect(state().game.board[idx(5, 5)]).toBe(0)
+  })
+
+  it('AI 思考期间不发起提示请求', () => {
+    state().playHuman({ x: 7, y: 7 })
+    const before = engine.requests.length
+
+    state().requestHint()
+
+    expect(engine.requests).toHaveLength(before)
+    expect(state().hintThinking).toBe(false)
+  })
+
+  it('对局结束后请求提示是空操作', () => {
+    state().resign()
+
+    state().requestHint()
+
+    expect(engine.requests).toHaveLength(0)
+  })
+
+  it('提示失败只影响提示，不影响对局', async () => {
+    state().requestHint()
+    engine.failTo(engine.lastRequest.requestId, new Error('提示超时'))
+    await engine.flush()
+
+    expect(state().hintError).toContain('提示超时')
+    expect(state().hintThinking).toBe(false)
+    expect(state().aiError).toBeNull()
+    expect(state().game.moves).toHaveLength(0)
+
+    // 失败之后照常可以落子，AI 也应手
+    state().playHuman({ x: 7, y: 7 })
+    engine.reply({ x: 0, y: 0 })
+    await engine.flush()
+
+    expect(state().game.moves).toHaveLength(2)
+  })
+
+  it('棋局版本对不上的提示响应被丢弃', async () => {
+    state().requestHint()
+    const requestId = engine.lastRequest.requestId
+
+    engine.respondTo(requestId, {
+      ...makeResponse(requestId, 99, { x: 5, y: 5 }),
+      candidates: SUGGESTIONS,
+      urgency: 'danger',
+    })
+    await engine.flush()
+
+    expect(state().hint).toBeNull()
+    expect(state().hintThinking).toBe(false)
+    expect(state().game.moves).toHaveLength(0)
+  })
+
+  it('requestId 对不上的提示响应被丢弃', async () => {
+    state().requestHint()
+    const requestId = engine.lastRequest.requestId
+
+    engine.respondTo(requestId, {
+      ...makeResponse(requestId + 1000, 0, { x: 5, y: 5 }),
+      candidates: SUGGESTIONS,
+      urgency: 'danger',
+    })
+    await engine.flush()
+
+    expect(state().hint).toBeNull()
+    expect(state().hintThinking).toBe(true)
+  })
+
+  it('提示与落子共用同一个请求号计数器，号不重复', () => {
+    state().requestHint()
+    const hintRequestId = engine.lastRequest.requestId
+    expect(state().pendingHintRequestId).toBe(hintRequestId)
+
+    state().playHuman({ x: 3, y: 3 })
+    const playRequestId = engine.lastRequest.requestId
+
+    // 两个请求号都出自同一个只增不减的计数器，因此永远不会撞号——
+    // 撞号会让迟到的提示响应去兑现落子请求。
+    expect(playRequestId).toBeGreaterThan(hintRequestId)
+    expect(state().pendingRequestId).toBe(playRequestId)
+  })
+
+  it('clearHint 清空提示与紧急度', async () => {
+    state().requestHint()
+    replyHint()
+    await engine.flush()
+
+    state().clearHint()
+
+    expect(state().hint).toBeNull()
+    expect(state().hintUrgency).toBeNull()
+  })
+
+  it('玩家落子后提示被清空', async () => {
+    state().requestHint()
+    replyHint()
+    await engine.flush()
+    expect(state().hint).not.toBeNull()
+
+    state().playHuman({ x: 3, y: 3 })
+
+    expect(state().hint).toBeNull()
+    expect(state().hintUrgency).toBeNull()
+  })
+
+  it('提示不会跨过一整个回合', async () => {
+    state().requestHint()
+    replyHint()
+    await engine.flush()
+    expect(state().hint).not.toBeNull()
+
+    state().playHuman({ x: 3, y: 3 })
+    engine.reply({ x: 0, y: 0 })
+    await engine.flush()
+
+    expect(state().game.moves).toHaveLength(2)
+    expect(state().hint).toBeNull()
+    expect(state().hintUrgency).toBeNull()
+  })
+
+  it('悔棋后提示被清空', async () => {
+    // 空盘无可悔之处，undoMove 会直接返回；必须先真走出几手来。
+    state().playHuman({ x: 3, y: 3 })
+    engine.reply({ x: 0, y: 0 })
+    await engine.flush()
+
+    state().requestHint()
+    replyHint()
+    await engine.flush()
+    expect(state().hint).not.toBeNull()
+
+    state().undoMove()
+
+    expect(state().game.moves).toHaveLength(0)
+    expect(state().hint).toBeNull()
+  })
+
+  it('重新开始后提示被清空', async () => {
+    state().requestHint()
+    replyHint()
+    await engine.flush()
+
+    state().newGame()
+
+    expect(state().hint).toBeNull()
+    expect(state().hintUrgency).toBeNull()
+    expect(state().hintError).toBeNull()
+  })
+
+  it('认输后提示被清空', async () => {
+    state().requestHint()
+    replyHint()
+    await engine.flush()
+
+    state().resign()
+
+    expect(state().hint).toBeNull()
+  })
+
+  it('恢复存档后提示被清空', async () => {
+    state().requestHint()
+    replyHint()
+    await engine.flush()
+
+    state().restore({
+      schemaVersion: SCHEMA_VERSION,
+      moves: [{ x: 7, y: 7 }],
+      firstPlayer: BLACK,
+      mode: 'pvp',
+      humanColor: BLACK,
+      difficulty: 'easy',
+      resignedBy: null,
+    })
+
+    expect(state().hint).toBeNull()
+  })
+
+  it('AI 深算期间悔棋，迟到的落子响应不会让棋局倒退', async () => {
+    state().playHuman({ x: 7, y: 7 })
+    const playRequestId = engine.lastRequest.requestId
+
+    state().undoMove()
+
+    engine.respondTo(playRequestId, makeResponse(playRequestId, 1, { x: 0, y: 0 }))
+    await engine.flush()
+
+    expect(state().game.moves).toHaveLength(0)
+    expect(state().aiInfo).toBeNull()
+    expect(state().aiThinking).toBe(false)
   })
 })

@@ -5,11 +5,12 @@ import { boardFromLines } from '../test/board-fixtures'
 import { chooseMove, searchBoard } from './search'
 import type { Difficulty, SearchRequest, SearchResponse } from './types'
 
+/** `purpose` 不在可覆盖之列：会被展开成 `RequestPurpose | undefined`，破坏必填性。 */
 function ask(
   board: Board,
   player: Player,
   difficulty: Difficulty = 'easy',
-  extra: Partial<SearchRequest> = {},
+  extra: Omit<Partial<SearchRequest>, 'purpose'> = {},
 ): SearchResponse {
   return chooseMove({
     requestId: 1,
@@ -17,6 +18,7 @@ function ask(
     board,
     player,
     difficulty,
+    purpose: 'play',
     ...extra,
   })
 }
@@ -310,6 +312,127 @@ describe('searchBoard —— 置换表与注入时钟', () => {
     expect(result.reason).toBe('timeout')
     expect(result.move).not.toBeNull()
     expect(MIDGAME[result.move!.y * 15 + result.move!.x]).toBe(0)
+  })
+})
+
+describe('searchBoard —— 提示用的候选与紧急度', () => {
+  const clock = (): number => 0
+  const base = {
+    width: 10,
+    maxDepth: 2,
+    budgetMs: 60_000,
+    transposition: true,
+    threatPlies: 0,
+    threatThrees: false,
+    diagnostics: true,
+  }
+
+  const MIDGAME = boardFromLines([
+    '...............',
+    '...............',
+    '...............',
+    '...............',
+    '......WB.......',
+    '.....BWB.......',
+    '......BW.......',
+    '.......B.......',
+  ])
+
+  it('给出候选，按推荐度降序', () => {
+    const result = searchBoard(MIDGAME, WHITE, base, clock)
+
+    expect(result.candidates.length).toBeGreaterThan(0)
+    for (let i = 1; i < result.candidates.length; i++) {
+      expect(result.candidates[i - 1]!.score).toBeGreaterThanOrEqual(result.candidates[i]!.score)
+    }
+  })
+
+  it('候选最多三个', () => {
+    expect(searchBoard(MIDGAME, WHITE, base, clock).candidates.length).toBeLessThanOrEqual(3)
+  })
+
+  it('候选全部落在空位上，且带攻防棋型标注', () => {
+    const result = searchBoard(MIDGAME, WHITE, base, clock)
+
+    for (const candidate of result.candidates) {
+      expect(MIDGAME[candidate.move.y * 15 + candidate.move.x]).toBe(0)
+      expect(typeof candidate.attack).toBe('string')
+      expect(typeof candidate.defense).toBe('string')
+    }
+  })
+
+  it('能立刻成五时紧急度为 win', () => {
+    const mustWin = boardFromLines(['...............', '...............', '...BBBB........'])
+
+    expect(searchBoard(mustWin, BLACK, base, clock).urgency).toBe('win')
+  })
+
+  it('对手下一手能成五时紧急度为 mustBlock', () => {
+    const mustBlock = boardFromLines(['...............', '...............', '..BWWWW........'])
+
+    expect(searchBoard(mustBlock, BLACK, base, clock).urgency).toBe('mustBlock')
+  })
+
+  it('双方都无立即威胁时紧急度为 normal', () => {
+    const quiet = boardFromLines(['...............', '...............', '...............', '...B.W.........', '...............', '...............', '...............', '...............', '...............', '...............', '...............', '...............', '...............', '...............', '...............'])
+
+    expect(searchBoard(quiet, BLACK, base, clock).urgency).toBe('normal')
+  })
+
+  it('purpose 为 play 时不付诊断的钱：候选为空、紧急度为 normal', () => {
+    const result = ask(MIDGAME, WHITE)
+
+    expect(result.candidates).toEqual([])
+    expect(result.urgency).toBe('normal')
+  })
+
+  it('purpose 为 hint 时填上候选与紧急度', () => {
+    // 用无立即威胁的安静局面，好让紧急度断言不依赖具体棋型的细节。
+    const quiet = boardFromLines([
+      '...............',
+      '...............',
+      '...............',
+      '...B.W.........',
+    ])
+
+    const result = chooseMove({
+      requestId: 1,
+      gameVersion: 0,
+      board: quiet,
+      player: BLACK,
+      difficulty: 'easy',
+      purpose: 'hint',
+    })
+
+    expect(result.candidates.length).toBeGreaterThan(0)
+    expect(result.urgency).toBe('normal')
+  })
+
+  it('接近满盘时候选数量随空位减少，且不崩', () => {
+    const almostFull = boardFromLines([
+      'BWBWBWBWBWBWBWB',
+      'WBWBWBWBWBWBWBW',
+      'BWBWBWBWBWBWBWB',
+      'WBWBWBWBWBWBWBW',
+      'BWBWBWBWBWBWBWB',
+      'WBWBWBWBWBWBWBW',
+      'BWBWBWBWBWBWBWB',
+      'WBWBWBWBWBWBWBW',
+      'BWBWBWBWBWBWBWB',
+      'WBWBWBWBWBWBWBW',
+      'BWBWBWBWBWBWBWB',
+      'WBWBWBWBWBWBWBW',
+      'BWBWBWBWBWBWBWB',
+      'WBWBWBWBWBWBWBW',
+      'BWBWBWBWBWBWBW.',
+    ])
+
+    const result = searchBoard(almostFull, WHITE, base, clock)
+
+    expect(result.candidates.length).toBeLessThanOrEqual(3)
+    for (const candidate of result.candidates) {
+      expect(almostFull[candidate.move.y * 15 + candidate.move.x]).toBe(0)
+    }
   })
 })
 

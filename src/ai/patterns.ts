@@ -1,8 +1,8 @@
 import { DIRECTIONS, idx, inBounds, opponentOf } from '../core/board'
 import { WIN_LENGTH, type Board, type Player, type Point } from '../core/types'
-import { WIN_SCORE } from './types'
+import { WIN_SCORE, type ThreatKind } from './types'
 
-export type ThreatKind = 'five' | 'openFour' | 'four' | 'openThree' | 'three' | 'none'
+export type { ThreatKind }
 
 export interface DirectionThreat {
   readonly kind: ThreatKind
@@ -311,6 +311,16 @@ export function analyzePoint(board: Board, point: Point, player: Player): ShapeC
   counts.two = runs.two
 
   return counts
+}
+
+/** 把四个方向的棋型计数压成「最高的那一档」，供提示界面显示。 */
+export function dominantThreat(counts: ShapeCount): ThreatKind {
+  if (counts.five > 0) return 'five'
+  if (counts.openFour > 0) return 'openFour'
+  if (counts.four > 0) return 'four'
+  if (counts.openThree > 0) return 'openThree'
+  if (counts.three > 0) return 'three'
+  return 'none'
 }
 
 /**
