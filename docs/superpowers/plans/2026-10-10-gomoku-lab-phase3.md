@@ -243,8 +243,9 @@ git add -A && git commit -m "refactor(board): 标记泛化、棋盘容器提取�
 
 **Files:**
 - Modify: `src/ai/patterns.ts`（把双威胁谓词抽出来，与 `shapeScore` 共用）
+- Modify: `src/ai/threat.ts`（新增 `isForcedWinStart`）
 - Create: `src/learn/types.ts`、`src/learn/verify.ts`
-- Test: `src/ai/patterns.test.ts`（补双威胁谓词）、`src/learn/verify.test.ts`
+- Test: `src/ai/patterns.test.ts`、`src/ai/threat.test.ts`、`src/learn/verify.test.ts`
 
 **Interfaces:**
 - Consumes: `ai/patterns` 的 `analyzePoint` / `isWinningPoint` / `dominantThreat`、`ai/candidates` 的 `candidateMoves`、`ai/threat` 的 `findForcedWin`、`core/rules` 的 `validateMove` / `findWinLine`
@@ -277,6 +278,18 @@ git add -A && git commit -m "refactor(board): 标记泛化、棋盘容器提取�
   /** 这道题在这个局面上成不成立（与「玩家走没走对」是两件事）。 */
   export function checkPrecondition(board: Board, player: Player, goal: PuzzleGoal): Verdict
   export function boardHasFive(board: Board): boolean
+
+  // ai/threat.ts 新增
+  /**
+   * `move` 是不是某条强制取胜路线的**第一步**。
+   *
+   * `findForcedWin` 只回答「有没有取胜路线、第一步是什么」；判题要问的是
+   * 「玩家走的这一手，是不是某条路线的第一步」——两者不是一回事，因为可能
+   * 有多条路线、多个可取的起点。
+   */
+  export function isForcedWinStart(
+    board: Board, player: Player, move: Point, options: ThreatSearchOptions,
+  ): boolean
   ```
 
 - [ ] **Step 1：先写双威胁谓词的失败测试**
@@ -411,6 +424,39 @@ describe('judgeMove —— 强制取胜', () => {
 Run: `yarn vitest run src/learn/verify.test.ts`
 Expected: FAIL——`Failed to resolve import "./verify"`
 
+- [ ] **Step 4b：给 `threat.ts` 加 `isForcedWinStart`，先写失败测试**
+
+```ts
+describe('isForcedWinStart', () => {
+  const START = boardFromLines([
+    '...............', '...............', '...............', '...............',
+    '...............', '...............', '...............', '....BBB.W......',
+  ])
+
+  it('给出取胜链的首着时为真', () => {
+    expect(isForcedWinStart(START, BLACK, { x: 3, y: 7 }, options({ maxPlies: 5 }))).toBe(true)
+  })
+
+  it('走出一个冲四、但对手堵掉就没事了，为假', () => {
+    // 实跑过：黑 (7,7) 只做成一个冲四，白堵 (3,7) 之后黑棋 9 手内都没有杀。
+    // 这条正是「走子后再调 findForcedWin」那个错法的照妖镜。
+    expect(isForcedWinStart(START, BLACK, { x: 7, y: 7 }, options({ maxPlies: 5 }))).toBe(false)
+  })
+
+  it('不是取胜链首着的普通着法为假', () => {
+    expect(isForcedWinStart(START, BLACK, { x: 0, y: 0 }, options({ maxPlies: 5 }))).toBe(false)
+  })
+
+  it('已经有多个可取起点时，每一个都为真（多解）', () => {
+    // 用「已成四」的局面：两端都能成五，两端都该判真
+  })
+
+  it('不改传入的棋盘', () => {})
+})
+```
+
+实现方式：给内部递归 `attack` 增加一个**只作用于根节点**的 `requiredFirst` 参数——命中即返回，不命中直接跳过该分支；递归下去时传 `null`。`findForcedWin` 本身不动，`isForcedWinStart` 是它的一个受限调用。
+
 - [ ] **Step 5：实现 `verify.ts`**
 
 要点，逐条都要落实：
@@ -432,7 +478,27 @@ Expected: FAIL——`Failed to resolve import "./verify"`
 
   这里**不用档位比较**：引擎的 `SHAPE_VALUE` 把冲四（14,000）排在活三（10,000）之上，但那是给搜索排序用的排序权重，不是教学上的包含关系——冲四与活三是两种互不包含的棋型，用档位比较会让「要求活三、做出冲四」判对，而玩家其实没做出题目要的那个东西。反过来，成五和活四是**任何目标下都该判对**的，因为那已经是胜势，为它判错只会让学习者困惑。
 - **`doubleThreat`**：`hasDoubleThreat(analyzePoint(after, move, player))`。
-- **`forcedWin`**：落子后 `findForcedWin(after, player, { maxPlies: goal.maxPlies - 1, allowThrees: false, deadline: now() + 2000, now })`。用 2 秒硬上限——这是判题不是对局，不能让玩家等算杀跑满。
+- **`forcedWin`**：**必须在落子前的盘面上判，并要求玩家这一手就是那条取胜链的第一步。**
+
+  ```ts
+  case 'forcedWin':
+    return isForcedWinStart(board, player, move, {
+      maxPlies: goal.maxPlies, allowThrees: false, deadline: now() + 2000, now,
+    }) ? OK : { ok: false, reason: '这一手之后引擎找不到强制取胜的路线——对手有办法防住。' }
+  ```
+
+  **不能在落子后的盘面上调 `findForcedWin`**，这一点已经实跑证实：`findForcedWin` 假定「传进来的盘面轮到攻方走」，而玩家落子之后轮到的是**对手**。那样判定等于白送攻方一手，会把输棋判成赢棋。实测：
+
+  ```
+  局面：黑 (4,7)(5,7)(6,7)，白 (8,7)
+  走子前 findForcedWin(黑, maxPlies=5) → move=(3,7), plies=3     // 黑确实 3 手胜
+  黑走 (7,7)（只做成一个冲四）后再调    → move=(3,7), plies=1     // 但它以为轮到黑走
+  白在 (3,7) 堵掉之后                  → move=null               // 黑其实什么都没有
+  ```
+
+  用 2 秒硬上限——这是判题不是对局，不能让玩家等算杀跑满。
+
+  这条同时让**求解器与判定器回到同一把尺子**：`solveMove` 本来就是在落子前的盘面上调 `findForcedWin`，此前两者口径不一致。
 - **`checkPrecondition`** 判的是「这道题在这个局面上成不成立」，与「玩家走没走对」是两件事，所以**不能**写成「目标是否已经达成」——那个说法与可解性自检直接打架（题目可解 ⟺ 存在一手能达成目标，那它到底算不算「已达成」？）。按目标逐条定义：
 
   ```ts
@@ -492,8 +558,10 @@ describe('solveMove', () => {
   it('解出来的着法一定通过 judgeMove', () => {
     // 这条是「答案经过验证」的最小保证：求解器与判定器不能各说各话
   })
-  it('强制取胜的题用算杀解，不靠逐个试', () => {
-    // 断言在预算极紧的情况下也能返回（说明走的是 findForcedWin 而不是枚举）
+  it('强制取胜的题必须用算杀解，而且解出来的着法判定器也认', () => {
+    // 原先这里写的是「预算极紧时也能返回」——那句自相矛盾：预算紧就是超时，
+    // 超时就返回 null。改成正面比对：solveMove 走的是 findForcedWin（首着即解），
+    // 且结果满足 judgeMove。这条同时钉住求解器与判定器口径一致。
   })
 })
 
@@ -618,7 +686,7 @@ describe('课程结构', () => {
 5. `double` **双三与双四** —— 双重威胁才是真正的杀招：双四、四三、双活三
 6. `defense` **如何防守** —— 对手成五 > 自己成五 > 对手活四 > 对手冲四/活三；先看对手有什么
 7. `combo` **常见进攻组合** —— 四三、双活三的构造，以及为什么它们比单个活三强
-8. `vcf` **连续冲四取胜** —— 用一串对手不得不应的冲四把先手保持到底，最后成五
+8. `vcf` **基础必胜战术** —— 用一串对手不得不应的冲四把先手保持到底，最后成五（ROADMAP 给这一节定的名字是「基础必胜战术」，连续冲四是它的主角）
 
 每节的 `practice` 目标按主题选，**八节全覆盖**：
 
@@ -678,7 +746,18 @@ it('每道题至少 2 条渐进提示与一段解法说明', () => {})
 
 - [ ] **Step 3：出题**
 
-分类与目标严格对应：`winInOne`→`win`、`blockFive`→`blockFive`、`makeOpenFour`→`makeShape('openFour')`、`doubleThreat`→`doubleThreat`、`vcf`/`forcedWin`→`forcedWin`（`vcf` 用 `maxPlies: 3`，`forcedWin` 用 `maxPlies: 5`）。
+分类与目标严格对应：
+
+| 分类 | 目标 |
+| --- | --- |
+| `winInOne` 一步获胜 | `win` |
+| `blockFive` 挡对手直接胜着 | `blockFive` |
+| `makeOpenFour` 构造活四 | `makeShape('openFour')` |
+| `doubleThreat` 双重威胁 | `doubleThreat` |
+| `vcf` 连续冲四 | `forcedWin`，**`maxPlies: 5`** |
+| `forcedWin` 强制获胜路线 | `forcedWin`，`maxPlies: 7` |
+
+**`vcf` 不能用 3**：引擎里「3 手胜」只有一条路——一手做出活四或双四（`threat.test.ts` 的「活三能走成活四：三步取胜」就是这个）。而一条**冲四链**最短是 5 手：冲四 → 对手被迫堵 → 再冲四 → 对手再堵 → 成五。用 3 去表达「连续冲四」，判定会接受一个只做了活四的着法，题目的教学意图完全落空。
 
 **出题时不许写答案坐标**，只写局面、落子方与目标。题面必须满足：
 
@@ -803,6 +882,12 @@ Run: `yarn vitest run src/learn/content.test.ts`
     readonly solvedPuzzles: readonly string[]
     /** 上次停留的位置，用于刷新后回到原处。null 表示从列表开始。 */
     readonly lastVisited: { readonly kind: 'lesson' | 'puzzle'; readonly id: string } | null
+    /**
+     * 上次所在的顶层视图。
+     *
+     * 不存它的话，在残局页刷新会被踢回对战页——「刷新后回到原处」就只覆盖了课程。
+     */
+    readonly lastView: 'battle' | 'learn' | 'puzzles'
   }
   export const EMPTY_PROGRESS: LearningProgress
   export function loadProgress(): Promise<LearningProgress>
@@ -810,6 +895,17 @@ Run: `yarn vitest run src/learn/content.test.ts`
   export function clearProgress(): Promise<void>
   /** 仅供测试：注入一个 IDBFactory，省略时用全局的。 */
   export function __setIndexedDbFactory(factory: IDBFactory | null): void
+
+  /**
+   * 存取接口。`learnStore` 依赖这个形状而不是直接依赖上面几个函数——
+   * Task 8 的测试要注入一个假存储，与 `createGameStore(engine)` 注入假引擎同一套做法。
+   */
+  export interface ProgressStorage {
+    load(): Promise<LearningProgress>
+    save(progress: LearningProgress): Promise<void>
+    clear(): Promise<void>
+  }
+  export const indexedDbProgress: ProgressStorage
   ```
 
 - [ ] **Step 1：装依赖并写失败测试**
@@ -940,7 +1036,9 @@ it('reset 清空内存与存储', async () => {})
 
 **Interfaces:**
 - Consumes: `LESSONS`、`judgeMove`、`solveMove`、`goalHint`、`useLearnStore`、`BoardStage`、`Board` 的 `marks`
-- Produces: `export function LearnScreen(): JSX.Element`、`export function LessonView(props: { lesson: Lesson; onExit: () => void }): JSX.Element`
+- Produces: `export function LearnScreen()`、`export function LessonView(props: { lesson: Lesson; onExit: () => void })`
+
+  **不写 `JSX.Element` 返回类型**：React 19 的 `@types/react` 已经移除了全局 `JSX` 命名空间，写了会让 `yarn typecheck` 直接红。仓库现有组件一个都没写返回类型，照既有的来。
 
 - [ ] **Step 1：写失败测试**
 
@@ -958,6 +1056,16 @@ it('答对之后展示解法说明', () => {})
 - [ ] **Step 2：跑测试确认失败**
 
 - [ ] **Step 3：实现**
+
+**棋盘演示（`sequence`）必须真的渲染出来。** 第 1 轮自审给它加了字段，但光有字段没有消费者，ROADMAP 明写的「棋盘演示」就落不了地。做法：`StepView` 在 `step.sequence` 存在时渲染一组「上一步 / 下一步」控件，用 `replay(sequence.moves.slice(0, k), sequence.firstPlayer)` 还原到第 k 手——**路径只有这一条**，不要另写一套摆子逻辑，`replay` 已经在 `core/game.ts` 里且经过完整测试。当前手用 `lastMove` 高亮，末手停住之后不再前进。
+
+补三条组件用例：
+
+```tsx
+it('有 sequence 的步骤显示演示控件，没有的不显示')
+it('点「下一步」逐手摆子，棋子数随之增加')
+it('走到末手后「下一步」禁用，点「上一步」可以退回去')
+```
 
 关键约定：
 
@@ -982,7 +1090,7 @@ it('答对之后展示解法说明', () => {})
 
 **Interfaces:**
 - Consumes: `PUZZLES` / `CATEGORY_LABELS` / `CATEGORY_ORDER`、Task 9 的练习交互（**把「棋盘 + 判定 + 反馈 + 提示」抽成一个共用组件 `PracticeBoard`，课程与残局都用它**）
-- Produces: `export function PuzzleScreen(): JSX.Element`
+- Produces: `export function PuzzleScreen()`
 
 - [ ] **Step 1：先把练习交互抽成 `PracticeBoard`**
 
@@ -1013,6 +1121,8 @@ it('列表显示总进度（通过数 / 总数）', () => {})
 - [ ] **Step 4：接上导航**
 
 `App.tsx` 按 `useNavStore().view` 渲染 `BattleScreen` / `LearnScreen` / `PuzzleScreen`，顶部加三个入口。**对战页的刷新恢复逻辑不受影响**——`bootstrapStore()` 仍然在挂载前跑。
+
+`navStore.go()` 同时把 `view` 写进 `progress.lastView`，启动时用它初始化当前视图。
 
 - [ ] **Step 5：跑全量五连并提交**
 
@@ -1098,4 +1208,13 @@ yarn lint && yarn typecheck && yarn test && yarn build && yarn e2e
 
 **第 4 轮（独立终审，由另一个代理执行）**
 
-（待填。）
+| 查出 | 修法 |
+| --- | --- |
+| **【最重】`forcedWin` 判定把走子**后**的盘面交给 `findForcedWin`，而那个函数假定「传进来的盘面轮到攻方走」**——玩家落子之后轮到的是对手，于是判定白送攻方一手，把输棋判成赢棋。代理给了实跑证据，我也复现了：黑走 (7,7) 只做成一个冲四，白在 (3,7) 堵掉之后黑棋 9 手内都没有杀，而走子后的盘面却让 `findForcedWin` 返回 `plies: 1`。**两类挑战题的 `maxPlies` 因此形同虚设，「答案经过搜索验证」这条验收标准会整个落空** | 改为在**落子前**的盘面上调新增的 `isForcedWinStart`，要求玩家这一手就是取胜链的第一步。`threat.ts` 加这个函数（内部给递归 `attack` 加一个只作用于根节点的 `requiredFirst`），`findForcedWin` 本身不动。顺带让求解器与判定器回到同一把尺子——`solveMove` 本来就是在落子前的盘面上调 `findForcedWin` |
+| **`vcf` 用 `maxPlies: 3` 表达不了「连续冲四」**：引擎里 3 手胜只有「一手做出活四/双四」这一条路（`threat.test.ts` 的「活三能走成活四：三步取胜」），而冲四链最短 5 手（冲四→应→冲四→应→成五）。用 3 的话判定会接受一个只做了活四的着法，教学意图落空 | `vcf` 改 `5`、`forcedWin` 改 `7`；第 8 课标题回到 ROADMAP 定的「基础必胜战术」 |
+| **`LessonStep.sequence` 只有定义、没有消费者**——第 1 轮自审补了字段，但 Task 9/10/11 都不渲染也不测它，ROADMAP 明写的「棋盘演示」仍然落不了地 | Task 9 补实现要点（用 `replay(moves.slice(0, k))` 逐手还原）与三条组件用例 |
+| **`ProgressStorage` 全计划无定义**：Task 8 的 `createLearnStore(storage: ProgressStorage)` 与它的测试都依赖这个类型，而 Task 7 只产出三个自由函数，两个任务的接口对不上 | Task 7 的 Interfaces 里写出接口形状与 `indexedDbProgress` 单例 |
+| **视图不持久化**：`lastVisited` 只记 lesson/puzzle，在残局页刷新会被踢回对战页——Review Focus 5 说的「不能回到一个错的位置」只覆盖了课程 | `LearningProgress` 加 `lastView`，`navStore.go()` 写入、启动时读取 |
+| 两处会让 `yarn typecheck` 红或写出恒真断言：`JSX.Element`（React 19 的 `@types/react` 已移除全局 `JSX` 命名空间，仓库里 src 零处使用）；Task 3 的「预算极紧时也能返回」（预算紧就是超时、超时就返回 null，自相矛盾） | 删掉返回类型标注；那条断言改成正面比对「求解结果必须通过判定器」 |
+
+**一条终审判断有误，我复跑两次确认不成立**：代理称 `DOUBLE_FOUR` 夹具实测是 `openFour=1 four=1`、纵向其实是活四。我在自己的探针里跑了两遍都是 `openFour=0 four=2`——纵向的 (7,8) 被白子堵着，只有一个成五点 (7,3)，确实是冲四而不是活四。**计划里记录的数字保留**。（这正是 `AGENTS.md` 那条「审查意见要自己核实再决定改不改」的用处。）
