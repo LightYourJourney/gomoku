@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { createBoard } from '../core/board'
 import { BLACK, WHITE } from '../core/types'
 import { boardFromLines } from '../test/board-fixtures'
-import { evaluateBoard, WIN_SCORE } from './evaluate'
+import { evaluateBoard, SHAPE_VALUES, WIN_SCORE } from './evaluate'
 
 describe('evaluateBoard', () => {
   it('空盘双方都是 0', () => {
@@ -90,6 +90,42 @@ describe('evaluateBoard', () => {
 
     expect(evaluateBoard(board, BLACK)).toBeGreaterThan(0)
     expect(evaluateBoard(board, WHITE)).toBeLessThan(0)
+  })
+
+  it('隔子四 BB_BB 被认成冲四，与直四同分', () => {
+    // 两者都只有「一个成五点」，分值必须一致。旧实现把隔子四只当成
+    // 两个活二（1200 分），与冲四的 15000 分差了一个数量级。
+    const gapped = boardFromLines(['...............', '...............', '...BB.BB.......'])
+    const straight = boardFromLines(['...............', '...............', '..WBBBB........'])
+
+    expect(evaluateBoard(gapped, BLACK)).toBe(SHAPE_VALUES.four)
+    expect(evaluateBoard(gapped, BLACK)).toBe(evaluateBoard(straight, BLACK))
+  })
+
+  it('.mm.mm. 是冲四而不是活四', () => {
+    // 成五点只有中间那一个（x=5）：补上它才成五，补两端都凑不出五连
+    const gappedFour = boardFromLines(['...............', '...............', '...BB.BB.......'])
+    const openFour = boardFromLines(['...............', '...............', '...BBBB........'])
+
+    expect(evaluateBoard(gappedFour, BLACK)).toBeLessThan(evaluateBoard(openFour, BLACK))
+  })
+
+  it('活四只计一次，不因滑窗重复累加', () => {
+    // x = 3,4,5,6 两端都空：包含它的两个 5 窗口各产出一个成五点。
+    // 若按窗口累加，这里会得到两倍活四的分。
+    const openFour = boardFromLines(['...............', '...............', '...BBBB........'])
+
+    expect(evaluateBoard(openFour, BLACK)).toBe(SHAPE_VALUES.openFour)
+  })
+
+  it('冲四与活三同样只计一次', () => {
+    const four = boardFromLines(['...............', '...............', '..WBBBB........'])
+    const openThree = boardFromLines(['...............', '...............', '...BBB.........'])
+    const sleepingThree = boardFromLines(['...............', '...............', '..WBBB.........'])
+
+    expect(evaluateBoard(four, BLACK)).toBe(SHAPE_VALUES.four)
+    expect(evaluateBoard(openThree, BLACK)).toBe(SHAPE_VALUES.openThree)
+    expect(evaluateBoard(sleepingThree, BLACK)).toBe(SHAPE_VALUES.three)
   })
 
   it('对角线上的活三与横向活三同分', () => {

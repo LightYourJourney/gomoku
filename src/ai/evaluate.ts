@@ -4,14 +4,18 @@ import { WIN_SCORE } from './types'
 
 export { WIN_SCORE }
 
-/** 一条线段上的连续同色棋子的分值。openEnds 为两端可延展的数量。 */
-const RUN_VALUE = {
+/**
+ * 盘面评估的棋型分值。
+ *
+ * 与 `patterns.ts` 的排序分值表是两套刻度，不要互相套用：那张表用于**单点排序**
+ * （比较的是「这一手好不好」），这张表用于**整盘评估**（比较的是「这个局面对谁有利」），
+ * 量级不同是有意的。
+ */
+export const SHAPE_VALUES = {
   openFour: 200_000,
   four: 15_000,
   openThree: 12_000,
   three: 800,
-  openTwo: 600,
-  two: 100,
 } as const
 
 /** 棋盘上全部长度不小于 5 的线段（横 / 竖 / 两个斜向），用一维索引表示。 */
@@ -59,47 +63,105 @@ function buildLines(): number[][] {
 
 const LINES = buildLines()
 
-function runValue(length: number, openEnds: number): number {
-  if (length >= WIN_LENGTH) return WIN_SCORE
-  if (length === 4) {
-    if (openEnds === 2) return RUN_VALUE.openFour
-    if (openEnds === 1) return RUN_VALUE.four
-    return 0
-  }
-  if (length === 3) {
-    if (openEnds === 2) return RUN_VALUE.openThree
-    if (openEnds === 1) return RUN_VALUE.three
-    return 0
-  }
-  if (length === 2) {
-    if (openEnds === 2) return RUN_VALUE.openTwo
-    if (openEnds === 1) return RUN_VALUE.two
-    return 0
+/**
+ * 段内只有「己方子」与「空位」两种（对手子与棋盘边都是段的边界），
+ * 所以窗口里数出 4 颗己方子时，剩下的那一格必然是空的——不必再判空。
+ */
+function scoreSegment(
+  board: Board,
+  line: readonly number[],
+  start: number,
+  end: number,
+  player: Player,
+): number {
+  if (end - start + 1 < WIN_LENGTH) return 0
+
+  let maxOwn = 0
+  const winningIndices: number[] = []
+
+  for (let from = start; from + WIN_LENGTH - 1 <= end; from++) {
+    let own = 0
+    let onlyEmpty = -1
+
+    for (let k = from; k < from + WIN_LENGTH; k++) {
+      const cell = board[line[k]]
+      if (cell === player) own++
+      else if (cell === 0) onlyEmpty = k
+    }
+
+    if (own > maxOwn) maxOwn = own
+    if (own === WIN_LENGTH) return WIN_SCORE
+
+    // 四颗己方子 + 一个空位：那个空位就是成五点。滑窗会让同一个四
+    // 被相邻窗口各命中一次，所以按空位下标去重，一个段只算一个四。
+    if (own === WIN_LENGTH - 1 && !winningIndices.includes(onlyEmpty)) {
+      winningIndices.push(onlyEmpty)
+    }
   }
 
-  // 单子还没有构成任何棋型。给它计分只会在评估里引入常数噪声。
+  if (maxOwn === WIN_LENGTH - 1) {
+    return winningIndices.length >= 2 ? SHAPE_VALUES.openFour : SHAPE_VALUES.four
+  }
+
+  if (maxOwn === WIN_LENGTH - 2) return scoreThreeRuns(board, line, start, end, player)
+
   return 0
 }
 
-function scoreLine(board: Board, line: readonly number[], player: Player): number {
-  let score = 0
-  let i = 0
+/**
+ * 段内的三：沿用「连续三子 + 两端在段内可延展」的便宜口径。
+ *
+ * 不在这里做精确的活三判定（试放一子后重数成五点）：那段代码单条线段就要
+ * 上千次读格，而本函数在每个叶子节点都要跑满 72 条线。精确口径在
+ * `patterns.ts` 的 `analyzePoint` 里，供提示与威胁展示使用。
+ */
+function scoreThreeRuns(
+  board: Board,
+  line: readonly number[],
+  start: number,
+  end: number,
+  player: Player,
+): number {
+  let best = 0
 
-  while (i < line.length) {
-    if (board[line[i]] !== player) {
-      i++
+  for (let i = start; i + 2 <= end; i++) {
+    if (
+      board[line[i]] !== player ||
+      board[line[i + 1]] !== player ||
+      board[line[i + 2]] !== player
+    ) {
+      continue
+    }
+    // 更长的连子会让 maxOwn 达到 4，走不到这里；这一句是防御性的。
+    if (i > start && board[line[i - 1]] === player) continue
+
+    // 段外是对手子或棋盘边，都算被堵；段内紧邻的那一格必然不是己方子，即空位。
+    const openEnds = (i > start ? 1 : 0) + (i + 3 <= end ? 1 : 0)
+    const value =
+      openEnds === 2 ? SHAPE_VALUES.openThree : openEnds === 1 ? SHAPE_VALUES.three : 0
+
+    if (value > best) best = value
+  }
+
+  return best
+}
+
+function scoreLine(board: Board, line: readonly number[], player: Player): number {
+  const opponent = opponentOf(player)
+  let score = 0
+  let cursor = 0
+
+  while (cursor < line.length) {
+    if (board[line[cursor]] === opponent) {
+      cursor++
       continue
     }
 
-    let j = i
-    while (j + 1 < line.length && board[line[j + 1]] === player) j++
+    let end = cursor
+    while (end + 1 < line.length && board[line[end + 1]] !== opponent) end++
 
-    const length = j - i + 1
-    const headOpen = i > 0 && board[line[i - 1]] === 0
-    const tailOpen = j < line.length - 1 && board[line[j + 1]] === 0
-
-    score += runValue(length, (headOpen ? 1 : 0) + (tailOpen ? 1 : 0))
-    i = j + 1
+    score += scoreSegment(board, line, cursor, end, player)
+    cursor = end + 1
   }
 
   return score
@@ -108,8 +170,8 @@ function scoreLine(board: Board, line: readonly number[], player: Player): numbe
 /**
  * 从 `player` 的视角评估整个局面：自己的棋型总分减去对手的棋型总分。
  *
- * 这是纯局面评估，不包含「轮到谁走」的信息——先手优势由搜索本身的
- * 必胜判断（能不能立刻成五）来处理，不在这里近似。
+ * 这是纯局面评估，不含「轮到谁走」的信息——先手优势由搜索本身的
+ * 必胜判断处理，不在这里近似。
  */
 export function evaluateBoard(board: Board, player: Player): number {
   const opponent = opponentOf(player)
