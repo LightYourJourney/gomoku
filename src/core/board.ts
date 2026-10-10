@@ -47,3 +47,16 @@ export function cellAt(board: Board, x: number, y: number): Cell {
 export function opponentOf(player: Player): Player {
   return player === 1 ? 2 : 1
 }
+
+/**
+ * 需要检查的四个连线方向：横、竖、主对角线（↘）、副对角线（↗）。
+ *
+ * 规则判定与 AI 的棋型扫描共用这一份——两条线只要方向相同就算同一条，
+ * 所以每个方向只保留一个代表元。
+ */
+export const DIRECTIONS: readonly Point[] = [
+  { x: 1, y: 0 },
+  { x: 0, y: 1 },
+  { x: 1, y: 1 },
+  { x: 1, y: -1 },
+]

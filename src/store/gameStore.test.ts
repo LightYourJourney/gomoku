@@ -4,7 +4,15 @@ import type { SearchRequest, SearchResponse } from '../ai/types'
 import { idx } from '../core/board'
 import { BLACK, WHITE, type Point } from '../core/types'
 import { SCHEMA_VERSION, type PersistedSession } from '../persist/storage'
-import { canUndo, createGameStore, undoPlies, type GameStore } from './gameStore'
+import { createGame } from '../core/game'
+import { resign } from '../core/game'
+import {
+  canHumanPlay,
+  canUndo,
+  createGameStore,
+  undoPlies,
+  type GameStore,
+} from './gameStore'
 
 const flush = () => new Promise<void>((resolve) => setTimeout(resolve, 0))
 
@@ -266,6 +274,88 @@ describe('过期与不匹配的 AI 响应', () => {
   })
 })
 
+describe('canHumanPlay', () => {
+  it('轮到你且不在思考时可以落子', () => {
+    expect(canHumanPlay(state())).toBe(true)
+  })
+
+  it('对局结束后一律不能落子', () => {
+    expect(canHumanPlay({ ...state(), game: resign(createGame(), BLACK) })).toBe(false)
+  })
+
+  it('AI 思考期间不能落子', () => {
+    state().playHuman({ x: 7, y: 7 })
+    expect(state().aiThinking).toBe(true)
+
+    expect(canHumanPlay(state())).toBe(false)
+  })
+
+  it('轮到 AI 时不能落子', () => {
+    state().newGame({ humanColor: WHITE })
+    expect(canHumanPlay(state())).toBe(false)
+  })
+
+  it('本地双人模式下不看执子，只看到底轮到谁', () => {
+    state().newGame({ mode: 'pvp' })
+    expect(canHumanPlay(state())).toBe(true)
+
+    state().playHuman({ x: 7, y: 7 })
+    expect(canHumanPlay(state())).toBe(true)
+  })
+
+  it('与 playHuman 的实际拦截保持一致', () => {
+    const cases = [state(), { ...state(), aiThinking: true }, { ...state(), mode: 'pvp' as const }]
+
+    for (const candidate of cases) {
+      store.setState(candidate)
+      const before = state().game.moves.length
+      state().playHuman({ x: 3, y: 3 })
+      expect(state().game.moves.length > before).toBe(canHumanPlay(candidate))
+    }
+  })
+})
+
+describe('AI 失败后的重试', () => {
+  it('引擎报错后可以手动重试，重新发起请求', async () => {
+    state().playHuman({ x: 7, y: 7 })
+    engine.fail(new Error('Worker 挂了'))
+    await engine.flush()
+
+    expect(state().aiError).toContain('Worker 挂了')
+    expect(engine.requests).toHaveLength(1)
+
+    state().retryAiMove()
+
+    expect(engine.requests).toHaveLength(2)
+    expect(state().aiThinking).toBe(true)
+    expect(state().aiError).toBeNull()
+  })
+
+  it('重试成功后对局可以继续走完', async () => {
+    state().playHuman({ x: 7, y: 7 })
+    engine.fail(new Error('Worker 挂了'))
+    await engine.flush()
+
+    state().retryAiMove()
+    engine.reply({ x: 0, y: 0 })
+    await engine.flush()
+
+    expect(state().game.moves).toHaveLength(2)
+    expect(state().game.current).toBe(BLACK)
+    expect(state().aiThinking).toBe(false)
+  })
+
+  it('不在 AI 回合时重试不产生请求', () => {
+    state().playHuman({ x: 7, y: 7 })
+    engine.reply({ x: 0, y: 0 })
+
+    return engine.flush().then(() => {
+      state().retryAiMove()
+      expect(engine.requests).toHaveLength(1)
+    })
+  })
+})
+
 describe('undoPlies / canUndo', () => {
   it('本地双人模式一次撤一手', () => {
     store.setState({ mode: 'pvp' })
@@ -389,6 +479,7 @@ describe('restore', () => {
       mode: 'pve',
       humanColor: BLACK,
       difficulty: 'easy',
+      resignedBy: null,
       ...overrides,
     }
   }
@@ -456,6 +547,31 @@ describe('restore', () => {
 
     // 不能跳过重复的那一手继续重放：手番的奇偶会因此错位，后面的棋子颜色全反。
     expect(state().game.moves).toEqual([{ x: 7, y: 7 }])
+  })
+
+  it('认输的对局存档不会在刷新后复活', () => {
+    state().restore(session({ resignedBy: BLACK }))
+
+    expect(state().game.status).toBe('resigned')
+    expect(state().game.winner).toBe(WHITE)
+    // 已经结束的对局不该再让 AI 接着走。
+    expect(engine.requests).toHaveLength(0)
+  })
+
+  it('认输存档恢复后仍然拒绝落子', () => {
+    state().restore(session({ resignedBy: BLACK }))
+
+    state().playHuman({ x: 0, y: 0 })
+
+    expect(state().game.moves).toHaveLength(2)
+  })
+
+  it('恢复认输存档后可以悔棋回到进行中', () => {
+    state().restore(session({ resignedBy: BLACK }))
+
+    state().undoMove()
+
+    expect(state().game.status).toBe('playing')
   })
 
   it('恢复本地双人存档不会请求 AI', () => {

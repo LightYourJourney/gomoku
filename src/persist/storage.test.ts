@@ -1,7 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import { BLACK, WHITE } from '../core/types'
 import {
-  clearSession,
   decodeSession,
   encodeSession,
   loadSession,
@@ -21,6 +20,7 @@ const sample: Omit<PersistedSession, 'schemaVersion'> = {
   mode: 'pve',
   humanColor: WHITE,
   difficulty: 'easy',
+  resignedBy: null,
 }
 
 describe('encodeSession / decodeSession', () => {
@@ -90,6 +90,33 @@ describe('encodeSession / decodeSession', () => {
     expect(decodeSession(raw)?.moves).toEqual([])
   })
 
+  it('认输的一方会被存下来', () => {
+    const decoded = decodeSession(encodeSession({ ...sample, resignedBy: BLACK }))
+
+    expect(decoded?.resignedBy).toBe(BLACK)
+  })
+
+  it('resignedBy 为 null 表示对局还没认输', () => {
+    expect(decodeSession(encodeSession(sample))?.resignedBy).toBeNull()
+  })
+
+  it.each([
+    ['不是合法的一方', 3],
+    ['是字符串', 'black'],
+    ['是布尔值', true],
+  ])('resignedBy %s 时返回 null', (_label, value) => {
+    const raw = JSON.stringify({ schemaVersion: SCHEMA_VERSION, ...sample, resignedBy: value })
+
+    expect(decodeSession(raw)).toBeNull()
+  })
+
+  it('缺少 resignedBy 字段时返回 null', () => {
+    const { resignedBy: _omitted, ...withoutResign } = sample
+    const raw = JSON.stringify({ schemaVersion: SCHEMA_VERSION, ...withoutResign })
+
+    expect(decodeSession(raw)).toBeNull()
+  })
+
   it('重复落子的手顺能解出来，语义问题交给 replay 处理', () => {
     const raw = JSON.stringify({
       schemaVersion: SCHEMA_VERSION,
@@ -125,10 +152,4 @@ describe('saveSession / loadSession', () => {
     expect(loadSession()).toBeNull()
   })
 
-  it('clearSession 之后读不到东西', () => {
-    saveSession(sample)
-    clearSession()
-
-    expect(loadSession()).toBeNull()
-  })
 })

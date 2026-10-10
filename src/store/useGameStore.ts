@@ -1,4 +1,5 @@
 import { createBrowserAiEngine } from '../ai/browserEngine'
+import { opponentOf } from '../core/board'
 import { loadSession, saveSession } from '../persist/storage'
 import { createGameStore } from './gameStore'
 
@@ -14,12 +15,17 @@ export function bootstrapStore(): void {
   useGameStore.getState().restore(loadSession())
 
   useGameStore.subscribe((state) => {
+    const { game } = state
+
     saveSession({
-      moves: state.game.moves,
-      firstPlayer: state.game.firstPlayer,
+      moves: game.moves,
+      firstPlayer: game.firstPlayer,
       mode: state.mode,
       humanColor: state.humanColor,
       difficulty: state.difficulty,
+      // 手顺能还原出胜负与和棋，唯独还原不出认输，所以由 winner 反推认输方。
+      resignedBy:
+        game.status === 'resigned' && game.winner !== null ? opponentOf(game.winner) : null,
     })
   })
 }

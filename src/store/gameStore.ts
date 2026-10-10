@@ -39,6 +39,8 @@ export interface GameStore {
   newGame(options?: { mode?: GameMode; humanColor?: Player; difficulty?: Difficulty }): void
   /** 从本地存档恢复。传 null 表示没有存档，保持当前状态。 */
   restore(session: PersistedSession | null): void
+  /** AI 失败后重试。不在 AI 回合时是空操作。 */
+  retryAiMove(): void
   setMode(mode: GameMode): void
   setHumanColor(color: Player): void
   setDifficulty(difficulty: Difficulty): void
@@ -69,6 +71,21 @@ export function undoPlies(state: Pick<GameStore, 'game' | 'mode' | 'humanColor'>
 
   const lastMover = moverAt(game.moves.length - 1, game.firstPlayer)
   return lastMover === humanColor ? 1 : Math.min(2, game.moves.length)
+}
+
+/**
+ * 玩家此刻能不能落子。
+ *
+ * store 的 playHuman 与棋盘的可交互状态都必须用它，不要各写一遍——
+ * 这是一条安全相关的判断，散成多处迟早会不一致。
+ */
+export function canHumanPlay(
+  state: Pick<GameStore, 'game' | 'mode' | 'humanColor' | 'aiThinking'>,
+): boolean {
+  if (state.game.status !== 'playing') return false
+  if (state.mode === 'pvp') return true
+
+  return !state.aiThinking && state.game.current === state.humanColor
 }
 
 export function canUndo(state: Pick<GameStore, 'game' | 'mode' | 'humanColor'>): boolean {
@@ -124,9 +141,13 @@ export function createGameStore(engine: AiEngine): UseBoundStore<StoreApi<GameSt
       restore(session) {
         if (session === null) return
 
+        // replay 会忽略非法手顺，因此损坏的存档最坏也只是退回若干手，不会崩。
+        // 胜负与和棋都能从手顺还原，认输不能——所以它单独存、单独补。
+        const replayed = replay(session.moves, session.firstPlayer)
+
         set({
-          // replay 会忽略非法手顺，因此损坏的存档最坏也只是退回若干手，不会崩。
-          game: replay(session.moves, session.firstPlayer),
+          game:
+            session.resignedBy === null ? replayed : resignGame(replayed, session.resignedBy),
           mode: session.mode,
           humanColor: session.humanColor,
           difficulty: session.difficulty,
@@ -154,10 +175,7 @@ export function createGameStore(engine: AiEngine): UseBoundStore<StoreApi<GameSt
 
       playHuman(point) {
         const current = get()
-        if (current.game.status !== 'playing') return
-        if (current.mode === 'pve' && (current.game.current !== current.humanColor || current.aiThinking)) {
-          return
-        }
+        if (!canHumanPlay(current)) return
 
         const outcome = applyMove(current.game, point)
         if (!outcome.ok) return
@@ -223,6 +241,13 @@ export function createGameStore(engine: AiEngine): UseBoundStore<StoreApi<GameSt
               })
             },
           )
+      },
+
+      retryAiMove() {
+        // 失败已经把 aiThinking 复位了；这里只需清掉错误再走一次正常流程。
+        // requestAiMove 自己会判断该不该走，因此不在 AI 回合时这里是空操作。
+        set({ aiError: null })
+        get().requestAiMove()
       },
 
       applyAiResponse(response) {

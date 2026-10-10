@@ -1,8 +1,8 @@
 # 测试报告
 
 **日期**：2026-10-10
-**范围**：Phase 1（基础可玩版本）
-**结论**：类型检查、单元测试、生产构建、真实浏览器验证、端到端测试全部通过。发现并修复了 1 个真实交互缺陷；另有 1 项已知限制记录在案。
+**范围**：Phase 1（基础可玩版本）+ 随后的两轴代码审查
+**结论**：类型检查、单元测试、生产构建、真实浏览器验证、端到端测试全部通过。开发期间发现并修复 1 个真实交互缺陷、3 个视觉缺陷；代码审查又发现并修复 11 项（含 3 个真实功能缺陷）；另有 1 项已知限制记录在案。
 
 ---
 
@@ -12,36 +12,39 @@
 
 ```
 yarn test
-Test Files  15 passed (15)
-     Tests  225 passed (225)
+Test Files  16 passed (16)
+     Tests  253 passed (253)
 ```
 
 | 测试文件 | 用例数 | 覆盖内容 |
 | --- | --- | --- |
-| `core/board.test.ts` | 20 | 索引换算、边界判定、棋盘创建独立性、界外读格、对手方 |
+| `core/board.test.ts` | 23 | 索引换算、边界判定、棋盘创建独立性、界外读格、对手方、四个连线方向的不变量 |
 | `core/rules.test.ts` | 32 | 四方向五连、四条边与四角、长连、四连不算胜、被隔断、只查最后一手连线、越界与非法坐标、满盘判定、夹具自检 |
 | `core/game.test.ts` | 28 | 初始状态、落子、不可变性、非法落子、五连判胜、最后一手同时成五并填满棋盘、满盘和棋、终局后拒收、悔棋（多手 / 到空盘 / 从终局恢复）、认输、`replay` 一致性 |
 | `ai/candidates.test.ts` | 8 | 空盘与满盘、邻域约束、不重复、不落在已有棋子上、贴角裁剪、半径可调 |
 | `ai/evaluate.test.ts` | 8 | 空盘为 0、五连最高分、活四 > 冲四、活三 > 眠三、两端堵死不计分、黑白互换对称、优劣符号、对角线同分 |
 | `ai/search.test.ts` | 14 | 立即取胜、必防、能赢就不防、白棋同样会赢、活三应对、成四机会、天元开局、满盘无着、落点合法、超时回退、精确结论、节点与耗时、难度差异、请求标识回传 |
 | `ai/engine.test.ts` | 10 | 请求派发、按 requestId 兑现、乱序响应、重复响应、dispose、报错传播、报错后恢复、发送抛错 |
-| `store/gameStore.test.ts` | 39 | 初始状态、玩家落子、AI 应手、过期与不匹配响应、悔棋手数推导、认输、重开、存档恢复、切换模式与执子 |
+| `store/gameStore.test.ts` | 51 | 初始状态、玩家落子、AI 应手、过期与不匹配响应、悔棋手数推导、认输、重开、存档恢复、`canHumanPlay` 与 playHuman 拦截一致、AI 失败后重试、切换模式与执子 |
 | `store/settingsStore.test.ts` | 5 | 主题解析与实时跟随系统、显式主题不订阅系统 |
-| `persist/storage.test.ts` | 22 | 序列化往返、各类损坏数据降级、字段校验、坐标校验 |
+| `persist/storage.test.ts` | 27 | 序列化往返、各类损坏数据降级、字段校验、坐标校验、认输方字段校验 |
 | `lib/theme.test.ts` | 4 | 主题偏好解析、根元素类切换 |
 | `lib/sound.test.ts` | 6 | 无 WebAudio 时静默降级、节点连接、黑白音高不同、挂起恢复、上下文复用、dispose |
 | `lib/coords.test.ts` | 5 | 列标、行号、棋谱记号格式化 |
 | `components/board/Board.test.tsx` | 14 | 225 个交叉点、棋子渲染、点击回调、占用位拒点、禁用态、悬停预览、最后一手与胜利标记、坐标开关 |
+| `components/panels/AiPanel.test.tsx` | 8 | 思考中提示、结果统计、启发式声明、引擎报错、重试入口的显隐与回调 |
 | `features/battle/status.test.ts` | 10 | 进行中 / 思考中 / 各类终局的文案与归属 |
 
 ### 端到端测试（Playwright + 本机 Chrome，不下载 Chromium）
 
 ```
 yarn e2e
-7 passed (6.6s)
+13 passed
 ```
 
-覆盖：人机对战完整一手往返、五个位置的落子位置正确性（含四角）、悔棋撤销一轮、重新开始清空、刷新恢复且补完 AI 那一手、认输弹窗与终局拒收落子、本地双人模式不触发 AI。
+**桌面组（8 条）**：人机对战完整一手往返、五个位置的落子位置正确性（含四角）、悔棋撤销一轮、重新开始清空、刷新恢复且补完 AI 那一手、**认输后刷新不复活**、认输弹窗与终局拒收落子、本地双人模式不触发 AI。
+
+**移动触屏组（5 条，`devices['Pixel 7']` + `hasTouch`）**：无横向滚动、棋盘为正方形且不超视口、棋盘 `touch-action` 锁死、触摸点按可落子、触摸点按的落子位置与交叉点一致。
 
 ### 类型检查与构建
 
@@ -105,7 +108,43 @@ dist/assets/index-*.js          252.11 kB │ gzip: 80.06 kB
 
 ---
 
-## 三、已知问题
+## 三、代码审查
+
+Phase 1 提交后做了一轮**两轴代码审查**：标准轴（对照 `AGENTS.md`、`docs/ARCHITECTURE.md`、`docs/RULES.md` 等成文标准，叠加 Fowler 坏味道基线）与规格轴（对照设计文档与实施计划）分别由独立的审查代理并行执行，互不污染上下文。
+
+共 11 项，全部处理完毕：
+
+**修掉的真实缺陷**
+
+| # | 轴 | 问题 | 修法 |
+| --- | --- | --- | --- |
+| 1 | 规格 | **认输后刷新页面，对局复活成进行中**——手顺还原不出认输，`PersistedSession` 又没有这个字段 | 存档加 `resignedBy`（由 `winner` 反推），`SCHEMA_VERSION` 升到 2，`restore` 补上认输；新增单元测试 6 条 + 端到端 1 条 |
+| 2 | 规格 | **引擎失败后对局卡死**——报错只复位 `aiThinking`，没有重开请求的入口；AI 欠着的那一手永远补不上，玩家执白时连悔棋都没有 | store 加 `retryAiMove`，AI 面板在「还轮到 AI 走」时给出重试按钮；新增单元测试 3 条 + 组件测试 4 条 |
+| 3 | 规格 | **触屏拖动会滚页面**——`touch-action: manipulation` 只禁双击缩放，手指带一点拖动就把落子变成滚动 | 棋盘 `touch-action` 改为 `none`（棋盘最多占半屏高，下面的面板仍可滚动）；新增移动端 Playwright 项目与 5 条触屏用例 |
+| 4 | 标准 | 测试夹具手写 `y * BOARD_SIZE + x`，违反 RULES.md「转换只经由 `idx` 与 `pointFromIdx`」 | 夹具改用 `idx` 与 `createBoard` |
+
+**结构性问题**
+
+| # | 轴 | 问题 | 修法 |
+| --- | --- | --- | --- |
+| 5 | 标准 | 两份成文标准自相矛盾：`AGENTS.md` 禁止 `ai/` 引入 Worker，`ARCHITECTURE.md` 又把 `worker.ts` / `engine.ts` 划归 `ai/` | 改 `AGENTS.md`：约束限定在算法模块，把三个适配外壳作为例外明确写出——把例外讲清楚，比为了迁就一句过宽的话去多加一层目录更诚实 |
+| 6 | 标准 | 「此刻能否落子」这条安全相关谓词在 store、BattleScreen 里各写一遍 | 抽出 `canHumanPlay` 单一来源，两处共用，并加一条「与 `playHuman` 实际拦截一致」的用例把它钉住 |
+| 7 | 标准 | `DIRECTIONS` 在 `core/rules.ts` 与 `ai/patterns.ts` 各写一份 | 上移到 `core/board.ts` 作为棋盘几何的一部分，两处共用；补三条不变量测试 |
+| 8 | 标准 | `Board.tsx` 自拼 `String.fromCharCode(65 + x)` 与 `BOARD_SIZE - y`，而 `lib/coords.ts` 正为此存在 | 改用 `columnLabel` / `rowLabel` / `formatPoint` |
+| 9 | 标准 | `chooseMove` 会原地改写传入的棋盘再还原，只靠 Worker 的结构化克隆兜底——同线程调用就会动到 core 的唯一真相 | 入口处 `request.board.slice()` 复制一份再用 |
+| 10 | 标准 | 三处死代码：`Panel` 的 `action`、`Button` 的 `ghost` 变体、`persist.clearSession` | 全部删除（`clearSession` 连带删掉它自己那条测试） |
+
+**范围蔓延**
+
+| # | 轴 | 问题 | 修法 |
+| --- | --- | --- | --- |
+| 11 | 规格 | `motion` 依赖装了但全库零引用，而 ROADMAP 把动画排在 Phase 5 | 移除依赖，并在 ROADMAP 里注明动画落地时再装回来 |
+
+**审查中确认「不是问题」的一条**：规格轴提出 design §4.3 关于 `version` 的措辞（「任何变更 +1」）与实现（等于手数）不符。经核对，`RULES.md` 与实现一致，是设计文档写错了——已改文档。顺带确认了 `gameVersion` 这道闸门在当前调用路径下**不可达**（只要请求在飞，棋局就不可能变），真正起作用的是 `requestId`；这一点已如实写进设计文档，免得后来人以为它在替自己兜底。
+
+---
+
+## 四、已知问题
 
 **首次音效可能被浏览器拦下。** 页面加载后如果第一手音效由 AI 应手触发（而非用户点击），`AudioContext` 会在没有用户手势的情况下创建，Chrome 会挂起它并打印 `The AudioContext was not allowed to start`。影响是这一手没有声音；下一次由点击触发的播放会调用 `resume()` 自愈。彻底的修复（绑定首个 `pointerdown` 预热）排在 Phase 5。
 
@@ -117,7 +156,7 @@ dist/assets/index-*.js          252.11 kB │ gzip: 80.06 kB
 
 ---
 
-## 四、复现方式
+## 五、复现方式
 
 ```bash
 yarn install

@@ -1,13 +1,5 @@
-import { cellAt, idx, inBounds } from './board'
+import { cellAt, DIRECTIONS, idx, inBounds } from './board'
 import { WIN_LENGTH, type Board, type MoveError, type Point } from './types'
-
-/** 需要检查的四个方向：横、竖、主对角线（↘）、副对角线（↗）。 */
-const DIRECTIONS: readonly Point[] = [
-  { x: 1, y: 0 },
-  { x: 0, y: 1 },
-  { x: 1, y: 1 },
-  { x: 1, y: -1 },
-]
 
 /**
  * 落子合法性。只判断位置本身，不判断是否轮到该方、棋局是否已结束

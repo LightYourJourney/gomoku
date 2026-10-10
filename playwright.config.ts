@@ -17,6 +17,13 @@ export default defineConfig({
       name: 'chrome',
       // 用本机已安装的 Chrome，不额外下载 Chromium。
       use: { ...devices['Desktop Chrome'], channel: 'chrome' },
+      testIgnore: '**/mobile.spec.ts',
+    },
+    {
+      name: 'mobile',
+      // 触屏相关的要求（误触、页面滚动干扰）只有在真正开启触摸的上下文里才验得了。
+      use: { ...devices['Pixel 7'], channel: 'chrome' },
+      testMatch: '**/mobile.spec.ts',
     },
   ],
   webServer: {

@@ -184,7 +184,12 @@ function searchRoot(
 export function chooseMove(request: SearchRequest): SearchResponse {
   const startedAt = Date.now()
   const params = DIFFICULTY_PARAMS[request.difficulty]
-  const { board, player } = request
+  const { player } = request
+
+  // 搜索靠「落子 / 撤销」在同一块棋盘上来回走。复制一份再用，
+  // 否则调用方手里的棋盘（对 core 来说就是唯一真相）会在搜索期间被临时改写，
+  // 现在只因为 Worker 的结构化克隆才没出事。
+  const board = request.board.slice()
 
   if (!board.some((cell) => cell !== 0)) {
     return respond(request, startedAt, 0, {

@@ -104,7 +104,12 @@ export interface GameState {
   readonly winner: Player | null
   readonly winLine: readonly Point[] | null
   readonly lastMove: Point | null
-  readonly version: number           // 任何变更 +1，用于作废过期的 AI 响应
+  /**
+   * 局面标识，等于「实际生效的手数」。
+   * 悔棋会让它回退，认输不会让它变化——它标识的是**局面**，不是状态对象。
+   * 用作 AI 请求绑定的局面版本。
+   */
+  readonly version: number
 }
 
 export function createGame(firstPlayer?: Player): GameState
@@ -147,7 +152,9 @@ export interface SearchResponse {
 }
 ```
 
-**过期响应的处理**：每个请求带 `requestId` 与 `gameVersion`。主线程只接受「`requestId` 仍是当前挂起请求」且「`gameVersion` 等于当前棋局版本」的响应，其余一律丢弃。这是需求「取消或过期的请求不能改变当前棋局」的实现方式，且该判断位于 store 的纯函数 action 中，可脱离浏览器直接单测。
+**过期响应的处理**：每个请求带 `requestId` 与 `gameVersion`。主线程只接受「`requestId` 仍是当前挂起请求」且「`gameVersion` 等于当前棋局版本」的响应，其余一律丢弃。该判断位于 store 的纯函数 action 中，可脱离浏览器直接单测。
+
+两道闸门的分工要说清楚：**真正起作用的是 `requestId`**。悔棋、重新开始、认输、恢复存档都会把 `pendingRequestId` 置空，所以在飞的旧请求全部作废。而只要请求还在飞，棋局就不可能变（`playHuman` 会被 `canHumanPlay` 挡住），因此 `gameVersion` 这一道在当前调用路径下不可达——它留着是防止将来新增某条「请求在飞时改动棋局」的路径。它是纵深防御，不是摆设，但也不要以为它在替你兜底。
 
 `confidence: 'heuristic'` 用于 Phase 2 的提示功能：搜索预算不足时如实标注为启发式建议，不冒充最优解。
 

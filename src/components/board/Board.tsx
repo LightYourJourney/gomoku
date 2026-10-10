@@ -1,6 +1,7 @@
 import { useId, useState, type CSSProperties } from 'react'
 import { idx } from '../../core/board'
 import { BOARD_SIZE, type Board as BoardModel, type Player, type Point } from '../../core/types'
+import { columnLabel, formatPoint, rowLabel } from '../../lib/coords'
 
 export interface BoardProps {
   board: BoardModel
@@ -44,13 +45,19 @@ const STAR_POINTS: readonly Point[] = [
 ]
 
 const AXIS = Array.from({ length: BOARD_SIZE }, (_, i) => i)
-const COLUMN_LABELS = AXIS.map((x) => String.fromCharCode(65 + x))
 
 function pointKey(point: Point): string {
   return `${point.x},${point.y}`
 }
 
-const SVG_STYLE: CSSProperties = { display: 'block', touchAction: 'manipulation' }
+/**
+ * touch-action 必须锁死。
+ *
+ * 只用 `manipulation` 的话只禁掉双击缩放，手指在棋盘上稍微带一点拖动就会变成
+ * 滚页面，落子被取消——这正是「页面滚动干扰棋盘操作」。棋盘在页面里最多占
+ * 半屏高，下面的面板仍然可以滚动，锁住棋盘不牺牲可滚动的区域。
+ */
+const SVG_STYLE: CSSProperties = { display: 'block', touchAction: 'none' }
 
 export function Board({
   board,
@@ -91,11 +98,12 @@ export function Board({
 
   return (
     <svg
+      data-testid="board"
       viewBox={VIEW_BOX}
       style={SVG_STYLE}
       className="h-full w-full select-none"
       role="img"
-      aria-label={`五子棋棋盘，已落子 ${stones.length} 手${lastMove ? `，最后一手在 ${COLUMN_LABELS[lastMove.x]}${BOARD_SIZE - lastMove.y}` : ''}`}
+      aria-label={`五子棋棋盘，已落子 ${stones.length} 手${lastMove ? `，最后一手在 ${formatPoint(lastMove)}` : ''}`}
       onMouseLeave={() => setHovered(null)}
     >
       <defs>
@@ -164,22 +172,22 @@ export function Board({
         >
           {AXIS.map((x) => (
             <text key={`colTop${x}`} data-testid="coord" x={x} y={-0.6}>
-              {COLUMN_LABELS[x]}
+              {columnLabel(x)}
             </text>
           ))}
           {AXIS.map((x) => (
             <text key={`colBottom${x}`} data-testid="coord" x={x} y={EXTENT + 0.6}>
-              {COLUMN_LABELS[x]}
+              {columnLabel(x)}
             </text>
           ))}
           {AXIS.map((y) => (
             <text key={`rowLeft${y}`} data-testid="coord" x={-0.6} y={y}>
-              {BOARD_SIZE - y}
+              {rowLabel(y)}
             </text>
           ))}
           {AXIS.map((y) => (
             <text key={`rowRight${y}`} data-testid="coord" x={EXTENT + 0.6} y={y}>
-              {BOARD_SIZE - y}
+              {rowLabel(y)}
             </text>
           ))}
         </g>

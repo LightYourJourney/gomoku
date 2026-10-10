@@ -81,16 +81,19 @@ test('刷新页面后棋局恢复，且 AI 思考中的那一手会被补完', a
   await page.goto('/')
 
   // 直接写入一份「玩家刚落子、AI 还没应手」的存档。
+  // 这里的字段必须与 src/persist/storage.ts 的 PersistedSession 一致——
+  // 少一个字段存档就会被安全丢弃，这条用例会立刻失败（这正是我们要的）。
   await page.evaluate(() => {
     window.localStorage.setItem(
       'gomoku-lab:session',
       JSON.stringify({
-        schemaVersion: 1,
+        schemaVersion: 2,
         moves: [{ x: 7, y: 7 }],
         firstPlayer: 1,
         mode: 'pve',
         humanColor: 1,
         difficulty: 'easy',
+        resignedBy: null,
       }),
     )
   })
@@ -99,6 +102,24 @@ test('刷新页面后棋局恢复，且 AI 思考中的那一手会被补完', a
   await expect(page.getByTestId('stone-7-7')).toBeVisible()
   await expect(page.getByTestId(/^stone-/)).toHaveCount(2)
   await expect(page.getByRole('status')).toHaveText('轮到你落子')
+})
+
+test('认输后刷新页面，对局不会复活成进行中', async ({ page }) => {
+  await page.goto('/')
+
+  await page.getByTestId('intersection-7-7').click()
+  await expect(page.getByTestId(/^stone-/)).toHaveCount(2)
+
+  await page.getByRole('button', { name: '认输' }).click()
+  await expect(page.getByRole('dialog')).toContainText('你认输了')
+
+  await page.reload()
+
+  // 手顺还原不出认输，所以它必须单独存档；否则刷新后这局会重新变得可以继续下。
+  await expect(page.getByRole('status')).toHaveText('你认输了')
+  await expect(page.getByRole('button', { name: '认输' })).toBeDisabled()
+  await expect(page.getByRole('dialog')).toContainText('你认输了')
+  await expect(page.getByTestId(/^stone-/)).toHaveCount(2)
 })
 
 test('认输弹出结果弹窗，且此后再点棋盘无效', async ({ page }) => {

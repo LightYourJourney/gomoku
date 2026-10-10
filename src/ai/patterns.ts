@@ -1,14 +1,6 @@
-import { cellAt, inBounds, idx, opponentOf } from '../core/board'
+import { cellAt, DIRECTIONS, inBounds, idx, opponentOf } from '../core/board'
 import { WIN_LENGTH, type Board, type Player, type Point } from '../core/types'
 import { WIN_SCORE } from './types'
-
-/** 四个方向：横、竖、主对角线（↘）、副对角线（↗）。 */
-export const DIRECTIONS: readonly Point[] = [
-  { x: 1, y: 0 },
-  { x: 0, y: 1 },
-  { x: 1, y: 1 },
-  { x: 1, y: -1 },
-]
 
 /** 某一手在四个方向上分别形成的棋型计数。 */
 export interface ShapeCount {

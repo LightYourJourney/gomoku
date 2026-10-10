@@ -1,6 +1,28 @@
 import { describe, expect, it } from 'vitest'
-import { cellAt, createBoard, idx, inBounds, opponentOf, pointFromIdx } from './board'
+import { cellAt, createBoard, DIRECTIONS, idx, inBounds, opponentOf, pointFromIdx } from './board'
 import { BOARD_SIZE, CELL_COUNT } from './types'
+
+describe('DIRECTIONS', () => {
+  it('正好四条', () => {
+    expect(DIRECTIONS).toHaveLength(4)
+  })
+
+  it('两两不共线，因此正好覆盖横、竖与两条对角线', () => {
+    for (let i = 0; i < DIRECTIONS.length; i++) {
+      for (let j = i + 1; j < DIRECTIONS.length; j++) {
+        const a = DIRECTIONS[i]
+        const b = DIRECTIONS[j]
+        expect(a.x * b.y - a.y * b.x).not.toBe(0)
+      }
+    }
+  })
+
+  it('每条的步长都是一个交叉点', () => {
+    for (const dir of DIRECTIONS) {
+      expect(Math.max(Math.abs(dir.x), Math.abs(dir.y))).toBe(1)
+    }
+  })
+})
 
 describe('idx / pointFromIdx', () => {
   it('按行主序换算索引', () => {

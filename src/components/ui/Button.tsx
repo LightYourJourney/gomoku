@@ -1,12 +1,11 @@
 import type { ButtonHTMLAttributes } from 'react'
 import { cx } from '../../lib/cx'
 
-export type ButtonVariant = 'primary' | 'default' | 'ghost' | 'danger'
+export type ButtonVariant = 'primary' | 'default' | 'danger'
 
 const VARIANT_CLASS: Record<ButtonVariant, string> = {
   primary: 'bg-accent text-accent-fg border-transparent hover:brightness-110',
   default: 'bg-surface-2 text-fg border-border hover:border-border-strong',
-  ghost: 'bg-transparent text-muted border-transparent hover:bg-surface-2 hover:text-fg',
   danger: 'bg-danger-soft text-danger border-transparent hover:brightness-110',
 }
 

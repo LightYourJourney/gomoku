@@ -4,7 +4,7 @@ import { inBounds } from '../core/board'
 import type { Player, Point } from '../core/types'
 
 /** 存档格式版本。字段含义发生变化时递增，旧存档会被安全丢弃。 */
-export const SCHEMA_VERSION = 1
+export const SCHEMA_VERSION = 2
 
 export const STORAGE_KEY = 'gomoku-lab:session'
 
@@ -15,6 +15,13 @@ export interface PersistedSession {
   readonly mode: 'pve' | 'pvp'
   readonly humanColor: Player
   readonly difficulty: Difficulty
+  /**
+   * 认输的一方，null 表示这局还没认输。
+   *
+   * 手顺能还原出胜负与和棋，唯独还原不出认输——所以它必须单独存。
+   * 少了这个字段，认输后刷新页面会让对局复活成进行中。
+   */
+  readonly resignedBy: Player | null
 }
 
 function isPlayer(value: unknown): value is Player {
@@ -62,6 +69,9 @@ export function decodeSession(raw: string | null): PersistedSession | null {
   if (!isDifficulty(value.difficulty)) return null
   if (!Array.isArray(value.moves)) return null
 
+  const resignedBy = value.resignedBy
+  if (resignedBy !== null && !isPlayer(resignedBy)) return null
+
   const moves: Point[] = []
   for (const entry of value.moves) {
     const point = parsePoint(entry)
@@ -76,6 +86,7 @@ export function decodeSession(raw: string | null): PersistedSession | null {
     mode: value.mode,
     humanColor: value.humanColor,
     difficulty: value.difficulty,
+    resignedBy,
   }
 }
 
@@ -93,13 +104,5 @@ export function loadSession(): PersistedSession | null {
     return decodeSession(localStorage.getItem(STORAGE_KEY))
   } catch {
     return null
-  }
-}
-
-export function clearSession(): void {
-  try {
-    localStorage.removeItem(STORAGE_KEY)
-  } catch {
-    // 忽略
   }
 }

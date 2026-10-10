@@ -20,6 +20,9 @@ export interface AiPanelProps {
   thinking: boolean
   info: AiInfo | null
   error: string | null
+  /** AI 还没能落子。此时不给重试入口，玩家就只能重开或认输了。 */
+  canRetry: boolean
+  onRetry: () => void
   onDismissError: () => void
 }
 
@@ -32,22 +35,30 @@ function Stat({ label, value }: { label: string; value: string }) {
   )
 }
 
-export function AiPanel({ thinking, info, error, onDismissError }: AiPanelProps) {
+export function AiPanel({ thinking, info, error, canRetry, onRetry, onDismissError }: AiPanelProps) {
   return (
     <Panel title="AI 引擎">
       {error !== null && (
-        <div
-          role="alert"
-          className="mb-3 flex items-start justify-between gap-2 rounded-lg bg-danger-soft px-3 py-2 text-xs text-danger"
-        >
-          <span className="min-w-0 break-words">{error}</span>
-          <button
-            type="button"
-            onClick={onDismissError}
-            className="shrink-0 font-medium underline underline-offset-2"
-          >
-            知道了
-          </button>
+        <div role="alert" className="mb-3 rounded-lg bg-danger-soft px-3 py-2 text-xs text-danger">
+          <p className="break-words">{error}</p>
+          <div className="mt-1.5 flex items-center gap-3">
+            {canRetry && (
+              <button
+                type="button"
+                onClick={onRetry}
+                className="font-medium underline underline-offset-2"
+              >
+                重试
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={onDismissError}
+              className="font-medium underline underline-offset-2"
+            >
+              知道了
+            </button>
+          </div>
         </div>
       )}
 
