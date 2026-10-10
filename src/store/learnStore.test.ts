@@ -132,6 +132,33 @@ describe('完成与通关', () => {
   })
 })
 
+describe('视图', () => {
+  it('默认停在对战页', () => {
+    expect(state().view).toBe('battle')
+  })
+
+  it('setView 同时更新当前视图与要落盘的位置', async () => {
+    state().bootstrap()
+    await flush()
+
+    state().setView('puzzles')
+    await flush()
+
+    expect(state().view).toBe('puzzles')
+    expect(state().progress.lastView).toBe('puzzles')
+    expect(storage.saved.lastView).toBe('puzzles')
+  })
+
+  it('载入时恢复上次所在的视图', async () => {
+    storage.saved = { ...EMPTY_PROGRESS, lastView: 'learn' }
+
+    state().bootstrap()
+    await flush()
+
+    expect(state().view).toBe('learn')
+  })
+})
+
 describe('位置与视图', () => {
   it('visit 记录位置但不影响完成状态', async () => {
     state().visit('lesson', 'three')

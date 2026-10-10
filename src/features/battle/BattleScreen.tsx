@@ -10,10 +10,10 @@ import { SettingsPanel } from '../../components/panels/SettingsPanel'
 import { StatusPill } from '../../components/panels/StatusPill'
 import { StoneDot } from '../../components/panels/StoneDot'
 import { Panel } from '../../components/ui/Panel'
+import { AppHeader } from '../shell/AppHeader'
 import { DIFFICULTY_LABELS } from '../../ai/difficulty'
 import { BLACK } from '../../core/types'
 import { createStoneSound } from '../../lib/sound'
-import { THEME_LABELS, THEME_PREFERENCES } from '../../lib/theme'
 import { canHumanPlay, canUndo, moverAt, shouldAiMove } from '../../store/gameStore'
 import { useSettingsStore } from '../../store/settingsStore'
 import { useGameStore } from '../../store/useGameStore'
@@ -25,85 +25,6 @@ function InfoRow({ label, children }: { label: string; children: ReactNode }) {
       <span className="text-faint">{label}</span>
       <span className="font-medium text-fg">{children}</span>
     </div>
-  )
-}
-
-function BrandMark() {
-  const stones = [1, 1, 2, 2, 1] as const
-
-  return (
-    <div className="flex items-center gap-2.5">
-      <div
-        aria-hidden="true"
-        className="grid h-8 w-8 shrink-0 place-items-center rounded-[10px] shadow-sm"
-        style={{ background: 'linear-gradient(135deg, var(--c-board-a), var(--c-board-b))' }}
-      >
-        <div className="flex gap-[3px]">
-          {stones.map((player, index) => (
-            <span
-              key={index}
-              className="h-[7px] w-[7px] rounded-full"
-              style={{
-                background:
-                  player === 1
-                    ? 'radial-gradient(circle at 35% 30%, var(--c-stone-black-a), var(--c-stone-black-b))'
-                    : 'radial-gradient(circle at 35% 30%, var(--c-stone-white-a), var(--c-stone-white-b))',
-              }}
-            />
-          ))}
-        </div>
-      </div>
-      <div className="leading-tight">
-        <div className="text-sm font-semibold tracking-tight text-fg">Gomoku Lab</div>
-        <div className="text-[11px] text-faint">五子棋实验室</div>
-      </div>
-    </div>
-  )
-}
-
-function ThemeToggle() {
-  const theme = useSettingsStore((state) => state.theme)
-  const setTheme = useSettingsStore((state) => state.setTheme)
-
-  const index = THEME_PREFERENCES.indexOf(theme)
-  const next = THEME_PREFERENCES[(index + 1) % THEME_PREFERENCES.length]
-
-  return (
-    <button
-      type="button"
-      onClick={() => setTheme(next)}
-      title={`主题：${THEME_LABELS[theme]}（点击切换为${THEME_LABELS[next]}）`}
-      aria-label={`主题：${THEME_LABELS[theme]}，点击切换为${THEME_LABELS[next]}`}
-      className="grid h-8 w-8 shrink-0 place-items-center rounded-lg border border-border bg-surface text-muted transition hover:border-border-strong hover:text-fg"
-    >
-      <svg viewBox="0 0 24 24" className="h-4 w-4" aria-hidden="true">
-        {theme === 'dark' ? (
-          <path
-            d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.8"
-            strokeLinejoin="round"
-          />
-        ) : theme === 'light' ? (
-          <>
-            <circle cx="12" cy="12" r="4.2" fill="none" stroke="currentColor" strokeWidth="1.8" />
-            <path
-              d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M18.4 5.6L17 7M7 17l-1.4 1.4"
-              stroke="currentColor"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-            />
-          </>
-        ) : (
-          <>
-            <circle cx="12" cy="12" r="7" fill="none" stroke="currentColor" strokeWidth="1.8" />
-            <path d="M12 5v14" stroke="currentColor" strokeWidth="1.8" />
-            <path d="M12 5a7 7 0 0 1 0 14Z" fill="currentColor" />
-          </>
-        )}
-      </svg>
-    </button>
   )
 }
 
@@ -164,13 +85,9 @@ export function BattleScreen() {
 
   return (
     <div className="flex min-h-dvh flex-col bg-bg text-fg lg:h-dvh lg:overflow-hidden">
-      <header className="flex shrink-0 items-center gap-3 border-b border-border bg-surface/70 px-4 py-3 backdrop-blur lg:px-6">
-        <BrandMark />
-        <div className="ml-auto flex items-center gap-2">
-          <StatusPill status={status} />
-          <ThemeToggle />
-        </div>
-      </header>
+      <AppHeader>
+        <StatusPill status={status} />
+      </AppHeader>
 
       <main className="flex flex-1 flex-col lg:grid lg:min-h-0 lg:grid-cols-[268px_minmax(0,1fr)_344px]">
         <aside className="order-3 px-3 py-4 lg:order-1 lg:overflow-y-auto lg:border-r lg:border-border lg:px-4">

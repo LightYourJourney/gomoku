@@ -1,0 +1,158 @@
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { Board, type BoardMark } from '../../components/board/Board'
+import { BoardStage } from '../../components/board/BoardStage'
+import { FeedbackBanner } from '../../components/panels/FeedbackBanner'
+import { Panel } from '../../components/ui/Panel'
+import { Button } from '../../components/ui/Button'
+import { parseBoardLines } from '../../lib/board-lines'
+import { goalHint, HINT_LEVELS, solveMove } from '../../learn/hints'
+import type { Practice } from '../../learn/types'
+import { applyToBoard, judgeMove, type Verdict } from '../../learn/verify'
+import type { Point } from '../../core/types'
+
+export interface PracticeBoardProps {
+  readonly practice: Practice
+  /** 判定通过时回调一次。 */
+  readonly onSolved: () => void
+  /** 通过之后额外渲染的内容，例如「下一节」按钮。 */
+  readonly footer?: React.ReactNode
+}
+
+/**
+ * 练习交互：棋盘 + 判定 + 反馈 + 三级提示。课程与残局共用。
+ *
+ * 三处约定值得留意：
+ *
+ * 1. **判错后锁盘**，必须点「重试」才能再走。不锁的话玩家会乱点，
+ *    反馈条也会一直闪，看不出哪一手被判错了。
+ * 2. **提示逐级揭示**：前两级是文案（题目自带的点拨、目标复述），
+ *    第三级才由引擎算出具体点位。提前给点位等于剥夺思考的机会。
+ * 3. **点位是算出来的**，不是题目里写死的——所以出一道题不必附带答案表，
+ *    多解也天然成立。
+ */
+export function PracticeBoard({ practice, onSolved, footer }: PracticeBoardProps) {
+  const base = useMemo(() => parseBoardLines(practice.board.lines), [practice])
+  const [attempt, setAttempt] = useState<{ move: Point; verdict: Verdict } | null>(null)
+  const [hintLevel, setHintLevel] = useState(0)
+
+  const solution = useMemo(
+    () => (hintLevel >= HINT_LEVELS ? solveMove(base, practice.player, practice.goal, Date.now) : null),
+    [base, hintLevel, practice],
+  )
+
+  const solved = attempt?.verdict.ok === true
+  const board = attempt === null ? base : applyToBoard(base, attempt.move, practice.player)
+
+  const marks: BoardMark[] = []
+  if (attempt !== null) {
+    marks.push({ point: attempt.move, tone: solved ? 'good' : 'bad' })
+  } else if (solution !== null) {
+    marks.push({ point: solution, label: '解' })
+  }
+
+  const handlePlay = (point: Point): void => {
+    setAttempt({ move: point, verdict: judgeMove(base, practice.player, point, practice.goal, Date.now) })
+  }
+
+  const retry = (): void => setAttempt(null)
+
+  const askHint = (): void => {
+    setHintLevel((level) => Math.min(level + 1, HINT_LEVELS))
+  }
+
+  // 判定通过时通知外面。放 effect 而不是渲染期间直接调：渲染中触发父组件
+  // setState 会让 React 报警。
+  //
+  // `reported` 这道闸门不能少：`onSolved` 由父组件传入，父组件每次渲染都可能
+  // 给出一个新的函数引用，effect 于是反复执行。就算 store 那边是幂等的，
+  // 每次 setState 都会让父组件再渲染一次，两边合起来就是一个无限循环。
+  const reported = useRef(false)
+  useEffect(() => {
+    if (!solved || reported.current) return
+    reported.current = true
+    onSolved()
+  }, [solved, onSolved])
+
+  const hintText =
+    hintLevel === 0
+      ? null
+      : hintLevel === 1
+        ? practice.hints[0]
+        : hintLevel === 2
+          ? (practice.hints[1] ?? goalHint(practice.goal))
+          : goalHint(practice.goal)
+
+  return (
+    <>
+      <BoardStage>
+        <Board
+          board={board}
+          lastMove={attempt?.move ?? null}
+          winLine={null}
+          nextPlayer={practice.player}
+          showCoords={false}
+          interactive={attempt === null && !solved}
+          marks={marks}
+          onPlay={handlePlay}
+        />
+      </BoardStage>
+
+      <aside className="order-2 space-y-3 px-3 pb-4 lg:order-3 lg:overflow-y-auto lg:border-l lg:border-border lg:px-4 lg:py-4">
+        <Panel title="练习">
+          <p className="text-sm leading-relaxed text-fg">{practice.prompt}</p>
+          <p className="mt-2 flex items-center gap-1.5 text-xs text-faint">
+            <span
+              aria-hidden="true"
+              className="inline-block h-2.5 w-2.5 rounded-full"
+              style={{
+                background:
+                  practice.player === 1
+                    ? 'var(--c-stone-black-b)'
+                    : 'var(--c-stone-white-a)'
+              }}
+            />
+            轮到你走{practice.player === 1 ? '黑棋' : '白棋'}
+          </p>
+        </Panel>
+
+        {attempt !== null && (
+          <FeedbackBanner
+            ok={attempt.verdict.ok}
+            message={attempt.verdict.ok ? practice.solution : attempt.verdict.reason}
+          />
+        )}
+
+        <div className="flex items-center gap-2">
+          {attempt !== null && !solved && (
+            <Button onClick={retry} block>
+              重试
+            </Button>
+          )}
+          <Button
+            variant="primary"
+            block
+            disabled={solved || hintLevel >= HINT_LEVELS}
+            onClick={askHint}
+          >
+            {hintLevel === 0 ? '要提示' : `再具体一点（${hintLevel}/${HINT_LEVELS}）`}
+          </Button>
+        </div>
+
+        {hintText !== null && (
+          <Panel title="提示">
+            <p data-testid="hint" className="text-xs leading-relaxed text-muted">
+              {hintText}
+            </p>
+            {hintLevel >= HINT_LEVELS && (
+              <p className="mt-2 text-[11px] text-faint">
+                棋盘上标出了其中一种解法。走上去试试——判定看的是棋型，别的走法同样算对。
+              </p>
+            )}
+          </Panel>
+        )}
+
+        {solved && footer}
+      </aside>
+    </>
+  )
+}

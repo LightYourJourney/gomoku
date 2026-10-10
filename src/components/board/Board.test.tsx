@@ -217,7 +217,9 @@ describe('Board —— 标记', () => {
     expect(screen.queryAllByTestId(/^board-mark-/)).toHaveLength(0)
   })
 
-  it('标记不会画在已占用的交叉点上', () => {
+  it('标记原样渲染，画在已有棋子上也不跳过', () => {
+    // 判题反馈要的正是「把标记打在这颗刚落下的子上」。这里曾经有一条
+    // 「跳过已占用点」的兜底，结果是反馈标记被静默吃掉、什么错都不报。
     const board = boardFromLines([
       '...............',
       '...............',
@@ -233,13 +235,14 @@ describe('Board —— 标记', () => {
       marks: [{ point: { x: 5, y: 7 } }, { point: { x: 7, y: 7 } }, { point: { x: 4, y: 7 } }],
     })
 
-    // 中间那个点有子，必须被跳过；剩下两个照原顺序编号 1、2。
     const markers = screen.getAllByTestId(/^board-mark-/)
     expect(markers.map((el) => el.getAttribute('data-testid'))).toEqual([
       'board-mark-5-7',
+      'board-mark-7-7',
       'board-mark-4-7',
     ])
-    expect(markers.map((el) => el.textContent)).toEqual(['1', '2'])
+    // 编号按数组下标，与是否落在棋子上无关
+    expect(markers.map((el) => el.textContent)).toEqual(['1', '2', '3'])
   })
 
   it('标记不拦截点击', () => {

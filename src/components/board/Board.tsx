@@ -30,10 +30,15 @@ export interface BoardProps {
   /** 是否允许落子（轮到自己、且对局未结束） */
   interactive: boolean
   /**
-   * 棋盘上的标记。AI 提示的候选点、教学里标出的关键点、判题的对错反馈都走它。
+   * 棋盘上的标记。AI 提示的候选点、教学里标出的关键点、判题的对错反馈都走它，
+   * 按给定顺序画在棋子之上。
    *
-   * 已占用的点会被跳过：标记是按某个局面算出来或写死的，之后局面可能已经变了，
-   * 「不画在有子的地方」这条兜底放在渲染层，调用方就不必自己保证一致性。
+   * **标记原样渲染，不做过滤**——包括画在已有棋子的交叉点上。判题反馈正需要这样：
+   * 「这一手走错了」的标记就该落在那颗刚落下的子上。这里曾经有一条「跳过已占用点」
+   * 的兜底，结果是反馈标记被静默吃掉，什么错都不报。
+   *
+   * 一致性由调用方负责，而两个调用方本来就满足：提示与练习的标记都在局面变化的
+   * 那一刻清空，所以标记永远对应当前局面。
    */
   marks?: readonly BoardMark[]
   onPlay: (point: Point) => void
@@ -114,7 +119,7 @@ export function Board({
     onPlay(point)
   }
 
-  const visibleMarks = (marks ?? []).filter((mark) => board[idx(mark.point.x, mark.point.y)] === 0)
+  const visibleMarks = marks ?? []
 
   const stones: Point[] = []
   for (let y = 0; y < BOARD_SIZE; y++) {
