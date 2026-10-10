@@ -10,10 +10,25 @@ import { AppHeader } from '../shell/AppHeader'
 
 /** 残局挑战：按分类列题，进去之后用与课程同一套练习交互。 */
 export function PuzzleScreen() {
+  const loaded = useLearnStore((state) => state.loaded)
   const progress = useLearnStore((state) => state.progress)
+  const isPuzzleDone = useLearnStore((state) => state.isPuzzleDone)
   const visit = useLearnStore((state) => state.visit)
 
   const [openId, setOpenId] = useState<string | null>(null)
+
+  // 进度载入之后恢复上次那道题。**不读它的话，visit('puzzle', …) 写的那个
+  // 位置就是一个只写不读的死字段**——刷新残局会退回列表。
+  const [restored, setRestored] = useState(false)
+  if (!restored && loaded) {
+    setRestored(true)
+
+    const last = progress.lastVisited
+    if (last?.kind === 'puzzle' && PUZZLES.some((entry) => entry.id === last.id)) {
+      setOpenId(last.id)
+    }
+  }
+
   const puzzle = PUZZLES.find((entry) => entry.id === openId) ?? null
 
   const open = (id: string): void => {
@@ -33,7 +48,7 @@ export function PuzzleScreen() {
     )
   }
 
-  const done = PUZZLES.filter((entry) => progress.solvedPuzzles.includes(entry.id)).length
+  const done = PUZZLES.filter((entry) => isPuzzleDone(entry.id)).length
 
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
@@ -42,9 +57,12 @@ export function PuzzleScreen() {
       <div className="mx-auto w-full max-w-3xl px-3 py-5 lg:px-6">
         <header className="mb-4 flex items-baseline gap-3">
           <h1 className="text-lg font-semibold text-fg">残局挑战</h1>
-          <span data-testid="puzzle-progress" className="text-xs text-faint">
-            已通过 {done} / {PUZZLES.length} 题
-          </span>
+          {/* 进度还没读出来时不要断言「已通过 0 题」——那是在说一件还不知道的事 */}
+          {loaded && (
+            <span data-testid="puzzle-progress" className="text-xs text-faint">
+              已通过 {done} / {PUZZLES.length} 题
+            </span>
+          )}
         </header>
 
         <p className="mb-4 text-sm leading-relaxed text-muted">
@@ -60,7 +78,7 @@ export function PuzzleScreen() {
               <Panel key={category} title={CATEGORY_LABELS[category]} bodyClassName="p-2.5">
                 <ul className="space-y-1.5">
                   {group.map((entry) => {
-                    const solved = progress.solvedPuzzles.includes(entry.id)
+                    const solved = isPuzzleDone(entry.id)
 
                     return (
                       <li key={entry.id}>
@@ -107,7 +125,7 @@ interface PuzzleViewProps {
 }
 
 function PuzzleView({ puzzle, onExit }: PuzzleViewProps) {
-  const solved = useLearnStore((state) => state.progress.solvedPuzzles.includes(puzzle.id))
+  const solved = useLearnStore((state) => state.isPuzzleDone(puzzle.id))
   const solvePuzzle = useLearnStore((state) => state.solvePuzzle)
   const [round, setRound] = useState(0)
 
@@ -116,6 +134,9 @@ function PuzzleView({ puzzle, onExit }: PuzzleViewProps) {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
+      {/* 顶栏是应用外壳，进到题目里也要在——否则导航会在详情页里消失。 */}
+      <AppHeader />
+
       <div className="flex shrink-0 items-center gap-2 border-b border-border px-3 py-2">
         <Button onClick={onExit}>← 残局列表</Button>
         <span className="truncate text-sm font-medium text-fg">{puzzle.title}</span>

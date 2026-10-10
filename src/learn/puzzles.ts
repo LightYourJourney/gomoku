@@ -1,22 +1,17 @@
 import { BLACK } from '../core/types'
-import type { BoardSpec, Puzzle, PuzzleCategory } from './types'
-
-function board(...lines: string[]): BoardSpec {
-  return { lines }
-}
+import { BLANK, board, FOUR_THREE } from './positions'
+import type { Puzzle, PuzzleCategory } from './types'
 
 /** 散落的白子，只用来配平手数，不参与任何威胁。 */
-const FILLER = '...............'
+const FILLER = BLANK
 
-export const CATEGORY_ORDER: readonly PuzzleCategory[] = [
-  'winInOne',
-  'blockFive',
-  'makeOpenFour',
-  'doubleThreat',
-  'vcf',
-  'forcedWin',
-]
-
+/**
+ * 分类与中文名。
+ *
+ * **只有这一张表**：顺序就是它的声明顺序，界面按 `CATEGORY_ORDER` 排。
+ * 早先另有一张并行的顺序表，两条数据要靠一条测试维持同步——那种同步本来
+ * 就不该存在。
+ */
 export const CATEGORY_LABELS: Record<PuzzleCategory, string> = {
   winInOne: '一步获胜',
   blockFive: '挡住直接胜着',
@@ -25,6 +20,8 @@ export const CATEGORY_LABELS: Record<PuzzleCategory, string> = {
   vcf: '连续冲四',
   forcedWin: '强制获胜路线',
 }
+
+export const CATEGORY_ORDER = Object.keys(CATEGORY_LABELS) as readonly PuzzleCategory[]
 
 /**
  * 15 道残局题。
@@ -290,24 +287,8 @@ export const PUZZLES: readonly Puzzle[] = [
     id: 'four-three',
     title: '四三：冲四配活三',
     category: 'doubleThreat',
-    prompt: '黑棋横向是被堵死的眠三，纵向还有两颗。找到交叉点，一手做出四三。',
-    board: board(
-      FILLER,
-      '.....W.........',
-      FILLER,
-      FILLER,
-      '.......B.......',
-      '.......B.......',
-      FILLER,
-      '..W.BBB.W......',
-      FILLER,
-      FILLER,
-      '....W..........',
-      FILLER,
-      '..........W....',
-      FILLER,
-      FILLER,
-    ),
+    prompt: '黑棋横向那条三是眠三（两头各空一格、再外面各有一颗白子），纵向还有两颗。找到交叉点，一手做出四三。',
+    board: FOUR_THREE,
     player: BLACK,
     goal: { kind: 'doubleThreat' },
     hints: ['横向补一格能成四，纵向补同一格能成活三。', '两线共用的那一格就是答案。'],
@@ -347,24 +328,8 @@ export const PUZZLES: readonly Puzzle[] = [
     title: '冲四开场',
     category: 'vcf',
     prompt:
-      '黑棋横向是被堵死的眠三，纵向两颗子。找出那一手：它之后无论白棋怎么应，黑棋都能在五手内连成五子。',
-    board: board(
-      FILLER,
-      '.....W.........',
-      FILLER,
-      FILLER,
-      '.......B.......',
-      '.......B.......',
-      FILLER,
-      '..W.BBB.W......',
-      FILLER,
-      FILLER,
-      '....W..........',
-      FILLER,
-      '..........W....',
-      FILLER,
-      FILLER,
-    ),
+      '黑棋横向是条眠三（往哪头补都只能做成冲四），纵向两颗子。找出那一手：它之后无论白棋怎么应，黑棋都能在五手内连成五子。',
+    board: FOUR_THREE,
     player: BLACK,
     goal: { kind: 'forcedWin', maxPlies: 5 },
     hints: [
@@ -410,35 +375,35 @@ export const PUZZLES: readonly Puzzle[] = [
   // ── 强制获胜路线 ────────────────────────────────────────────
   {
     id: 'forced-deep',
-    title: '四三之后的活四',
+    title: '换个地方的四三',
     category: 'forcedWin',
     prompt:
-      '这个局面比上一题多了一手棋的准备。找出那一手：之后无论白棋怎么应，七手之内黑棋必胜。',
+      '换了个位置，杀法还是那一个。这题考的是你能不能认出「四三」这个形状本身，而不是记住上一题落在哪一格。',
     board: board(
-      FILLER,
-      '.....W.........',
-      FILLER,
-      FILLER,
-      '.......B.......',
-      '.......B.......',
-      FILLER,
-      '..W.BBB.W......',
-      FILLER,
-      FILLER,
+      BLANK,
+      BLANK,
+      BLANK,
+      BLANK,
+      '............W..',
+      BLANK,
+      BLANK,
+      BLANK,
+      '......B........',
+      '......B........',
+      '.W.BBB.W.......',
+      BLANK,
       '....W..........',
-      FILLER,
       '..........W....',
-      FILLER,
-      FILLER,
+      BLANK,
     ),
     player: BLACK,
-    goal: { kind: 'forcedWin', maxPlies: 7 },
+    goal: { kind: 'forcedWin', maxPlies: 5 },
     hints: [
       '先确认白棋没有一步成五——没有，你才做得成杀。',
-      '起点是一手四三：横线成冲四，竖线成活三。',
+      '别去找上一题那个点。找横竖两条线：横的一条已经三子、竖的一条已经两子，交点是哪一格？',
     ],
     solution:
-      '交叉点上落子，横向成冲四、纵向成活三。白棋被迫应冲四，黑棋把活三补成活四，白棋堵一端，黑棋另一端成五。',
+      '横三竖二的交点是一手四三：横向成冲四、纵向成活三。白棋只能先堵冲四，黑棋把活三补成活四，白棋堵一端，黑棋在另一端成五。',
   },
   {
     id: 'forced-counter',

@@ -58,6 +58,7 @@ describe('载入', () => {
 
   it('载入时把已有进度读进来', async () => {
     storage.saved = {
+      ...EMPTY_PROGRESS,
       completedLessons: ['rules'],
       solvedPuzzles: ['win-h'],
       lastVisited: { kind: 'lesson', id: 'two' },
@@ -187,18 +188,5 @@ describe('位置与视图', () => {
     state().visit(null)
 
     expect(state().progress.lastVisited).toBeNull()
-  })
-})
-
-describe('reset', () => {
-  it('清空内存与存储', async () => {
-    state().completeLesson('rules')
-    state().solvePuzzle('win-h')
-
-    state().reset()
-    await flush()
-
-    expect(state().progress).toEqual(EMPTY_PROGRESS)
-    expect(storage.saved).toEqual(EMPTY_PROGRESS)
   })
 })

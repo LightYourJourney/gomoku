@@ -34,7 +34,9 @@ components / features   ← 展示层，只做渲染与事件转发
 **`bench/`** —— 基准脚本，跑出文档里的全部性能数字（`yarn bench`，独立于 `yarn test`）。它**不参与应用分层**，但会直接依赖 `ai/` 层（搜索、评估、棋型、难度参数），所以 `ai` 改接口时它要跟着改。
 
 **`learn/`** —— 教学内容。
-`types.ts` 课程与题目的数据形状；`verify.ts` 判定一手棋有没有达成目标；`hints.ts` 求解与三级提示；`lessons.ts` / `puzzles.ts` 是内容本身。依赖方向 `features → store → learn → ai → core`，单向；`learn` 不得被 `ai`/`core` 反向依赖。
+`types.ts` 课程与题目的数据形状；`verify.ts` 判定一手棋有没有达成目标；`hints.ts` 求解与三级提示；`lessons.ts` / `puzzles.ts` 是内容本身；`positions.ts` 是被多处内容共用的局面常量（字符画写法见 `lib/board-lines.ts`）。依赖方向 `features → store → learn → ai → core`，单向；`learn` 不得被 `ai`/`core` 反向依赖。
+
+**共用局面为什么值得单独抽一个文件**：同一个局面会被讲解、练习和题库一起引用（`FOUR_THREE` 就被四处用），抄几遍的话改一处必漏几处。但它同时是个陷阱——**两道题共用同一块盘面时，题面很容易照着「我以为的差别」写，而盘面其实一模一样**。第四轮审查抓到过一次，见 `docs/TEST_REPORT.md` 的「二之六」。抽常量之后仍要逐题核对题面描述与盘面是否相符。
 
 **`store/`** —— 状态编排。
 `gameStore.ts` 是对局与 AI 请求的状态机（工厂函数 `createGameStore(engine)`，可注入假引擎测试）；`useGameStore.ts` 组装真实引擎与存档，是应用唯一的单例入口；`learnStore.ts` 是学习进度与当前视图（工厂函数 `createLearnStore(storage)`，可注入假存储测试）；`settingsStore.ts` 是主题、坐标、音效等偏好。
@@ -78,7 +80,7 @@ AiEngine.search → Worker.chooseMove（走同一条引擎、同一套过期校�
    ↓
 GameStore.applyHintResponse：只写 hint / hintUrgency，**不调用 applyMove**
    ↓
-Board.hints → 棋盘上按推荐顺序画编号 1/2/3 的标记
+Board.marks → 棋盘上按推荐顺序画编号 1/2/3 的标记
 ```
 
 ## 教学内容的判定模型

@@ -1,4 +1,15 @@
+/**
+ * 进度格式版本。
+ *
+ * 与 `storage.ts` 的 `SCHEMA_VERSION` 同一条口径：字段形状一变就递增，
+ * 旧数据被安全丢弃。没有这个字段的话，形状一变 `parseProgress` 会静默
+ * 返回 null、进度整个消失，而**没有任何地方能看出那是刻意的**——
+ * 也就没有地方能挂一个迁移函数。
+ */
+export const PROGRESS_SCHEMA_VERSION = 1
+
 export interface LearningProgress {
+  readonly schemaVersion: number
   readonly completedLessons: readonly string[]
   readonly solvedPuzzles: readonly string[]
   /** 上次停留的位置，用于刷新后回到原处。null 表示从列表开始。 */
@@ -12,6 +23,7 @@ export interface LearningProgress {
 }
 
 export const EMPTY_PROGRESS: LearningProgress = {
+  schemaVersion: PROGRESS_SCHEMA_VERSION,
   completedLessons: [],
   solvedPuzzles: [],
   lastVisited: null,
@@ -87,6 +99,8 @@ function parseProgress(value: unknown): LearningProgress | null {
   if (typeof value !== 'object' || value === null) return null
   const raw = value as Record<string, unknown>
 
+  if (raw.schemaVersion !== PROGRESS_SCHEMA_VERSION) return null
+
   const strings = (input: unknown): string[] | null => {
     if (!Array.isArray(input)) return null
     for (const entry of input) {
@@ -112,7 +126,13 @@ function parseProgress(value: unknown): LearningProgress | null {
     lastVisited = { kind, id: visited.id }
   }
 
-  return { completedLessons, solvedPuzzles, lastVisited, lastView: view }
+  return {
+    schemaVersion: PROGRESS_SCHEMA_VERSION,
+    completedLessons,
+    solvedPuzzles,
+    lastVisited,
+    lastView: view,
+  }
 }
 
 async function readFromIndexedDb(): Promise<LearningProgress | null> {

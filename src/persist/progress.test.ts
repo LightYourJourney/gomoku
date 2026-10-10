@@ -6,11 +6,13 @@ import {
   EMPTY_PROGRESS,
   indexedDbProgress,
   loadProgress,
+  PROGRESS_SCHEMA_VERSION,
   saveProgress,
   type LearningProgress,
 } from './progress'
 
 const SAMPLE: LearningProgress = {
+  schemaVersion: PROGRESS_SCHEMA_VERSION,
   completedLessons: ['rules', 'two'],
   solvedPuzzles: ['win-h'],
   lastVisited: { kind: 'lesson', id: 'three' },
@@ -80,14 +82,26 @@ describe('学习进度存储', () => {
 })
 
 describe('学习进度存储 —— 降级', () => {
-  it('IndexedDB 不可用时降级为内存态，读写仍然能用', async () => {
-    // 隐私模式、无痕窗口里 indexedDB 可能是 undefined，或者 open 直接失败。
+  it('IndexedDB 整个不存在时降级为内存态，读写仍然能用', async () => {
+    // 隐私模式、无痕窗口里 `indexedDB` 可能压根是 undefined。
     // 进度丢了可以接受，**白屏不行**。
-    __setIndexedDbFactory(null)
+    //
+    // 注意 `__setIndexedDbFactory(null)` 的语义是「回落到全局那一个」——
+    // 本文件顶部装了 fake-indexeddb，全局是可用的，所以光调它测不到降级。
+    // 必须真的把全局摘掉，才是在测「没有 IndexedDB 也能用」。
+    const saved = Object.getOwnPropertyDescriptor(globalThis, 'indexedDB')
+    Reflect.deleteProperty(globalThis, 'indexedDB')
+    try {
+      // 前提自检：全局真的没了。否则这条用例会悄悄退回用真 IDB，
+      // 名字写着「降级」却什么都没验。
+      expect(typeof indexedDB, '全局 indexedDB 应当已被摘掉').toBe('undefined')
 
-    await saveProgress(SAMPLE)
+      await saveProgress(SAMPLE)
 
-    expect(await loadProgress()).toEqual(SAMPLE)
+      expect(await loadProgress()).toEqual(SAMPLE)
+    } finally {
+      if (saved !== undefined) Object.defineProperty(globalThis, 'indexedDB', saved)
+    }
   })
 
   it('open 直接抛错时同样降级为内存态', async () => {
@@ -146,7 +160,26 @@ describe('学习进度存储 —— 损坏数据', () => {
   })
 
   it('lastVisited 为 null 是合法的', async () => {
-    await writeRaw({ completedLessons: [], solvedPuzzles: [], lastVisited: null, lastView: 'battle' })
+    await writeRaw({
+      schemaVersion: PROGRESS_SCHEMA_VERSION,
+      completedLessons: [],
+      solvedPuzzles: [],
+      lastVisited: null,
+      lastView: 'battle',
+    })
+
+    expect(await loadProgress()).toEqual(EMPTY_PROGRESS)
+  })
+
+  it('版本号对不上的存档被丢弃，而不是悄悄读进来', async () => {
+    // 与对局存档同一条口径：形状变了就丢，宁可重来也不把半成品灌进状态机。
+    await writeRaw({
+      schemaVersion: PROGRESS_SCHEMA_VERSION + 1,
+      completedLessons: ['rules'],
+      solvedPuzzles: [],
+      lastVisited: null,
+      lastView: 'learn',
+    })
 
     expect(await loadProgress()).toEqual(EMPTY_PROGRESS)
   })

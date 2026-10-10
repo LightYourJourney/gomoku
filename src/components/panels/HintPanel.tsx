@@ -1,6 +1,7 @@
-import type { Confidence, MoveSuggestion, ThreatKind, Urgency } from '../../ai/types'
+import type { Confidence, MoveSuggestion, Urgency } from '../../ai/types'
 import { formatPoint } from '../../lib/coords'
 import { cx } from '../../lib/cx'
+import { threatLabel } from '../../lib/shape-labels'
 import { HINT_BUDGET_MS } from '../../store/gameStore'
 import { Panel } from '../ui/Panel'
 
@@ -9,15 +10,6 @@ const URGENCY_LABELS: Record<Urgency, { label: string; tone: string }> = {
   mustBlock: { label: '必须防守', tone: 'bg-danger-soft text-danger' },
   danger: { label: '危险', tone: 'bg-warn-soft text-warn' },
   normal: { label: '一般', tone: 'bg-surface-2 text-muted' },
-}
-
-const THREAT_LABELS: Record<ThreatKind, string> = {
-  five: '成五',
-  openFour: '活四',
-  four: '冲四',
-  openThree: '活三',
-  three: '眠三',
-  none: '无',
 }
 
 /** 展示多少个候选。与引擎侧的候选上限一致。 */
@@ -59,12 +51,12 @@ function Candidate({ suggestion, rank }: { suggestion: MoveSuggestion; rank: num
       <span className="flex flex-wrap gap-1 text-[11px]">
         {attack !== 'none' && (
           <span className="rounded bg-accent-soft px-1.5 py-0.5 text-accent">
-            进攻 {THREAT_LABELS[attack]}
+            进攻 {threatLabel(attack)}
           </span>
         )}
         {defense !== 'none' && (
           <span className="rounded bg-warn-soft px-1.5 py-0.5 text-warn">
-            防守 {THREAT_LABELS[defense]}
+            防守 {threatLabel(defense)}
           </span>
         )}
       </span>

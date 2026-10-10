@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { findForcedWin } from '../ai/threat'
 import { createBoard } from '../core/board'
 import { BLACK } from '../core/types'
 import { boardFromLines } from '../test/board-fixtures'
@@ -98,9 +99,10 @@ describe('solveMove', () => {
     }
   })
 
-  it('强制取胜的题用算杀解，而不是逐个候选去试', () => {
-    // 逐个候选去试的话，每个候选都要跑一遍 VCF，一道题能卡上好几秒。
-    // 这条用「大量空位 + 深算杀」的局面把两种做法的时间差拉出来。
+  it('强制取胜的题直接用算杀的首着，而不是逐个候选去试', () => {
+    // 逐个候选去试的话，每个候选都要跑一遍算杀，一道题能卡上好几秒。
+    // 这里不拿耗时做断言——真实时钟会随机器快慢 flaky，而注入时钟正是为了
+    // 避免这一点。改成正面比对：算杀给出的首着必须就是求解结果。
     const board = boardFromLines([
       '...............',
       '...............',
@@ -114,12 +116,15 @@ describe('solveMove', () => {
       '..W............',
     ])
 
-    const startedAt = Date.now()
-    const move = solveMove(board, BLACK, { kind: 'forcedWin', maxPlies: 5 }, NOW)
+    const first = findForcedWin(board, BLACK, {
+      maxPlies: 5,
+      allowThrees: false,
+      deadline: Number.POSITIVE_INFINITY,
+      now: () => 0,
+    }).move
 
-    expect(move).not.toBeNull()
-    // 逐个试的写法在这个局面上要跑上百次判定，留 1.5 秒的余量足够区分
-    expect(Date.now() - startedAt).toBeLessThan(1500)
+    expect(first).not.toBeNull()
+    expect(solveMove(board, BLACK, { kind: 'forcedWin', maxPlies: 5 }, NOW)).toEqual(first)
   })
 
   it('不改传入的棋盘', () => {

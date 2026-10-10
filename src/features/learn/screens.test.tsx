@@ -216,6 +216,31 @@ describe('PuzzleScreen —— 残局列表', () => {
     expect(screen.queryAllByTestId(/^board-mark-/)).toHaveLength(0)
   })
 
+  it('存在上次停留的题目时，直接展开那一题', () => {
+    useLearnStore.setState({
+      progress: { ...EMPTY_PROGRESS, lastVisited: { kind: 'puzzle', id: 'vcf-basic' } },
+      loaded: true,
+      view: 'puzzles',
+    })
+
+    render(<PuzzleScreen />)
+
+    const puzzle = PUZZLES.find((entry) => entry.id === 'vcf-basic')!
+    expect(screen.getByText(puzzle.prompt)).toBeInTheDocument()
+  })
+
+  it('上次停留的题目 id 已经不存在时，退回列表而不是白屏', () => {
+    useLearnStore.setState({
+      progress: { ...EMPTY_PROGRESS, lastVisited: { kind: 'puzzle', id: '已经删掉的题' } },
+      loaded: true,
+      view: 'puzzles',
+    })
+
+    render(<PuzzleScreen />)
+
+    expect(screen.getByTestId('puzzle-win-h')).toBeInTheDocument()
+  })
+
   it('「← 残局列表」回到列表', () => {
     render(<PuzzleScreen />)
     fireEvent.click(screen.getByTestId('puzzle-win-h'))

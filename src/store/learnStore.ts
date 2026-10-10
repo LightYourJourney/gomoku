@@ -15,7 +15,6 @@ export interface LearnStore {
   completeLesson(id: string): void
   solvePuzzle(id: string): void
   visit(kind: 'lesson' | 'puzzle' | null, id?: string): void
-  reset(): void
 
   isLessonDone(id: string): boolean
   isPuzzleDone(id: string): boolean
@@ -81,6 +80,7 @@ export function createLearnStore(storage: ProgressStorage): UseBoundStore<StoreA
             const current = get().progress
             set({
               progress: {
+                schemaVersion: stored.schemaVersion,
                 completedLessons: [
                   ...new Set([...stored.completedLessons, ...current.completedLessons]),
                 ],
@@ -123,11 +123,6 @@ export function createLearnStore(storage: ProgressStorage): UseBoundStore<StoreA
 
       visit(kind, id) {
         update({ lastVisited: kind === null || id === undefined ? null : { kind, id } })
-      },
-
-      reset() {
-        set({ progress: EMPTY_PROGRESS })
-        void storage.clear().catch(() => {})
       },
 
       isLessonDone(id) {

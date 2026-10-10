@@ -16,6 +16,7 @@ export function LearnScreen() {
   const loaded = useLearnStore((state) => state.loaded)
   const progress = useLearnStore((state) => state.progress)
   const completeLesson = useLearnStore((state) => state.completeLesson)
+  const isLessonDone = useLearnStore((state) => state.isLessonDone)
   const visit = useLearnStore((state) => state.visit)
 
   const [openId, setOpenId] = useState<string | null>(null)
@@ -45,11 +46,14 @@ export function LearnScreen() {
 
     return (
       <LessonView
+        // 顶栏是应用外壳，进到课程里也要在——否则从练习页想去对战页，
+        // 得先退回列表，导航等于在详情页里消失了。
+        header={<AppHeader />}
         // 换课时必须重建：`step` 是组件内部状态，复用实例会让新一课直接
         // 停在上一课翻到的页码（从练习页切过去就是直接跳到练习）。
         key={lesson.id}
         lesson={lesson}
-        solved={progress.completedLessons.includes(lesson.id)}
+        solved={isLessonDone(lesson.id)}
         onExit={() => {
           setOpenId(null)
           visit(null)
@@ -60,7 +64,7 @@ export function LearnScreen() {
     )
   }
 
-  const done = LESSONS.filter((entry) => progress.completedLessons.includes(entry.id)).length
+  const done = LESSONS.filter((entry) => isLessonDone(entry.id)).length
 
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
@@ -69,9 +73,12 @@ export function LearnScreen() {
       <div className="mx-auto w-full max-w-3xl px-3 py-5 lg:px-6">
         <header className="mb-4 flex items-baseline gap-3">
           <h1 className="text-lg font-semibold text-fg">互动教学</h1>
-          <span data-testid="learn-progress" className="text-xs text-faint">
-            已完成 {done} / {LESSONS.length} 节
-          </span>
+          {/* 进度还没读出来时不要断言「已完成 0 节」——那是在说一件还不知道的事 */}
+          {loaded && (
+            <span data-testid="learn-progress" className="text-xs text-faint">
+              已完成 {done} / {LESSONS.length} 节
+            </span>
+          )}
         </header>
 
         <p className="mb-4 text-sm leading-relaxed text-muted">
@@ -81,7 +88,7 @@ export function LearnScreen() {
 
         <ol className="space-y-2">
           {LESSONS.map((entry, index) => {
-            const finished = progress.completedLessons.includes(entry.id)
+            const finished = isLessonDone(entry.id)
 
             return (
               <li key={entry.id}>

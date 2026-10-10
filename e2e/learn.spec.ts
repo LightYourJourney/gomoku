@@ -124,6 +124,16 @@ test('残局页做对一题，进度计数 +1 并刷新后仍在', async ({ page
 
   await page.reload()
 
+  // 刷新后回到残局页，而且直接停在刚才那道题里（位置也记下来了）。
+  await expect(page.getByText('横向补满')).toBeVisible()
+  await expect(page.getByRole('button', { name: '← 残局列表' })).toBeVisible()
+
+  // 但**反馈条不该跟着活下来**：它是这一次答题才产生的状态，
+  // 重建出来的棋盘是干净的。留下来的只有进度。
+  await expect(page.getByTestId('feedback')).toHaveCount(0)
+  await expect(page.getByText('做对的题会记在进度里，刷新也不会丢。')).toBeVisible()
+
+  await page.getByRole('button', { name: '← 残局列表' }).click()
   await expect(page.getByTestId('puzzle-progress')).toContainText('1 / 15')
   await expect(page.getByTestId('puzzle-win-h')).toHaveAttribute('data-done', 'true')
 })

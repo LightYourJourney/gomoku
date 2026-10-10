@@ -39,6 +39,12 @@ export type PuzzleGoal =
  * 二也在其中——第 2 节课「活二与眠二」的练习只能落在 `openTwo` / `two` 上。
  * 口径差异要知道：三与四走窗口枚举（看得见隔子型），二沿用的是便宜口径
  * （只数连续同色 + 两端可延展），所以一道「做出活二」的题里不能出现跳二。
+ *
+ * 这是**棋型词汇表**，不是「内容当前用过的那些」。`SHAPE_LABELS` 按它取中文名，
+ * 而那张表要覆盖 `ThreatKind`，所以 `'five'` / `'three'` 即使今天的题目没拿它们
+ * 当目标也不能删——删了 `threatLabel` 就收不回引擎返回的威胁档位。
+ * 现有内容只把 `openTwo` / `openThree` / `openFour` 用作目标，那是内容覆盖面，
+ * 不是类型多写了。
  */
 export type ShapeKind = 'five' | 'openFour' | 'four' | 'openThree' | 'three' | 'openTwo' | 'two'
 

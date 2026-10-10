@@ -143,13 +143,42 @@ test('学习页的棋盘：手指拖动不滚页面，点按命中正确', async
     await page.getByRole('button', { name: '下一步' }).click()
   }
 
+  // 练习页的棋盘是另一个实例，`touch-action` 得在它自己身上验一遍。
   await expect(page.getByTestId('board')).toHaveCSS('touch-action', 'none')
 
   const target = await page.getByTestId('intersection-4-7').boundingBox()
   expect(target).not.toBeNull()
   if (target === null) return
 
-  await page.touchscreen.tap(target.x + target.width / 2, target.y + target.height / 2)
+  const startX = target.x + target.width / 2
+  const startY = target.y + target.height / 2
+
+  // 练习盘自带局面，所以数「拖完之后有没有多出来」而不是数绝对颗数。
+  const stones = page.getByTestId(/^stone-/)
+  const stonesBefore = await stones.count()
+
+  // 光断言 computed style 证明不了「不滚页面」——那条规则实际生效才算数。
+  // 只有派发真实的触摸序列验得了：mouse 拖动根本不触发页面滚动。
+  const cdp = await page.context().newCDPSession(page)
+  await cdp.send('Input.dispatchTouchEvent', {
+    type: 'touchStart',
+    touchPoints: [{ x: startX, y: startY }],
+  })
+  for (let dy = 10; dy <= 120; dy += 10) {
+    await cdp.send('Input.dispatchTouchEvent', {
+      type: 'touchMove',
+      touchPoints: [{ x: startX, y: startY - dy }],
+    })
+  }
+  await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] })
+  await cdp.detach()
+
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0)
+
+  // 拖动不该被当成落子：手指划过去就落一颗，是误触而不是交互。
+  await expect(stones).toHaveCount(stonesBefore)
+
+  await page.touchscreen.tap(startX, startY)
 
   // 点到哪就落在哪：落点必须是这一手本身，判定结果也得对上
   await expect(page.getByTestId('feedback')).toHaveAttribute('data-ok', 'true')
