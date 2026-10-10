@@ -164,37 +164,57 @@ describe('Board —— 状态标记', () => {
   })
 })
 
-describe('Board —— 提示标记', () => {
-  const HINTS = [
-    { x: 7, y: 7 },
-    { x: 6, y: 6 },
-    { x: 8, y: 8 },
+describe('Board —— 标记', () => {
+  const MARKS = [
+    { point: { x: 7, y: 7 } },
+    { point: { x: 6, y: 6 } },
+    { point: { x: 8, y: 8 } },
   ]
 
-  it('传入 hints 时按顺序渲染编号标记', () => {
-    setup({ hints: HINTS })
+  it('传入 marks 时按顺序渲染编号标记', () => {
+    setup({ marks: MARKS })
 
-    const markers = screen.getAllByTestId(/^hint-marker-/)
+    const markers = screen.getAllByTestId(/^board-mark-/)
     expect(markers).toHaveLength(3)
     expect(markers.map((el) => el.getAttribute('data-testid'))).toEqual([
-      'hint-marker-7-7',
-      'hint-marker-6-6',
-      'hint-marker-8-8',
+      'board-mark-7-7',
+      'board-mark-6-6',
+      'board-mark-8-8',
     ])
-    // 编号从 1 起，顺序就是推荐顺序
+    // 没给 label 时按数组下标显示序号，顺序就是推荐顺序
     expect(markers.map((el) => el.textContent)).toEqual(['1', '2', '3'])
   })
 
-  it('hints 为空时不渲染标记', () => {
-    setup({ hints: [] })
+  it('自己带 label 的标记原样显示，不显示序号', () => {
+    setup({ marks: [{ point: { x: 7, y: 7 }, label: '两端' }] })
 
-    expect(screen.queryAllByTestId(/^hint-marker-/)).toHaveLength(0)
+    expect(screen.getByTestId('board-mark-7-7')).toHaveTextContent('两端')
   })
 
-  it('不传 hints 时不渲染标记', () => {
+  it('三种色调都能区分开，默认是强调色', () => {
+    setup({
+      marks: [
+        { point: { x: 1, y: 1 }, tone: 'good' },
+        { point: { x: 2, y: 2 }, tone: 'bad' },
+        { point: { x: 3, y: 3 } },
+      ],
+    })
+
+    expect(screen.getByTestId('board-mark-1-1')).toHaveAttribute('data-tone', 'good')
+    expect(screen.getByTestId('board-mark-2-2')).toHaveAttribute('data-tone', 'bad')
+    expect(screen.getByTestId('board-mark-3-3')).toHaveAttribute('data-tone', 'accent')
+  })
+
+  it('marks 为空时不渲染标记', () => {
+    setup({ marks: [] })
+
+    expect(screen.queryAllByTestId(/^board-mark-/)).toHaveLength(0)
+  })
+
+  it('不传 marks 时不渲染标记', () => {
     setup()
 
-    expect(screen.queryAllByTestId(/^hint-marker-/)).toHaveLength(0)
+    expect(screen.queryAllByTestId(/^board-mark-/)).toHaveLength(0)
   })
 
   it('标记不会画在已占用的交叉点上', () => {
@@ -208,19 +228,22 @@ describe('Board —— 提示标记', () => {
       '...............',
       '.......B.......',
     ])
-    setup({ board, hints: [{ x: 5, y: 7 }, { x: 7, y: 7 }, { x: 4, y: 7 }] })
+    setup({
+      board,
+      marks: [{ point: { x: 5, y: 7 } }, { point: { x: 7, y: 7 } }, { point: { x: 4, y: 7 } }],
+    })
 
     // 中间那个点有子，必须被跳过；剩下两个照原顺序编号 1、2。
-    const markers = screen.getAllByTestId(/^hint-marker-/)
+    const markers = screen.getAllByTestId(/^board-mark-/)
     expect(markers.map((el) => el.getAttribute('data-testid'))).toEqual([
-      'hint-marker-5-7',
-      'hint-marker-4-7',
+      'board-mark-5-7',
+      'board-mark-4-7',
     ])
     expect(markers.map((el) => el.textContent)).toEqual(['1', '2'])
   })
 
-  it('提示标记不拦截点击', () => {
-    const { onPlay } = setup({ hints: HINTS })
+  it('标记不拦截点击', () => {
+    const { onPlay } = setup({ marks: MARKS })
 
     fireEvent.click(screen.getByTestId('intersection-7-7'))
 

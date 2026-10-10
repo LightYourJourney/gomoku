@@ -2,34 +2,16 @@ import { createBoard, idx } from '../core/board'
 import { BOARD_SIZE, type Board, type Point } from '../core/types'
 
 /**
- * 用字符画构造棋盘。rows[0] 对应 y = 0（最上面一行）。
- * 'B' = 黑，'W' = 白，其余字符（惯例用 '.'）= 空。
- * 行数不足时按空补齐，方便只画关心的那几行。
+ * 字符画 ↔ 棋盘的解析器住在 `lib/board-lines.ts`——课程与题库是产品内容，
+ * 运行时要用它，不能依赖只给测试用的模块。
  *
- * 行列超界直接报错而不是静默截断：测试数据写错一个点就会整体错位，
- * 悄悄吞掉只会让断言在错误的前提下通过。
+ * 这里保留旧名字转发一层，免得一次性改十几个测试文件的 import；
+ * 谁改到哪个文件顺手换成新名即可。
  */
-export function boardFromLines(rows: readonly string[]): Board {
-  if (rows.length > BOARD_SIZE) {
-    throw new Error(`局面有 ${rows.length} 行，超过棋盘 ${BOARD_SIZE} 行`)
-  }
-
-  const board = createBoard()
-  for (let y = 0; y < rows.length; y++) {
-    const row = rows[y] ?? ''
-    if (row.length > BOARD_SIZE) {
-      throw new Error(`第 ${y} 行有 ${row.length} 列，超过棋盘 ${BOARD_SIZE} 列`)
-    }
-
-    for (let x = 0; x < row.length; x++) {
-      const ch = row[x]
-      if (ch === 'B') board[idx(x, y)] = 1
-      else if (ch === 'W') board[idx(x, y)] = 2
-    }
-  }
-
-  return board
-}
+export {
+  formatBoardLines as linesFromBoard,
+  parseBoardLines as boardFromLines,
+} from '../lib/board-lines'
 
 /**
  * 接近填满、但**构造上不存在五连**的局面。
@@ -67,19 +49,3 @@ const DEFAULT_HOLES: readonly Point[] = [
   { x: 8, y: 7 },
   { x: 3, y: 3 },
 ]
-
-/** 把局面渲染回字符画，用于测试失败时的可读输出。 */
-export function linesFromBoard(board: Board): string[] {
-  const lines: string[] = []
-
-  for (let y = 0; y < BOARD_SIZE; y++) {
-    let row = ''
-    for (let x = 0; x < BOARD_SIZE; x++) {
-      const cell = board[idx(x, y)]
-      row += cell === 1 ? 'B' : cell === 2 ? 'W' : '.'
-    }
-    lines.push(row)
-  }
-
-  return lines
-}

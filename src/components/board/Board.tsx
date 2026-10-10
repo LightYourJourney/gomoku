@@ -3,6 +3,23 @@ import { idx } from '../../core/board'
 import { BOARD_SIZE, type Board as BoardModel, type Player, type Point } from '../../core/types'
 import { columnLabel, formatPoint, rowLabel } from '../../lib/coords'
 
+export type MarkTone = 'accent' | 'good' | 'bad'
+
+export interface BoardMark {
+  readonly point: Point
+  /** 标记上的文字。省略时按数组下标显示 1/2/3… */
+  readonly label?: string
+  /** 默认 `accent`（强调色，AI 提示用）；`good` / `bad` 用于判题反馈。 */
+  readonly tone?: MarkTone
+}
+
+/** 三种色调对应的填充色。避开棋盘木色，也互相分得开。 */
+const MARK_FILL: Record<MarkTone, string> = {
+  accent: 'var(--c-accent)',
+  good: 'var(--c-good)',
+  bad: 'var(--c-danger)',
+}
+
 export interface BoardProps {
   board: BoardModel
   lastMove: Point | null
@@ -13,12 +30,12 @@ export interface BoardProps {
   /** 是否允许落子（轮到自己、且对局未结束） */
   interactive: boolean
   /**
-   * AI 提示的候选点，按推荐度降序。渲染成编号 1/2/3 的标记。
+   * 棋盘上的标记。AI 提示的候选点、教学里标出的关键点、判题的对错反馈都走它。
    *
-   * 已占用的点会被跳过：提示是按某个局面算出来的，算完之后局面可能已经变了，
+   * 已占用的点会被跳过：标记是按某个局面算出来或写死的，之后局面可能已经变了，
    * 「不画在有子的地方」这条兜底放在渲染层，调用方就不必自己保证一致性。
    */
-  hints?: readonly Point[]
+  marks?: readonly BoardMark[]
   onPlay: (point: Point) => void
 }
 
@@ -73,7 +90,7 @@ export function Board({
   nextPlayer,
   showCoords,
   interactive,
-  hints,
+  marks,
   onPlay,
 }: BoardProps) {
   const uid = useId().replace(/[^a-zA-Z0-9]/g, '')
@@ -97,7 +114,7 @@ export function Board({
     onPlay(point)
   }
 
-  const playableHints = (hints ?? []).filter((point) => board[idx(point.x, point.y)] === 0)
+  const visibleMarks = (marks ?? []).filter((mark) => board[idx(mark.point.x, mark.point.y)] === 0)
 
   const stones: Point[] = []
   for (let y = 0; y < BOARD_SIZE; y++) {
@@ -288,28 +305,42 @@ export function Board({
       )}
 
       {/*
-        提示标记压在最后一手环与胜利连线之上、命中区之下。
-        配色用强调色，与最后一手的朱砂环分得开；命中区在最后，点击照常落到交叉点上。
+        标记压在最后一手环与胜利连线之上、命中区之下。
+        配色与最后一手的朱砂环分得开；命中区在最后，点击照常落到交叉点上。
       */}
-      {playableHints.length > 0 && (
-        <g data-testid="hint-markers" pointerEvents="none">
-          {playableHints.map((point, index) => (
-            <g key={pointKey(point)} data-testid={`hint-marker-${point.x}-${point.y}`}>
-              <circle cx={point.x} cy={point.y} r={0.4} fill="var(--c-accent)" opacity={0.92} />
-              <text
-                x={point.x}
-                y={point.y}
-                fontSize={0.5}
-                fontFamily="var(--font-mono)"
-                fontWeight="700"
-                textAnchor="middle"
-                dominantBaseline="central"
-                fill="var(--c-accent-fg)"
+      {visibleMarks.length > 0 && (
+        <g data-testid="board-marks" pointerEvents="none">
+          {visibleMarks.map((mark, index) => {
+            const tone = mark.tone ?? 'accent'
+
+            return (
+              <g
+                key={pointKey(mark.point)}
+                data-testid={`board-mark-${mark.point.x}-${mark.point.y}`}
+                data-tone={tone}
               >
-                {index + 1}
-              </text>
-            </g>
-          ))}
+                <circle
+                  cx={mark.point.x}
+                  cy={mark.point.y}
+                  r={0.4}
+                  fill={MARK_FILL[tone]}
+                  opacity={0.92}
+                />
+                <text
+                  x={mark.point.x}
+                  y={mark.point.y}
+                  fontSize={0.5}
+                  fontFamily="var(--font-mono)"
+                  fontWeight="700"
+                  textAnchor="middle"
+                  dominantBaseline="central"
+                  fill="var(--c-accent-fg)"
+                >
+                  {mark.label ?? String(index + 1)}
+                </text>
+              </g>
+            )
+          })}
         </g>
       )}
 

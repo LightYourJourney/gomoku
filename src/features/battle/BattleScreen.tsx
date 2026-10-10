@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { Board } from '../../components/board/Board'
+import { BoardStage } from '../../components/board/BoardStage'
 import { AiPanel } from '../../components/panels/AiPanel'
 import { ControlBar } from '../../components/panels/ControlBar'
 import { HintPanel } from '../../components/panels/HintPanel'
@@ -189,23 +190,18 @@ export function BattleScreen() {
           />
         </aside>
 
-        <section
-          className="order-1 flex h-[min(calc(100vw-1.5rem),56dvh)] items-center justify-center px-3 py-3 lg:order-2 lg:h-auto lg:min-h-0 lg:px-6 lg:py-6"
-          style={{ containerType: 'size' }}
-        >
-          <div className="aspect-square w-[min(100cqw,100cqh)] overflow-hidden rounded-2xl border border-board-edge/40 shadow-panel">
-            <Board
-              board={game.board}
-              lastMove={game.lastMove}
-              winLine={game.winLine}
-              nextPlayer={game.current}
-              showCoords={settings.showCoords}
-              interactive={interactive}
-              hints={hint?.map((suggestion) => suggestion.move)}
-              onPlay={playHuman}
-            />
-          </div>
-        </section>
+        <BoardStage>
+          <Board
+            board={game.board}
+            lastMove={game.lastMove}
+            winLine={game.winLine}
+            nextPlayer={game.current}
+            showCoords={settings.showCoords}
+            interactive={interactive}
+            marks={hint?.map((suggestion) => ({ point: suggestion.move }))}
+            onPlay={playHuman}
+          />
+        </BoardStage>
 
         <aside className="order-2 space-y-3 px-3 pb-4 lg:order-3 lg:overflow-y-auto lg:border-l lg:border-border lg:px-4 lg:py-4">
           <Panel title="对局" bodyClassName="space-y-1 p-3.5">

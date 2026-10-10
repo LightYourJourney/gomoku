@@ -23,6 +23,8 @@
   --c-accent-fg: #ffffff;
   --c-danger: #b8412c;
   --c-danger-soft: #f7e6e1;
+  --c-good: #2f8f46;
+  --c-good-soft: #e4f1e6;
   --c-warn: #a97218;
   --c-warn-soft: #f8eed8;
 
@@ -56,6 +58,8 @@
   --c-accent-fg: #07211b;
   --c-danger: #e2725b;
   --c-danger-soft: #35211d;
+  --c-good: #5fbf76;
+  --c-good-soft: #16301d;
   --c-warn: #d9a441;
   --c-warn-soft: #33291a;
 
@@ -92,6 +96,8 @@
   --color-accent-fg: var(--c-accent-fg);
   --color-danger: var(--c-danger);
   --color-danger-soft: var(--c-danger-soft);
+  --color-good: var(--c-good);
+  --color-good-soft: var(--c-good-soft);
   --color-warn: var(--c-warn);
   --color-warn-soft: var(--c-warn-soft);
 

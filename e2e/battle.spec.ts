@@ -162,7 +162,7 @@ test('请求提示后棋盘上出现候选标记，且棋局一手未变', async
 
   await page.getByRole('button', { name: '求提示' }).click()
 
-  await expect(page.getByTestId(/^hint-marker-/)).toHaveCount(3)
+  await expect(page.getByTestId(/^board-mark-/)).toHaveCount(3)
   // 提示只做分析：手数、轮次都不许变，也不能多出棋子
   await expect(page.getByTestId(/^stone-/)).toHaveCount(before)
   await expect(page.getByRole('status')).toHaveText('轮到你落子')
@@ -175,11 +175,11 @@ test('提示之后落子，提示标记消失', async ({ page }) => {
 
   await page.getByTestId('intersection-7-7').click()
   await page.getByRole('button', { name: '求提示' }).click()
-  await expect(page.getByTestId(/^hint-marker-/)).toHaveCount(3)
+  await expect(page.getByTestId(/^board-mark-/)).toHaveCount(3)
 
   await page.getByTestId('intersection-3-3').click()
 
-  await expect(page.getByTestId(/^hint-marker-/)).toHaveCount(0)
+  await expect(page.getByTestId(/^board-mark-/)).toHaveCount(0)
   await expect(page.getByTestId('stone-3-3')).toBeVisible()
 })
 
@@ -189,11 +189,11 @@ test('收起提示只清标记，不动棋局', async ({ page }) => {
 
   await page.getByTestId('intersection-7-7').click()
   await page.getByRole('button', { name: '求提示' }).click()
-  await expect(page.getByTestId(/^hint-marker-/)).toHaveCount(3)
+  await expect(page.getByTestId(/^board-mark-/)).toHaveCount(3)
 
   await page.getByRole('button', { name: '收起提示' }).click()
 
-  await expect(page.getByTestId(/^hint-marker-/)).toHaveCount(0)
+  await expect(page.getByTestId(/^board-mark-/)).toHaveCount(0)
   await expect(page.getByTestId(/^stone-/)).toHaveCount(1)
 })
 
