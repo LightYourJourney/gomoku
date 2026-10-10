@@ -28,7 +28,7 @@ export function LessonView({ lesson, solved, onExit, onSolved, onNext }: LessonV
   const handleSolved = useCallback(() => onSolved(), [onSolved])
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col lg:grid lg:grid-cols-[minmax(0,1fr)_344px]">
+    <div className="flex min-h-0 flex-1 flex-col lg:grid lg:grid-cols-[minmax(0,1fr)_344px] lg:grid-rows-[auto_minmax(0,1fr)]">
       <div className="order-3 flex items-center gap-2 border-t border-border px-3 py-2 lg:order-1 lg:col-span-2 lg:border-t-0 lg:border-b">
         <Button onClick={onExit}>← 课程列表</Button>
         <span className="truncate text-sm font-medium text-fg">{lesson.title}</span>

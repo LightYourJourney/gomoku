@@ -129,16 +129,16 @@ export function AppHeader({ children }: AppHeaderProps) {
   return (
     <header className="flex shrink-0 flex-wrap items-center gap-x-3 gap-y-2 border-b border-border bg-surface/70 px-4 py-3 backdrop-blur lg:px-6">
       <BrandMark />
+      {/*
+        导航紧跟在品牌后面；窄屏上靠 `order-last w-full` 换行到第二行整行铺开。
+        挤在同一行会横向溢出——品牌、状态、主题、导航四样东西在 390px 里塞不下。
+      */}
+      <div className="order-last w-full sm:order-none sm:ml-2 sm:w-auto">
+        <AppNav />
+      </div>
       <div className="ml-auto flex items-center gap-2">
         {children}
         <ThemeToggle />
-      </div>
-      {/*
-        窄屏上导航换行到第二行整行铺开。挤在同一行会横向溢出——
-        品牌、状态、主题、导航四样东西在 390px 里塞不下。
-      */}
-      <div className="w-full sm:order-first sm:ml-2 sm:w-auto">
-        <AppNav />
       </div>
     </header>
   )

@@ -16,10 +16,10 @@ export default function App() {
   }, [bootstrap])
 
   return (
-    <>
+    <div className="flex min-h-dvh flex-col bg-bg text-fg lg:h-dvh lg:overflow-hidden">
       {view === 'battle' && <BattleScreen />}
       {view === 'learn' && <LearnScreen />}
       {view === 'puzzles' && <PuzzleScreen />}
-    </>
+    </div>
   )
 }

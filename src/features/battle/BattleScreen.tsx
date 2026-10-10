@@ -84,7 +84,7 @@ export function BattleScreen() {
   }, [moveCount, settings.soundEnabled, game.firstPlayer, sound])
 
   return (
-    <div className="flex min-h-dvh flex-col bg-bg text-fg lg:h-dvh lg:overflow-hidden">
+    <div className="flex min-h-0 flex-1 flex-col">
       <AppHeader>
         <StatusPill status={status} />
       </AppHeader>

@@ -122,7 +122,7 @@ function PuzzleView({ puzzle, onExit }: PuzzleViewProps) {
         <span className="ml-auto text-xs text-faint">{CATEGORY_LABELS[puzzle.category]}</span>
       </div>
 
-      <div className="flex min-h-0 flex-1 flex-col lg:grid lg:grid-cols-[minmax(0,1fr)_344px]">
+      <div className="flex min-h-0 flex-1 flex-col lg:grid lg:grid-cols-[minmax(0,1fr)_344px] lg:grid-rows-[auto_minmax(0,1fr)]">
         <PracticeBoard
           // 换 key 强制重建，用来实现「再来一次」
           key={`${puzzle.id}:${round}`}
