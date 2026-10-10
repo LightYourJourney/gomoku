@@ -4,6 +4,15 @@ import { candidateMoves } from './candidates'
 import { DIFFICULTY_PARAMS, type DifficultyParams } from './difficulty'
 import { evaluateBoard, WIN_SCORE } from './evaluate'
 import { isWinningPoint, moveOrderScore, threatAt } from './patterns'
+import {
+  computeKey,
+  createTranspositionTable,
+  toggleStone,
+  toggleTurn,
+  type TranspositionTable,
+  type TtFlag,
+  type ZobristKey,
+} from './transposition'
 import type { Confidence, SearchReason, SearchRequest, SearchResponse } from './types'
 
 const CENTER: Point = { x: Math.floor(BOARD_SIZE / 2), y: Math.floor(BOARD_SIZE / 2) }
@@ -14,43 +23,78 @@ const CENTER: Point = { x: Math.floor(BOARD_SIZE / 2), y: Math.floor(BOARD_SIZE 
  */
 const WIN_CHECK_RADIUS = 1
 
+/**
+ * 高分值到这个范围内就当作「必胜分」，存表/查表时要按 ply 归一化。
+ *
+ * 不归一化会出错：`canWinNow` 返回的是 `WIN_SCORE - 距根的步数`，这个差值
+ * 耦合了「本次迭代的目标深度」；同一局面在第 2 层和第 5 层搜到会得到不同分值，
+ * 直接存表就会让 AI 放弃立刻成五、去追一条「更早赢」的假路线。
+ */
+const MATE_MARGIN = 1_000
+
+/** 每层最多记两个杀手着法：同层里造成过 beta 截断的着法，下一层优先试。 */
+const KILLER_SLOTS = 2
+
+export interface SearchOptions {
+  readonly width: number
+  readonly maxDepth: number
+  readonly budgetMs: number
+  /** 关闭只用于对照基准，不用于实战。 */
+  readonly transposition: boolean
+}
+
+export interface SearchOutcome {
+  readonly move: Point | null
+  readonly score: number
+  /** 实际完整搜完的深度。0 表示只用了启发式兜底。 */
+  readonly depth: number
+  readonly nodes: number
+  /** 置换表命中次数，用于判断置换表是否真的在起作用。 */
+  readonly ttHits: number
+  readonly reason: SearchReason
+}
+
 interface SearchContext {
-  readonly params: DifficultyParams
+  readonly options: SearchOptions
+  readonly now: () => number
   readonly deadline: number
+  readonly table: TranspositionTable | null
+  readonly killers: Array<Array<Point | null>>
   nodes: number
+  ttHits: number
   expired: boolean
 }
 
 function hasExpired(ctx: SearchContext): boolean {
-  if (!ctx.expired && Date.now() >= ctx.deadline) ctx.expired = true
+  if (!ctx.expired && ctx.now() >= ctx.deadline) ctx.expired = true
   return ctx.expired
 }
 
-interface Draft {
-  readonly move: Point | null
-  readonly score: number
-  readonly depth: number
-  readonly confidence: Confidence
-  readonly reason: SearchReason
+/** 存表前把「距根的步数」换算成「距该节点的步数」，查表时再换算回来。 */
+function toTableScore(score: number, ply: number): number {
+  if (score > WIN_SCORE - MATE_MARGIN) return score + ply
+  if (score < -WIN_SCORE + MATE_MARGIN) return score - ply
+  return score
 }
 
-function respond(
-  request: SearchRequest,
-  startedAt: number,
-  nodes: number,
-  draft: Draft,
-): SearchResponse {
-  return {
-    requestId: request.requestId,
-    gameVersion: request.gameVersion,
-    move: draft.move,
-    score: draft.score,
-    depth: draft.depth,
-    nodes,
-    elapsedMs: Date.now() - startedAt,
-    confidence: draft.confidence,
-    reason: draft.reason,
-  }
+function fromTableScore(score: number, ply: number): number {
+  if (score > WIN_SCORE - MATE_MARGIN) return score - ply
+  if (score < -WIN_SCORE + MATE_MARGIN) return score + ply
+  return score
+}
+
+function recordKiller(ctx: SearchContext, ply: number, move: Point): void {
+  const slot = ctx.killers[ply]
+  if (slot === undefined) return
+  if (slot[0] !== null && slot[0].x === move.x && slot[0].y === move.y) return
+  for (let i = slot.length - 1; i > 0; i--) slot[i] = slot[i - 1]
+  slot[0] = move
+}
+
+function isKiller(ctx: SearchContext, ply: number, move: Point): boolean {
+  const slot = ctx.killers[ply]
+  if (slot === undefined) return false
+  return slot.some((killer) => killer !== null && killer.x === move.x && killer.y === move.y)
 }
 
 function canWinNow(board: Board, player: Player): boolean {
@@ -60,18 +104,28 @@ function canWinNow(board: Board, player: Player): boolean {
   return false
 }
 
-/** 按「这一手的攻防综合价值」排序，只保留前 width 个——alpha-beta 的剪枝效率几乎全靠它。 */
+/**
+ * 排序：置换表里的最佳着法最优先，其次是杀手着法，剩下的按攻防价值排。
+ * alpha-beta 的剪枝效率几乎全靠着法排序。
+ */
 function orderMoves(
   board: Board,
   candidates: readonly Point[],
   player: Player,
   width: number,
+  ctx: SearchContext,
+  ply: number,
+  tableMove: Point | null,
 ): Point[] {
-  return candidates
-    .map((point) => ({ point, score: moveOrderScore(board, point, player) }))
-    .sort((a, b) => b.score - a.score)
-    .slice(0, width)
-    .map((entry) => entry.point)
+  const scored = candidates.map((point) => {
+    let score = moveOrderScore(board, point, player)
+    if (tableMove !== null && point.x === tableMove.x && point.y === tableMove.y) score += 1_000_000
+    else if (isKiller(ctx, ply, point)) score += 500_000
+    return { point, score }
+  })
+
+  scored.sort((a, b) => b.score - a.score)
+  return scored.slice(0, width).map((entry) => entry.point)
 }
 
 /**
@@ -90,7 +144,8 @@ function bestGreedy(
 
   for (const point of candidates) {
     const score =
-      threatAt(board, point, player) * params.attack + threatAt(board, point, opponent) * params.defense
+      threatAt(board, point, player) * params.attack +
+      threatAt(board, point, opponent) * params.defense
     if (score > bestScore) {
       bestScore = score
       best = point
@@ -101,7 +156,7 @@ function bestGreedy(
 }
 
 /**
- * Negamax + alpha-beta。
+ * Negamax + alpha-beta + 置换表。
  *
  * 返回值从 `player` 的视角度量。叶子用纯局面评估；每个节点先看「轮到的一方能不能
  * 立刻成五」，这比让评估函数去近似先手优势更准。
@@ -109,7 +164,9 @@ function bestGreedy(
 function negamax(
   board: Board,
   player: Player,
+  key: ZobristKey,
   depth: number,
+  ply: number,
   alpha: number,
   beta: number,
   ctx: SearchContext,
@@ -118,25 +175,77 @@ function negamax(
 
   if (hasExpired(ctx)) return evaluateBoard(board, player)
 
-  // 越早取胜越好：用已消耗的层数做一点偏好。
-  if (canWinNow(board, player)) return WIN_SCORE - (ctx.params.depth - depth)
+  const alphaOrigin = alpha
+  const cached = ctx.table?.probe(key, depth) ?? null
+
+  if (cached !== null) {
+    ctx.ttHits++
+    const cachedScore = fromTableScore(cached.score, ply)
+    if (cached.flag === 'exact') return cachedScore
+    if (cached.flag === 'lower') {
+      if (cachedScore > alpha) alpha = cachedScore
+    } else if (cachedScore < beta) {
+      beta = cachedScore
+    }
+    if (alpha >= beta) return cachedScore
+  }
+
+  if (canWinNow(board, player)) return WIN_SCORE - ply
 
   if (depth <= 0) return evaluateBoard(board, player)
 
-  const candidates = orderMoves(board, candidateMoves(board), player, ctx.params.width)
+  const candidates = orderMoves(
+    board,
+    candidateMoves(board),
+    player,
+    ctx.options.width,
+    ctx,
+    ply,
+    cached?.move ?? null,
+  )
   if (candidates.length === 0) return evaluateBoard(board, player)
 
   let best = -Infinity
+  let bestMove: Point | null = null
   let lowerBound = alpha
 
   for (const point of candidates) {
-    board[idx(point.x, point.y)] = player
-    const value = -negamax(board, opponentOf(player), depth - 1, -beta, -lowerBound, ctx)
-    board[idx(point.x, point.y)] = 0
+    const index = idx(point.x, point.y)
+    board[index] = player
+    const childKey = toggleTurn(toggleStone(key, index, player))
+    const value = -negamax(
+      board,
+      opponentOf(player),
+      childKey,
+      depth - 1,
+      ply + 1,
+      -beta,
+      -lowerBound,
+      ctx,
+    )
+    board[index] = 0
 
-    if (value > best) best = value
+    if (value > best) {
+      best = value
+      bestMove = point
+    }
     if (best > lowerBound) lowerBound = best
-    if (lowerBound >= beta) break
+
+    if (lowerBound >= beta) {
+      if (!isKiller(ctx, ply, point)) recordKiller(ctx, ply, point)
+      break
+    }
+  }
+
+  if (ctx.table !== null && !ctx.expired && bestMove !== null) {
+    const flag: TtFlag = best <= alphaOrigin ? 'upper' : best >= beta ? 'lower' : 'exact'
+    ctx.table.store(key, {
+      lo: key.lo,
+      depth,
+      score: toTableScore(best, ply),
+      flag,
+      move: bestMove,
+    })
   }
 
   return best
@@ -152,102 +261,121 @@ interface RootResult {
 function searchRoot(
   board: Board,
   player: Player,
+  key: ZobristKey,
   depth: number,
   ctx: SearchContext,
 ): RootResult | null {
-  const ordered = orderMoves(board, candidateMoves(board), player, ctx.params.width)
+  const tableMove = ctx.table?.probe(key, depth)?.move ?? null
+  const ordered = orderMoves(
+    board,
+    candidateMoves(board),
+    player,
+    ctx.options.width,
+    ctx,
+    0,
+    tableMove,
+  )
+
   let alpha = -Infinity
   let best: RootResult | null = null
+  let bestMove: Point | null = null
 
   for (const point of ordered) {
     if (hasExpired(ctx)) return null
 
-    board[idx(point.x, point.y)] = player
+    const index = idx(point.x, point.y)
+    board[index] = player
     ctx.nodes++
-    const value = -negamax(board, opponentOf(player), depth - 1, -Infinity, -alpha, ctx)
-    board[idx(point.x, point.y)] = 0
+    const childKey = toggleTurn(toggleStone(key, index, player))
+    const value = -negamax(board, opponentOf(player), childKey, depth - 1, 1, -Infinity, -alpha, ctx)
+    board[index] = 0
 
-    if (best === null || value > best.score) best = { move: point, score: value, depth }
+    if (best === null || value > best.score) {
+      best = { move: point, score: value, depth }
+      bestMove = point
+    }
     if (value > alpha) alpha = value
   }
 
   if (hasExpired(ctx)) return null
+
+  if (ctx.table !== null && best !== null && bestMove !== null) {
+    // 根节点存 exact：这是完整搜索出来的结论。
+    ctx.table.store(key, {
+      lo: key.lo,
+      depth,
+      score: toTableScore(best.score, 0),
+      flag: 'exact',
+      move: bestMove,
+    })
+  }
+
   return best
 }
 
 /**
- * 为 `request.player` 选一手棋。
+ * 搜索主体：纯同步、无副作用（**不改传入的棋盘**），Worker 只是它的外壳。
  *
- * 纯同步函数，不依赖 Worker，因此可以在单测里直接调用；Worker 只是它的外壳。
- * 保证：除非棋盘已满，否则一定返回一个落在空位上的着法。
+ * `now` 注入进来是为了让超时行为可测——测试可以确定性地让时钟跳过预算，
+ * 不必依赖真实时间，也不会因为机器快慢而 flaky。
  */
-export function chooseMove(request: SearchRequest): SearchResponse {
-  const startedAt = Date.now()
-  const params = DIFFICULTY_PARAMS[request.difficulty]
-  const { player } = request
-
-  // 搜索靠「落子 / 撤销」在同一块棋盘上来回走。复制一份再用，
-  // 否则调用方手里的棋盘（对 core 来说就是唯一真相）会在搜索期间被临时改写，
-  // 现在只因为 Worker 的结构化克隆才没出事。
-  const board = request.board.slice()
-
-  if (!board.some((cell) => cell !== 0)) {
-    return respond(request, startedAt, 0, {
-      move: CENTER,
-      score: 0,
-      depth: 0,
-      confidence: 'exact',
-      reason: 'opening',
-    })
-  }
-
-  const candidates = candidateMoves(board)
-  if (candidates.length === 0) {
-    return respond(request, startedAt, 0, {
-      move: null,
-      score: 0,
-      depth: 0,
-      confidence: 'exact',
-      reason: 'no_move',
-    })
-  }
-
+export function searchBoard(
+  board: Board,
+  player: Player,
+  options: SearchOptions,
+  now: () => number,
+): SearchOutcome {
+  const startedAt = now()
+  const own = board.slice()
   const opponent = opponentOf(player)
 
+  // 三条捷径都不做搜索，因此节点数与置换表命中数都是 0。
+  const shortcut = { depth: 0, nodes: 0, ttHits: 0 } as const
+
+  if (!own.some((cell) => cell !== 0)) {
+    return { ...shortcut, move: CENTER, score: 0, reason: 'opening' }
+  }
+
+  const candidates = candidateMoves(own)
+  if (candidates.length === 0) {
+    return { ...shortcut, move: null, score: 0, reason: 'no_move' }
+  }
+
   for (const point of candidates) {
-    if (isWinningPoint(board, point, player)) {
-      return respond(request, startedAt, 0, {
-        move: point,
-        score: WIN_SCORE,
-        depth: 0,
-        confidence: 'exact',
-        reason: 'win',
-      })
+    if (isWinningPoint(own, point, player)) {
+      return { ...shortcut, move: point, score: WIN_SCORE, reason: 'win' }
     }
   }
 
-  const threats = candidates.filter((point) => isWinningPoint(board, point, opponent))
+  const threats = candidates.filter((point) => isWinningPoint(own, point, opponent))
   if (threats.length > 0) {
-    const block = bestGreedy(board, threats, player, params)
-    return respond(request, startedAt, 0, {
-      move: block.move,
-      score: block.score,
-      depth: 0,
-      confidence: 'exact',
-      reason: 'block',
-    })
+    // 必防时用一步贪心在若干个成五点里挑对我方最有价值的那个。
+    const block = bestGreedy(own, threats, player, DIFFICULTY_PARAMS.easy)
+    return { ...shortcut, move: block.move, score: block.score, reason: 'block' }
   }
 
-  const budgetMs = request.budgetMs ?? params.budgetMs
-  const ctx: SearchContext = { params, deadline: startedAt + budgetMs, nodes: 0, expired: false }
-  const greedy = bestGreedy(board, candidates, player, params)
+  const ctx: SearchContext = {
+    options,
+    now,
+    deadline: startedAt + options.budgetMs,
+    table: options.transposition ? createTranspositionTable() : null,
+    killers: Array.from({ length: options.maxDepth + 2 }, () =>
+      Array.from({ length: KILLER_SLOTS }, () => null as Point | null),
+    ),
+    nodes: 0,
+    ttHits: 0,
+    expired: false,
+  }
+
+  const greedy = bestGreedy(own, candidates, player, DIFFICULTY_PARAMS.easy)
+  const key = computeKey(own, player)
 
   // 先用贪心结果兜底，再逐层加深——这样超时也总能交出一个合法着法。
   let best: RootResult = { move: greedy.move, score: greedy.score, depth: 0 }
   let timedOut = false
 
-  for (let depth = 1; depth <= params.depth; depth++) {
-    const found = searchRoot(board, player, depth, ctx)
+  for (let depth = 1; depth <= options.maxDepth; depth++) {
+    const found = searchRoot(own, player, key, depth, ctx)
     if (found === null) {
       timedOut = true
       break
@@ -255,11 +383,48 @@ export function chooseMove(request: SearchRequest): SearchResponse {
     best = found
   }
 
-  return respond(request, startedAt, ctx.nodes, {
+  return {
     move: best.move,
     score: best.score,
     depth: best.depth,
-    confidence: timedOut ? 'heuristic' : 'exact',
+    nodes: ctx.nodes,
+    ttHits: ctx.ttHits,
     reason: timedOut ? 'timeout' : 'search',
-  })
+  }
+}
+
+/**
+ * 协议外壳：把 difficulty 换算成搜索选项，再交给 `searchBoard`。
+ *
+ * 保证：除非棋盘已满，否则一定返回一个落在空位上的着法。
+ */
+export function chooseMove(request: SearchRequest): SearchResponse {
+  const startedAt = Date.now()
+  const params = DIFFICULTY_PARAMS[request.difficulty]
+
+  const outcome = searchBoard(
+    request.board,
+    request.player,
+    {
+      width: params.width,
+      maxDepth: params.depth,
+      budgetMs: request.budgetMs ?? params.budgetMs,
+      transposition: true,
+    },
+    Date.now,
+  )
+
+  const confidence: Confidence = outcome.reason === 'timeout' ? 'heuristic' : 'exact'
+
+  return {
+    requestId: request.requestId,
+    gameVersion: request.gameVersion,
+    move: outcome.move,
+    score: outcome.score,
+    depth: outcome.depth,
+    nodes: outcome.nodes,
+    elapsedMs: Date.now() - startedAt,
+    confidence,
+    reason: outcome.reason,
+  }
 }

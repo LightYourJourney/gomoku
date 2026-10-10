@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { createBoard } from '../core/board'
 import { BLACK, WHITE, type Board, type Player } from '../core/types'
 import { boardFromLines } from '../test/board-fixtures'
-import { chooseMove } from './search'
+import { chooseMove, searchBoard } from './search'
 import type { Difficulty, SearchRequest, SearchResponse } from './types'
 
 function ask(
@@ -220,6 +220,76 @@ describe('chooseMove —— 时间预算', () => {
 
     expect(result.elapsedMs).toBeGreaterThanOrEqual(0)
     expect(result.nodes).toBeGreaterThan(0)
+  })
+})
+
+describe('searchBoard —— 置换表与注入时钟', () => {
+  // 中盘局面：多个方向都有应手，不同着法次序容易走到同一局面（换位）
+  const MIDGAME = boardFromLines([
+    '...............',
+    '...............',
+    '...............',
+    '...............',
+    '......WB.......',
+    '.....BWB.......',
+    '......BW.......',
+    '.......B.......',
+  ])
+
+  const options = { width: 10, maxDepth: 4, budgetMs: 60_000, transposition: true }
+  const clock = (): number => 0
+
+  it('开启置换表后节点数少于关闭时', () => {
+    const withTable = searchBoard(MIDGAME, WHITE, options, clock)
+    const withoutTable = searchBoard(MIDGAME, WHITE, { ...options, transposition: false }, clock)
+
+    expect(withTable.nodes).toBeLessThan(withoutTable.nodes)
+  })
+
+  it('置换表确实产生过命中', () => {
+    // 没有这一条，上面的节点数对比可能只是两个相等的数在互相比较
+    const result = searchBoard(MIDGAME, WHITE, options, clock)
+
+    expect(result.ttHits).toBeGreaterThan(0)
+  })
+
+  it('开启置换表不改变必胜局面的结论', () => {
+    // 用有唯一正确着法的局面：黑棋四连，两端都能成五，随便选一端都是胜
+    const mustWin = boardFromLines(['...............', '...............', '...BBBB........'])
+    const winOptions = { width: 10, maxDepth: 4, budgetMs: 60_000, transposition: true }
+
+    const withTable = searchBoard(mustWin, BLACK, winOptions, clock)
+    const withoutTable = searchBoard(mustWin, BLACK, { ...winOptions, transposition: false }, clock)
+
+    expect(withTable.score).toBe(withoutTable.score)
+    expect([{ x: 2, y: 2 }, { x: 7, y: 2 }]).toContainEqual(withTable.move)
+  })
+
+  it('必胜分值不随搜索深度漂移', () => {
+    // canWinNow 返回 WIN_SCORE - ply，若直接存表就会带上「本次迭代目标深度」，
+    // 同一局面在不同 maxDepth 下会拿到不同分值。
+    const mustWin = boardFromLines(['...............', '...............', '...BBBB........'])
+    const base = { width: 10, budgetMs: 60_000, transposition: true }
+
+    const shallow = searchBoard(mustWin, BLACK, { ...base, maxDepth: 2 }, clock)
+    const deep = searchBoard(mustWin, BLACK, { ...base, maxDepth: 5 }, clock)
+
+    expect(shallow.score).toBe(deep.score)
+  })
+
+  it('注入的时钟走到预算耗尽时返回超时回退，并给出合法着法', () => {
+    let ticks = 0
+    // 第一次调用给起点，之后每次直接跳过预算
+    const expiringClock = (): number => {
+      ticks++
+      return ticks === 1 ? 0 : 10_000
+    }
+
+    const result = searchBoard(MIDGAME, WHITE, { ...options, budgetMs: 100 }, expiringClock)
+
+    expect(result.reason).toBe('timeout')
+    expect(result.move).not.toBeNull()
+    expect(MIDGAME[result.move!.y * 15 + result.move!.x]).toBe(0)
   })
 })
 
