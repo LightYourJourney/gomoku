@@ -50,6 +50,10 @@ interface AttackResult {
 
 const NO_WIN: AttackResult = { plies: 0, move: null }
 
+function samePoint(a: Point, b: Point): boolean {
+  return a.x === b.x && a.y === b.y
+}
+
 function timeUp(ctx: ThreatContext): boolean {
   if (!ctx.expired && ctx.options.now() >= ctx.options.deadline) ctx.expired = true
   return ctx.expired
@@ -110,18 +114,42 @@ function attack(
   remaining: number,
   threesLeft: number,
   ctx: ThreatContext,
+  requiredFirst: Point | null,
 ): AttackResult {
   if (remaining < 1) return NO_WIN
   if (timeUp(ctx)) return NO_WIN
   ctx.nodes++
 
-  const opponent = opponentOf(player)
-
   const immediate = winningPointsNow(board, player)
-  if (immediate.length > 0) return { plies: 1, move: immediate[0] }
+
+  // 指定了首着时，成五点里只有它自己算数——别的成五点不是玩家要走的那一手。
+  if (requiredFirst !== null && immediate.some((point) => samePoint(point, requiredFirst))) {
+    return { plies: 1, move: requiredFirst }
+  }
+  if (requiredFirst === null && immediate.length > 0) return { plies: 1, move: immediate[0] }
+
+  return searchForcing(board, player, remaining, threesLeft, ctx, requiredFirst)
+}
+
+/**
+ * 冲四链与活三链的枚举主体。
+ *
+ * `requiredFirst` 非空时只考虑以它开局的分支——这是 `isForcedWinStart` 的实现方式：
+ * 同一套递归，只是把根节点的分支限死。递归下去一律传 `null`。
+ */
+function searchForcing(
+  board: Board,
+  player: Player,
+  remaining: number,
+  threesLeft: number,
+  ctx: ThreatContext,
+  requiredFirst: Point | null,
+): AttackResult {
+  const opponent = opponentOf(player)
 
   // 冲四链：守方应手唯一。只遍历真正做得出四的点。
   for (const { point: q, winning } of fourMakers(board, player)) {
+    if (requiredFirst !== null && !samePoint(q, requiredFirst)) continue
     if (timeUp(ctx)) return NO_WIN
 
     const index = idx(q.x, q.y)
@@ -148,7 +176,7 @@ function attack(
         // 守方被迫只能堵这个成五点
         const forcedIndex = idx(winning[0]!.x, winning[0]!.y)
         board[forcedIndex] = opponent
-        const rest = attack(board, player, remaining - 2, threesLeft, ctx)
+        const rest = attack(board, player, remaining - 2, threesLeft, ctx, null)
         board[forcedIndex] = 0
         if (rest.plies > 0) found = { plies: 2 + rest.plies, move: q }
       }
@@ -163,6 +191,7 @@ function attack(
   // 活三链：守方应手必须全枚举
   if (ctx.options.allowThrees && threesLeft > 0 && remaining >= 5) {
     for (const q of candidates) {
+      if (requiredFirst !== null && !samePoint(q, requiredFirst)) continue
       if (timeUp(ctx)) return NO_WIN
 
       const index = idx(q.x, q.y)
@@ -195,7 +224,7 @@ function attack(
 
           const replyIndex = idx(reply.x, reply.y)
           board[replyIndex] = opponent
-          const rest = attack(board, player, remaining - 2, threesLeft - 1, ctx)
+          const rest = attack(board, player, remaining - 2, threesLeft - 1, ctx, null)
           board[replyIndex] = 0
 
           // 守方只要找到一条活路，这个活三就不成立
@@ -230,7 +259,32 @@ export function findForcedWin(
   options: ThreatSearchOptions,
 ): ThreatSearchResult {
   const ctx: ThreatContext = { options, nodes: 0, expired: false }
-  const result = attack(board.slice(), player, options.maxPlies, MAX_THREE_LAYERS, ctx)
+  const result = attack(board.slice(), player, options.maxPlies, MAX_THREE_LAYERS, ctx, null)
 
   return { move: result.move, plies: result.plies, nodes: ctx.nodes }
+}
+
+/**
+ * `move` 是不是某条强制取胜路线的**第一步**。
+ *
+ * `findForcedWin` 只回答「有没有取胜路线、第一步是什么」；判题要问的是
+ * 「玩家走的这一手，是不是某条路线的第一步」——两者不是一回事，因为可能有多条
+ * 路线、多个可取的起点。
+ *
+ * **判题必须用这个函数在落子前的盘面上判**，不能拿落子后的盘面去调
+ * `findForcedWin`：那个函数假定「传进来的盘面轮到攻方走」，而玩家落子之后
+ * 轮到的是对手。那样判定等于白送攻方一手，会把输棋判成赢棋。
+ */
+export function isForcedWinStart(
+  board: Board,
+  player: Player,
+  move: Point,
+  options: ThreatSearchOptions,
+): boolean {
+  if (board[idx(move.x, move.y)] !== 0) return false
+
+  const ctx: ThreatContext = { options, nodes: 0, expired: false }
+  const result = attack(board.slice(), player, options.maxPlies, MAX_THREE_LAYERS, ctx, move)
+
+  return result.plies > 0
 }

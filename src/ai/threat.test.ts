@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { idx } from '../core/board'
 import { BLACK, WHITE } from '../core/types'
 import { boardFromLines, nearlyFullBoard } from '../test/board-fixtures'
-import { findForcedWin, type ThreatSearchOptions } from './threat'
+import { findForcedWin, isForcedWinStart, type ThreatSearchOptions } from './threat'
 
 const NEVER = Number.POSITIVE_INFINITY
 
@@ -177,5 +177,66 @@ describe('findForcedWin —— VCT', () => {
     for (const board of [boardFromLines([]), boardFromLines(['BWBWBWBWBWBWBWB'])]) {
       expect(() => findForcedWin(board, BLACK, options({ allowThrees: true }))).not.toThrow()
     }
+  })
+})
+
+describe('isForcedWinStart —— 某一手是不是取胜链的第一步', () => {
+  /**
+   * 黑棋 (4,7)(5,7)(6,7)，白棋堵住右端。
+   *
+   * 补左端 (3,7) 做出**活四**（成五点 (2,7) 与 (7,7) 两端开口）→ 三步取胜；
+   * 补右端 (7,7) 只是**冲四**（只剩 (3,7) 一个成五点）→ 白棋堵掉就没了。
+   */
+  const ONE_END_BLOCKED = boardFromLines([
+    '...............',
+    '...............',
+    '...............',
+    '...............',
+    '...............',
+    '...............',
+    '...............',
+    '....BBB.W......',
+  ])
+
+  it('给出真正做得出活四的那一手时为真', () => {
+    expect(isForcedWinStart(ONE_END_BLOCKED, BLACK, { x: 3, y: 7 }, options({ maxPlies: 5 }))).toBe(true)
+  })
+
+  it('做出一个冲四、对手堵掉就没事了，为假', () => {
+    // 这条是「走子后再调 findForcedWin」那个错法的照妖镜：那种写法把盘面交给
+    // 一个「假定轮到攻方走」的函数，而玩家落子之后轮到的是对手，等于白送一手。
+    // 实测白棋在 (3,7) 堵掉之后，黑棋 9 手内都没有杀。
+    expect(isForcedWinStart(ONE_END_BLOCKED, BLACK, { x: 7, y: 7 }, options({ maxPlies: 9 }))).toBe(false)
+  })
+
+  it('已成四时两端都算取胜链的第一步', () => {
+    const four = boardFromLines(['...............', '...............', '...............', '...BBBB........'])
+
+    expect(isForcedWinStart(four, BLACK, { x: 2, y: 3 }, options())).toBe(true)
+    expect(isForcedWinStart(four, BLACK, { x: 7, y: 3 }, options())).toBe(true)
+  })
+
+  it('和取胜无关的普通着法为假', () => {
+    expect(isForcedWinStart(ONE_END_BLOCKED, BLACK, { x: 0, y: 0 }, options())).toBe(false)
+  })
+
+  it('落在已占用的点上为假', () => {
+    expect(isForcedWinStart(ONE_END_BLOCKED, BLACK, { x: 4, y: 7 }, options())).toBe(false)
+  })
+
+  it('maxPlies 不够时为假', () => {
+    // 活三成活四要 3 手，只给 2 手就找不出来
+    const three = boardFromLines(['...............', '...............', '...............', '...BBB.........'])
+
+    expect(isForcedWinStart(three, BLACK, { x: 2, y: 3 }, options({ maxPlies: 2 }))).toBe(false)
+    expect(isForcedWinStart(three, BLACK, { x: 2, y: 3 }, options({ maxPlies: 3 }))).toBe(true)
+  })
+
+  it('不改传入的棋盘', () => {
+    const before = Uint8Array.from(ONE_END_BLOCKED)
+
+    isForcedWinStart(ONE_END_BLOCKED, BLACK, { x: 3, y: 7 }, options())
+
+    expect(ONE_END_BLOCKED).toEqual(before)
   })
 })

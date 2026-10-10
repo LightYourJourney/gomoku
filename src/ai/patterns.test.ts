@@ -1,11 +1,13 @@
 import { describe, expect, it } from 'vitest'
-import { DIRECTIONS } from '../core/board'
+import { createBoard, DIRECTIONS } from '../core/board'
 import { BLACK, WHITE, type Board, type Point } from '../core/types'
 import { boardFromLines } from '../test/board-fixtures'
 import {
   analyzeDirection,
   analyzeFast,
   analyzePoint,
+  doubleThreat,
+  hasDoubleThreat,
   isWinningPoint,
   shapeScore,
   threatAt,
@@ -378,5 +380,107 @@ describe('isWinningPoint / threatAt', () => {
     const board = rowBoard('....BBBB.......')
 
     expect(threatAt(board, { x: 8, y: 7 }, BLACK)).toBe(shapeScore(counts({ five: 1 })))
+  })
+})
+
+describe('doubleThreat —— 双重威胁谓词', () => {
+  /**
+   * 四个夹具都以 (7,7) 为落点，那个点必须是空的。
+   *
+   * `analyzePoint` 的语义是**假定落子方已经落在 point 上**再分析，
+   * 所以直接拿它去分析一个已经有子的点会得到无意义的结果。
+   *
+   * 实测（改夹具后必须重跑）：
+   *   DOUBLE_FOUR  openFour=0 four=2 openThree=0
+   *   FOUR_THREE   openFour=0 four=1 openThree=1
+   *   DOUBLE_THREE openFour=0 four=0 openThree=2
+   *   SINGLE_FOUR  openFour=0 four=1 openThree=0
+   */
+  const DOUBLE_FOUR = boardFromLines([
+    '...............',
+    '...............',
+    '...............',
+    '...............',
+    '.......B.......',
+    '.......B.......',
+    '.......B.......',
+    '....BBB.W......',
+    '.......W.......',
+  ])
+
+  const FOUR_THREE = boardFromLines([
+    '...............',
+    '...............',
+    '...............',
+    '...............',
+    '.......B.......',
+    '.......B.......',
+    '...............',
+    '....BBB.W......',
+  ])
+
+  const DOUBLE_THREE = boardFromLines([
+    '...............',
+    '...............',
+    '...............',
+    '...............',
+    '.......B.......',
+    '.......B.......',
+    '...............',
+    '....BB.........',
+  ])
+
+  const SINGLE_FOUR = boardFromLines([
+    '...............',
+    '...............',
+    '...............',
+    '...............',
+    '...............',
+    '...............',
+    '...............',
+    '....BBB.W......',
+  ])
+
+  const AT = { x: 7, y: 7 }
+
+  it('两个方向各一个冲四就是双四', () => {
+    expect(doubleThreat(analyzePoint(DOUBLE_FOUR, AT, BLACK))).toEqual({
+      doubleFour: true,
+      fourThree: false,
+      doubleThree: false,
+    })
+  })
+
+  it('一个冲四配一个活三算四三', () => {
+    expect(doubleThreat(analyzePoint(FOUR_THREE, AT, BLACK))).toEqual({
+      doubleFour: false,
+      fourThree: true,
+      doubleThree: false,
+    })
+  })
+
+  it('两个活三算双三', () => {
+    expect(doubleThreat(analyzePoint(DOUBLE_THREE, AT, BLACK))).toEqual({
+      doubleFour: false,
+      fourThree: false,
+      doubleThree: true,
+    })
+  })
+
+  it('只有一个冲四时三条全为假', () => {
+    expect(hasDoubleThreat(analyzePoint(SINGLE_FOUR, AT, BLACK))).toBe(false)
+  })
+
+  it('活四本身就是两端开口的四，不是双重威胁', () => {
+    // 活四已经必胜，但它只出现在一个方向上——判成「双四」会让
+    // 「构造活四」和「构造双四」两类题混为一谈。
+    const openFour = boardFromLines(['...............', '...............', '...............', '....BBB........'])
+
+    expect(doubleThreat(analyzePoint(openFour, AT, BLACK)).doubleFour).toBe(false)
+    expect(hasDoubleThreat(analyzePoint(openFour, AT, BLACK))).toBe(false)
+  })
+
+  it('空盘上什么都不算', () => {
+    expect(hasDoubleThreat(analyzePoint(createBoard(), AT, BLACK))).toBe(false)
   })
 })

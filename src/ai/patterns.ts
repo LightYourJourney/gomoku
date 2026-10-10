@@ -324,10 +324,41 @@ export function dominantThreat(counts: ShapeCount): ThreatKind {
 }
 
 /**
+ * 双重威胁的组合形态。
+ *
+ * 这是**领域概念**，不是打分细节：双四、四三、双活三才是真正决定胜负的
+ * 组合，单看某一个方向会严重低估它们。教学里也按这三类讲，所以抽出来单独
+ * 定义，让「打分」与「判题」对它们的理解不可能分叉。
+ *
+ * 注意「一个活四」不算双四——活四已经必胜，但它只出现在一个方向上；
+ * 把它算成双四会让「构造活四」和「构造双四」两类题混为一谈。
+ */
+export interface DoubleThreat {
+  readonly doubleFour: boolean
+  readonly fourThree: boolean
+  readonly doubleThree: boolean
+}
+
+export function doubleThreat(counts: ShapeCount): DoubleThreat {
+  const fours = counts.openFour + counts.four
+
+  return {
+    doubleFour: fours >= 2,
+    fourThree: fours >= 1 && counts.openThree >= 1,
+    doubleThree: counts.openThree >= 2,
+  }
+}
+
+export function hasDoubleThreat(counts: ShapeCount): boolean {
+  const threat = doubleThreat(counts)
+  return threat.doubleFour || threat.fourThree || threat.doubleThree
+}
+
+/**
  * 把棋型计数折算成可直接比较的分值。
  *
- * 除逐方向累加外，还对「同时存在多个方向威胁」加成——双四、四三、双活三
- * 才是真正决定胜负的组合，单看某一个方向会严重低估它们。
+ * 除逐方向累加外，还对双重威胁加成——三类组合的分值可以叠加（双四同时
+ * 又有活三），所以这里是三个独立的加法，而不是三选一。
  */
 export function shapeScore(counts: ShapeCount): number {
   if (counts.five > 0) return WIN_SCORE
@@ -340,10 +371,10 @@ export function shapeScore(counts: ShapeCount): number {
     counts.openTwo * SHAPE_VALUE.openTwo +
     counts.two * SHAPE_VALUE.two
 
-  const fours = counts.openFour + counts.four
-  if (fours >= 2) score += 110_000
-  if (fours >= 1 && counts.openThree >= 1) score += 100_000
-  if (counts.openThree >= 2) score += 90_000
+  const threat = doubleThreat(counts)
+  if (threat.doubleFour) score += 110_000
+  if (threat.fourThree) score += 100_000
+  if (threat.doubleThree) score += 90_000
 
   return score
 }
