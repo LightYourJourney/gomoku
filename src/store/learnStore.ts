@@ -34,11 +34,20 @@ function withAdded(list: readonly string[], id: string): readonly string[] {
 export function createLearnStore(storage: ProgressStorage): UseBoundStore<StoreApi<LearnStore>> {
   return create<LearnStore>()((set, get) => {
     /**
-     * 落盘。失败就算了——内存里的进度仍然有效，本次会话照常可用。
-     * `loaded` 之前不落盘：那时的进度还没跟存储里的合并，写下去会覆盖掉已有记录。
+     * 载入完成之前发生的写入。
+     *
+     * 不能直接落盘——那时的进度还没跟存储里的合并，写下去会把已有记录覆盖掉。
+     * 但也**不能直接丢掉**：首屏载入很快，用户点得够快就会踩到，结果是这一次
+     * 操作根本没被记住（刷新之后退回原样）。所以挂起，载入后补写。
      */
+    let pendingPersist = false
+
+    /** 落盘。失败就算了——内存里的进度仍然有效，本次会话照常可用。 */
     const persist = (progress: LearningProgress): void => {
-      if (!get().loaded) return
+      if (!get().loaded) {
+        pendingPersist = true
+        return
+      }
       void storage.save(progress).catch(() => {})
     }
 
@@ -80,9 +89,17 @@ export function createLearnStore(storage: ProgressStorage): UseBoundStore<StoreA
                 lastView: current.lastView === 'battle' ? stored.lastView : current.lastView,
               },
               loaded: true,
-              // 存储里的位置只在这一刻生效；之后以用户点的为准。
-              view: stored.lastView,
+              // 位置同样要合并：载入期间用户可能已经点了导航。直接把存储里的
+              // lastView 赋给 view 会把他刚点的那一页顶掉——首屏载入很快，
+              // 但点得够快就会踩到。
+              view: current.lastView === 'battle' ? stored.lastView : current.lastView,
             })
+
+            // 把载入期间挂起的那次写入补上
+            if (pendingPersist) {
+              pendingPersist = false
+              void storage.save(get().progress).catch(() => {})
+            }
           },
           () => {
             // 存储坏了也要翻成已载入，否则界面会永远停在加载态。

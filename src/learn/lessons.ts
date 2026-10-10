@@ -86,7 +86,7 @@ export const LESSONS: readonly Lesson[] = [
       player: BLACK,
       goal: { kind: 'win' },
       hints: ['数一数黑棋连了几颗，再看这一排的两头。', '把这一排补满五个，就是这一手。'],
-      solution: '黑棋在 H8 已经有四子横排，两端 (4,7) 与 (9,7) 都能补成五子。',
+      solution: '黑棋在这一排上连了四颗，两端都空着——补上任意一端就连成五子。',
     },
   },
 

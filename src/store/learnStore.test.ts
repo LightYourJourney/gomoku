@@ -120,6 +120,21 @@ describe('完成与通关', () => {
     expect(state().progress.completedLessons).toEqual(['rules'])
   })
 
+  it('载入期间切换了视图的话，后到的载入不能把它顶回存储里的那一页', async () => {
+    // 首屏载入很快，但点得够快就会踩到这个竞态：bootstrap 还在飞，
+    // 用户已经点了「教学」。
+    storage.saved = { ...EMPTY_PROGRESS, lastView: 'battle' }
+
+    state().bootstrap()
+    state().setView('learn')
+    await flush()
+
+    expect(state().view).toBe('learn')
+    expect(state().progress.lastView).toBe('learn')
+    // 而且这次操作必须真的落盘——否则刷新之后会退回原样
+    expect(storage.saved.lastView).toBe('learn')
+  })
+
   it('载入完成之前完成的操作不会被后到的载入覆盖', async () => {
     // 极端时序：bootstrap 还在飞，用户已经做完一节课。
     storage.saved = { ...EMPTY_PROGRESS, completedLessons: ['rules'] }

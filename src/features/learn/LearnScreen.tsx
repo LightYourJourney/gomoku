@@ -66,7 +66,7 @@ export function LearnScreen() {
       <div className="mx-auto w-full max-w-3xl px-3 py-5 lg:px-6">
         <header className="mb-4 flex items-baseline gap-3">
           <h1 className="text-lg font-semibold text-fg">互动教学</h1>
-          <span data-testid="lesson-progress" className="text-xs text-faint">
+          <span data-testid="learn-progress" className="text-xs text-faint">
             已完成 {done} / {LESSONS.length} 节
           </span>
         </header>

@@ -32,7 +32,7 @@ describe('LearnScreen —— 课程列表', () => {
     })
     render(<LearnScreen />)
 
-    expect(screen.getByTestId('lesson-progress')).toHaveTextContent(`1 / ${LESSONS.length}`)
+    expect(screen.getByTestId('learn-progress')).toHaveTextContent(`1 / ${LESSONS.length}`)
     expect(screen.getByTestId('lesson-rules')).toHaveAttribute('data-done', 'true')
     expect(screen.getByTestId('lesson-two')).toHaveAttribute('data-done', 'false')
   })

@@ -110,3 +110,47 @@ test('触摸点按的落子位置与交叉点一致', async ({ page }) => {
     await expect(page.getByTestId(`stone-${x}-${y}`)).toBeVisible()
   }
 })
+
+test('学习页在窄屏上不横向溢出，棋盘是正方形', async ({ page }) => {
+  await page.goto('/')
+  await page.getByRole('button', { name: '教学', exact: true }).click()
+  await expect(page.getByRole('heading', { name: '互动教学' })).toBeVisible()
+
+  const overflow = await page.evaluate(
+    () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+  )
+  expect(overflow).toBe(0)
+
+  // 进入练习页，棋盘是新的一处实例，正方形约束得重新验一遍
+  await page.getByTestId('lesson-rules').click()
+  for (let i = 0; i < 3; i++) {
+    await page.getByRole('button', { name: '下一步' }).click()
+  }
+
+  const box = await page.getByTestId('board').boundingBox()
+  expect(box).not.toBeNull()
+  if (box === null) return
+
+  expect(Math.abs(box.width - box.height)).toBeLessThanOrEqual(1)
+  expect(box.width).toBeLessThanOrEqual(page.viewportSize()!.width)
+})
+
+test('学习页的棋盘：手指拖动不滚页面，点按命中正确', async ({ page }) => {
+  await page.goto('/')
+  await page.getByRole('button', { name: '教学', exact: true }).click()
+  await page.getByTestId('lesson-rules').click()
+  for (let i = 0; i < 3; i++) {
+    await page.getByRole('button', { name: '下一步' }).click()
+  }
+
+  await expect(page.getByTestId('board')).toHaveCSS('touch-action', 'none')
+
+  const target = await page.getByTestId('intersection-4-7').boundingBox()
+  expect(target).not.toBeNull()
+  if (target === null) return
+
+  await page.touchscreen.tap(target.x + target.width / 2, target.y + target.height / 2)
+
+  // 点到哪就落在哪：落点必须是这一手本身，判定结果也得对上
+  await expect(page.getByTestId('feedback')).toHaveAttribute('data-ok', 'true')
+})
