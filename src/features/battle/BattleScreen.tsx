@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { Board } from '../../components/board/Board'
 import { AiPanel } from '../../components/panels/AiPanel'
 import { ControlBar } from '../../components/panels/ControlBar'
+import { HintPanel } from '../../components/panels/HintPanel'
 import { MoveList } from '../../components/panels/MoveList'
 import { ResultDialog } from '../../components/panels/ResultDialog'
 import { SettingsPanel } from '../../components/panels/SettingsPanel'
@@ -123,6 +124,12 @@ export function BattleScreen() {
   const setDifficulty = useGameStore((state) => state.setDifficulty)
   const retryAiMove = useGameStore((state) => state.retryAiMove)
   const dismissAiError = useGameStore((state) => state.dismissAiError)
+  const hint = useGameStore((state) => state.hint)
+  const hintUrgency = useGameStore((state) => state.hintUrgency)
+  const hintThinking = useGameStore((state) => state.hintThinking)
+  const hintError = useGameStore((state) => state.hintError)
+  const requestHint = useGameStore((state) => state.requestHint)
+  const clearHint = useGameStore((state) => state.clearHint)
 
   const sound = useMemo(() => createStoneSound(), [])
   useEffect(() => () => sound.dispose(), [sound])
@@ -193,6 +200,7 @@ export function BattleScreen() {
               nextPlayer={game.current}
               showCoords={settings.showCoords}
               interactive={interactive}
+              hints={hint?.map((suggestion) => suggestion.move)}
               onPlay={playHuman}
             />
           </div>
@@ -235,6 +243,16 @@ export function BattleScreen() {
               onDismissError={dismissAiError}
             />
           )}
+
+          <HintPanel
+            candidates={hint}
+            urgency={hintUrgency}
+            thinking={hintThinking}
+            error={hintError}
+            canAsk={interactive}
+            onAsk={requestHint}
+            onClear={clearHint}
+          />
 
           <Panel title="棋谱" bodyClassName="p-2.5">
             <MoveList moves={game.moves} firstPlayer={game.firstPlayer} lastMove={game.lastMove} />

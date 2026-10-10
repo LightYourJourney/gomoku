@@ -151,3 +151,66 @@ test('本地双人模式不触发 AI，黑白轮流落子', async ({ page }) => 
   await expect(page.getByRole('status')).toHaveText('轮到黑棋')
   await expect(page.getByTestId(/^stone-/)).toHaveCount(2)
 })
+
+test('请求提示后棋盘上出现候选标记，且棋局一手未变', async ({ page }) => {
+  await page.goto('/')
+
+  await page.getByTestId('intersection-7-7').click()
+  await expect(page.getByRole('status')).toHaveText('轮到你落子')
+  const before = await stones(page)
+  expect(before).toBeGreaterThan(0)
+
+  await page.getByRole('button', { name: '求提示' }).click()
+
+  await expect(page.getByTestId(/^hint-marker-/)).toHaveCount(3)
+  // 提示只做分析：手数、轮次都不许变，也不能多出棋子
+  await expect(page.getByTestId(/^stone-/)).toHaveCount(before)
+  await expect(page.getByRole('status')).toHaveText('轮到你落子')
+})
+
+test('提示之后落子，提示标记消失', async ({ page }) => {
+  await page.goto('/')
+  // 本地双人：没有 AI 随机应手，落点完全可控
+  await page.getByRole('radio', { name: '本地双人' }).click()
+
+  await page.getByTestId('intersection-7-7').click()
+  await page.getByRole('button', { name: '求提示' }).click()
+  await expect(page.getByTestId(/^hint-marker-/)).toHaveCount(3)
+
+  await page.getByTestId('intersection-3-3').click()
+
+  await expect(page.getByTestId(/^hint-marker-/)).toHaveCount(0)
+  await expect(page.getByTestId('stone-3-3')).toBeVisible()
+})
+
+test('收起提示只清标记，不动棋局', async ({ page }) => {
+  await page.goto('/')
+  await page.getByRole('radio', { name: '本地双人' }).click()
+
+  await page.getByTestId('intersection-7-7').click()
+  await page.getByRole('button', { name: '求提示' }).click()
+  await expect(page.getByTestId(/^hint-marker-/)).toHaveCount(3)
+
+  await page.getByRole('button', { name: '收起提示' }).click()
+
+  await expect(page.getByTestId(/^hint-marker-/)).toHaveCount(0)
+  await expect(page.getByTestId(/^stone-/)).toHaveCount(1)
+})
+
+test('专家档深算期间悔棋，迟到的 AI 响应不会把棋子补回来', async ({ page }) => {
+  await page.goto('/')
+
+  await page.getByRole('radio', { name: '专家' }).click()
+  await page.getByTestId('intersection-7-7').click()
+
+  // AI 正在深算时悔棋
+  await page.getByRole('button', { name: '悔棋' }).click()
+
+  await expect(page.getByTestId(/^stone-/)).toHaveCount(0)
+
+  // 等过专家档的时间预算，确认那一手确实作废了，而不是只是慢了一步
+  await page.waitForTimeout(3500)
+
+  await expect(page.getByTestId(/^stone-/)).toHaveCount(0)
+  await expect(page.getByRole('status')).toHaveText('轮到你落子')
+})

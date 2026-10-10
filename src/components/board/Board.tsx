@@ -12,6 +12,13 @@ export interface BoardProps {
   showCoords: boolean
   /** 是否允许落子（轮到自己、且对局未结束） */
   interactive: boolean
+  /**
+   * AI 提示的候选点，按推荐度降序。渲染成编号 1/2/3 的标记。
+   *
+   * 已占用的点会被跳过：提示是按某个局面算出来的，算完之后局面可能已经变了，
+   * 「不画在有子的地方」这条兜底放在渲染层，调用方就不必自己保证一致性。
+   */
+  hints?: readonly Point[]
   onPlay: (point: Point) => void
 }
 
@@ -66,6 +73,7 @@ export function Board({
   nextPlayer,
   showCoords,
   interactive,
+  hints,
   onPlay,
 }: BoardProps) {
   const uid = useId().replace(/[^a-zA-Z0-9]/g, '')
@@ -88,6 +96,8 @@ export function Board({
     setHovered(null)
     onPlay(point)
   }
+
+  const playableHints = (hints ?? []).filter((point) => board[idx(point.x, point.y)] === 0)
 
   const stones: Point[] = []
   for (let y = 0; y < BOARD_SIZE; y++) {
@@ -273,6 +283,32 @@ export function Board({
               stroke="var(--c-accent)"
               strokeWidth={0.075}
             />
+          ))}
+        </g>
+      )}
+
+      {/*
+        提示标记压在最后一手环与胜利连线之上、命中区之下。
+        配色用强调色，与最后一手的朱砂环分得开；命中区在最后，点击照常落到交叉点上。
+      */}
+      {playableHints.length > 0 && (
+        <g data-testid="hint-markers" pointerEvents="none">
+          {playableHints.map((point, index) => (
+            <g key={pointKey(point)} data-testid={`hint-marker-${point.x}-${point.y}`}>
+              <circle cx={point.x} cy={point.y} r={0.4} fill="var(--c-accent)" opacity={0.92} />
+              <text
+                x={point.x}
+                y={point.y}
+                fontSize={0.5}
+                fontFamily="var(--font-mono)"
+                fontWeight="700"
+                textAnchor="middle"
+                dominantBaseline="central"
+                fill="var(--c-accent-fg)"
+              >
+                {index + 1}
+              </text>
+            </g>
           ))}
         </g>
       )}

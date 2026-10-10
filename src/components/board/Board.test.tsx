@@ -164,6 +164,70 @@ describe('Board —— 状态标记', () => {
   })
 })
 
+describe('Board —— 提示标记', () => {
+  const HINTS = [
+    { x: 7, y: 7 },
+    { x: 6, y: 6 },
+    { x: 8, y: 8 },
+  ]
+
+  it('传入 hints 时按顺序渲染编号标记', () => {
+    setup({ hints: HINTS })
+
+    const markers = screen.getAllByTestId(/^hint-marker-/)
+    expect(markers).toHaveLength(3)
+    expect(markers.map((el) => el.getAttribute('data-testid'))).toEqual([
+      'hint-marker-7-7',
+      'hint-marker-6-6',
+      'hint-marker-8-8',
+    ])
+    // 编号从 1 起，顺序就是推荐顺序
+    expect(markers.map((el) => el.textContent)).toEqual(['1', '2', '3'])
+  })
+
+  it('hints 为空时不渲染标记', () => {
+    setup({ hints: [] })
+
+    expect(screen.queryAllByTestId(/^hint-marker-/)).toHaveLength(0)
+  })
+
+  it('不传 hints 时不渲染标记', () => {
+    setup()
+
+    expect(screen.queryAllByTestId(/^hint-marker-/)).toHaveLength(0)
+  })
+
+  it('标记不会画在已占用的交叉点上', () => {
+    const board = boardFromLines([
+      '...............',
+      '...............',
+      '...............',
+      '...............',
+      '...............',
+      '...............',
+      '...............',
+      '.......B.......',
+    ])
+    setup({ board, hints: [{ x: 5, y: 7 }, { x: 7, y: 7 }, { x: 4, y: 7 }] })
+
+    // 中间那个点有子，必须被跳过；剩下两个照原顺序编号 1、2。
+    const markers = screen.getAllByTestId(/^hint-marker-/)
+    expect(markers.map((el) => el.getAttribute('data-testid'))).toEqual([
+      'hint-marker-5-7',
+      'hint-marker-4-7',
+    ])
+    expect(markers.map((el) => el.textContent)).toEqual(['1', '2'])
+  })
+
+  it('提示标记不拦截点击', () => {
+    const { onPlay } = setup({ hints: HINTS })
+
+    fireEvent.click(screen.getByTestId('intersection-7-7'))
+
+    expect(onPlay).toHaveBeenCalledWith({ x: 7, y: 7 })
+  })
+})
+
 describe('Board —— 坐标', () => {
   it('showCoords 打开时渲染坐标标签', () => {
     setup({ showCoords: true })

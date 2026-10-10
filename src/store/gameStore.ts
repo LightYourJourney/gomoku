@@ -80,7 +80,7 @@ export interface GameStore {
  * 比正式走子短得多：玩家求提示是在等一个建议，不是在等一场深算。
  * 它同样只读，不会挤占落子请求的预算。
  */
-const HINT_BUDGET_MS = 800
+export const HINT_BUDGET_MS = 800
 
 /** 局面一变就要把提示整体清掉。 */
 const HINT_CLEARED = {
