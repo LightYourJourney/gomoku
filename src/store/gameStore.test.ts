@@ -4,12 +4,12 @@ import type { SearchRequest, SearchResponse } from '../ai/types'
 import { idx } from '../core/board'
 import { BLACK, WHITE, type Point } from '../core/types'
 import { SCHEMA_VERSION, type PersistedSession } from '../persist/storage'
-import { createGame } from '../core/game'
-import { resign } from '../core/game'
+import { createGame, resign } from '../core/game'
 import {
   canHumanPlay,
   canUndo,
   createGameStore,
+  shouldAiMove,
   undoPlies,
   type GameStore,
 } from './gameStore'
@@ -271,6 +271,54 @@ describe('过期与不匹配的 AI 响应', () => {
 
     expect(state().game.moves).toHaveLength(1)
     expect(state().aiThinking).toBe(true)
+  })
+})
+
+describe('shouldAiMove', () => {
+  it('人机模式下轮到 AI 时为真', () => {
+    state().playHuman({ x: 7, y: 7 })
+
+    expect(shouldAiMove({ game: state().game, mode: 'pve', humanColor: BLACK })).toBe(true)
+  })
+
+  it('轮到玩家时为假', () => {
+    expect(shouldAiMove({ game: state().game, mode: 'pve', humanColor: BLACK })).toBe(false)
+  })
+
+  it('本地双人模式恒为假', () => {
+    state().newGame({ mode: 'pvp' })
+    state().playHuman({ x: 7, y: 7 })
+
+    expect(shouldAiMove({ game: state().game, mode: 'pvp', humanColor: BLACK })).toBe(false)
+  })
+
+  it('对局结束后为假', () => {
+    expect(shouldAiMove({ game: resign(createGame(), BLACK), mode: 'pve', humanColor: BLACK })).toBe(
+      false,
+    )
+  })
+
+  it('对局进行中时与 canHumanPlay 互补', () => {
+    const pick = () => ({ game: state().game, mode: state().mode, humanColor: state().humanColor })
+    const humanTurn = pick()
+    state().playHuman({ x: 7, y: 7 })
+    const aiTurn = pick()
+
+    for (const candidate of [humanTurn, aiTurn]) {
+      expect(candidate.game.status).toBe('playing')
+      expect(shouldAiMove(candidate)).toBe(!canHumanPlay({ ...candidate, aiThinking: false }))
+    }
+  })
+
+  it('对局结束后两边都不能走，此时不互补', () => {
+    const finished = {
+      game: resign(createGame(), BLACK),
+      mode: 'pve' as const,
+      humanColor: BLACK,
+    }
+
+    expect(shouldAiMove(finished)).toBe(false)
+    expect(canHumanPlay({ ...finished, aiThinking: false })).toBe(false)
   })
 })
 

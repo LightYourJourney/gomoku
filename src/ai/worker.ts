@@ -15,7 +15,7 @@ interface WorkerScope {
 const scope = self as unknown as WorkerScope
 
 scope.onmessage = (event) => {
-  // chooseMove 是纯同步函数，在 Worker 里跑，绝不阻塞主线程。
-  // 搜索过程中它会临时改动棋盘，但每次都会还原；这里的棋盘本来就是结构化克隆的副本。
+  // chooseMove 是同步纯函数：不碰 DOM，也不改传进来的棋盘（内部先复制一份），
+  // 在 Worker 里跑，绝不阻塞主线程。
   scope.postMessage(chooseMove(event.data))
 }

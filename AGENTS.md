@@ -12,8 +12,8 @@ Gomoku Lab 的开发约定。通用工程原则（想清楚再写、保持简单
 
 - **不使用 `enum`**。`tsconfig.app.json` 开了 `erasableSyntaxOnly`，一律用 `as const` 对象加联合类型。
 - **`core` 与 `ai` 的算法部分不得引入 React、DOM、Zustand、localStorage、Worker**。引擎逻辑本身（`patterns` / `evaluate` / `candidates` / `difficulty` / `search`）与全部 `core` 模块必须是能脱离浏览器直接单测的纯逻辑。
-  - **例外**：`ai/worker.ts`、`ai/engine.ts`、`ai/browserEngine.ts` 这三层里唯一触碰 Worker 的适配外壳。它们只做消息收发，不含任何搜索逻辑；`engine.ts` 通过注入发送函数保持可单测。要把适配层再拆出去也可以，但没必要——把例外写清楚比多加一层目录更诚实。
-- `Date.now()` 只允许出现在 `ai/search.ts` 的时间预算里。
+  - **例外**：`ai/worker.ts` 与 `ai/browserEngine.ts`。前者是 Worker 的入口，后者负责创建 Worker——只有这两个文件允许触碰 Worker，且只做消息收发，不含任何搜索逻辑。`ai/engine.ts` 虽然也住在 `ai/` 下，但它连 Worker 都不碰（发送函数是注入进来的），仍是可单测的纯状态机。
+- `Date.now()` 只允许出现在 `ai/search.ts` 的时间预算里，且超时行为必须仍然可以通过 `budgetMs` 参数在测试里强制触发——不要把它改成不可覆盖的常量。
 - **`core` 是对局状态的唯一真相**。棋盘与手顺都由 `replay()` 从手顺重建，不要写增量维护的旁路。
 - **状态不可变**。`applyMove` / `undo` / `resign` 返回新对象，不原地修改。
 - **AI 请求必须绑定 `requestId` 与 `gameVersion`**，两道闸门都过才允许落子。任何新增的「可能改变棋局」的异步路径都要走同样的校验。

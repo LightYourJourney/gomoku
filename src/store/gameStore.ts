@@ -99,19 +99,27 @@ export function canUndo(state: Pick<GameStore, 'game' | 'mode' | 'humanColor'>):
   return moverAt(remaining, state.game.firstPlayer) === state.humanColor
 }
 
+/**
+ * 人机模式下是否轮到 AI 走。
+ *
+ * 与 `canHumanPlay` 互补，界面判断「AI 是不是卡住了」也必须用它，
+ * 不要另写一份——这条谓词一旦分叉，两边对「该谁走」的理解就会不一致。
+ */
+export function shouldAiMove(
+  state: Pick<GameStore, 'game' | 'mode' | 'humanColor'>,
+): boolean {
+  return (
+    state.mode === 'pve' &&
+    state.game.status === 'playing' &&
+    state.game.current !== state.humanColor
+  )
+}
+
 export function createGameStore(engine: AiEngine): UseBoundStore<StoreApi<GameStore>> {
   // 只增不减，跨对局也不会重复，因此过期的响应永远对不上号。
   let nextRequestId = 1
 
   return create<GameStore>()((set, get) => {
-    function shouldAiMove(state: GameStore): boolean {
-      return (
-        state.mode === 'pve' &&
-        state.game.status === 'playing' &&
-        state.game.current !== state.humanColor
-      )
-    }
-
     return {
       game: createGame(),
       mode: 'pve',

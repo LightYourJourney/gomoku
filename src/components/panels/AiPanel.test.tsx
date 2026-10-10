@@ -79,6 +79,47 @@ describe('AiPanel —— 引擎失败', () => {
     expect(screen.queryByRole('button', { name: '重试' })).not.toBeInTheDocument()
   })
 
+  it('关掉错误提示之后，重试入口不能跟着消失', () => {
+    const onRetry = vi.fn()
+    const onDismissError = vi.fn()
+    const { rerender } = render(
+      <AiPanel
+        thinking={false}
+        info={null}
+        error="Worker 挂了"
+        canRetry
+        onRetry={onRetry}
+        onDismissError={onDismissError}
+      />,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: '知道了' }))
+    expect(onDismissError).toHaveBeenCalled()
+
+    // 模拟父组件把 aiError 清空：AI 仍然欠着一手，重试入口必须还在。
+    rerender(
+      <AiPanel
+        thinking={false}
+        info={null}
+        error={null}
+        canRetry
+        onRetry={onRetry}
+        onDismissError={onDismissError}
+      />,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: '重试' }))
+    expect(onRetry).toHaveBeenCalledTimes(1)
+  })
+
+  it('AI 欠着一手但还没报错时，也要给出重试入口', () => {
+    const { onRetry } = setup({ canRetry: true })
+
+    fireEvent.click(screen.getByRole('button', { name: '重试' }))
+
+    expect(onRetry).toHaveBeenCalledTimes(1)
+  })
+
   it('知道了只负责关掉提示', () => {
     const { onDismissError } = setup({ error: 'Worker 挂了', canRetry: true })
 

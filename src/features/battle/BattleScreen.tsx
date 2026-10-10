@@ -12,7 +12,7 @@ import { DIFFICULTY_LABELS } from '../../ai/difficulty'
 import { BLACK } from '../../core/types'
 import { createStoneSound } from '../../lib/sound'
 import { THEME_LABELS, THEME_PREFERENCES } from '../../lib/theme'
-import { canHumanPlay, canUndo, moverAt } from '../../store/gameStore'
+import { canHumanPlay, canUndo, moverAt, shouldAiMove } from '../../store/gameStore'
 import { useSettingsStore } from '../../store/settingsStore'
 import { useGameStore } from '../../store/useGameStore'
 import { describeStatus } from './status'
@@ -130,9 +130,9 @@ export function BattleScreen() {
   const status = describeStatus({ game, mode, humanColor, aiThinking })
   const moveCount = game.moves.length
   const interactive = canHumanPlay({ game, mode, humanColor, aiThinking })
-  // AI 欠着一手没走（例如引擎报错后停在半路）——这时必须给出重试入口，
-  // 否则玩家既不能落子也不能让它继续，只剩重开或认输两条路。
-  const aiOwesMove = mode === 'pve' && game.status === 'playing' && game.current !== humanColor
+  // AI 欠着一手又没在思考，说明它卡住了（例如引擎报错后停在半路）。
+  // 这时必须给出重试入口，否则玩家既不能落子也不能让它继续，只剩重开或认输两条路。
+  const aiStuck = shouldAiMove({ game, mode, humanColor }) && !aiThinking
 
   // 对局结束时自动弹出结果弹窗；玩家关掉后不再自动弹，直到下一次分出胜负。
   // 在渲染期间调整状态而不是放进 effect：effect 里 setState 会白白多触发一轮渲染。
@@ -230,7 +230,7 @@ export function BattleScreen() {
               thinking={aiThinking}
               info={aiInfo}
               error={aiError}
-              canRetry={aiOwesMove}
+              canRetry={aiStuck}
               onRetry={retryAiMove}
               onDismissError={dismissAiError}
             />

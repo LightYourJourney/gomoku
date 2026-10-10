@@ -6,7 +6,7 @@
 
 **架构**：`core`（纯逻辑）→ `ai`（Worker 内搜索）→ `store`（Zustand）→ `components`（展示）。详见 `docs/superpowers/specs/2026-10-10-gomoku-lab-design.md`。
 
-**技术栈**：Vite 8 / React 19 / TypeScript 6 / Tailwind v4 / Zustand 5 / Motion / Vitest 5 / Playwright。
+**技术栈**：Vite 8 / React 19 / TypeScript 6 / Tailwind v4 / Zustand 5 / Vitest 5 / Playwright。（Motion 排到 Phase 5 再接入，Phase 1 不装。）
 
 **Spec**：`docs/superpowers/specs/2026-10-10-gomoku-lab-design.md`
 
@@ -263,7 +263,7 @@ it('坐标标签随 showCoords 开关显隐', ...)
 - [ ] **Step 2：实现 `panels/`**：`StatusBar`（当前回合 / 执子 / AI 状态）、`MoveList`（棋谱）、`ControlBar`（悔棋 / 重开 / 认输）、`SettingsPanel`（模式 / 执子 / 难度 / 音效 / 坐标 / 主题）、`ResultDialog`（终局弹窗）。
 - [ ] **Step 3：实现 `lib/sound.ts`**：WebAudio 合成落子音，无音频资源文件。
 - [ ] **Step 4：组装 `features/battle/BattleScreen.tsx` 与 `App.tsx`。**
-- [ ] **Step 5：响应式与触屏**：桌面三栏 / 移动纵向；棋盘容器 `touch-action: manipulation`，容器查询控制正方形尺寸。← Review Focus 5
+- [ ] **Step 5：响应式与触屏**：桌面三栏 / 移动纵向；棋盘锁死 `touch-action: none`，容器查询控制正方形尺寸。← Review Focus 5（**落地时改用了 `none`**：`manipulation` 挡不住拖动引发的页面滚动，详见 `docs/ARCHITECTURE.md` 与设计文档的触屏一节）
 - [ ] **Step 6：`yarn typecheck && yarn test && yarn build` 全绿。**
 - [ ] **Step 7：提交。**
 

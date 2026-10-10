@@ -53,7 +53,7 @@ postMessage 回来 → engine 按 requestId 找到挂起的 promise
 GameStore.applyAiResponse：校验 requestId 与 gameVersion，两者都对上才落子
 ```
 
-## 并发的三处关键约定
+## 并发的四处关键约定
 
 **过期响应必须丢弃。** 每个 AI 请求带 `requestId`（只增不减，跨对局也不重复）与 `gameVersion`（发起时的局面版本）。响应回来时两道闸门都要过：`requestId` 必须是当前在飞的那一个，`gameVersion` 必须等于当前棋局版本。悔棋、重新开始、切换执子都会把 `pendingRequestId` 置空，于是所有在飞的旧响应全部作废。这个判断位于 store 的纯函数 action 中，可以脱离浏览器直接单测。
 

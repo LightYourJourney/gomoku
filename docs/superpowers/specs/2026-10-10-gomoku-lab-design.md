@@ -20,7 +20,7 @@
 | 构建 | Vite 8 + React 19 + TypeScript 6 | 用户指定；`erasableSyntaxOnly` 已开，因此**不使用 enum**，统一用 `as const` 对象 + 联合类型 |
 | 样式 | Tailwind CSS v4（`@tailwindcss/vite`） | 用户指定；v4 用 CSS 优先配置，设计令牌写在 `@theme` |
 | 状态 | Zustand 5 | 用户指定；store 是纯函数式的，可直接单测，不需要渲染 React |
-| 动画 | Motion（`motion/react`） | 用户指定；落子与面板过渡 |
+| 动画 | Motion（`motion/react`），**Phase 5 接入** | 用户指定；落子与面板过渡。Phase 1–4 不装：装了不用就是提前引入，动画落地时再 `yarn add motion` |
 | 并发 | Web Worker（Vite `?worker` 导入） | 需求硬性要求 AI 不得阻塞主线程 |
 | 持久化 | localStorage（Phase 1）→ IndexedDB（Phase 4） | Phase 1 只存当前对局；棋谱库与课程进度在 Phase 4 迁到 IndexedDB |
 | 测试 | Vitest 5 + @testing-library/react + Playwright | 用户指定 |
@@ -186,7 +186,7 @@ Phase 4 会把棋谱库、课程进度、残局进度迁到 IndexedDB；届时 l
 - **棋盘自适应**：用 CSS 容器查询取「能容纳的最大正方形」——`width: min(100cqw, 100cqh)`，避免用 JS 测量。
 - **棋盘渲染**：整体单张 SVG，`viewBox` 覆盖棋盘 + 坐标留白，交叉点坐标直接等于 SVG 用户坐标，不需要任何百分比换算。棋子为 SVG `<circle>` + 径向渐变 + 投影，天然对齐且任意缩放下清晰。
 - **设计令牌**：浅色 / 深色两套 CSS 变量挂在 `:root` 与 `.dark`，经 `@theme inline` 暴露成 Tailwind 语义色（`bg-surface`、`text-muted`）。组件里不写 `dark:` 前缀，主题切换只改 `<html>` 上的一个类。
-- **触屏**：棋盘容器 `touch-action: manipulation`，避免双击缩放与滚动误触。
+- **触屏**：棋盘锁死 `touch-action: none`。`manipulation` 只禁掉双击缩放，手指带一点拖动仍会变成滚页面、把落子取消——那正是「页面滚动干扰棋盘操作」。棋盘在页面里最多占半屏高，下面的面板照常可以滚动，锁住它不牺牲可滚动的区域。
 
 ## 8. 测试策略
 

@@ -18,6 +18,6 @@
 
 ## 最容易被忽略的三条
 
-1. `core` 与 `ai` 是纯逻辑层，不得引入 React、DOM、Zustand 或浏览器 API。
+1. `core` 与 `ai` 的**算法部分**是纯逻辑层，不得引入 React、DOM、Zustand 或浏览器 API。唯一的例外是 `ai/` 下的 Worker 适配外壳——权威表述在 `AGENTS.md`，**以那份为准**，这里不复述以免两处再次分叉。
 2. 改引擎、规则、store 的行为必须先写失败测试；改棋盘命中区或响应式布局必须补 Playwright 用例并在真实浏览器复核——jsdom 抓不到这类问题。
-3. 提交前 `yarn typecheck && yarn test && yarn build && yarn e2e` 四条全绿。
+3. 提交前 `yarn lint && yarn typecheck && yarn test && yarn build && yarn e2e` 五条全绿。

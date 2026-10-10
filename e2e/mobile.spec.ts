@@ -37,9 +37,39 @@ test('棋盘是正方形，并且完整落在视口宽度内', async ({ page }) 
   expect(board.width).toBeLessThanOrEqual(page.viewportSize()?.width ?? 0)
 })
 
-test('棋盘锁死 touch-action，手指带一点拖动也不会滚页面', async ({ page }) => {
+test('手指在棋盘上拖动不会滚页面', async ({ page }) => {
   await page.goto('/')
 
+  // 页面本身必须是可以滚的，否则这条用例证明不了任何事。
+  expect(await page.evaluate(() => document.documentElement.scrollHeight)).toBeGreaterThan(
+    page.viewportSize()?.height ?? 0,
+  )
+
+  const box = await page.getByTestId('intersection-7-7').boundingBox()
+  expect(box).not.toBeNull()
+  if (box === null) return
+
+  const startX = box.x + box.width / 2
+  const startY = box.y + box.height / 2
+
+  // 只有派发真实的触摸序列才验得了这件事：mouse 拖动不会触发页面滚动，
+  // 而 touch-action 正是浏览器决定「这一串触摸要不要变成滚动」的开关。
+  const cdp = await page.context().newCDPSession(page)
+  await cdp.send('Input.dispatchTouchEvent', {
+    type: 'touchStart',
+    touchPoints: [{ x: startX, y: startY }],
+  })
+  for (let dy = 10; dy <= 120; dy += 10) {
+    await cdp.send('Input.dispatchTouchEvent', {
+      type: 'touchMove',
+      touchPoints: [{ x: startX, y: startY - dy }],
+    })
+  }
+  await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] })
+  await cdp.detach()
+
+  // 行为放在机制断言前面：先证明「真的没滚」，再确认是靠 touch-action 做到的。
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0)
   await expect(page.getByTestId('board')).toHaveCSS('touch-action', 'none')
 })
 
@@ -67,6 +97,10 @@ test('触摸点按的落子位置与交叉点一致', async ({ page }) => {
     [14, 14],
     [7, 7],
   ] as const) {
+    // 必须等 AI 应完手、轮次交还玩家再点下一处，否则这一下会被 interactive
+    // 静默吞掉，用例变成「赌 AI 已经走完了」。
+    await expect(page.getByRole('status')).toHaveText('轮到你落子')
+
     const box = await page.getByTestId(`intersection-${x}-${y}`).boundingBox()
     expect(box).not.toBeNull()
     if (box === null) continue

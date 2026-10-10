@@ -1,4 +1,5 @@
 import type { SearchReason } from '../../ai/types'
+import { cx } from '../../lib/cx'
 import type { AiInfo } from '../../store/gameStore'
 import { Panel } from '../ui/Panel'
 
@@ -38,9 +39,20 @@ function Stat({ label, value }: { label: string; value: string }) {
 export function AiPanel({ thinking, info, error, canRetry, onRetry, onDismissError }: AiPanelProps) {
   return (
     <Panel title="AI 引擎">
-      {error !== null && (
-        <div role="alert" className="mb-3 rounded-lg bg-danger-soft px-3 py-2 text-xs text-danger">
-          <p className="break-words">{error}</p>
+      {/*
+        重试入口的显隐只由 canRetry 决定，不能挂在「有没有错误消息」下面——
+        玩家一点「知道了」，错误清了，可 AI 欠着的那一手还在，入口却跟着消失，
+        对局就彻底卡死了。
+      */}
+      {(error !== null || canRetry) && (
+        <div
+          role="alert"
+          className={cx(
+            'mb-3 rounded-lg px-3 py-2 text-xs',
+            error !== null ? 'bg-danger-soft text-danger' : 'bg-warn-soft text-warn',
+          )}
+        >
+          <p className="break-words">{error ?? 'AI 还没落子，这一手需要重试。'}</p>
           <div className="mt-1.5 flex items-center gap-3">
             {canRetry && (
               <button
@@ -51,13 +63,15 @@ export function AiPanel({ thinking, info, error, canRetry, onRetry, onDismissErr
                 重试
               </button>
             )}
-            <button
-              type="button"
-              onClick={onDismissError}
-              className="font-medium underline underline-offset-2"
-            >
-              知道了
-            </button>
+            {error !== null && (
+              <button
+                type="button"
+                onClick={onDismissError}
+                className="font-medium underline underline-offset-2"
+              >
+                知道了
+              </button>
+            )}
           </div>
         </div>
       )}
