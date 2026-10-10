@@ -245,6 +245,8 @@ describe('searchBoard —— 置换表与注入时钟', () => {
     transposition: true,
     threatPlies: 0,
     threatThrees: false,
+    attack: 1,
+    defense: 1,
   }
   const clock = (): number => 0
 
@@ -272,6 +274,8 @@ describe('searchBoard —— 置换表与注入时钟', () => {
       transposition: true,
       threatPlies: 0,
       threatThrees: false,
+      attack: 1,
+      defense: 1,
     }
 
     const withTable = searchBoard(mustWin, BLACK, winOptions, clock)
@@ -291,6 +295,8 @@ describe('searchBoard —— 置换表与注入时钟', () => {
       transposition: true,
       threatPlies: 0,
       threatThrees: false,
+      attack: 1,
+      defense: 1,
     }
 
     const shallow = searchBoard(mustWin, BLACK, { ...base, maxDepth: 2 }, clock)
@@ -324,6 +330,8 @@ describe('searchBoard —— 提示用的候选与紧急度', () => {
     transposition: true,
     threatPlies: 0,
     threatThrees: false,
+    attack: 1,
+    defense: 1,
     diagnostics: true,
   }
 
@@ -467,6 +475,59 @@ describe('searchBoard —— 提示用的候选与紧急度', () => {
     for (const candidate of result.candidates) {
       expect(almostFull[candidate.move.y * 15 + candidate.move.x]).toBe(0)
     }
+  })
+})
+
+describe('searchBoard —— 贪心兜底按难度权重取舍', () => {
+  // 预算为 0 且时钟不动，迭代加深一层都搜不完，着法必然来自贪心兜底。
+  const clock = (): number => 0
+  const base = {
+    width: 10,
+    maxDepth: 4,
+    budgetMs: 0,
+    transposition: false,
+    threatPlies: 0,
+    threatThrees: false,
+    attack: 1,
+    defense: 1,
+  }
+
+  // 黑棋一条活二（第 3 行），白棋一条活三（第 10 行），两组着法互不重叠。
+  const ATTACK_POINTS = [{ x: 2, y: 3 }, { x: 5, y: 3 }]
+  const DEFENSE_POINTS = [{ x: 4, y: 10 }, { x: 8, y: 10 }]
+  const SPLIT = boardFromLines([
+    '...............',
+    '...............',
+    '...............',
+    '...BB..........',
+    '...............',
+    '...............',
+    '...............',
+    '...............',
+    '...............',
+    '...............',
+    '.....WWW.......',
+  ])
+
+  it('进攻权重高时去扩自己的活二', () => {
+    const result = searchBoard(SPLIT, BLACK, { ...base, attack: 1, defense: 0 }, clock)
+
+    expect(ATTACK_POINTS).toContainEqual(result.move)
+  })
+
+  it('防守权重高时去堵白棋的活三', () => {
+    const result = searchBoard(SPLIT, BLACK, { ...base, attack: 0, defense: 1 }, clock)
+
+    expect(DEFENSE_POINTS).toContainEqual(result.move)
+  })
+
+  it('两档权重真的不同，而不是都走同一手', () => {
+    // 上一版把权重写死成 easy（1 / 1），于是 beginner 的 defense = 0.6 成了死配置。
+    // 这条钉住「权重确实传进来了」：两个极端必须给出不同的着法。
+    const attacking = searchBoard(SPLIT, BLACK, { ...base, attack: 1, defense: 0 }, clock)
+    const defending = searchBoard(SPLIT, BLACK, { ...base, attack: 0, defense: 1 }, clock)
+
+    expect(attacking.move).not.toEqual(defending.move)
   })
 })
 

@@ -45,6 +45,7 @@ const MATE_MARGIN = 1_000
 /** 每层最多记两个杀手着法：同层里造成过 beta 截断的着法，下一层优先试。 */
 const KILLER_SLOTS = 2
 
+
 /**
  * 算杀能占用的预算比例。
  *
@@ -63,6 +64,15 @@ export interface SearchOptions {
   readonly threatPlies: number
   /** 算杀是否允许活三（VCT）。关掉即纯 VCF。 */
   readonly threatThrees: boolean
+  /**
+   * 一步贪心兜底里「进攻」与「防守」的相对权重，随难度变化。
+   *
+   * 必须从难度参数传进来，**不能写死**：兜底着法在低档（预算短、搜不完整层）
+   * 和超时回退时会直接成为最终着法，权重写死等于让 `beginner.defense = 0.6`
+   * 这类配置彻底失效。
+   */
+  readonly attack: number
+  readonly defense: number
   /**
    * 是否额外算出提示用的候选与紧急度。
    *
@@ -221,7 +231,7 @@ function bestGreedy(
   board: Board,
   candidates: readonly Point[],
   player: Player,
-  params: DifficultyParams,
+  params: Pick<DifficultyParams, 'attack' | 'defense'>,
 ): { move: Point; score: number } {
   const opponent = opponentOf(player)
   let best = candidates[0]
@@ -342,15 +352,24 @@ interface RootResult {
   readonly depth: number
 }
 
-/** 返回 null 表示这一层没能在预算内搜完，调用方应丢弃整层结果。 */
+/**
+ * 返回 null 表示这一层没能在预算内搜完，调用方应丢弃整层结果。
+ *
+ * `hintMove` 是上一层迭代搜出来的最佳着法，由调用方显式传进来。
+ *
+ * 这里**不能**靠查置换表拿它：`probe(key, depth)` 的语义是「条目深度不足即未命中」，
+ * 而上一层存下的条目深度正好是 `depth - 1`，于是每次都在这里落空——根节点的
+ * 「置换表着法优先」曾经是一段永远拿不到值的死代码。抢先搜上一层的结论，
+ * alpha 上升得更快，剪枝效率差得很远。
+ */
 function searchRoot(
   board: Board,
   player: Player,
   key: ZobristKey,
   depth: number,
   ctx: SearchContext,
+  hintMove: Point | null,
 ): RootResult | null {
-  const tableMove = ctx.table?.probe(key, depth)?.move ?? null
   const ordered = orderMoves(
     board,
     candidateMoves(board),
@@ -358,7 +377,7 @@ function searchRoot(
     ctx.options.width,
     ctx,
     0,
-    tableMove,
+    hintMove,
   )
 
   if (ordered.winNow !== null) {
@@ -367,7 +386,6 @@ function searchRoot(
 
   let alpha = -Infinity
   let best: RootResult | null = null
-  let bestMove: Point | null = null
 
   for (const point of ordered.points) {
     if (hasExpired(ctx)) return null
@@ -379,26 +397,15 @@ function searchRoot(
     const value = -negamax(board, opponentOf(player), childKey, depth - 1, 1, -Infinity, -alpha, ctx)
     board[index] = 0
 
-    if (best === null || value > best.score) {
-      best = { move: point, score: value, depth }
-      bestMove = point
-    }
+    if (best === null || value > best.score) best = { move: point, score: value, depth }
     if (value > alpha) alpha = value
   }
 
   if (hasExpired(ctx)) return null
 
-  if (ctx.table !== null && best !== null && bestMove !== null) {
-    // 根节点存 exact：这是完整搜索出来的结论。
-    ctx.table.store(key, {
-      lo: key.lo,
-      depth,
-      score: toTableScore(best.score, 0),
-      flag: 'exact',
-      move: bestMove,
-    })
-  }
-
+  // 根节点**不写置换表**：根局面的 key 不可能被任何后代命中（后代都多至少一颗子），
+  // 写进去只会是一条永远读不到的记录。这里曾经还按 `flag: 'exact'` 写，而窄窗下的
+  // 结果其实是个界，属于错标。
   return best
 }
 
@@ -444,7 +451,7 @@ export function searchBoard(
   const threats = candidates.filter((point) => isWinningPoint(own, point, opponent))
   if (threats.length > 0) {
     // 必防时用一步贪心在若干个成五点里挑对我方最有价值的那个。
-    const block = bestGreedy(own, threats, player, DIFFICULTY_PARAMS.easy)
+    const block = bestGreedy(own, threats, player, options)
     return { ...shortcut, move: block.move, score: block.score, reason: 'block' }
   }
 
@@ -487,20 +494,24 @@ export function searchBoard(
     expired: false,
   }
 
-  const greedy = bestGreedy(own, candidates, player, DIFFICULTY_PARAMS.easy)
+  const greedy = bestGreedy(own, candidates, player, options)
   const key = computeKey(own, player)
 
   // 先用贪心结果兜底，再逐层加深——这样超时也总能交出一个合法着法。
   let best: RootResult = { move: greedy.move, score: greedy.score, depth: 0 }
   let timedOut = false
+  // 上一层迭代的结论，喂给下一层做首选着法
+  let hint: Point | null = null
 
   for (let depth = 1; depth <= options.maxDepth; depth++) {
-    const found = searchRoot(own, player, key, depth, ctx)
+    const found = searchRoot(own, player, key, depth, ctx, hint)
+
     if (found === null) {
       timedOut = true
       break
     }
     best = found
+    hint = found.move
   }
 
   return {
@@ -533,6 +544,8 @@ export function chooseMove(request: SearchRequest): SearchResponse {
       transposition: true,
       threatPlies: params.threatPlies,
       threatThrees: params.threatThrees,
+      attack: params.attack,
+      defense: params.defense,
       diagnostics: request.purpose === 'hint',
     },
     Date.now,

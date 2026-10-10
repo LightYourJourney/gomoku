@@ -99,6 +99,17 @@ function median(values: readonly number[]): number {
     : Math.round((sorted[middle - 1]! + sorted[middle]!) / 2)
 }
 
+/**
+ * 取「耗时居中」的那一次运行的**完整**记录。
+ *
+ * 不能 depth 取最大值、nodes / 耗时各取中位数：那样一行里的三个数可能来自
+ * 三次不同的运行，凑成一个从未真实出现过的组合（超时行的 depth 尤其容易失真）。
+ */
+function medianRun<T extends { readonly elapsedMs: number }>(runs: readonly T[]): T {
+  const sorted = [...runs].sort((a, b) => a.elapsedMs - b.elapsedMs)
+  return sorted[Math.floor(sorted.length / 2)]!
+}
+
 interface SearchRow {
   readonly difficulty: Difficulty
   readonly position: string
@@ -113,10 +124,7 @@ function benchSearch(): SearchRow[] {
 
   for (const difficulty of DIFFICULTIES) {
     for (const { name, board, player } of POSITIONS) {
-      const times: number[] = []
-      const nodes: number[] = []
-      let depth = 0
-      let reason = ''
+      const runs: SearchRow[] = []
 
       for (let run = 0; run < RUNS; run++) {
         const response = chooseMove({
@@ -127,20 +135,17 @@ function benchSearch(): SearchRow[] {
           difficulty,
           purpose: 'play',
         })
-        times.push(response.elapsedMs)
-        nodes.push(response.nodes)
-        depth = Math.max(depth, response.depth)
-        reason = response.reason
+        runs.push({
+          difficulty,
+          position: name,
+          depth: response.depth,
+          nodes: response.nodes,
+          elapsedMs: response.elapsedMs,
+          reason: response.reason,
+        })
       }
 
-      rows.push({
-        difficulty,
-        position: name,
-        depth,
-        nodes: median(nodes),
-        elapsedMs: median(times),
-        reason,
-      })
+      rows.push(medianRun(runs))
     }
   }
 
@@ -258,11 +263,105 @@ function benchThreat(): ThreatRow[] {
   })
 }
 
+interface VctRow {
+  readonly name: string
+  readonly vcfFound: boolean
+  readonly vcfPlies: number
+  readonly vcfMs: number
+  readonly vctFound: boolean
+  readonly vctPlies: number
+  readonly vctMs: number
+  /** 相对 VCF 的耗时倍数。VCT 默认关闭的依据就是这一列。 */
+  readonly ratio: number
+  /** VCT 是否换到了 VCF 给不出的结论。 */
+  readonly gains: boolean
+}
+
+/**
+ * VCF 与 VCT 的耗时对照——「VCT 默认关闭」这个决定**全靠这张表**。
+ *
+ * 若某个局面上 VCT 找到了 VCF 找不到的杀，「更贵」就还说得过去；若一个都没有，
+ * 那这个开关就纯粹是白花钱。这里如实把两件事都记下来，包括对 VCT 不利的结果。
+ */
+function benchVct(): VctRow[] {
+  const cases: ReadonlyArray<{ name: string; board: Board }> = [
+    {
+      name: '孤立活三',
+      board: boardFromLines(['...............', '...............', '...............', '...BBB.........']),
+    },
+    {
+      name: '两条活三',
+      board: boardFromLines([
+        '...............',
+        '...............',
+        '...............',
+        '...BBB.........',
+        '...............',
+        '...............',
+        '......BBB......',
+      ]),
+    },
+    {
+      name: '活三 + 远处活二',
+      board: boardFromLines([
+        '...............',
+        '...............',
+        '...............',
+        '...BBB.........',
+        '...............',
+        '...............',
+        '...............',
+        '...............',
+        '...........BB..',
+      ]),
+    },
+  ]
+
+  return cases.map(({ name, board }) => {
+    const measure = (allowThrees: boolean): { found: boolean; plies: number; ms: number } => {
+      const times: number[] = []
+      let found = false
+      let plies = 0
+
+      for (let run = 0; run < RUNS; run++) {
+        const startedAt = performance.now()
+        const result = findForcedWin(board, BLACK, {
+          maxPlies: 12,
+          allowThrees,
+          deadline: startedAt + 30_000,
+          now: () => performance.now(),
+        })
+        times.push(performance.now() - startedAt)
+        found = result.move !== null
+        plies = result.plies
+      }
+
+      return { found, plies, ms: median(times) }
+    }
+
+    const vcf = measure(false)
+    const vct = measure(true)
+
+    return {
+      name,
+      vcfFound: vcf.found,
+      vcfPlies: vcf.plies,
+      vcfMs: vcf.ms,
+      vctFound: vct.found,
+      vctPlies: vct.plies,
+      vctMs: vct.ms,
+      ratio: vcf.ms > 0 ? vct.ms / vcf.ms : Number.POSITIVE_INFINITY,
+      gains: vct.found && !vcf.found,
+    }
+  })
+}
+
 export interface BenchReport {
   readonly runs: number
   readonly search: readonly SearchRow[]
   readonly evaluate: { readonly perCallUs: number; readonly calls: number }
   readonly threat: readonly ThreatRow[]
+  readonly vct: readonly VctRow[]
 }
 
 // 包在 test 里：vitest 拒绝执行「没有任何用例」的文件。
@@ -273,6 +372,7 @@ test('Phase 2 引擎基准', () => {
     search: benchSearch(),
     evaluate: benchEvaluate(),
     threat: benchThreat(),
+    vct: benchVct(),
   }
 
   const OUT = new URL('./last-run.json', import.meta.url)
@@ -295,6 +395,15 @@ test('Phase 2 引擎基准', () => {
     const actual = row.found ? '有杀' : '无杀'
     console.log(
       `${row.name}\t${row.expected}\t${actual}${row.mismatch ? ' ⚠不符' : ''}\t${row.plies}\t${row.nodes}\t${row.elapsedMs}`,
+    )
+  }
+  console.log(`\n=== VCF vs VCT ===`)
+  console.log('局面\tVCF(有杀/手数/ms)\tVCT(有杀/手数/ms)\t倍数\tVCT 换到新结论')
+  for (const row of report.vct) {
+    console.log(
+      `${row.name}\t${row.vcfFound}/${row.vcfPlies}/${row.vcfMs.toFixed(1)}\t` +
+        `${row.vctFound}/${row.vctPlies}/${row.vctMs.toFixed(1)}\t` +
+        `${row.ratio === Number.POSITIVE_INFINITY ? '∞' : row.ratio.toFixed(1)}x\t${row.gains ? '是' : '否'}`,
     )
   }
   console.log(`\n结果已写入 bench/last-run.json`)

@@ -350,9 +350,11 @@ export function createGameStore(engine: AiEngine): UseBoundStore<StoreApi<GameSt
 
       requestHint() {
         const current = get()
-        if (current.game.status !== 'playing') return
-        // 提示是给「该走的人」看的。AI 正在思考时轮不到玩家，求提示没有意义。
-        if (current.aiThinking || current.hintThinking) return
+        // 提示是给**玩家**看的，所以要过和落子完全一样的门槛——共用 canHumanPlay，
+        // 不要在这里另写一套。少判「当前手番是不是人类」就会在 AI 报错卡住时
+        // （aiThinking 已复位、手番仍是 AI）以 AI 的视角发出提示请求。
+        if (!canHumanPlay(current)) return
+        if (current.hintThinking) return
 
         const requestId = nextRequestId++
         const { game } = current

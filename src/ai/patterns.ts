@@ -1,4 +1,4 @@
-import { DIRECTIONS, idx, inBounds, opponentOf } from '../core/board'
+import { DIRECTIONS, idx, inBounds } from '../core/board'
 import { WIN_LENGTH, type Board, type Player, type Point } from '../core/types'
 import { WIN_SCORE, type ThreatKind } from './types'
 
@@ -14,7 +14,7 @@ export interface DirectionThreat {
  * 搜索热路径专用的廉价档：只判成五与活四 / 冲四。
  *
  * 判「三」需要对该方向每个空位试放一子再重数成五点，单点约多出六百次读格；
- * 而 `moveOrderScore` 在每个节点都要对全部候选各算两次，一乘就是十万量级。
+ * 而 `threatAt` 在每个节点都要对全部候选各算两次，一乘就是十万量级。
  * 所以三的精确判定只留给 `analyzePoint`（提示与威胁展示用），不进这里。
  */
 export interface FastThreat {
@@ -370,11 +370,6 @@ export function threatScoreWith(
 
 export function threatAt(board: Board, point: Point, player: Player): number {
   return threatScoreWith(board, point, player, analyzeFast(board, point, player))
-}
-
-/** 该点的攻防综合价值：我下在这里的价值，加上对手下在这里对我的威胁。 */
-export function moveOrderScore(board: Board, point: Point, player: Player): number {
-  return threatAt(board, point, player) + threatAt(board, point, opponentOf(player))
 }
 
 /** 这一手是否让 `player` 立刻连成五子。 */

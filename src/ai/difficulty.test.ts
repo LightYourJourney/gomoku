@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { BLACK, type Board } from '../core/types'
+import { BLACK, WHITE, type Board } from '../core/types'
+import { createBoard, idx } from '../core/board'
 import { boardFromLines } from '../test/board-fixtures'
 import {
   AVAILABLE_DIFFICULTIES,
@@ -8,7 +9,7 @@ import {
   DIFFICULTY_PARAMS,
   isDifficulty,
 } from './difficulty'
-import { chooseMove } from './search'
+import { chooseMove, searchBoard } from './search'
 
 function ask(board: Board, difficulty: (typeof DIFFICULTIES)[number]) {
   return chooseMove({
@@ -52,10 +53,10 @@ describe('难度参数表', () => {
   })
 
   it('活三算杀（VCT）默认全档关闭', () => {
-    // 实测结论：打开 VCT 后专家档从 32 ms/手 涨到 500 ms/手（15 倍），
-    // 而它相对 VCF 的增量收益没能被证实——构成的对照组局面里，VCF 已经
-    // 覆盖了「活三成活四」这条线。能力保留在 ai/threat.ts 里并有独立测试，
-    // 但默认不启用。详见 docs/AI_ENGINE.md。
+    // 实测结论（`yarn bench` 的「VCF 与 VCT 的代价对照」一节）：VCT 比 VCF 贵
+    // 39–489 倍，而在测过的三个局面上 VCF 都给出了同样的「有杀」结论——
+    // VCT 一次都没换到 VCF 给不出的东西，其中一例还返回了更长的取胜路线。
+    // 能力保留在 ai/threat.ts 里并有独立测试，但默认不启用。
     for (const difficulty of DIFFICULTIES) {
       expect(DIFFICULTY_PARAMS[difficulty].threatThrees).toBe(false)
     }
@@ -110,6 +111,76 @@ describe('难度差异是真实的行为差异', () => {
       const result = ask(OPEN_THREE, difficulty)
       expect(result.move).not.toBeNull()
       expect(OPEN_THREE[result.move!.y * 15 + result.move!.x]).toBe(0)
+    }
+  })
+})
+
+describe('深度参数真的接到了搜索上', () => {
+  // 冻结时钟 → 时间预算永不生效 → 深度上限成为唯一约束，结果与机器快慢无关。
+  const CLOCK = (): number => 0
+  const NO_LIMIT = 1_000_000
+
+  /**
+   * 一盘填满但留了六个空位的和棋局面。
+   *
+   * 用 `(x + 2y) % 4 < 2` 上色，四个方向上最长只连得出两颗子——**构造上就不存在五连**，
+   * 所以既不会触发「必胜」也不会触发「必防」的捷径，搜索真的会跑起来。
+   * 候选点只有那六个空位，树窄得很，深度 8 也能在毫秒级搜完；
+   * 换成中盘局面则要 13 秒，不可能放进单元测试。
+   */
+  function nearlyFullDraw(): Board {
+    const board = createBoard()
+    for (let y = 0; y < 15; y++) {
+      for (let x = 0; x < 15; x++) {
+        board[idx(x, y)] = (x + 2 * y) % 4 < 2 ? BLACK : WHITE
+      }
+    }
+    for (const [x, y] of [[7, 7], [7, 8], [8, 7], [8, 8], [6, 6], [9, 9]] as const) {
+      board[idx(x, y)] = 0
+    }
+    return board
+  }
+
+  function optionsFor(difficulty: (typeof DIFFICULTIES)[number], maxDepth: number) {
+    return {
+      width: DIFFICULTY_PARAMS[difficulty].width,
+      maxDepth,
+      budgetMs: NO_LIMIT,
+      transposition: true,
+      threatPlies: 0,
+      threatThrees: false,
+      attack: DIFFICULTY_PARAMS[difficulty].attack,
+      defense: DIFFICULTY_PARAMS[difficulty].defense,
+    }
+  }
+
+  it('给足时间时，每一档都完整搜到自己的深度上限', () => {
+    // 计划里要求的「同一局面下高档在相同**预算**内达到的深度不低于低档」
+    // 刻意没有写成断言：那个性质依赖真实时钟，在不同机器上会 flaky，而且
+    // 它在实测里并不总成立（见 docs/AI_ENGINE.md 的实测表——专家档宽度更大，
+    // 同样一层展开的节点多得多，多出来的预算会被这一项吃掉）。
+    //
+    // 能确定性地断言、也确实值得断言的是**接线**：深度参数有没有真的传到搜索。
+    const board = nearlyFullDraw()
+
+    for (const difficulty of DIFFICULTIES) {
+      const result = searchBoard(board, WHITE, optionsFor(difficulty, DIFFICULTY_PARAMS[difficulty].depth), CLOCK)
+
+      expect(result.reason).toBe('search')
+      expect(result.depth).toBe(DIFFICULTY_PARAMS[difficulty].depth)
+    }
+  })
+
+  it('深度上限越高，实际搜到的层数越深', () => {
+    const board = nearlyFullDraw()
+    const depths = DIFFICULTIES.map(
+      (difficulty) =>
+        searchBoard(board, WHITE, optionsFor(difficulty, DIFFICULTY_PARAMS[difficulty].depth), CLOCK)
+          .depth,
+    )
+
+    for (let i = 1; i < depths.length; i++) {
+      expect(depths[i]!).toBeGreaterThan(depths[i - 1]!)
     }
   })
 })

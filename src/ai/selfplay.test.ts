@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { applyMove, createGame } from '../core/game'
-import { BLACK, WHITE, type Player, type Point } from '../core/types'
+import { BLACK, WHITE, type GameStatus, type Player, type Point } from '../core/types'
 import { DIFFICULTY_PARAMS } from './difficulty'
 import { searchBoard } from './search'
 import type { Difficulty } from './types'
@@ -14,11 +14,36 @@ import type { Difficulty } from './types'
 const CLOCK = (): number => 0
 const BUDGET = 1_000_000
 
-/** 自对弈把深度压到 3，纯粹为了控制测试时长；档位差异靠算杀开关体现。 */
+/**
+ * 自对弈把深度压到 3，纯粹为了控制测试时长。
+ *
+ * **代价要说清楚**：钳到 3 之后，中级（上限 4）、高级（6）、专家（8）三档在本文件里
+ * 走出的棋完全一样（实测四个开局都是 13 手黑胜），自对弈因此**证明不了**它们之间有
+ * 强弱差异。档位差异由 `difficulty.test.ts` 的参数与接线测试、以及 `yarn bench`
+ * 的实测数据负责，不靠这里。
+ */
 const MAX_DEPTH = 3
-const MAX_MOVES = 60
+
+/**
+ * 手数上限。
+ *
+ * 60 手不够：实测「初级对初级」要 49–76 手才分胜负，60 手会把局面卡在
+ * `status === 'playing'` 上，于是「走完一整局」这条断言根本断言不到东西。
+ */
+const MAX_MOVES = 120
+
+/**
+ * 第 `index` 手（0-based）由谁落子。
+ *
+ * 刻意不 import store 里的 `moverAt`：`ai` 不得依赖 `store`，测试也不例外。
+ * 自对弈的开局方恒为黑，两行就够。
+ */
+function moverAt(index: number): Player {
+  return index % 2 === 0 ? BLACK : WHITE
+}
 
 interface GameOutcome {
+  readonly status: GameStatus
   readonly winner: Player | null
   readonly moves: readonly Point[]
 }
@@ -44,6 +69,8 @@ function playGame(black: Difficulty, white: Difficulty, opening: readonly Point[
         transposition: true,
         threatPlies: params.threatPlies,
         threatThrees: params.threatThrees,
+        attack: params.attack,
+        defense: params.defense,
       },
       CLOCK,
     )
@@ -55,7 +82,7 @@ function playGame(black: Difficulty, white: Difficulty, opening: readonly Point[
     state = applied.state
   }
 
-  return { winner: state.winner, moves: state.moves }
+  return { status: state.status, winner: state.winner, moves: state.moves }
 }
 
 /** 四个不同开局：黑棋下天元，白棋应手各不相同。 */
@@ -96,16 +123,43 @@ describe('引擎自对弈', () => {
 
     for (const tier of tiers) {
       const game = playGame(tier, tier, OPENINGS[0]!)
+
+      // 必须断言「真的分出了结果」。原来只断言 moves.length > 4，而循环到
+      // MAX_MOVES 就无条件退出——一局走到一半被截断也照样是绿的。
+      expect(game.status).not.toBe('playing')
       expect(game.moves.length).toBeGreaterThan(4)
     }
-  }, 180_000)
+  }, 300_000)
 
-  it('同一难度自对弈时白棋不会凭空取胜', () => {
-    const game = playGame('easy', 'easy', OPENINGS[0]!)
+  it('四个开局下五档都能走完，没有哪一档被手数上限截断', () => {
+    const tiers: readonly Difficulty[] = ['beginner', 'easy', 'medium', 'hard', 'expert']
 
-    // 这条是在钉「引擎没有随手把胜利判给某一方」这个最基本的正确性
-    if (game.winner === WHITE) {
-      expect(game.moves.length % 2).toBe(0)
+    for (const opening of OPENINGS) {
+      for (const tier of tiers) {
+        const game = playGame(tier, tier, opening)
+        expect(game.status).not.toBe('playing')
+      }
     }
-  }, 120_000)
+  }, 300_000)
+
+  it('赢家一定是最后落子的那一方', () => {
+    // 钉住「引擎没有把胜利判给错误的一方」。原来那条用例是
+    // `if (winner === WHITE) expect(moves.length % 2 === 0)`——白棋没赢时什么都不查，
+    // 白棋赢了查的又是规则蕴含式（白棋本就只在偶数手落子），两条路径都不会红。
+    //
+    // 现在遍历四个开局，把 winner 与「最后落子的人」正面比一次：
+    // 若某处把 winner 错设成对手，这里立刻红。
+    let decided = 0
+
+    for (const opening of OPENINGS) {
+      const game = playGame('medium', 'medium', opening)
+      if (game.winner === null) continue
+
+      decided++
+      expect(game.winner).toBe(moverAt(game.moves.length - 1))
+    }
+
+    // 防止上面整段空转（全都没分胜负时它就成了一条永远绿的用例）
+    expect(decided).toBeGreaterThan(0)
+  }, 300_000)
 })

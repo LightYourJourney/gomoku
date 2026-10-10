@@ -124,7 +124,9 @@ describe('findForcedWin —— VCF', () => {
 })
 
 describe('findForcedWin —— VCT', () => {
-  it('开启活三后搜索的节点数不少于纯 VCF', () => {
+  it('开启活三后搜索量显著上升，证明这个开关真的在起作用', () => {
+    // 用严格大于而不是「不少于」：`allowThrees` 一旦彻底失效，两个数会相等，
+    // `>=` 照样通过——那就成了一条永远绿的死断言。
     const board = boardFromLines([
       '...............',
       '...............',
@@ -138,11 +140,17 @@ describe('findForcedWin —— VCT', () => {
     const vcf = findForcedWin(board, BLACK, options({ allowThrees: false }))
     const vct = findForcedWin(board, BLACK, options({ allowThrees: true }))
 
-    expect(vct.nodes).toBeGreaterThanOrEqual(vcf.nodes)
+    expect(vct.nodes).toBeGreaterThan(vcf.nodes)
   })
 
-  it('对手有冲四威胁时，活三链一律不算杀（宁可漏杀也不误报）', () => {
-    // 黑棋有活三，白棋也有活三——黑棋的活三并不构成强制，白棋可以反先
+  it('白棋能反先成五时，开不开活三都一律不算杀', () => {
+    // 黑棋活三看似能做杀，但白棋已经四连、下一手就成五，黑棋来不及。
+    //
+    // 这条用例原先用的是「黑活三 + 白活三」的局面，并配了一个
+    // `if (move !== null)` 的守卫——结果引擎在那个局面**确实**找得到杀
+    // （补一端成活四，白棋来不及反先），守卫把这件事整个盖住了：
+    // 用例名说的是「有反先威胁」，局面演示的却是「没有反先威胁」。
+    // 换成真正被反先的局面，并把 null 断言写死。
     const board = boardFromLines([
       '...............',
       '...............',
@@ -154,15 +162,14 @@ describe('findForcedWin —— VCT', () => {
       '...............',
       '...............',
       '...............',
-      '......WWW......',
+      '...WWWW........',
     ])
 
-    // 黑棋下完活三之后，白棋手里仍有做四的手段，因此黑棋那条线不成立。
-    // 这里只断言「不会谎报一个不存在的杀」，不断言一定找得到。
-    const result = findForcedWin(board, BLACK, options({ allowThrees: true }))
-    if (result.move !== null) {
-      // 若声称有杀，那条路线的第一步必须是合法空位
-      expect(board[idx(result.move.x, result.move.y)]).toBe(0)
+    for (const allowThrees of [false, true]) {
+      const result = findForcedWin(board, BLACK, options({ allowThrees }))
+
+      expect(result.move).toBeNull()
+      expect(result.plies).toBe(0)
     }
   })
 

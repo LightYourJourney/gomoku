@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
-    "typecheck": "tsc -b && tsc -p tsconfig.e2e.json",
+    "typecheck": "tsc -b && tsc -p tsconfig.e2e.json && tsc -p tsconfig.bench.json",
     "test": "vitest run",
     "test:watch": "vitest",
     "e2e": "playwright test",
