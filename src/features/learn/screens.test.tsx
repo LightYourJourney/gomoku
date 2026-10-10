@@ -77,6 +77,27 @@ describe('LearnScreen —— 课程列表', () => {
     expect(useLearnStore.getState().progress.completedLessons).toContain('rules')
   })
 
+  it('点「下一节」换课时从头讲起，不会停在上一课的页码', () => {
+    // 必须走「下一节」这条路：退回列表再进去会把组件整个卸载，那样即使
+    // 不重建实例也看不出问题。真实浏览器里点「下一节」是**不清空实例**的，
+    // 内部那个 step 会原样留下来，于是新一课直接跳到练习。
+    render(<LearnScreen />)
+    openLesson('rules')
+
+    const first = LESSONS[0]!
+    for (let i = 0; i < first.steps.length; i++) {
+      fireEvent.click(screen.getByRole('button', { name: '下一步' }))
+    }
+    expect(screen.getByText(first.practice.prompt)).toBeInTheDocument()
+
+    // 「下一节」只在练习做对之后才出现
+    fireEvent.click(screen.getByTestId('intersection-4-7'))
+    fireEvent.click(screen.getByRole('button', { name: '下一节 →' }))
+
+    expect(screen.getByText(LESSONS[1]!.steps[0]!.title)).toBeInTheDocument()
+    expect(screen.queryByText(LESSONS[1]!.practice.prompt)).not.toBeInTheDocument()
+  })
+
   it('存在上次停留的课程时，直接展开那一节', () => {
     useLearnStore.setState({
       progress: { ...EMPTY_PROGRESS, lastVisited: { kind: 'lesson', id: 'defense' } },

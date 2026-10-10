@@ -45,6 +45,9 @@ export function LearnScreen() {
 
     return (
       <LessonView
+        // 换课时必须重建：`step` 是组件内部状态，复用实例会让新一课直接
+        // 停在上一课翻到的页码（从练习页切过去就是直接跳到练习）。
+        key={lesson.id}
         lesson={lesson}
         solved={progress.completedLessons.includes(lesson.id)}
         onExit={() => {

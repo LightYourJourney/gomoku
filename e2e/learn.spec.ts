@@ -136,3 +136,16 @@ test('六个分类都有题，且分类标题是中文', async ({ page }) => {
     await expect(page.getByRole('heading', { name: label })).toBeVisible()
   }
 })
+
+test('点「下一节」换课，从头讲起而不是停在上一课的页码', async ({ page }) => {
+  await gotoLearn(page)
+  await page.getByTestId('lesson-rules').click()
+  await gotoPractice(page, 3)
+  await page.getByTestId('intersection-4-7').click()
+  await expect(page.getByTestId('feedback')).toHaveAttribute('data-ok', 'true')
+
+  await page.getByRole('button', { name: '下一节 →' }).click()
+
+  // 必须回到讲解的第一页，而不是直接跳到第二课的练习
+  await expect(page.getByRole('heading', { name: '活二：两头都能长' })).toBeVisible()
+})
