@@ -1,0 +1,138 @@
+@import 'tailwindcss';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
+ * 设计令牌
+ * 浅色 / 深色两套值挂在 :root 与 .dark 上，再通过 @theme inline 暴露给 Tailwind。
+ * 组件里直接写 bg-surface / text-muted，不需要到处散落 dark: 前缀。
+ */
+:root {
+  color-scheme: light;
+
+  --c-bg: #f6f4f0;
+  --c-surface: #fffefb;
+  --c-surface-2: #f1ede5;
+  --c-border: #e2ddd2;
+  --c-border-strong: #cdc5b6;
+  --c-fg: #1c1917;
+  --c-muted: #6f675e;
+  --c-faint: #9c938a;
+  --c-accent: #2f7f6f;
+  --c-accent-soft: #e2efeb;
+  --c-accent-fg: #ffffff;
+  --c-danger: #b8412c;
+  --c-danger-soft: #f7e6e1;
+  --c-warn: #a97218;
+  --c-warn-soft: #f8eed8;
+
+  --c-board-a: #edd3a6;
+  --c-board-b: #dcbb87;
+  --c-board-edge: #b8934f;
+  --c-grid: rgb(72 47 18 / 0.55);
+  --c-star: rgb(58 36 12 / 0.85);
+
+  --c-stone-black-a: #5c5c63;
+  --c-stone-black-b: #0b0b0d;
+  --c-stone-white-a: #ffffff;
+  --c-stone-white-b: #d5cfc4;
+
+  --shadow-panel: 0 1px 2px rgb(28 25 23 / 0.06), 0 8px 24px -12px rgb(28 25 23 / 0.14);
+}
+
+.dark {
+  color-scheme: dark;
+
+  --c-bg: #0f1115;
+  --c-surface: #171a20;
+  --c-surface-2: #1f232b;
+  --c-border: #2a2f39;
+  --c-border-strong: #3b424f;
+  --c-fg: #ece8e3;
+  --c-muted: #9aa0aa;
+  --c-faint: #6c737e;
+  --c-accent: #52b39c;
+  --c-accent-soft: #17332d;
+  --c-accent-fg: #07211b;
+  --c-danger: #e2725b;
+  --c-danger-soft: #35211d;
+  --c-warn: #d9a441;
+  --c-warn-soft: #33291a;
+
+  --c-board-a: #3b3129;
+  --c-board-b: #2a231d;
+  --c-board-edge: #4d4034;
+  --c-grid: rgb(255 226 178 / 0.3);
+  --c-star: rgb(255 226 178 / 0.6);
+
+  --c-stone-black-a: #4a4a52;
+  --c-stone-black-b: #050506;
+  --c-stone-white-a: #ffffff;
+  --c-stone-white-b: #bdb7ad;
+
+  --shadow-panel: 0 1px 2px rgb(0 0 0 / 0.4), 0 10px 28px -14px rgb(0 0 0 / 0.7);
+}
+
+@theme inline {
+  --font-sans:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB',
+    'Microsoft YaHei', 'Noto Sans SC', sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  --color-bg: var(--c-bg);
+  --color-surface: var(--c-surface);
+  --color-surface-2: var(--c-surface-2);
+  --color-border: var(--c-border);
+  --color-border-strong: var(--c-border-strong);
+  --color-fg: var(--c-fg);
+  --color-muted: var(--c-muted);
+  --color-faint: var(--c-faint);
+  --color-accent: var(--c-accent);
+  --color-accent-soft: var(--c-accent-soft);
+  --color-accent-fg: var(--c-accent-fg);
+  --color-danger: var(--c-danger);
+  --color-danger-soft: var(--c-danger-soft);
+  --color-warn: var(--c-warn);
+  --color-warn-soft: var(--c-warn-soft);
+
+  --color-board-a: var(--c-board-a);
+  --color-board-b: var(--c-board-b);
+  --color-board-edge: var(--c-board-edge);
+  --color-grid: var(--c-grid);
+  --color-star: var(--c-star);
+  --color-stone-black-a: var(--c-stone-black-a);
+  --color-stone-black-b: var(--c-stone-black-b);
+  --color-stone-white-a: var(--c-stone-white-a);
+  --color-stone-white-b: var(--c-stone-white-b);
+
+  --shadow-panel: var(--shadow-panel);
+}
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    margin: 0;
+    background: var(--c-bg);
+    color: var(--c-fg);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    overscroll-behavior: none;
+  }
+
+  button {
+    font: inherit;
+    color: inherit;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--c-accent);
+    outline-offset: 2px;
+  }
+}

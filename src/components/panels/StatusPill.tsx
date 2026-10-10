@@ -1,0 +1,36 @@
+import { cx } from '../../lib/cx'
+import type { GameStatusDescriptor, StatusTone } from '../../features/battle/status'
+import { StoneDot } from './StoneDot'
+
+const TONE_CLASS: Record<StatusTone, string> = {
+  playing: 'border-border bg-surface text-fg',
+  thinking: 'border-accent/35 bg-accent-soft text-accent',
+  result: 'border-transparent bg-fg text-bg',
+}
+
+export interface StatusPillProps {
+  status: GameStatusDescriptor
+}
+
+export function StatusPill({ status }: StatusPillProps) {
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      className={cx(
+        'inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm font-medium transition-colors',
+        TONE_CLASS[status.tone],
+      )}
+    >
+      {status.tone === 'thinking' ? (
+        <span
+          aria-hidden="true"
+          className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent"
+        />
+      ) : (
+        status.player !== null && <StoneDot player={status.player} />
+      )}
+      <span className="whitespace-nowrap">{status.label}</span>
+    </div>
+  )
+}
