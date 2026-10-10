@@ -126,6 +126,7 @@ export function BattleScreen() {
   const dismissAiError = useGameStore((state) => state.dismissAiError)
   const hint = useGameStore((state) => state.hint)
   const hintUrgency = useGameStore((state) => state.hintUrgency)
+  const hintConfidence = useGameStore((state) => state.hintConfidence)
   const hintThinking = useGameStore((state) => state.hintThinking)
   const hintError = useGameStore((state) => state.hintError)
   const requestHint = useGameStore((state) => state.requestHint)
@@ -247,6 +248,7 @@ export function BattleScreen() {
           <HintPanel
             candidates={hint}
             urgency={hintUrgency}
+            confidence={hintConfidence}
             thinking={hintThinking}
             error={hintError}
             canAsk={interactive}

@@ -1,4 +1,4 @@
-import type { MoveSuggestion, ThreatKind, Urgency } from '../../ai/types'
+import type { Confidence, MoveSuggestion, ThreatKind, Urgency } from '../../ai/types'
 import { formatPoint } from '../../lib/coords'
 import { cx } from '../../lib/cx'
 import { HINT_BUDGET_MS } from '../../store/gameStore'
@@ -23,10 +23,17 @@ const THREAT_LABELS: Record<ThreatKind, string> = {
 /** 展示多少个候选。与引擎侧的候选上限一致。 */
 const MAX_SHOWN = 3
 
+const CONFIDENCE_LABELS: Record<Confidence, string> = {
+  exact: '结论：精确',
+  heuristic: '结论：启发式，不保证最优',
+}
+
 export interface HintPanelProps {
   /** 按推荐度降序。null 表示还没求过提示。 */
   candidates: readonly MoveSuggestion[] | null
   urgency: Urgency | null
+  /** 这份提示是精确结论还是预算用尽后的启发式建议。 */
+  confidence: Confidence | null
   thinking: boolean
   error: string | null
   /** 此刻能不能求提示：轮到自己、对局进行中、且没有请求在飞。 */
@@ -69,6 +76,7 @@ function Candidate({ suggestion, rank }: { suggestion: MoveSuggestion; rank: num
 export function HintPanel({
   candidates,
   urgency,
+  confidence,
   thinking,
   error,
   canAsk,
@@ -77,6 +85,7 @@ export function HintPanel({
 }: HintPanelProps) {
   const shown = (candidates ?? []).slice(0, MAX_SHOWN)
   const badge = urgency === null ? null : URGENCY_LABELS[urgency]
+  const showConfidence = confidence !== null && shown.length > 0
 
   return (
     <Panel title="AI 提示" bodyClassName="space-y-3">
@@ -135,6 +144,18 @@ export function HintPanel({
             />
           ))}
         </ul>
+      )}
+
+      {showConfidence && (
+        <p
+          data-testid="hint-confidence"
+          className={cx(
+            'rounded-lg px-3 py-2 text-[11px]',
+            confidence === 'heuristic' ? 'bg-warn-soft text-warn' : 'bg-surface-2 text-muted',
+          )}
+        >
+          {CONFIDENCE_LABELS[confidence]}
+        </p>
       )}
 
       <p className="border-t border-border pt-3 text-[11px] leading-relaxed text-faint">

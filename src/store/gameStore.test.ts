@@ -759,6 +759,7 @@ describe('AI 提示', () => {
 
     expect(state().hint).toEqual(SUGGESTIONS)
     expect(state().hintUrgency).toBe('danger')
+    expect(state().hintConfidence).toBe('exact')
     expect(state().hintThinking).toBe(false)
     expect(state().game.moves).toHaveLength(0)
     expect(state().game.board[idx(5, 5)]).toBe(0)
@@ -873,7 +874,17 @@ describe('AI 提示', () => {
     expect(state().pendingRequestId).toBe(playRequestId)
   })
 
-  it('clearHint 清空提示与紧急度', async () => {
+  it('记下提示的可靠度，超时回退时必须如实标成启发式', async () => {
+    // 提示固定用 800 ms 的短预算，专家档几乎必然搜不完——界面要能如实说明
+    // 「这只是建议」，就不能把 confidence 丢掉。
+    state().requestHint()
+    replyHint({ confidence: 'heuristic', reason: 'timeout' })
+    await engine.flush()
+
+    expect(state().hintConfidence).toBe('heuristic')
+  })
+
+  it('clearHint 清空提示、紧急度与可靠度', async () => {
     state().requestHint()
     replyHint()
     await engine.flush()
@@ -882,6 +893,7 @@ describe('AI 提示', () => {
 
     expect(state().hint).toBeNull()
     expect(state().hintUrgency).toBeNull()
+    expect(state().hintConfidence).toBeNull()
   })
 
   it('玩家落子后提示被清空', async () => {
@@ -894,6 +906,7 @@ describe('AI 提示', () => {
 
     expect(state().hint).toBeNull()
     expect(state().hintUrgency).toBeNull()
+    expect(state().hintConfidence).toBeNull()
   })
 
   it('提示不会跨过一整个回合', async () => {

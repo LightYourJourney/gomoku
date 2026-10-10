@@ -1,0 +1,289 @@
+{
+  "runs": 5,
+  "search": [
+    {
+      "difficulty": "beginner",
+      "position": "开局",
+      "depth": 1,
+      "nodes": 12,
+      "elapsedMs": 1,
+      "reason": "search"
+    },
+    {
+      "difficulty": "beginner",
+      "position": "中盘",
+      "depth": 1,
+      "nodes": 12,
+      "elapsedMs": 1,
+      "reason": "search"
+    },
+    {
+      "difficulty": "beginner",
+      "position": "四连威胁",
+      "depth": 0,
+      "nodes": 0,
+      "elapsedMs": 0,
+      "reason": "win"
+    },
+    {
+      "difficulty": "beginner",
+      "position": "双三",
+      "depth": 1,
+      "nodes": 12,
+      "elapsedMs": 1,
+      "reason": "search"
+    },
+    {
+      "difficulty": "beginner",
+      "position": "接近满盘",
+      "depth": 1,
+      "nodes": 12,
+      "elapsedMs": 1,
+      "reason": "search"
+    },
+    {
+      "difficulty": "easy",
+      "position": "开局",
+      "depth": 2,
+      "nodes": 59,
+      "elapsedMs": 5,
+      "reason": "search"
+    },
+    {
+      "difficulty": "easy",
+      "position": "中盘",
+      "depth": 2,
+      "nodes": 68,
+      "elapsedMs": 7,
+      "reason": "search"
+    },
+    {
+      "difficulty": "easy",
+      "position": "四连威胁",
+      "depth": 0,
+      "nodes": 0,
+      "elapsedMs": 0,
+      "reason": "win"
+    },
+    {
+      "difficulty": "easy",
+      "position": "双三",
+      "depth": 2,
+      "nodes": 71,
+      "elapsedMs": 8,
+      "reason": "search"
+    },
+    {
+      "difficulty": "easy",
+      "position": "接近满盘",
+      "depth": 2,
+      "nodes": 46,
+      "elapsedMs": 3,
+      "reason": "search"
+    },
+    {
+      "difficulty": "medium",
+      "position": "开局",
+      "depth": 4,
+      "nodes": 746,
+      "elapsedMs": 78,
+      "reason": "search"
+    },
+    {
+      "difficulty": "medium",
+      "position": "中盘",
+      "depth": 4,
+      "nodes": 596,
+      "elapsedMs": 68,
+      "reason": "search"
+    },
+    {
+      "difficulty": "medium",
+      "position": "四连威胁",
+      "depth": 0,
+      "nodes": 0,
+      "elapsedMs": 0,
+      "reason": "win"
+    },
+    {
+      "difficulty": "medium",
+      "position": "双三",
+      "depth": 4,
+      "nodes": 864,
+      "elapsedMs": 123,
+      "reason": "search"
+    },
+    {
+      "difficulty": "medium",
+      "position": "接近满盘",
+      "depth": 4,
+      "nodes": 265,
+      "elapsedMs": 26,
+      "reason": "search"
+    },
+    {
+      "difficulty": "hard",
+      "position": "开局",
+      "depth": 6,
+      "nodes": 10076,
+      "elapsedMs": 1101,
+      "reason": "search"
+    },
+    {
+      "difficulty": "hard",
+      "position": "中盘",
+      "depth": 6,
+      "nodes": 7202,
+      "elapsedMs": 921,
+      "reason": "search"
+    },
+    {
+      "difficulty": "hard",
+      "position": "四连威胁",
+      "depth": 0,
+      "nodes": 0,
+      "elapsedMs": 0,
+      "reason": "win"
+    },
+    {
+      "difficulty": "hard",
+      "position": "双三",
+      "depth": 5,
+      "nodes": 11568,
+      "elapsedMs": 1601,
+      "reason": "timeout"
+    },
+    {
+      "difficulty": "hard",
+      "position": "接近满盘",
+      "depth": 6,
+      "nodes": 808,
+      "elapsedMs": 90,
+      "reason": "search"
+    },
+    {
+      "difficulty": "expert",
+      "position": "开局",
+      "depth": 6,
+      "nodes": 23939,
+      "elapsedMs": 2602,
+      "reason": "timeout"
+    },
+    {
+      "difficulty": "expert",
+      "position": "中盘",
+      "depth": 6,
+      "nodes": 18308,
+      "elapsedMs": 2601,
+      "reason": "timeout"
+    },
+    {
+      "difficulty": "expert",
+      "position": "四连威胁",
+      "depth": 0,
+      "nodes": 0,
+      "elapsedMs": 0,
+      "reason": "win"
+    },
+    {
+      "difficulty": "expert",
+      "position": "双三",
+      "depth": 5,
+      "nodes": 18802,
+      "elapsedMs": 2601,
+      "reason": "timeout"
+    },
+    {
+      "difficulty": "expert",
+      "position": "接近满盘",
+      "depth": 8,
+      "nodes": 1738,
+      "elapsedMs": 212,
+      "reason": "search"
+    }
+  ],
+  "evaluate": {
+    "perCallUs": 76.33796687499998,
+    "calls": 200000
+  },
+  "threat": [
+    {
+      "name": "活三（3 手胜）",
+      "expected": "有杀（3 手）",
+      "found": true,
+      "plies": 3,
+      "nodes": 4,
+      "elapsedMs": 1,
+      "mismatch": false
+    },
+    {
+      "name": "已成四（1 手胜）",
+      "expected": "有杀（1 手）",
+      "found": true,
+      "plies": 1,
+      "nodes": 1,
+      "elapsedMs": 0,
+      "mismatch": false
+    },
+    {
+      "name": "有活三但被反先（无杀）",
+      "expected": "无杀",
+      "found": false,
+      "plies": 0,
+      "nodes": 1,
+      "elapsedMs": 1,
+      "mismatch": false
+    },
+    {
+      "name": "散子安静局面（无杀）",
+      "expected": "无杀",
+      "found": false,
+      "plies": 0,
+      "nodes": 1,
+      "elapsedMs": 0,
+      "mismatch": false
+    }
+  ],
+  "vct": [
+    {
+      "name": "孤立活三",
+      "vcfFound": true,
+      "vcfPlies": 3,
+      "vcfMs": 0.6520839999866439,
+      "vctFound": true,
+      "vctPlies": 3,
+      "vctMs": 24.508874999999534,
+      "ratio": 37.585456782410745,
+      "gains": false
+    },
+    {
+      "name": "两条活三",
+      "vcfFound": true,
+      "vcfPlies": 7,
+      "vcfMs": 1.744250000003376,
+      "vctFound": true,
+      "vctPlies": 11,
+      "vctMs": 81.65524999999616,
+      "ratio": 46.81396015470151,
+      "gains": false
+    },
+    {
+      "name": "活三 + 远处活二",
+      "vcfFound": true,
+      "vcfPlies": 3,
+      "vcfMs": 1.0122080000001006,
+      "vctFound": true,
+      "vctPlies": 3,
+      "vctMs": 526.3923329999961,
+      "ratio": 520.0436402398952,
+      "gains": false
+    }
+  ],
+  "analysis": {
+    "fastUs": 1.7821875000002119,
+    "pointUs": 5.975244318182046,
+    "ratio": 3.352758516251144,
+    "suggestionsMs": 0.5338897900000302,
+    "points": 44
+  }
+}

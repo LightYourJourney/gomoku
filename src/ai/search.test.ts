@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { createBoard } from '../core/board'
 import { BLACK, WHITE, type Board, type Player } from '../core/types'
-import { boardFromLines } from '../test/board-fixtures'
+import { boardFromLines, nearlyFullBoard } from '../test/board-fixtures'
 import { chooseMove, searchBoard } from './search'
 import type { Difficulty, SearchRequest, SearchResponse } from './types'
 
@@ -451,25 +451,14 @@ describe('searchBoard —— 提示用的候选与紧急度', () => {
   })
 
   it('接近满盘时候选数量随空位减少，且不崩', () => {
-    const almostFull = boardFromLines([
-      'BWBWBWBWBWBWBWB',
-      'WBWBWBWBWBWBWBW',
-      'BWBWBWBWBWBWBWB',
-      'WBWBWBWBWBWBWBW',
-      'BWBWBWBWBWBWBWB',
-      'WBWBWBWBWBWBWBW',
-      'BWBWBWBWBWBWBWB',
-      'WBWBWBWBWBWBWBW',
-      'BWBWBWBWBWBWBWB',
-      'WBWBWBWBWBWBWBW',
-      'BWBWBWBWBWBWBWB',
-      'WBWBWBWBWBWBWBW',
-      'BWBWBWBWBWBWBWB',
-      'WBWBWBWBWBWBWBW',
-      'BWBWBWBWBWBWBW.',
-    ])
+    const almostFull = nearlyFullBoard()
 
     const result = searchBoard(almostFull, WHITE, base, clock)
+
+    // 先钉住这个局面真的进了搜索。之前用的「相邻行黑白交替」填充里，主对角线
+    // 全是一色、黑棋早已连成十四子，引擎走的是必防捷径——那条用例在捷径下
+    // 同样通过，等于什么都没测。
+    expect(result.reason).toBe('search')
 
     expect(result.candidates.length).toBeLessThanOrEqual(3)
     for (const candidate of result.candidates) {

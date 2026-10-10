@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { idx } from '../core/board'
 import { BLACK, WHITE } from '../core/types'
-import { boardFromLines } from '../test/board-fixtures'
+import { boardFromLines, nearlyFullBoard } from '../test/board-fixtures'
 import { findForcedWin, type ThreatSearchOptions } from './threat'
 
 const NEVER = Number.POSITIVE_INFINITY
@@ -97,23 +97,7 @@ describe('findForcedWin —— VCF', () => {
   })
 
   it('接近满盘时不越界、不死循环', () => {
-    const almostFull = boardFromLines([
-      'BWBWBWBWBWBWBWB',
-      'WBWBWBWBWBWBWBW',
-      'BWBWBWBWBWBWBWB',
-      'WBWBWBWBWBWBWBW',
-      'BWBWBWBWBWBWBWB',
-      'WBWBWBWBWBWBWBW',
-      'BWBWBWBWBWBWBWB',
-      'WBWBWBWBWBWBWBW',
-      'BWBWBWBWBWBWBWB',
-      'WBWBWBWBWBWBWBW',
-      'BWBWBWBWBWBWBWB',
-      'WBWBWBWBWBWBWBW',
-      'BWBWBWBWBWBWBWB',
-      'WBWBWBWBWBWBWBW',
-      'BWBWBWBWBWBWBW.',
-    ])
+    const almostFull = nearlyFullBoard()
 
     expect(() => findForcedWin(almostFull, WHITE, options())).not.toThrow()
   })

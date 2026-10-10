@@ -9,7 +9,7 @@ import {
   DIFFICULTY_PARAMS,
   isDifficulty,
 } from './difficulty'
-import { chooseMove, searchBoard } from './search'
+import { chooseMove, searchBoard, searchOptionsFor } from './search'
 
 function ask(board: Board, difficulty: (typeof DIFFICULTIES)[number]) {
   return chooseMove({
@@ -54,7 +54,7 @@ describe('难度参数表', () => {
 
   it('活三算杀（VCT）默认全档关闭', () => {
     // 实测结论（`yarn bench` 的「VCF 与 VCT 的代价对照」一节）：VCT 比 VCF 贵
-    // 39–489 倍，而在测过的三个局面上 VCF 都给出了同样的「有杀」结论——
+    // 38–520 倍，而在测过的三个局面上 VCF 都给出了同样的「有杀」结论——
     // VCT 一次都没换到 VCF 给不出的东西，其中一例还返回了更长的取胜路线。
     // 能力保留在 ai/threat.ts 里并有独立测试，但默认不启用。
     for (const difficulty of DIFFICULTIES) {
@@ -143,14 +143,9 @@ describe('深度参数真的接到了搜索上', () => {
 
   function optionsFor(difficulty: (typeof DIFFICULTIES)[number], maxDepth: number) {
     return {
-      width: DIFFICULTY_PARAMS[difficulty].width,
+      ...searchOptionsFor(DIFFICULTY_PARAMS[difficulty], { budgetMs: NO_LIMIT }),
       maxDepth,
-      budgetMs: NO_LIMIT,
-      transposition: true,
       threatPlies: 0,
-      threatThrees: false,
-      attack: DIFFICULTY_PARAMS[difficulty].attack,
-      defense: DIFFICULTY_PARAMS[difficulty].defense,
     }
   }
 

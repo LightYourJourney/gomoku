@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { applyMove, createGame } from '../core/game'
 import { BLACK, WHITE, type GameStatus, type Player, type Point } from '../core/types'
 import { DIFFICULTY_PARAMS } from './difficulty'
-import { searchBoard } from './search'
+import { searchBoard, searchOptionsFor } from './search'
 import type { Difficulty } from './types'
 
 /**
@@ -62,16 +62,7 @@ function playGame(black: Difficulty, white: Difficulty, opening: readonly Point[
     const outcome = searchBoard(
       state.board,
       state.current,
-      {
-        width: params.width,
-        maxDepth: Math.min(params.depth, MAX_DEPTH),
-        budgetMs: BUDGET,
-        transposition: true,
-        threatPlies: params.threatPlies,
-        threatThrees: params.threatThrees,
-        attack: params.attack,
-        defense: params.defense,
-      },
+      { ...searchOptionsFor(params, { budgetMs: BUDGET }), maxDepth: Math.min(params.depth, MAX_DEPTH) },
       CLOCK,
     )
 

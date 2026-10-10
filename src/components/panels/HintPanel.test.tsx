@@ -16,6 +16,7 @@ function setup(overrides: Partial<HintPanelProps> = {}) {
   const props: HintPanelProps = {
     candidates: null,
     urgency: null,
+    confidence: null,
     thinking: false,
     error: null,
     canAsk: true,
@@ -71,7 +72,7 @@ describe('HintPanel —— 请求', () => {
 
 describe('HintPanel —— 候选', () => {
   it('展示最多三个候选与坐标', () => {
-    setup({ candidates: SUGGESTIONS, urgency: 'normal' })
+    setup({ candidates: SUGGESTIONS, urgency: 'normal', confidence: 'exact' })
 
     const items = screen.getAllByTestId(/^hint-candidate-/)
     expect(items).toHaveLength(3)
@@ -94,37 +95,58 @@ describe('HintPanel —— 候选', () => {
   })
 
   it('必胜时显示必胜徽标', () => {
-    setup({ candidates: SUGGESTIONS, urgency: 'win' })
+    setup({ candidates: SUGGESTIONS, urgency: 'win', confidence: 'exact' })
 
     expect(screen.getByTestId('hint-urgency')).toHaveTextContent('必胜')
   })
 
   it('必须防守时显示防守徽标', () => {
-    setup({ candidates: SUGGESTIONS, urgency: 'mustBlock' })
+    setup({ candidates: SUGGESTIONS, urgency: 'mustBlock', confidence: 'exact' })
 
     expect(screen.getByTestId('hint-urgency')).toHaveTextContent('必须防守')
   })
 
   it('对手有活四威胁时显示危险徽标', () => {
-    setup({ candidates: SUGGESTIONS, urgency: 'danger' })
+    setup({ candidates: SUGGESTIONS, urgency: 'danger', confidence: 'exact' })
 
     expect(screen.getByTestId('hint-urgency')).toHaveTextContent('危险')
   })
 
   it('没有紧急情况时不虚张声势', () => {
-    setup({ candidates: SUGGESTIONS, urgency: 'normal' })
+    setup({ candidates: SUGGESTIONS, urgency: 'normal', confidence: 'exact' })
 
     expect(screen.getByTestId('hint-urgency')).toHaveTextContent('一般')
   })
 
   it('标注提示不保证最优', () => {
-    setup({ candidates: SUGGESTIONS, urgency: 'normal' })
+    setup({ candidates: SUGGESTIONS, urgency: 'normal', confidence: 'exact' })
 
     expect(screen.getByText(/不保证最优/)).toBeInTheDocument()
   })
 
+  it('给出精确结论时标明是精确的', () => {
+    setup({ candidates: SUGGESTIONS, urgency: 'normal', confidence: 'exact' })
+
+    expect(screen.getByTestId('hint-confidence')).toHaveTextContent('精确')
+  })
+
+  it('超时回退时必须如实标成启发式', () => {
+    // 提示固定 800 ms 短预算，专家档几乎必然搜不完。把启发式结论说成精确的，
+    // 就是在骗玩家。
+    setup({ candidates: SUGGESTIONS, urgency: 'normal', confidence: 'heuristic' })
+
+    expect(screen.getByTestId('hint-confidence')).toHaveTextContent('启发式')
+    expect(screen.getByTestId('hint-confidence')).toHaveTextContent(/不保证最优/)
+  })
+
+  it('还没算过提示时不显示可靠度', () => {
+    setup()
+
+    expect(screen.queryByTestId('hint-confidence')).not.toBeInTheDocument()
+  })
+
   it('可以收起已经展示的候选', () => {
-    const { onClear } = setup({ candidates: SUGGESTIONS, urgency: 'normal' })
+    const { onClear } = setup({ candidates: SUGGESTIONS, urgency: 'normal', confidence: 'exact' })
 
     fireEvent.click(screen.getByRole('button', { name: '收起提示' }))
 
@@ -146,7 +168,7 @@ describe('HintPanel —— 徽标配色', () => {
   ]
 
   it.each(CASES)('%s 用 %s 色调', (urgency, tone) => {
-    setup({ candidates: SUGGESTIONS, urgency })
+    setup({ candidates: SUGGESTIONS, urgency, confidence: 'exact' })
 
     expect(screen.getByTestId('hint-urgency').className).toContain(tone)
   })

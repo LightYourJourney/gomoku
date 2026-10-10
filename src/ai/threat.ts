@@ -170,7 +170,12 @@ function attack(
 
       const myWins = winningPointsNow(board, player)
       const opponentWins = winningPointsNow(board, opponent)
-      // 能立刻成五或已经做出活四的，上面那一段处理过了
+      // 能立刻成五或已经做出活四的，上面那一段处理过了。
+      //
+      // `fourMakers` 每轮都要重算，看着像冗余，其实是**固有代价**：循环每轮都往
+      // 棋盘上放了一颗不同的子，做得出四的点当然不同。单节点因此是 O(n²)，
+      // 这也是 VCT 比 VCF 贵两三个数量级的主因之一（见 AI_ENGINE.md 的对照表）。
+      // 想省掉它就得改成增量维护，那是另一件事；这条路默认是关的。
       const forcing =
         myWins.length === 0 &&
         opponentWins.length === 0 &&

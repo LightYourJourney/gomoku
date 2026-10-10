@@ -54,32 +54,47 @@ const KILLER_SLOTS = 2
  */
 const THREAT_BUDGET_SHARE = 0.35
 
-export interface SearchOptions {
-  readonly width: number
+/**
+ * 搜索选项 = 难度参数 + 协议层补的三项。
+ *
+ * **继承而不是逐字复制字段**，这点是刻意的：这里曾经把 `DifficultyParams` 的七个
+ * 字段手抄一遍，结果一次重构漏抄了 `attack` / `defense`，`beginner.defense = 0.6`
+ * 静默失效而类型检查一声不吭。继承之后，难度参数新增字段会自动流进来，
+ * 漏抄成了编译错误。
+ */
+export interface SearchOptions extends Omit<DifficultyParams, 'depth'> {
+  /** 搜索深度上限，对应 `DifficultyParams.depth`。 */
   readonly maxDepth: number
-  readonly budgetMs: number
   /** 关闭只用于对照基准，不用于实战。 */
   readonly transposition: boolean
-  /** 算杀最大手数；0 表示关闭算杀。 */
-  readonly threatPlies: number
-  /** 算杀是否允许活三（VCT）。关掉即纯 VCF。 */
-  readonly threatThrees: boolean
-  /**
-   * 一步贪心兜底里「进攻」与「防守」的相对权重，随难度变化。
-   *
-   * 必须从难度参数传进来，**不能写死**：兜底着法在低档（预算短、搜不完整层）
-   * 和超时回退时会直接成为最终着法，权重写死等于让 `beginner.defense = 0.6`
-   * 这类配置彻底失效。
-   */
-  readonly attack: number
-  readonly defense: number
   /**
    * 是否额外算出提示用的候选与紧急度。
    *
-   * 这是**要额外花钱**的：候选要跑完整棋型分析（含精确三判定），紧急度要
-   * 扫一遍对手的活四可能。出着法时完全不需要，所以做成可选项而不是默认开启。
+   * 实测约 0.5 ms（44 个候选点、攻防各分析一次），相对数百毫秒的预算可以忽略；
+   * 做成开关不是为了省钱，而是因为出着法时这两个字段根本不会出现在响应里，
+   * 没必要算。
    */
   readonly diagnostics?: boolean
+}
+
+/**
+ * 把难度参数翻译成搜索选项。
+ *
+ * 协议层与测试都走这一个入口，不要各写一份逐字段搬运。
+ */
+export function searchOptionsFor(
+  params: DifficultyParams,
+  overrides: { readonly budgetMs?: number; readonly diagnostics?: boolean } = {},
+): SearchOptions {
+  const { depth, budgetMs, ...rest } = params
+
+  return {
+    ...rest,
+    maxDepth: depth,
+    budgetMs: overrides.budgetMs ?? budgetMs,
+    transposition: true,
+    diagnostics: overrides.diagnostics,
+  }
 }
 
 export interface SearchOutcome {
@@ -359,8 +374,11 @@ interface RootResult {
  *
  * 这里**不能**靠查置换表拿它：`probe(key, depth)` 的语义是「条目深度不足即未命中」，
  * 而上一层存下的条目深度正好是 `depth - 1`，于是每次都在这里落空——根节点的
- * 「置换表着法优先」曾经是一段永远拿不到值的死代码。抢先搜上一层的结论，
- * alpha 上升得更快，剪枝效率差得很远。
+ * 「置换表着法优先」曾经是一段永远拿不到值的死代码。
+ *
+ * 顺手修好它带来的收益**不大**：实测高级档开局 10,559 → 10,076 节点（约 5%），
+ * 完成深度没有变化。这条留着是因为它本来就是这段注释承诺的行为，不代表它是
+ * 什么性能杠杆。
  */
 function searchRoot(
   board: Board,
@@ -404,8 +422,7 @@ function searchRoot(
   if (hasExpired(ctx)) return null
 
   // 根节点**不写置换表**：根局面的 key 不可能被任何后代命中（后代都多至少一颗子），
-  // 写进去只会是一条永远读不到的记录。这里曾经还按 `flag: 'exact'` 写，而窄窗下的
-  // 结果其实是个界，属于错标。
+  // 写进去只会是一条永远读不到的记录。
   return best
 }
 
@@ -537,17 +554,10 @@ export function chooseMove(request: SearchRequest): SearchResponse {
   const outcome = searchBoard(
     request.board,
     request.player,
-    {
-      width: params.width,
-      maxDepth: params.depth,
-      budgetMs: request.budgetMs ?? params.budgetMs,
-      transposition: true,
-      threatPlies: params.threatPlies,
-      threatThrees: params.threatThrees,
-      attack: params.attack,
-      defense: params.defense,
+    searchOptionsFor(params, {
+      budgetMs: request.budgetMs,
       diagnostics: request.purpose === 'hint',
-    },
+    }),
     Date.now,
   )
 

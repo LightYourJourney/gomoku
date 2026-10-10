@@ -29,7 +29,7 @@ export interface DifficultyParams {
  * 置换表不进这张表——它只影响速度不影响棋力，对低档关掉属于人为削弱。
  *
  * `threatThrees` 五档全是 false，也就是只用 VCF、不用 VCT。VCT 的实现与测试
- * 都在（见 threat.ts），但实测代价是 VCF 的 39–489 倍，而 VCF 在测过的每个
+ * 都在（见 threat.ts），但实测代价是 VCF 的 38–520 倍，而 VCF 在测过的每个
  * 局面上都给出了同样的结论，所以默认关闭。这是一处**有意的漏杀**，不是没做。
  */
 export const DIFFICULTY_PARAMS: Record<Difficulty, DifficultyParams> = {

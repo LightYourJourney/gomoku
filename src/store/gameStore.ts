@@ -51,6 +51,13 @@ export interface GameStore {
    */
   readonly hint: readonly MoveSuggestion[] | null
   readonly hintUrgency: Urgency | null
+  /**
+   * 这份提示有多可信。
+   *
+   * 提示固定用 800 ms 的短预算，档位越高越可能搜不完而回退到启发式。
+   * 界面必须如实区分——把「没搜完的猜测」说成「精确结论」就是在骗玩家。
+   */
+  readonly hintConfidence: Confidence | null
   readonly hintThinking: boolean
   readonly hintError: string | null
   readonly pendingHintRequestId: number | null
@@ -86,6 +93,7 @@ export const HINT_BUDGET_MS = 800
 const HINT_CLEARED = {
   hint: null,
   hintUrgency: null,
+  hintConfidence: null,
   hintThinking: false,
   hintError: null,
   pendingHintRequestId: null,
@@ -397,6 +405,7 @@ export function createGameStore(engine: AiEngine): UseBoundStore<StoreApi<GameSt
         set({
           hint: response.candidates,
           hintUrgency: response.urgency,
+          hintConfidence: response.confidence,
           hintThinking: false,
           pendingHintRequestId: null,
           hintError: null,

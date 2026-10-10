@@ -10,14 +10,16 @@
  */
 import { writeFileSync } from 'node:fs'
 import { test } from 'vitest'
-import type { Board, Player } from '../src/core/types'
+import type { Board, Player, Point } from '../src/core/types'
 import { BLACK, WHITE } from '../src/core/types'
 import { DIFFICULTIES, DIFFICULTY_PARAMS } from '../src/ai/difficulty'
 import type { Difficulty } from '../src/ai/types'
+import { candidateMoves } from '../src/ai/candidates'
 import { evaluateBoard } from '../src/ai/evaluate'
+import { analyzeFast, analyzePoint } from '../src/ai/patterns'
 import { chooseMove } from '../src/ai/search'
 import { findForcedWin } from '../src/ai/threat'
-import { boardFromLines } from '../src/test/board-fixtures'
+import { boardFromLines, nearlyFullBoard } from '../src/test/board-fixtures'
 
 /** 每个用例重复几次，取中位数，压掉单次抖动。 */
 const RUNS = 5
@@ -70,23 +72,9 @@ const POSITIONS: ReadonlyArray<{ name: string; board: Board; player: Player }> =
   },
   {
     name: '接近满盘',
-    board: boardFromLines([
-      'BWBWBWBWBWBWBWB',
-      'WBWBWBWBWBWBWBW',
-      'BWBWBWBWBWBWBWB',
-      'WBWBWBWBWBWBWBW',
-      'BWBWBWBWBWBWBWB',
-      'WBWBWBWBWBWBWBW',
-      'BWBWBWBWBWBWBWB',
-      'WBWBWBWBWBWBWBW',
-      'BWBWBWBWBWBWBWB',
-      'WBWBWBWBWBWBWBW',
-      'BWBWBWBWBWBWBWB',
-      'WBWBWBWBWBWBWBW',
-      'BWBWBWBWBWBWBWB',
-      'WBWBWBWBWBWBWBW',
-      'BWBWBWBWBWBWBW.',
-    ]),
+    // 用 nearlyFullBoard 而不是「相邻行黑白交替」：后者主对角线全是一色、
+    // 黑棋早已连成十四子，引擎只会走必防捷径，根本测不到满盘时的搜索。
+    board: nearlyFullBoard(),
     player: WHITE,
   },
 ]
@@ -356,12 +344,62 @@ function benchVct(): VctRow[] {
   })
 }
 
+interface AnalysisRow {
+  readonly fastUs: number
+  readonly pointUs: number
+  readonly ratio: number
+  readonly suggestionsMs: number
+  readonly points: number
+}
+
+/**
+ * 单点棋型分析的单价，以及一整轮提示诊断的开销。
+ *
+ * 这两个数支撑 `AI_ENGINE.md` 里关于「诊断值不值得做成开关」的结论，
+ * 所以必须能重跑，不能靠开发期间的一次口头测量。
+ */
+function benchAnalysis(): AnalysisRow {
+  const board = POSITIONS[1]!.board
+  const points = candidateMoves(board)
+
+  const perCallUs = (fn: (point: Point) => unknown): number => {
+    const REPS = 500
+    for (let i = 0; i < 50; i++) for (const point of points) fn(point)
+    const startedAt = performance.now()
+    for (let i = 0; i < REPS; i++) for (const point of points) fn(point)
+    return ((performance.now() - startedAt) / (REPS * points.length)) * 1000
+  }
+
+  const fastUs = perCallUs((point) => analyzeFast(board, point, WHITE))
+  const pointUs = perCallUs((point) => analyzePoint(board, point, WHITE))
+
+  // 一轮提示诊断 = 全部候选点各做一次攻防分析
+  const ROUNDS = 200
+  for (let i = 0; i < 20; i++) {
+    for (const point of points) {
+      analyzePoint(board, point, WHITE)
+      analyzePoint(board, point, BLACK)
+    }
+  }
+  const startedAt = performance.now()
+  for (let i = 0; i < ROUNDS; i++) {
+    for (const point of points) {
+      analyzePoint(board, point, WHITE)
+      analyzePoint(board, point, BLACK)
+    }
+  }
+  const suggestionsMs = (performance.now() - startedAt) / ROUNDS
+
+  return { fastUs, pointUs, ratio: pointUs / fastUs, suggestionsMs, points: points.length }
+}
+
 export interface BenchReport {
   readonly runs: number
   readonly search: readonly SearchRow[]
   readonly evaluate: { readonly perCallUs: number; readonly calls: number }
   readonly threat: readonly ThreatRow[]
   readonly vct: readonly VctRow[]
+  readonly analysis: AnalysisRow
 }
 
 // 包在 test 里：vitest 拒绝执行「没有任何用例」的文件。
@@ -373,6 +411,7 @@ test('Phase 2 引擎基准', () => {
     evaluate: benchEvaluate(),
     threat: benchThreat(),
     vct: benchVct(),
+    analysis: benchAnalysis(),
   }
 
   const OUT = new URL('./last-run.json', import.meta.url)
@@ -397,6 +436,11 @@ test('Phase 2 引擎基准', () => {
       `${row.name}\t${row.expected}\t${actual}${row.mismatch ? ' ⚠不符' : ''}\t${row.plies}\t${row.nodes}\t${row.elapsedMs}`,
     )
   }
+  console.log(`\n=== 棋型分析单价（${report.analysis.points} 个候选点）===`)
+  console.log(`analyzeFast  ${report.analysis.fastUs.toFixed(2)} µs/次`)
+  console.log(`analyzePoint ${report.analysis.pointUs.toFixed(2)} µs/次（${report.analysis.ratio.toFixed(1)}x）`)
+  console.log(`一整轮提示诊断 ${report.analysis.suggestionsMs.toFixed(2)} ms`)
+
   console.log(`\n=== VCF vs VCT ===`)
   console.log('局面\tVCF(有杀/手数/ms)\tVCT(有杀/手数/ms)\t倍数\tVCT 换到新结论')
   for (const row of report.vct) {
