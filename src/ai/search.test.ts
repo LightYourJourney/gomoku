@@ -408,6 +408,40 @@ describe('searchBoard —— 提示用的候选与紧急度', () => {
     expect(result.urgency).toBe('normal')
   })
 
+  it('必防时头号候选就是那个堵点', () => {
+    // 候选只按**静态棋型**排序，不走搜索结果。这条用例守的就是这个排序够不够用：
+    // 白棋四连时，堵点对白方来说是成五点，防守分吃满，必须排第一。
+    const mustBlock = boardFromLines(['...............', '...............', '..BWWWW........'])
+
+    const result = searchBoard(mustBlock, BLACK, base, clock)
+
+    expect(result.urgency).toBe('mustBlock')
+    expect(result.candidates[0]!.move).toEqual({ x: 7, y: 2 })
+    expect(result.candidates[0]!.defense).toBe('five')
+  })
+
+  it('能立即取胜时头号候选就是制胜点', () => {
+    const mustWin = boardFromLines(['...............', '...............', '...BBBB........'])
+
+    const result = searchBoard(mustWin, BLACK, base, clock)
+
+    expect(result.urgency).toBe('win')
+    expect([{ x: 2, y: 2 }, { x: 7, y: 2 }]).toContainEqual(result.candidates[0]!.move)
+    expect(result.candidates[0]!.attack).toBe('five')
+  })
+
+  it('对手有多个成五点时候选覆盖其中不止一个', () => {
+    // 五个白子里有两个成五点（两端），只给一个的话玩家会以为只有一条路。
+    const twoWays = boardFromLines(['...............', '...............', '..WWWWW........'])
+
+    const result = searchBoard(twoWays, BLACK, base, clock)
+    const moves = result.candidates.map((candidate) => `${candidate.move.x},${candidate.move.y}`)
+
+    expect(result.urgency).toBe('mustBlock')
+    expect(moves).toContain('1,2')
+    expect(moves).toContain('7,2')
+  })
+
   it('接近满盘时候选数量随空位减少，且不崩', () => {
     const almostFull = boardFromLines([
       'BWBWBWBWBWBWBWB',
