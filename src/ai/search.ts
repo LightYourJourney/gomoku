@@ -3,7 +3,8 @@ import { BOARD_SIZE, type Board, type Player, type Point } from '../core/types'
 import { candidateMoves } from './candidates'
 import { DIFFICULTY_PARAMS, type DifficultyParams } from './difficulty'
 import { evaluateBoard, WIN_SCORE } from './evaluate'
-import { isWinningPoint, moveOrderScore, threatAt } from './patterns'
+import { analyzeFast, isWinningPoint, threatAt, threatScoreWith } from './patterns'
+import { findForcedWin } from './threat'
 import {
   computeKey,
   createTranspositionTable,
@@ -18,12 +19,6 @@ import type { Confidence, SearchReason, SearchRequest, SearchResponse } from './
 const CENTER: Point = { x: Math.floor(BOARD_SIZE / 2), y: Math.floor(BOARD_SIZE / 2) }
 
 /**
- * 找必胜点时只需看紧贴棋子的空位：任何能连成五子的落点，都必然与己方棋子相邻。
- * 相比完整候选集小得多，而这一步在搜索的每个节点都要做。
- */
-const WIN_CHECK_RADIUS = 1
-
-/**
  * 高分值到这个范围内就当作「必胜分」，存表/查表时要按 ply 归一化。
  *
  * 不归一化会出错：`canWinNow` 返回的是 `WIN_SCORE - 距根的步数`，这个差值
@@ -35,12 +30,24 @@ const MATE_MARGIN = 1_000
 /** 每层最多记两个杀手着法：同层里造成过 beta 截断的着法，下一层优先试。 */
 const KILLER_SLOTS = 2
 
+/**
+ * 算杀能占用的预算比例。
+ *
+ * 给满会出事：没杀的局面下算杀会一路搜到超时，主搜索只剩 0 预算，
+ * 高档反而比低档更弱。三分之一是实测下来算杀够用、主搜索也留得下余地的比例。
+ */
+const THREAT_BUDGET_SHARE = 0.35
+
 export interface SearchOptions {
   readonly width: number
   readonly maxDepth: number
   readonly budgetMs: number
   /** 关闭只用于对照基准，不用于实战。 */
   readonly transposition: boolean
+  /** 算杀最大手数；0 表示关闭算杀。 */
+  readonly threatPlies: number
+  /** 算杀是否允许活三（VCT）。关掉即纯 VCF。 */
+  readonly threatThrees: boolean
 }
 
 export interface SearchOutcome {
@@ -52,6 +59,12 @@ export interface SearchOutcome {
   /** 置换表命中次数，用于判断置换表是否真的在起作用。 */
   readonly ttHits: number
   readonly reason: SearchReason
+}
+
+interface OrderedMoves {
+  readonly points: readonly Point[]
+  /** 非 null 表示轮到我方可以立刻成五，这个点就是制胜点 */
+  readonly winNow: Point | null
 }
 
 interface SearchContext {
@@ -97,16 +110,13 @@ function isKiller(ctx: SearchContext, ply: number, move: Point): boolean {
   return slot.some((killer) => killer !== null && killer.x === move.x && killer.y === move.y)
 }
 
-function canWinNow(board: Board, player: Player): boolean {
-  for (const point of candidateMoves(board, WIN_CHECK_RADIUS)) {
-    if (isWinningPoint(board, point, player)) return true
-  }
-  return false
-}
-
 /**
  * 排序：置换表里的最佳着法最优先，其次是杀手着法，剩下的按攻防价值排。
  * alpha-beta 的剪枝效率几乎全靠着法排序。
+ *
+ * 排序这一遍顺带把「我能不能立刻成五」判掉并返回 null——原来那是一次独立的
+ * 扫描，而它对每个候选都要重算一遍棋型分。搜索每个节点都要跑这两件事，
+ * 合并之后省掉整整一遍扫描，这是实测里最划算的一处优化。
  */
 function orderMoves(
   board: Board,
@@ -116,16 +126,25 @@ function orderMoves(
   ctx: SearchContext,
   ply: number,
   tableMove: Point | null,
-): Point[] {
-  const scored = candidates.map((point) => {
-    let score = moveOrderScore(board, point, player)
+): OrderedMoves {
+  const opponent = opponentOf(player)
+  const scored: Array<{ point: Point; score: number }> = []
+
+  for (const point of candidates) {
+    const mine = analyzeFast(board, point, player)
+    if (mine.five) return { points: [], winNow: point }
+
+    let score = threatScoreWith(board, point, player, mine)
+    score += threatScoreWith(board, point, opponent, analyzeFast(board, point, opponent))
+
     if (tableMove !== null && point.x === tableMove.x && point.y === tableMove.y) score += 1_000_000
     else if (isKiller(ctx, ply, point)) score += 500_000
-    return { point, score }
-  })
+
+    scored.push({ point, score })
+  }
 
   scored.sort((a, b) => b.score - a.score)
-  return scored.slice(0, width).map((entry) => entry.point)
+  return { points: scored.slice(0, width).map((entry) => entry.point), winNow: null }
 }
 
 /**
@@ -190,8 +209,6 @@ function negamax(
     if (alpha >= beta) return cachedScore
   }
 
-  if (canWinNow(board, player)) return WIN_SCORE - ply
-
   if (depth <= 0) return evaluateBoard(board, player)
 
   const candidates = orderMoves(
@@ -203,13 +220,15 @@ function negamax(
     ply,
     cached?.move ?? null,
   )
-  if (candidates.length === 0) return evaluateBoard(board, player)
+
+  if (candidates.winNow !== null) return WIN_SCORE - ply
+  if (candidates.points.length === 0) return evaluateBoard(board, player)
 
   let best = -Infinity
   let bestMove: Point | null = null
   let lowerBound = alpha
 
-  for (const point of candidates) {
+  for (const point of candidates.points) {
     const index = idx(point.x, point.y)
     board[index] = player
     const childKey = toggleTurn(toggleStone(key, index, player))
@@ -276,11 +295,15 @@ function searchRoot(
     tableMove,
   )
 
+  if (ordered.winNow !== null) {
+    return { move: ordered.winNow, score: WIN_SCORE, depth }
+  }
+
   let alpha = -Infinity
   let best: RootResult | null = null
   let bestMove: Point | null = null
 
-  for (const point of ordered) {
+  for (const point of ordered.points) {
     if (hasExpired(ctx)) return null
 
     const index = idx(point.x, point.y)
@@ -354,10 +377,35 @@ export function searchBoard(
     return { ...shortcut, move: block.move, score: block.score, reason: 'block' }
   }
 
+  const deadline = startedAt + options.budgetMs
+
+  // 算杀放在主搜索之前。严格共用同一份预算会出问题：算杀在没杀的局面下会一直
+  // 搜到超时，把预算吃干净，主搜索只剩时间预算 0——专家档于是变得又慢又不强。
+  // 所以给它**一个上限比例**，剩下的留给迭代加深。
+  if (options.threatPlies > 0) {
+    const forced = findForcedWin(own, player, {
+      maxPlies: options.threatPlies,
+      allowThrees: options.threatThrees,
+      deadline: startedAt + Math.floor(options.budgetMs * THREAT_BUDGET_SHARE),
+      now,
+    })
+
+    if (forced.move !== null) {
+      return {
+        move: forced.move,
+        score: WIN_SCORE,
+        depth: 0,
+        nodes: forced.nodes,
+        ttHits: 0,
+        reason: 'win',
+      }
+    }
+  }
+
   const ctx: SearchContext = {
     options,
     now,
-    deadline: startedAt + options.budgetMs,
+    deadline,
     table: options.transposition ? createTranspositionTable() : null,
     killers: Array.from({ length: options.maxDepth + 2 }, () =>
       Array.from({ length: KILLER_SLOTS }, () => null as Point | null),
@@ -410,6 +458,8 @@ export function chooseMove(request: SearchRequest): SearchResponse {
       maxDepth: params.depth,
       budgetMs: request.budgetMs ?? params.budgetMs,
       transposition: true,
+      threatPlies: params.threatPlies,
+      threatThrees: params.threatThrees,
     },
     Date.now,
   )

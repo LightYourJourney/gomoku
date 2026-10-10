@@ -236,7 +236,14 @@ describe('searchBoard —— 置换表与注入时钟', () => {
     '.......B.......',
   ])
 
-  const options = { width: 10, maxDepth: 4, budgetMs: 60_000, transposition: true }
+  const options = {
+    width: 10,
+    maxDepth: 4,
+    budgetMs: 60_000,
+    transposition: true,
+    threatPlies: 0,
+    threatThrees: false,
+  }
   const clock = (): number => 0
 
   it('开启置换表后节点数少于关闭时', () => {
@@ -256,7 +263,14 @@ describe('searchBoard —— 置换表与注入时钟', () => {
   it('开启置换表不改变必胜局面的结论', () => {
     // 用有唯一正确着法的局面：黑棋四连，两端都能成五，随便选一端都是胜
     const mustWin = boardFromLines(['...............', '...............', '...BBBB........'])
-    const winOptions = { width: 10, maxDepth: 4, budgetMs: 60_000, transposition: true }
+    const winOptions = {
+      width: 10,
+      maxDepth: 4,
+      budgetMs: 60_000,
+      transposition: true,
+      threatPlies: 0,
+      threatThrees: false,
+    }
 
     const withTable = searchBoard(mustWin, BLACK, winOptions, clock)
     const withoutTable = searchBoard(mustWin, BLACK, { ...winOptions, transposition: false }, clock)
@@ -269,7 +283,13 @@ describe('searchBoard —— 置换表与注入时钟', () => {
     // canWinNow 返回 WIN_SCORE - ply，若直接存表就会带上「本次迭代目标深度」，
     // 同一局面在不同 maxDepth 下会拿到不同分值。
     const mustWin = boardFromLines(['...............', '...............', '...BBBB........'])
-    const base = { width: 10, budgetMs: 60_000, transposition: true }
+    const base = {
+      width: 10,
+      budgetMs: 60_000,
+      transposition: true,
+      threatPlies: 0,
+      threatThrees: false,
+    }
 
     const shallow = searchBoard(mustWin, BLACK, { ...base, maxDepth: 2 }, clock)
     const deep = searchBoard(mustWin, BLACK, { ...base, maxDepth: 5 }, clock)

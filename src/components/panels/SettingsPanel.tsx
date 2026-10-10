@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { AVAILABLE_DIFFICULTIES, DIFFICULTIES, DIFFICULTY_LABELS } from '../../ai/difficulty'
+import { AVAILABLE_DIFFICULTIES, DIFFICULTY_LABELS } from '../../ai/difficulty'
 import type { Difficulty } from '../../ai/types'
 import { BLACK, WHITE, type Player } from '../../core/types'
 import { THEME_LABELS, THEME_PREFERENCES, type ThemePreference } from '../../lib/theme'
@@ -80,21 +80,16 @@ export function SettingsPanel(props: SettingsPanelProps) {
               />
             </Field>
 
-            <Field label="AI 难度" hint="Phase 1 开放两档">
+            <Field label="AI 难度" hint="越高越强，也越慢">
               <Segmented
                 label="AI 难度"
                 columns={3}
                 value={difficulty}
                 onChange={onDifficultyChange}
-                options={DIFFICULTIES.map((value) => {
-                  const available = AVAILABLE_DIFFICULTIES.includes(value)
-                  return {
-                    value,
-                    label: DIFFICULTY_LABELS[value],
-                    disabled: !available,
-                    hint: available ? undefined : '强化 AI 完成后开放',
-                  }
-                })}
+                options={AVAILABLE_DIFFICULTIES.map((value) => ({
+                  value,
+                  label: DIFFICULTY_LABELS[value],
+                }))}
               />
             </Field>
           </>

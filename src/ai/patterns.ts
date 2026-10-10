@@ -341,15 +341,25 @@ export function shapeScore(counts: ShapeCount): number {
 /**
  * 着法排序用的分值：先用精确口径判五与四（能看见隔子型且很便宜），
  * 都没命中时退回便宜口径看三与二。两条路径互斥，不会重复计分。
+ *
+ * 搜索内部请用 `threatScoreWith` 并把已经算好的 `FastThreat` 传进来——
+ * 那里每个节点都要对全部候选各算两次，重复扫描是主要的开销来源。
  */
-export function threatAt(board: Board, point: Point, player: Player): number {
-  const fast = analyzeFast(board, point, player)
-
+export function threatScoreWith(
+  board: Board,
+  point: Point,
+  player: Player,
+  fast: FastThreat,
+): number {
   if (fast.five) return WIN_SCORE
   if (fast.openFour) return SHAPE_VALUE.openFour
   if (fast.four) return SHAPE_VALUE.four
 
   return shapeScore(analyzeRuns(board, point, player))
+}
+
+export function threatAt(board: Board, point: Point, player: Player): number {
+  return threatScoreWith(board, point, player, analyzeFast(board, point, player))
 }
 
 /** 该点的攻防综合价值：我下在这里的价值，加上对手下在这里对我的威胁。 */

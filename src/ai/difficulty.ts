@@ -3,7 +3,10 @@ import type { Difficulty } from './types'
 export interface DifficultyParams {
   /** 每层保留的候选着法数 */
   readonly width: number
-  /** 搜索深度上限 */
+  /**
+   * 搜索深度上限。注意这是**安全上限、不是承诺**——真正约束搜索的是
+   * `budgetMs`，迭代加深在预算耗尽时就停。实际达到的深度见 AI_ENGINE.md 的实测。
+   */
   readonly depth: number
   /** 时间预算（毫秒） */
   readonly budgetMs: number
@@ -11,30 +14,74 @@ export interface DifficultyParams {
   readonly attack: number
   /** 防守权重 */
   readonly defense: number
+  /** 算杀最大手数；0 表示关闭 */
+  readonly threatPlies: number
+  /** 算杀是否允许活三（VCT）。关掉即纯 VCF。 */
+  readonly threatThrees: boolean
 }
 
 /**
  * 五档难度参数。
  *
- * 难度差异来自参数组合（候选宽度、搜索深度、时间预算、攻防权重），
- * 而不是把固定深度贴上「人类棋力」的标签。
+ * 难度差异来自**真实的能力差异**，不是把固定深度贴上「人类棋力」的标签：
+ * 入门与初级关闭算杀、深度只有 1–2；中级以上开启算杀并逐级加深，专家档
+ * 还允许活三参与算杀（VCT）。
  *
- * Phase 1 只开放 beginner 与 easy；medium / hard / expert 需要 Phase 2 的
- * 迭代加深调优与算杀搜索才谈得上名副其实，现在参数先占位，界面不开放。
+ * 置换表不进这张表——它只影响速度不影响棋力，对低档关掉属于人为削弱。
  */
 export const DIFFICULTY_PARAMS: Record<Difficulty, DifficultyParams> = {
-  beginner: { width: 6, depth: 1, budgetMs: 400, attack: 1, defense: 0.6 },
-  easy: { width: 10, depth: 2, budgetMs: 900, attack: 1, defense: 1 },
-  medium: { width: 12, depth: 4, budgetMs: 1500, attack: 1, defense: 1 },
-  hard: { width: 14, depth: 6, budgetMs: 2500, attack: 1, defense: 1 },
-  expert: { width: 16, depth: 8, budgetMs: 4000, attack: 1, defense: 1 },
+  beginner: {
+    width: 6,
+    depth: 1,
+    budgetMs: 250,
+    attack: 1,
+    defense: 0.6,
+    threatPlies: 0,
+    threatThrees: false,
+  },
+  easy: {
+    width: 10,
+    depth: 2,
+    budgetMs: 500,
+    attack: 1,
+    defense: 1,
+    threatPlies: 0,
+    threatThrees: false,
+  },
+  medium: {
+    width: 10,
+    depth: 4,
+    budgetMs: 1000,
+    attack: 1,
+    defense: 1,
+    threatPlies: 6,
+    threatThrees: false,
+  },
+  hard: {
+    width: 12,
+    depth: 6,
+    budgetMs: 1600,
+    attack: 1,
+    defense: 1,
+    threatPlies: 10,
+    threatThrees: false,
+  },
+  expert: {
+    width: 14,
+    depth: 8,
+    budgetMs: 2600,
+    attack: 1,
+    defense: 1,
+    threatPlies: 14,
+    threatThrees: false,
+  },
 }
 
 /** 全部难度，顺序即由弱到强。 */
 export const DIFFICULTIES = Object.keys(DIFFICULTY_PARAMS) as readonly Difficulty[]
 
-/** Phase 1 界面开放使用的难度。 */
-export const AVAILABLE_DIFFICULTIES: readonly Difficulty[] = ['beginner', 'easy']
+/** 界面开放使用的难度。Phase 2 起五档全开。 */
+export const AVAILABLE_DIFFICULTIES: readonly Difficulty[] = DIFFICULTIES
 
 export function isDifficulty(value: unknown): value is Difficulty {
   return typeof value === 'string' && (DIFFICULTIES as readonly string[]).includes(value)
