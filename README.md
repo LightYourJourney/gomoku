@@ -2,7 +2,7 @@
 
 一款离线可用的现代五子棋 Web 应用：人机对战、AI 提示、互动教学、残局挑战与对局复盘。
 
-**当前进度：Phase 2（强化 AI）已完成，待验收。** 五档难度全部开放，引擎具备棋型识别（含隔子型）、Zobrist 置换表、迭代加深与算杀搜索；AI 提示可以在棋盘上标出推荐着法，且**只做分析、绝不落子**。规则与 AI 均经过自动化测试验证（414 条单元 / 组件用例 + 17 条端到端）。
+**当前进度：Phase 3（互动教学 + 残局挑战）已完成，待验收。** 8 节可交互课程 + 15 道残局题，题目只给局面与目标、**答案由引擎现场算出来**，所以想出别的走法一样算对。规则、AI 与教学内容均经过自动化测试验证（559 条单元 / 组件用例 + 26 条端到端）。
 
 ![桌面端浅色主题](docs/screenshots/desktop-light.png)
 
@@ -29,6 +29,8 @@ yarn dev          # 开发服务器
 | `yarn lint` | oxlint |
 | `yarn bench` | 跑引擎基准（约一两分钟），数字见 `docs/AI_ENGINE.md` 的「实测」一节 |
 
+![课程列表](docs/screenshots/phase3-lessons.png)
+
 ## 已实现的能力
 
 **规则（`src/core`）**
@@ -47,6 +49,16 @@ yarn dev          # 开发服务器
 
 ![AI 提示](docs/screenshots/phase2-hint.png)
 
+**互动教学与残局（`src/learn`）**
+8 节课从规则讲到做杀，每节都是「讲解页（带棋盘图解与可逐步播放的手顺演示）→ 一道练习」。15 道残局题分六类，从一步获胜到连续冲四。
+
+判定看的是**棋型而不是答案坐标**：题目只声明目标（做出活四、形成双重威胁、走出某条强制取胜路线的第一步……），判定用引擎自己的棋型分析与算杀去证明这一手是否达成目标。三个后果直接落袋——多解是自然结果、出题人没有机会把答案写错、提示与判定用的是同一把尺子。做错了会给出算出来的理由（对手的成五点在哪、这一手实际做出了什么棋型），还有三级渐进提示：前两级是点拨，第三级才让引擎把点位标在棋盘上。
+
+![练习反馈](docs/screenshots/phase3-practice-bad.png)
+
+**学习进度**
+存 IndexedDB：做完的课、做对的题、上次停在哪儿。刷新后回到原处。存储不可用时（隐私模式等）整体降级为内存态——进度丢了可以接受，白屏不行。
+
 **本地存档**
 每步自动存入 localStorage，刷新页面即恢复对局；即使刷新时正轮到 AI，恢复后它也会接着把这局走完。存档格式带版本号，任何损坏的存档都会被安全丢弃。
 
@@ -54,7 +66,7 @@ yarn dev          # 开发服务器
 
 ## 技术栈
 
-React 19 · TypeScript 6 · Vite 8 · Tailwind CSS 4 · Zustand 5 · Web Worker · Vitest 5 · Playwright
+React 19 · TypeScript 6 · Vite 8 · Tailwind CSS 4 · Zustand 5 · Web Worker · IndexedDB · Vitest 5 · Playwright
 
 （动画库 `motion` 排在 Phase 5：Phase 1 时装了但全库零引用，属于提前引入，已移除。）
 
@@ -66,6 +78,7 @@ React 19 · TypeScript 6 · Vite 8 · Tailwind CSS 4 · Zustand 5 · Web Worker 
 src/
 ├─ core/       纯规则与对局状态机（零 React、零 DOM）
 ├─ ai/         棋型、评估、搜索与 Worker 适配
+├─ learn/      课程与题库：目标判定、求解与提示（纯逻辑）
 ├─ store/      Zustand 状态（对局 / 设置）
 ├─ persist/    存档序列化与校验
 ├─ lib/        主题、音效、坐标格式化等无状态工具

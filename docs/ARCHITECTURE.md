@@ -33,18 +33,23 @@ components / features   ← 展示层，只做渲染与事件转发
 
 **`bench/`** —— 基准脚本，跑出文档里的全部性能数字（`yarn bench`，独立于 `yarn test`）。它**不参与应用分层**，但会直接依赖 `ai/` 层（搜索、评估、棋型、难度参数），所以 `ai` 改接口时它要跟着改。
 
+**`learn/`** —— 教学内容。
+`types.ts` 课程与题目的数据形状；`verify.ts` 判定一手棋有没有达成目标；`hints.ts` 求解与三级提示；`lessons.ts` / `puzzles.ts` 是内容本身。依赖方向 `features → store → learn → ai → core`，单向；`learn` 不得被 `ai`/`core` 反向依赖。
+
 **`store/`** —— 状态编排。
-`gameStore.ts` 是对局与 AI 请求的状态机（工厂函数 `createGameStore(engine)`，可注入假引擎测试）；`useGameStore.ts` 组装真实引擎与存档，是应用唯一的单例入口；`settingsStore.ts` 是主题、坐标、音效等偏好。
+`gameStore.ts` 是对局与 AI 请求的状态机（工厂函数 `createGameStore(engine)`，可注入假引擎测试）；`useGameStore.ts` 组装真实引擎与存档，是应用唯一的单例入口；`learnStore.ts` 是学习进度与当前视图（工厂函数 `createLearnStore(storage)`，可注入假存储测试）；`settingsStore.ts` 是主题、坐标、音效等偏好。
 
 **`persist/`** —— 存档。
-`storage.ts` 负责序列化与**结构校验**。任何一处不符合预期都返回 `null`，宁可当作没有存档重开一局，也不把损坏数据灌进状态机。
+`storage.ts` 负责对局存档的序列化与**结构校验**（localStorage）；`progress.ts` 负责学习进度（IndexedDB）。两处同一条口径：任何一处不符合预期都当作没有数据，宁可重来也不把半成品灌进状态机。
+
+**为什么分两种存储**：对局存档每次落子都要写、数据小、丢了就丢了；学习进度写得少但**丢了会让人白学一遍**，值得用更耐久的 IndexedDB。进度层在 IndexedDB 不可用时（隐私模式、open 抛错、被其他标签页占用）整体降级为内存态——进度丢了可以接受，白屏不行。
 
 **`lib/`** —— 无状态工具：主题解析、WebAudio 音效合成、坐标格式化、类名拼接。
 
 **`components/`** —— 展示。
-`ui/` 是与业务无关的原子组件；`board/` 是棋盘；`panels/` 是业务面板。面板全部通过 props 接收数据与回调，不直接读 store。
+`ui/` 是与业务无关的原子组件；`board/` 是棋盘（`Board` + `BoardStage` 容器）；`panels/` 是业务面板。面板全部通过 props 接收数据与回调，不直接读 store。
 
-**`features/`** —— 容器。`battle/` 负责把 store 与面板接起来，并承载 `status.ts` 这类纯推导逻辑。
+**`features/`** —— 容器。`shell/` 是三个页面共用的顶栏（品牌 + 导航 + 主题）；`battle/` 是对战页，并承载 `status.ts` 这类纯推导逻辑；`learn/` 是课程列表与课程运行器；`puzzles/` 是残局挑战。
 
 ## 关键数据流
 
@@ -75,6 +80,29 @@ GameStore.applyHintResponse：只写 hint / hintUrgency，**不调用 applyMove*
    ↓
 Board.hints → 棋盘上按推荐顺序画编号 1/2/3 的标记
 ```
+
+## 教学内容的判定模型
+
+课程练习与残局题共用一套结构（`learn/types.ts` 的 `Practice`）：**题目只声明局面与目标，不声明答案坐标**。
+
+```ts
+type PuzzleGoal =
+  | { kind: 'win' }                                  // 一手成五
+  | { kind: 'blockFive' }                            // 堵掉对手的成五点
+  | { kind: 'makeShape'; shape: ShapeKind }          // 做出指定棋型
+  | { kind: 'doubleThreat' }                         // 双四 / 四三 / 双活三
+  | { kind: 'forcedWin'; maxPlies: number }          // 某条强制取胜路线的第一步
+```
+
+判定（`verify.ts` 的 `judgeMove`）用引擎自己的棋型分析与算杀去证明这一手是否达成目标。三个好处直接落袋：
+
+1. **多解是自然结果**，不需要把每种正确走法都列出来。
+2. **出题人没有机会把答案写错**——没有答案表可写。
+3. **求解器（`solveMove`）建立在判定器之上**，所以「题目可解」与「玩家做对」用的是同一把尺子，不可能出现「提示指的那一手被判错」。
+
+`content.test.ts` 是这套模型的验收装置：它把全部课程与题目逐个跑一遍求解器，任何一道无解、任何一道开局就已经分出胜负、任何一处手数奇偶对不上，都会在那里被点名。
+
+**`forcedWin` 的判定必须在落子前的盘面上做**（`isForcedWinStart`），不能拿落子后的盘面去调 `findForcedWin`：那个函数假定「传进来的盘面轮到攻方走」，而玩家落子之后轮到的是对手——等于白送一手，会把输棋判成赢棋。
 
 ## 并发的五处关键约定
 
@@ -123,6 +151,8 @@ Board.hints → 棋盘上按推荐顺序画编号 1/2/3 的标记
 | `store` | Vitest | 过期响应丢弃、人机悔棋撤销一轮、终局拒收落子、存档恢复后续走、提示请求不落子且不挤占落子通道 |
 | `persist` | Vitest | 序列化往返、各类损坏数据的降级 |
 | `components` | Vitest + Testing Library | 225 个交叉点、点击落子、终局禁点、最后一步与胜利标记、坐标开关、标记的编号与色调 |
+| `learn` | Vitest | 五种目标的判定与错误理由、求解器与判定器口径一致、三级提示、**全部课程与题目的可解性自检** |
+| `features` | Vitest + Testing Library | 练习的判定与重试与锁盘、三级提示的揭示节奏、课程翻页与棋盘演示、残局进度 |
 | 端到端 | Playwright（本机 Chrome） | 完整对局流、命中位置正确性、悔棋、重开、刷新恢复、认输、提示标记的出现与消失 |
 
 `core` 与 `ai` 的测试全部针对纯函数，不 mock 任何东西。`store` 的测试注入一个可以精确控制应答时机的假引擎，用来构造各种「响应迟到」的时序。
