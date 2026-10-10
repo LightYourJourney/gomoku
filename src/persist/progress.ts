@@ -1,0 +1,187 @@
+export interface LearningProgress {
+  readonly completedLessons: readonly string[]
+  readonly solvedPuzzles: readonly string[]
+  /** 上次停留的位置，用于刷新后回到原处。null 表示从列表开始。 */
+  readonly lastVisited: { readonly kind: 'lesson' | 'puzzle'; readonly id: string } | null
+  /**
+   * 上次所在的顶层视图。
+   *
+   * 不存它的话，在残局页刷新会被踢回对战页——「刷新后回到原处」就只覆盖了课程。
+   */
+  readonly lastView: 'battle' | 'learn' | 'puzzles'
+}
+
+export const EMPTY_PROGRESS: LearningProgress = {
+  completedLessons: [],
+  solvedPuzzles: [],
+  lastVisited: null,
+  lastView: 'battle',
+}
+
+/** 存取接口。`learnStore` 依赖这个形状而不是具体实现，测试可以注入假存储。 */
+export interface ProgressStorage {
+  load(): Promise<LearningProgress>
+  save(progress: LearningProgress): Promise<void>
+  clear(): Promise<void>
+}
+
+const DB_NAME = 'gomoku-lab'
+const DB_VERSION = 1
+const STORE = 'progress'
+const KEY = 'learning'
+
+/** 注入点。生产路径不调用；测试用它模拟「隐私模式」或者干脆关掉 IndexedDB。 */
+let factory: IDBFactory | null = null
+
+export function __setIndexedDbFactory(next: IDBFactory | null): void {
+  factory = next
+  memoryFallback = null
+}
+
+/**
+ * 内存兜底。
+ *
+ * IndexedDB 在隐私模式、无痕窗口、部分企业策略下会不可用（`indexedDB` 是
+ * undefined，或者 `open` 直接抛错、触发 `onerror`）。**进度丢了可以接受，
+ * 白屏不行**——所以任何一步失败都退到这里，读写照常。
+ */
+let memoryFallback: LearningProgress | null = null
+
+function resolveFactory(): IDBFactory | null {
+  if (factory !== null) return factory
+  try {
+    return typeof indexedDB === 'undefined' ? null : indexedDB
+  } catch {
+    return null
+  }
+}
+
+function openDatabase(): Promise<IDBDatabase> {
+  return new Promise((resolve, reject) => {
+    const active = resolveFactory()
+    if (active === null) {
+      reject(new Error('IndexedDB 不可用'))
+      return
+    }
+
+    let request: IDBOpenDBRequest
+    try {
+      request = active.open(DB_NAME, DB_VERSION)
+    } catch (error) {
+      reject(error instanceof Error ? error : new Error(String(error)))
+      return
+    }
+
+    request.onupgradeneeded = () => {
+      const db = request.result
+      if (!db.objectStoreNames.contains(STORE)) db.createObjectStore(STORE)
+    }
+    request.onsuccess = () => resolve(request.result)
+    request.onerror = () => reject(new Error('打不开进度库'))
+    request.onblocked = () => reject(new Error('进度库被其他标签页占用'))
+  })
+}
+
+/** 校验读回来的东西。任何一处不符合预期都当作没有进度。 */
+function parseProgress(value: unknown): LearningProgress | null {
+  if (typeof value !== 'object' || value === null) return null
+  const raw = value as Record<string, unknown>
+
+  const strings = (input: unknown): string[] | null => {
+    if (!Array.isArray(input)) return null
+    for (const entry of input) {
+      if (typeof entry !== 'string') return null
+    }
+    return input as string[]
+  }
+
+  const completedLessons = strings(raw.completedLessons)
+  const solvedPuzzles = strings(raw.solvedPuzzles)
+  if (completedLessons === null || solvedPuzzles === null) return null
+
+  const view = raw.lastView
+  if (view !== 'battle' && view !== 'learn' && view !== 'puzzles') return null
+
+  let lastVisited: LearningProgress['lastVisited'] = null
+  if (raw.lastVisited !== null && raw.lastVisited !== undefined) {
+    if (typeof raw.lastVisited !== 'object') return null
+    const visited = raw.lastVisited as Record<string, unknown>
+    const kind = visited.kind
+    if (kind !== 'lesson' && kind !== 'puzzle') return null
+    if (typeof visited.id !== 'string') return null
+    lastVisited = { kind, id: visited.id }
+  }
+
+  return { completedLessons, solvedPuzzles, lastVisited, lastView: view }
+}
+
+async function readFromIndexedDb(): Promise<LearningProgress | null> {
+  const db = await openDatabase()
+
+  try {
+    return await new Promise<LearningProgress | null>((resolve, reject) => {
+      const tx = db.transaction(STORE, 'readonly')
+      const request = tx.objectStore(STORE).get(KEY)
+      request.onsuccess = () => resolve(parseProgress(request.result))
+      request.onerror = () => reject(new Error('读进度失败'))
+    })
+  } finally {
+    db.close()
+  }
+}
+
+async function writeToIndexedDb(progress: LearningProgress | null): Promise<void> {
+  const db = await openDatabase()
+
+  try {
+    await new Promise<void>((resolve, reject) => {
+      const tx = db.transaction(STORE, 'readwrite')
+      const store = tx.objectStore(STORE)
+      if (progress === null) store.delete(KEY)
+      else store.put(JSON.parse(JSON.stringify(progress)), KEY)
+      tx.oncomplete = () => resolve()
+      tx.onerror = () => reject(new Error('写进度失败'))
+      tx.onabort = () => reject(new Error('写进度被中止'))
+    })
+  } finally {
+    db.close()
+  }
+}
+
+export async function loadProgress(): Promise<LearningProgress> {
+  try {
+    const stored = await readFromIndexedDb()
+    if (stored !== null) return stored
+  } catch {
+    // 落到内存态
+  }
+
+  return memoryFallback ?? EMPTY_PROGRESS
+}
+
+export async function saveProgress(progress: LearningProgress): Promise<void> {
+  memoryFallback = progress
+
+  try {
+    await writeToIndexedDb(progress)
+  } catch {
+    // 已经写进内存态了，本次会话照常可用
+  }
+}
+
+export async function clearProgress(): Promise<void> {
+  memoryFallback = EMPTY_PROGRESS
+
+  try {
+    await writeToIndexedDb(null)
+  } catch {
+    // 同上
+  }
+}
+
+/** 真实存储的单例，供 `useLearnStore` 装配。 */
+export const indexedDbProgress: ProgressStorage = {
+  load: loadProgress,
+  save: saveProgress,
+  clear: clearProgress,
+}
