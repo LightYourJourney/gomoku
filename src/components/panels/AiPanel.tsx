@@ -100,8 +100,9 @@ export function AiPanel({ thinking, info, error, canRetry, onRetry, onDismissErr
       )}
 
       <p className="mt-3 border-t border-border pt-3 text-[11px] leading-relaxed text-faint">
-        Phase 1 的引擎使用棋型评分与 1–2 层 Negamax 搜索，能识破直接取胜与必须防守。
-        更深的迭代加深、置换表与算杀将在 Phase 2 接入。
+        引擎跑在 Web Worker 里，用 Negamax + Alpha-Beta 迭代加深，配 Zobrist 置换表与
+        杀手着法；中级以上还会先跑一遍算杀（连续冲四）。「搜索深度」是已经完整搜完的层数——
+        时间预算不够时会退回上一层的结果，实际的深度上限见 docs/AI_ENGINE.md 的实测。
       </p>
     </Panel>
   )

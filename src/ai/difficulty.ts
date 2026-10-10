@@ -24,10 +24,13 @@ export interface DifficultyParams {
  * 五档难度参数。
  *
  * 难度差异来自**真实的能力差异**，不是把固定深度贴上「人类棋力」的标签：
- * 入门与初级关闭算杀、深度只有 1–2；中级以上开启算杀并逐级加深，专家档
- * 还允许活三参与算杀（VCT）。
+ * 入门与初级关闭算杀、深度只有 1–2；中级以上开启算杀并逐级加深。
  *
  * 置换表不进这张表——它只影响速度不影响棋力，对低档关掉属于人为削弱。
+ *
+ * `threatThrees` 五档全是 false，也就是只用 VCF、不用 VCT。VCT 的实现与测试
+ * 都在（见 threat.ts），但实测代价约为 VCF 的 15 倍，而在中低档的深度下
+ * 换来的棋力提升看不出来，所以默认关闭。这是一处**有意的漏杀**，不是没做。
  */
 export const DIFFICULTY_PARAMS: Record<Difficulty, DifficultyParams> = {
   beginner: {
