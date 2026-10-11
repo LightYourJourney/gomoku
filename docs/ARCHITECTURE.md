@@ -36,7 +36,7 @@ components / features   ← 展示层，只做渲染与事件转发
 **`learn/`** —— 教学内容。
 `types.ts` 课程与题目的数据形状；`verify.ts` 判定一手棋有没有达成目标；`hints.ts` 求解与三级提示；`lessons.ts` / `puzzles.ts` 是内容本身；`positions.ts` 是被多处内容共用的局面常量（字符画写法见 `lib/board-lines.ts`）。依赖方向 `features → store → learn → ai → core`，单向；`learn` 不得被 `ai`/`core` 反向依赖。
 
-**共用局面为什么值得单独抽一个文件**：同一个局面会被讲解、练习和题库一起引用（`FOUR_THREE` 就被四处用），抄几遍的话改一处必漏几处。但它同时是个陷阱——**两道题共用同一块盘面时，题面很容易照着「我以为的差别」写，而盘面其实一模一样**。第四轮审查抓到过一次，见 `docs/TEST_REPORT.md` 的「二之六」。抽常量之后仍要逐题核对题面描述与盘面是否相符。
+**共用局面为什么值得单独抽一个文件**：同一个局面会被讲解、练习和题库一起引用（`FOUR_THREE` 就被 5 处用），抄几遍的话改一处必漏几处。但它同时是个陷阱——**两道题共用同一块盘面时，题面很容易照着「我以为的差别」写，而盘面其实一模一样**。第四轮审查抓到过一次，见 `docs/TEST_REPORT.md` 的「二之六」。抽常量之后仍要逐题核对题面描述与盘面是否相符。
 
 **`store/`** —— 状态编排。
 `gameStore.ts` 是对局与 AI 请求的状态机（工厂函数 `createGameStore(engine)`，可注入假引擎测试）；`useGameStore.ts` 组装真实引擎与存档，是应用唯一的单例入口；`learnStore.ts` 是学习进度与当前视图（工厂函数 `createLearnStore(storage)`，可注入假存储测试）；`settingsStore.ts` 是主题、坐标、音效等偏好。

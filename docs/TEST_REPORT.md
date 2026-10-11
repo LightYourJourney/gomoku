@@ -8,7 +8,7 @@
 
 | 项 | 数量 |
 | --- | --- |
-| 单元 / 组件用例 | **562**（32 个文件） |
+| 单元 / 组件用例 | **563**（32 个文件） |
 | 端到端用例 | **27**（桌面 20 + 移动触屏 7） |
 | 基准脚本 | `yarn bench`，结果见 `docs/AI_ENGINE.md` 的「实测」一节 |
 
@@ -44,7 +44,7 @@ Phase 2 的完整实测数据在 `docs/AI_ENGINE.md`，这里只记与测试有�
 
 完整设计见 `docs/ARCHITECTURE.md` 的「教学内容的判定模型」一节。这里只记与测试有关的部分。
 
-**新增测试文件**：`learn/verify.test.ts`（27）、`learn/hints.test.ts`（12）、`learn/lessons.test.ts`（12）、`learn/content.test.ts`（10）、`learn/puzzles.test.ts`（7）、`lib/board-lines.test.ts`（7）、`features/learn/PracticeBoard.test.tsx`（11）、`features/learn/screens.test.tsx`（18）、`persist/progress.test.ts`（15）、`store/learnStore.test.ts`（14）。
+**新增测试文件**：`learn/verify.test.ts`（27）、`learn/hints.test.ts`（12）、`learn/lessons.test.ts`（12）、`learn/content.test.ts`（10）、`learn/puzzles.test.ts`（8）、`lib/board-lines.test.ts`（7）、`features/learn/PracticeBoard.test.tsx`（11）、`features/learn/screens.test.tsx`（18）、`persist/progress.test.ts`（15）、`store/learnStore.test.ts`（14）。
 
 **新增端到端用例**：`e2e/learn.spec.ts`（8 条）、`e2e/mobile.spec.ts` 追加 2 条。
 
@@ -91,7 +91,7 @@ Phase 1 收尾时为 16 个文件 / 261 个用例；下表保留当时的明细�
 ```
 yarn test
 Test Files  32 passed (32)
-     Tests  562 passed (562)
+     Tests  563 passed (563)
 ```
 
 | 测试文件 | 用例数 | 覆盖内容 |
@@ -110,7 +110,7 @@ Test Files  32 passed (32)
 | `learn/hints.test.ts` | 12 | 三级提示的递进、最后一问才给坐标、`HINT_LEVELS` 与内容里的提示条数一致 |
 | `learn/lessons.test.ts` | 12 | 8 节课的结构完整性、名字与摘要非占位、练习目标类型齐全 |
 | `learn/content.test.ts` | 10 | **本阶段的验收装置**：8 节课 + 15 道题逐个跑求解器、开局未分胜负、手数奇偶与落子方一致、盘面行数与守卫 |
-| `learn/puzzles.test.ts` | 7 | 题库结构：分类齐全、题面/解法/提示非占位、同分类不重名、每个分类至少 2 题 |
+| `learn/puzzles.test.ts` | 8 | 题库结构：分类齐全、题面/解法/提示非占位、同分类不重名、每个分类至少 2 题、**没有两道题同盘同目标**（判重，见「二之六·反向验证」） |
 | `lib/board-lines.test.ts` | 7 | 字符画 ↔ 棋盘的双向解析、非法字符与行数不匹配的守卫 |
 | `features/learn/PracticeBoard.test.tsx` | 11 | 练习交互：落子 → 判定 → 反馈、做错可重试、**一次通过只上报一次**（防重复回调） |
 | `features/learn/screens.test.tsx` | 18 | 课程列表 / 讲解页 / 练习页 / 残局列表与详情的渲染与导航、**换课必须重建组件**（`key` 换成 `lesson.id` 的那条回归） |
@@ -419,9 +419,15 @@ Phase 2 提交后做了一轮与 Phase 1 同配置的两轴审查：标准轴（
 | 把什么改坏 | 结果 |
 | --- | --- |
 | 拿掉 `Board` 的 `touch-action: none` | 学习页拖动用例**红**（对战页那条在 Phase 1 已验过同样的对照） |
-| `forced-deep` 用回与 `vcf-basic` 相同的盘面 | `content.test.ts` **红**——奇偶检查报 `expected 1 to be +0` |
 
-第二行值得留意：**抓住重复盘面的不是「两道题不许一样」这类结构断言，而是手数奇偶**。这又一次说明 `content.test.ts` 那种「把内容真的跑一遍」的验收装置比结构检查值钱。
+**这一节的第一版写过一条不实的记录**：声称「`forced-deep` 用回与 `vcf-basic` 相同的盘面，`content.test.ts` 会红（奇偶检查报 `expected 1 to be +0`）」。两条各自真实的事被拼在了一起——那句报错确实出现过，但发生在新盘面的**初版**上（黑 5 白 4，忘配平，奇偶检查当场抓住）；而「换回相同盘面」这个场景**根本没人验过**：审查代理后来真的照做了一遍，`content.test.ts` 全绿——旧盘面黑 5 白 5，奇偶为 0，没有任何断言能拦它。
+
+也就是说，**当时根本没有一条测试能抓住「两道题同盘同目标」**，文档却把它写成了已有防线。修正分两步：
+
+1. 承认空缺：上面的表格里不再有那行。
+2. 补上断言：`puzzles.test.ts` 新增「没有两道题是同一块盘面 + 同一个目标」的判重用例（盘面 + 落子方 + 目标谓词整体比对；同盘不同目标是合法的教学设计，不算重复）。写完照规矩撤回验证——把 `forced-deep` 的盘面改回 `FOUR_THREE`，用例**红**，报 `forced-deep 与 vcf-basic 盘面、落子方、目标完全相同`；恢复后回绿。
+
+值得诚实说一句：抓住原始缺陷（两题同盘）的既不是奇偶检查、也不是这条新断言，而是规格轴审查代理拿 `JSON.stringify` 逐字比对——**人做的那一步**。这条新断言的意义在于把它变成机器防线，让下一次「顺手复用盘面」在提交前就被拦下。
 
 ### 改完内容之后又看了一遍
 
@@ -434,6 +440,21 @@ Phase 2 提交后做了一轮与 Phase 1 同配置的两轴审查：标准轴（
 
 1. **`ShapeKind` 不缩窄。** 规格轴指出 `'five'` / `'three'` 没有任何内容用到。但 `ShapeKind` 是**棋型词汇表**，`SHAPE_LABELS` 的 `Record<ShapeKind, string>` 靠它覆盖引擎返回的 `ThreatKind`——砍掉这两个成员，`threatLabel` 就收不回引擎给的威胁档位。现有内容只把 `openTwo` / `openThree` / `openFour` 当目标，那是**内容覆盖面**的问题，不是类型多写了。改为在类型注释里写明这条约束。
 2. **计划里的三个测试文件没建。** `navStore.test.ts`、`LessonView.test.tsx`、`FeedbackBanner.test.tsx` 在 Phase 3 计划里点过名，实际没有单独建：视图切换那部分被 `screens.test.tsx`（18 条）覆盖了，两个面板被 `PracticeBoard.test.tsx`（11 条）覆盖了，`navStore` 最终没有独立存在——它并进了 `learnStore`。**这算计划偏差，如实记在这里**，不当成「已按计划完成」。
+
+### 第五轮：对本修复提交本身的两轴复审（`/code-review max --fix`）
+
+审查 `fd0d5e0` 这个提交。**硬违规 0**；标准轴 4 条判断题、规格轴 2 条真问题，全部处理：
+
+| 轴 | 发现 | 处理 |
+| --- | --- | --- |
+| 标准 | `CATEGORY_ORDER` 改为派生后，「顺序表就是标签表的声明顺序」那条断言**恒真永不可能红**——又一条「断言比名字弱」 | 改为钉死分类的声明顺序（它是界面分组与 e2e 断言的契约），改顺序必须显式 |
+| 标准 | `puzzles.ts` 里 `const FILLER = BLANK`，一个常量两个名字 | 删别名，102 处统一用 `BLANK` |
+| 标准 | 进度版本闸门递增会静默清零存量进度，影响面只写在注释里 | 记入 `ROADMAP.md`「已知不足」 |
+| 标准 | `positions.ts` 说 `FOUR_THREE`「被四处共用」，实为 5 处（lessons 3 + puzzles 2），`ARCHITECTURE.md` 同错 | 都改为 5 处 |
+| 规格 | **「二之六·反向验证」有一条不实记录**（详见该节的重写）：「换回相同盘面会红」从未被验证过，两条真实发生的事被拼成了一条假记录 | 重写该节如实交代；补上真正能抓住「同盘同目标」的判重断言并撤回验证 |
+| 规格 | `positions.ts` 注释沿用「被两头堵死的眠三」原话，且「白棋只用来配平手数」是错的——实测挪掉 (8,7) 白子后横向从冲四变**活四**，那两颗白子是结构本身 | 重写注释，并写明「改这个局面时白子一颗都不能动」 |
+
+规格轴同时核实通过：forced-deep 新盘面（3 层无解、5 层取胜、真四三、黑5白5、(12,4) 白子远离战区）、五处 `forcedWin` 全 5 手、`progress.test.ts` 摘除/恢复逻辑正确、`mobile.spec.ts` CDP 触摸序列完整。`learn.spec.ts` 刷新断言那处是纯新增（无「反转」），与 PracticeBoard 内部状态在刷新时重建的行为一致，属合理补充。
 
 ---
 
