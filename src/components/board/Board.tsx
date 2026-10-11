@@ -1,4 +1,4 @@
-import { useId, useState, type CSSProperties } from 'react'
+import { useEffect, useId, useRef, useState, type KeyboardEvent as ReactKeyboardEvent, type CSSProperties } from 'react'
 import { idx } from '../../core/board'
 import { BOARD_SIZE, type Board as BoardModel, type Player, type Point } from '../../core/types'
 import { columnLabel, formatPoint, rowLabel } from '../../lib/coords'
@@ -83,6 +83,9 @@ const STAR_POINTS: readonly Point[] = [
 
 const AXIS = Array.from({ length: BOARD_SIZE }, (_, i) => i)
 
+/** 键盘焦点的默认起点：天元。五子棋的第一手，也是个好记的坐标。 */
+const CENTER_POINT: Point = { x: 7, y: 7 }
+
 function pointKey(point: Point): string {
   return `${point.x},${point.y}`
 }
@@ -108,6 +111,85 @@ export function Board({
 }: BoardProps) {
   const uid = useId().replace(/[^a-zA-Z0-9]/g, '')
   const [hovered, setHovered] = useState<Point | null>(null)
+  // 键盘焦点所在格。默认天元——那是五子棋的第一手，也是个合理的起点。
+  const [focused, setFocused] = useState<Point>(CENTER_POINT)
+  const focusCellRef = useRef<SVGRectElement | null>(null)
+
+  /**
+   * 把 DOM 焦点搬到某一格上。
+   *
+   * roving tabindex 只改 `tabIndex` 是不够的——读屏软件跟的是**真实的焦点**，
+   * 不搬它就等于键盘用户在原地打转。真正的 `focus()` 放在 effect 里：
+   * 那时 React 已经把新的 tabIndex 落到 DOM 上了（组件测试里也是同步的，
+   * 用 rAF 会和断言抢时间）。
+   *
+   * **挂载时不抢焦点**：页面加载就把焦点拽到棋盘上，对屏幕阅读器用户是
+   * 一种绑架——只有键盘真的移动过焦点（`movedByKeyboard`）才搬。
+   */
+  const movedByKeyboardRef = useRef(false)
+
+  const moveFocus = (point: Point): void => {
+    movedByKeyboardRef.current = true
+    setFocused(point)
+  }
+
+  useEffect(() => {
+    if (!interactive || !movedByKeyboardRef.current) return
+    // 只在焦点还留在棋盘上、或已经掉到 body 时才接管。轮到 AI 时整盘不可聚焦，
+    // 焦点会掉到 body；但玩家也可能趁这段时间 Tab 到「悔棋」上——
+    // 那时把焦点抢回棋盘是帮倒忙。
+    const active = document.activeElement
+    const unclaimed =
+      active === null ||
+      active === document.body ||
+      active === document.documentElement ||
+      active.getAttribute('role') === 'gridcell'
+    if (!unclaimed) return
+    focusCellRef.current?.focus()
+  }, [focused, interactive])
+
+  const handleKeyDown = (event: ReactKeyboardEvent, point: Point): void => {
+    if (!interactive) return
+
+    const step: Record<string, Point> = {
+      ArrowUp: { x: 0, y: -1 },
+      ArrowDown: { x: 0, y: 1 },
+      ArrowLeft: { x: -1, y: 0 },
+      ArrowRight: { x: 1, y: 0 },
+    }
+
+    const delta = step[event.key]
+    if (delta !== undefined) {
+      event.preventDefault()
+      // 越界即停，不绕回另一头——棋盘不是环面
+      const next = { x: point.x + delta.x, y: point.y + delta.y }
+      if (next.x >= 0 && next.x < BOARD_SIZE && next.y >= 0 && next.y < BOARD_SIZE) {
+        moveFocus(next)
+      }
+      return
+    }
+
+    if (event.key === 'Home' || event.key === 'End') {
+      event.preventDefault()
+      moveFocus({ x: event.key === 'Home' ? 0 : BOARD_SIZE - 1, y: point.y })
+      return
+    }
+
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault()
+      handleClick(point)
+    }
+  }
+
+  /** 一格的可读名：坐标 + 状态。键盘用户靠它知道自己在哪、这一格有什么。 */
+  const cellLabel = (point: Point): string => {
+    const cell = board[idx(point.x, point.y)]
+    const base = formatPoint(point)
+    if (cell === 0) return `${base} 空位`
+    const who = cell === 1 ? '黑棋' : '白棋'
+    const isLast = lastMove !== null && lastMove.x === point.x && lastMove.y === point.y
+    return isLast ? `${base} ${who}（最后一手）` : `${base} ${who}`
+  }
 
   const winKeys = new Set((winLine ?? []).map(pointKey))
   const lastKey = lastMove === null ? null : pointKey(lastMove)
@@ -142,8 +224,12 @@ export function Board({
       viewBox={VIEW_BOX}
       style={SVG_STYLE}
       className="h-full w-full select-none"
-      role="img"
-      aria-label={`五子棋棋盘，已落子 ${stones.length} 手${lastMove ? `，最后一手在 ${formatPoint(lastMove)}` : ''}`}
+      role={interactive ? 'grid' : 'img'}
+      aria-label={
+        interactive
+          ? `五子棋棋盘，已落子 ${stones.length} 手。用方向键移动、回车落子。`
+          : `五子棋棋盘，已落子 ${stones.length} 手${lastMove ? `，最后一手在 ${formatPoint(lastMove)}` : ''}`
+      }
       onMouseLeave={() => setHovered(null)}
     >
       <defs>
@@ -374,31 +460,44 @@ export function Board({
         />
       )}
 
+      {/*
+        命中区。可交互时按 ARIA grid 组织：每行是一个 role="row"，
+        每格是 role="gridcell"——gridcell 必须有 row 作上下文，
+        平铺 225 个 cell 是无主的。只读（回放）时不加这些语义。
+      */}
       <g>
-        {AXIS.map((y) =>
-          AXIS.map((x) => {
-            const point = { x, y }
-            const occupied = board[idx(x, y)] !== 0
-            const playable = interactive && !occupied
+        {AXIS.map((y) => (
+          <g key={y} role={interactive ? 'row' : undefined}>
+            {AXIS.map((x) => {
+              const point = { x, y }
+              const occupied = board[idx(x, y)] !== 0
+              const playable = interactive && !occupied
+              const isFocusStop = focused.x === x && focused.y === y
 
-            return (
-              <rect
-                key={pointKey(point)}
-                data-testid={`intersection-${x}-${y}`}
-                x={x - HALF_CELL}
-                y={y - HALF_CELL}
-                width={HALF_CELL * 2}
-                height={HALF_CELL * 2}
-                fill="transparent"
-                strokeWidth={0}
-                pointerEvents="all"
-                className={playable ? 'cursor-pointer' : undefined}
-                onClick={() => handleClick(point)}
-                onMouseEnter={() => handleEnter(point)}
-              />
-            )
-          }),
-        )}
+              return (
+                <rect
+                  key={pointKey(point)}
+                  ref={isFocusStop ? focusCellRef : undefined}
+                  data-testid={`intersection-${x}-${y}`}
+                  role={interactive ? 'gridcell' : undefined}
+                  aria-label={interactive ? cellLabel(point) : undefined}
+                  tabIndex={interactive ? (isFocusStop ? 0 : -1) : undefined}
+                  x={x - HALF_CELL}
+                  y={y - HALF_CELL}
+                  width={HALF_CELL * 2}
+                  height={HALF_CELL * 2}
+                  fill="transparent"
+                  strokeWidth={0}
+                  pointerEvents="all"
+                  className={playable ? 'cursor-pointer' : undefined}
+                  onClick={() => handleClick(point)}
+                  onMouseEnter={() => handleEnter(point)}
+                  onKeyDown={(event) => handleKeyDown(event, point)}
+                />
+              )
+            })}
+          </g>
+        ))}
       </g>
     </svg>
   )

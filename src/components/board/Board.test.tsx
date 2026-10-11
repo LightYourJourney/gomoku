@@ -1,4 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react'
+import type { ReactElement } from 'react'
 import { describe, expect, it, vi } from 'vitest'
 import { createBoard } from '../../core/board'
 import { BLACK, WHITE } from '../../core/types'
@@ -316,3 +317,165 @@ describe('Board —— 标记的紧凑尺寸', () => {
     expect(Number(circle?.getAttribute('r'))).toBeCloseTo(0.4)
   })
 })
+
+describe('Board —— 键盘与 grid 语义', () => {
+  it('可交互时是可聚焦的 grid，交叉点有坐标与状态的可读名', () => {
+    setup({ interactive: true })
+
+    expect(screen.getByRole('grid')).toBeInTheDocument()
+    expect(screen.getByRole('gridcell', { name: 'H8 空位' })).toBeInTheDocument()
+  })
+
+  it('只读棋盘不是 grid，退回图片语义', () => {
+    setup({ interactive: false })
+
+    expect(screen.queryByRole('grid')).not.toBeInTheDocument()
+    expect(screen.getByRole('img')).toBeInTheDocument()
+  })
+
+  it('已落子的格子可读名里带颜色，最后一手另有说明', () => {
+    setup({
+      board: boardFromLines(['...............', '...............', '...............', '...............', '...............', '...............', '...............', '.....B.........']),
+      lastMove: { x: 5, y: 7 },
+      interactive: true,
+    })
+
+    expect(screen.getByRole('gridcell', { name: 'F8 黑棋（最后一手）' })).toBeInTheDocument()
+  })
+
+  it('整张盘只有一个 Tab 停靠点，默认在天元', () => {
+    setup({ interactive: true })
+
+    const stops = screen.getAllByRole('gridcell').filter((cell) => cell.getAttribute('tabindex') === '0')
+    expect(stops).toHaveLength(1)
+    expect(stops[0]).toHaveAccessibleName('H8 空位')
+    // 容器自己不设 tabIndex——否则盘内会出现第二个停靠点
+    expect(screen.getByRole('grid')).not.toHaveAttribute('tabindex')
+  })
+
+  it('方向键移动焦点，Enter 落子', () => {
+    const { onPlay } = setup({ interactive: true })
+
+    const start = screen.getByRole('gridcell', { name: 'H8 空位' })
+    start.focus()
+    fireEvent.keyDown(start, { key: 'ArrowRight' })
+    fireEvent.keyDown(document.activeElement!, { key: 'ArrowDown' })
+    fireEvent.keyDown(document.activeElement!, { key: 'Enter' })
+
+    expect(onPlay).toHaveBeenCalledWith({ x: 8, y: 8 }) // 天元 (7,7) → 右一格、下一格
+  })
+
+  it('焦点真的搬到了新格上——只改 tabIndex 读屏跟不上', () => {
+    setup({ interactive: true })
+
+    const start = screen.getByRole('gridcell', { name: 'H8 空位' })
+    start.focus()
+    fireEvent.keyDown(start, { key: 'ArrowRight' })
+
+    expect(document.activeElement).toHaveAccessibleName('I8 空位')
+  })
+
+  it('边界处停住，不绕回另一头', () => {
+    setup({ interactive: true, board: boardFromLines(['B..............']) })
+
+    const corner = screen.getByRole('gridcell', { name: 'A15 黑棋' })
+    corner.focus()
+    fireEvent.keyDown(corner, { key: 'ArrowUp' })
+    fireEvent.keyDown(corner, { key: 'ArrowLeft' })
+
+    expect(document.activeElement).toHaveAccessibleName('A15 黑棋')
+  })
+
+  it('空格也能落子；已占用的格子不落子', () => {
+    const { onPlay } = setup({
+      interactive: true,
+      board: boardFromLines(['...............', '...............', '...............', '...............', '...............', '...............', '...............', '.....B.........']),
+    })
+
+    const occupied = screen.getByRole('gridcell', { name: /F8 黑棋/ })
+    occupied.focus()
+    fireEvent.keyDown(occupied, { key: ' ' })
+    expect(onPlay).not.toHaveBeenCalled()
+
+    const empty = screen.getByRole('gridcell', { name: 'G8 空位' })
+    empty.focus()
+    fireEvent.keyDown(empty, { key: ' ' })
+    expect(onPlay).toHaveBeenCalledWith({ x: 6, y: 7 })
+  })
+
+  it('落子后焦点不丢，仍在同一格上（名字已变成已落子）', () => {
+    const { rerender } = setup({ interactive: true })
+
+    const cell = screen.getByRole('gridcell', { name: 'H8 空位' })
+    cell.focus()
+    fireEvent.keyDown(cell, { key: 'Enter' })
+
+    rerender(
+      <Board
+        board={boardFromLines(['...............', '...............', '...............', '...............', '...............', '...............', '...............', '.......B.......'])}
+        lastMove={{ x: 7, y: 7 }}
+        winLine={null}
+        nextPlayer={WHITE}
+        showCoords={false}
+        interactive
+        onPlay={vi.fn()}
+      />,
+    )
+
+    expect(document.activeElement).toHaveAccessibleName('H8 黑棋（最后一手）')
+  })
+
+  it('思考结束后焦点回到棋盘上（期间没人接管）', () => {
+    const { rerender } = setup({ interactive: true })
+
+    const cell = screen.getByRole('gridcell', { name: 'H8 空位' })
+    cell.focus()
+    fireEvent.keyDown(cell, { key: 'ArrowRight' })
+
+    // 轮到 AI：棋盘整盘不可聚焦，焦点掉到 body
+    renderBoard(rerender, false)
+    ;(document.activeElement as HTMLElement | null)?.blur()
+    // AI 走完，重新可落子
+    renderBoard(rerender, true)
+
+    expect(document.activeElement).toHaveAccessibleName('I8 空位')
+  })
+
+  it('思考期间用户把焦点挪走，结束后不抢回来', () => {
+    const outside = document.createElement('button')
+    outside.textContent = '悔棋'
+    document.body.append(outside)
+
+    try {
+      const { rerender } = setup({ interactive: true })
+
+      const cell = screen.getByRole('gridcell', { name: 'H8 空位' })
+      cell.focus()
+      fireEvent.keyDown(cell, { key: 'ArrowRight' })
+      expect(document.activeElement).toHaveAccessibleName('I8 空位')
+
+      renderBoard(rerender, false)
+      outside.focus()
+      renderBoard(rerender, true)
+
+      // 用户自己按 Tab 到的按钮，AI 走完不该把焦点抢回棋盘
+      expect(document.activeElement).toBe(outside)
+    } finally {
+      outside.remove()
+    }
+  })
+})
+
+function renderBoard(rerender: (ui: ReactElement) => void, interactive: boolean): void {
+  rerender(
+    <Board
+      board={boardFromLines(['...............'])}
+      lastMove={null}
+      winLine={null}
+      nextPlayer={BLACK}
+      showCoords={false}
+      interactive={interactive}
+      onPlay={vi.fn()}
+    />,
+  )
+}

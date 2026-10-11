@@ -17,6 +17,7 @@ import { createStoneSound } from '../../lib/sound'
 import { canHumanPlay, canUndo, moverAt, shouldAiMove } from '../../store/gameStore'
 import { useSettingsStore } from '../../store/settingsStore'
 import { useGameStore } from '../../store/useGameStore'
+import { BoardAnnouncer } from './BoardAnnouncer'
 import { describeStatus } from './status'
 
 function InfoRow({ label, children }: { label: string; children: ReactNode }) {
@@ -120,6 +121,8 @@ export function BattleScreen() {
             onPlay={playHuman}
           />
         </BoardStage>
+
+        <BoardAnnouncer game={game} aiThinking={aiThinking} mode={mode} humanColor={humanColor} />
 
         <aside className="order-2 space-y-3 px-3 pb-4 lg:order-3 lg:overflow-y-auto lg:border-l lg:border-border lg:px-4 lg:py-4">
           <Panel title="对局" bodyClassName="space-y-1 p-3.5">

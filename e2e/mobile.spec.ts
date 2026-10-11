@@ -85,7 +85,7 @@ test('触摸点按交叉点可以落子', async ({ page }) => {
   await expect(page.getByTestId('stone-7-7')).toBeVisible()
   await expect(page.getByTestId('stone-7-7')).toHaveAttribute('data-player', '1')
   // AI 应手后轮次交还玩家
-  await expect(page.getByRole('status')).toHaveText('轮到你落子')
+  await expect(page.getByTestId('status-pill')).toHaveText('轮到你落子')
   await expect(page.getByTestId(/^stone-/)).toHaveCount(2)
 })
 
@@ -99,7 +99,7 @@ test('触摸点按的落子位置与交叉点一致', async ({ page }) => {
   ] as const) {
     // 必须等 AI 应完手、轮次交还玩家再点下一处，否则这一下会被 interactive
     // 静默吞掉，用例变成「赌 AI 已经走完了」。
-    await expect(page.getByRole('status')).toHaveText('轮到你落子')
+    await expect(page.getByTestId('status-pill')).toHaveText('轮到你落子')
 
     const box = await page.getByTestId(`intersection-${x}-${y}`).boundingBox()
     expect(box).not.toBeNull()

@@ -22,7 +22,7 @@ async function stones(page: import('@playwright/test').Page): Promise<number> {
 test('人机对战：玩家落子后 AI 自动应手', async ({ page }) => {
   await page.goto('/')
 
-  await expect(page.getByRole('status')).toHaveText('轮到你落子')
+  await expect(page.getByTestId('status-pill')).toHaveText('轮到你落子')
   await expect(page.getByTestId(/^stone-/)).toHaveCount(0)
 
   await page.getByTestId('intersection-7-7').click()
@@ -31,7 +31,7 @@ test('人机对战：玩家落子后 AI 自动应手', async ({ page }) => {
   await expect(page.getByTestId('stone-7-7')).toHaveAttribute('data-player', '1')
 
   // AI 应手后轮次交还玩家
-  await expect(page.getByRole('status')).toHaveText('轮到你落子')
+  await expect(page.getByTestId('status-pill')).toHaveText('轮到你落子')
   await expect(page.getByTestId(/^stone-/)).toHaveCount(2)
   await expect(page.getByTestId('stone-7-7')).not.toHaveAttribute('data-last', 'true')
 })
@@ -74,7 +74,7 @@ test('重新开始会清空棋盘', async ({ page }) => {
   await page.getByRole('button', { name: '重新开始' }).click()
 
   await expect(page.getByTestId(/^stone-/)).toHaveCount(0)
-  await expect(page.getByRole('status')).toHaveText('轮到你落子')
+  await expect(page.getByTestId('status-pill')).toHaveText('轮到你落子')
 })
 
 test('刷新页面后棋局恢复，且 AI 思考中的那一手会被补完', async ({ page }) => {
@@ -101,7 +101,7 @@ test('刷新页面后棋局恢复，且 AI 思考中的那一手会被补完', a
 
   await expect(page.getByTestId('stone-7-7')).toBeVisible()
   await expect(page.getByTestId(/^stone-/)).toHaveCount(2)
-  await expect(page.getByRole('status')).toHaveText('轮到你落子')
+  await expect(page.getByTestId('status-pill')).toHaveText('轮到你落子')
 })
 
 test('认输后刷新页面，对局不会复活成进行中', async ({ page }) => {
@@ -116,7 +116,7 @@ test('认输后刷新页面，对局不会复活成进行中', async ({ page }) 
   await page.reload()
 
   // 手顺还原不出认输，所以它必须单独存档；否则刷新后这局会重新变得可以继续下。
-  await expect(page.getByRole('status')).toHaveText('你认输了')
+  await expect(page.getByTestId('status-pill')).toHaveText('你认输了')
   await expect(page.getByRole('button', { name: '认输' })).toBeDisabled()
   await expect(page.getByRole('dialog')).toContainText('你认输了')
   await expect(page.getByTestId(/^stone-/)).toHaveCount(2)
@@ -145,10 +145,10 @@ test('本地双人模式不触发 AI，黑白轮流落子', async ({ page }) => 
   await page.getByRole('radio', { name: '本地双人' }).click()
 
   await page.getByTestId('intersection-7-7').click()
-  await expect(page.getByRole('status')).toHaveText('轮到白棋')
+  await expect(page.getByTestId('status-pill')).toHaveText('轮到白棋')
 
   await page.getByTestId('intersection-7-8').click()
-  await expect(page.getByRole('status')).toHaveText('轮到黑棋')
+  await expect(page.getByTestId('status-pill')).toHaveText('轮到黑棋')
   await expect(page.getByTestId(/^stone-/)).toHaveCount(2)
 })
 
@@ -156,7 +156,7 @@ test('请求提示后棋盘上出现候选标记，且棋局一手未变', async
   await page.goto('/')
 
   await page.getByTestId('intersection-7-7').click()
-  await expect(page.getByRole('status')).toHaveText('轮到你落子')
+  await expect(page.getByTestId('status-pill')).toHaveText('轮到你落子')
   const before = await stones(page)
   expect(before).toBeGreaterThan(0)
 
@@ -165,7 +165,7 @@ test('请求提示后棋盘上出现候选标记，且棋局一手未变', async
   await expect(page.getByTestId(/^board-mark-/)).toHaveCount(3)
   // 提示只做分析：手数、轮次都不许变，也不能多出棋子
   await expect(page.getByTestId(/^stone-/)).toHaveCount(before)
-  await expect(page.getByRole('status')).toHaveText('轮到你落子')
+  await expect(page.getByTestId('status-pill')).toHaveText('轮到你落子')
 })
 
 test('提示之后落子，提示标记消失', async ({ page }) => {
@@ -212,5 +212,5 @@ test('专家档深算期间悔棋，迟到的 AI 响应不会把棋子补回来'
   await page.waitForTimeout(3500)
 
   await expect(page.getByTestId(/^stone-/)).toHaveCount(0)
-  await expect(page.getByRole('status')).toHaveText('轮到你落子')
+  await expect(page.getByTestId('status-pill')).toHaveText('轮到你落子')
 })

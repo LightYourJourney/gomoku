@@ -45,3 +45,48 @@ test.describe('prefers-reduced-motion', () => {
     })
   })
 })
+
+test.describe('播报区', () => {
+  test('对局界面只有一个 live region，且是棋盘播报区', async ({ page }) => {
+    // 两个 role="status" 会把同一件事念两遍。这条守卫是一次真实回归换来的：
+    // 播报区刚接上时状态药丸也是 live region，两边都在念「轮到谁落子」。
+    await page.goto('/')
+    await page.getByRole('radio', { name: '本地双人' }).click()
+
+    await expect(page.getByRole('status')).toHaveCount(1)
+    await expect(page.getByRole('status')).toHaveAttribute('data-testid', 'board-announcer')
+  })
+})
+
+test.describe('键盘操作', () => {
+  test('只用键盘就能落子：方向键移动焦点、回车落子', async ({ page }) => {
+    await page.goto('/')
+    await page.getByRole('radio', { name: '本地双人' }).click()
+
+    await page.getByRole('gridcell', { name: 'H8 空位' }).focus()
+    await page.keyboard.press('ArrowRight')
+    await page.keyboard.press('Enter')
+
+    await expect(page.getByTestId('stone-8-7')).toBeVisible()
+    await expect(page.getByTestId('board-announcer')).toContainText('最后一手在 I8')
+  })
+
+  test('AI 思考期间按回车不落子，播报要说出原因', async ({ page }) => {
+    await page.goto('/')
+    await page.getByRole('radio', { name: '人机对战' }).click()
+    // 专家档的时间预算是 2600ms（见 ai/difficulty.ts）——下面这几步 CDP 往返
+    // 是毫秒级的，所以断言期间 AI 不会插进来。真插进来了也会让计数对不上而失败，
+    // 不会变成假绿。
+    await page.getByRole('radio', { name: '专家' }).click()
+
+    await page.getByRole('gridcell', { name: 'H8 空位' }).focus()
+    await page.keyboard.press('Enter')
+
+    // 键盘玩家按 Enter 没反应时，「为什么」只能从这条播报里知道
+    await expect(page.getByTestId('board-announcer')).toContainText('AI 正在思考')
+
+    const before = await page.getByTestId(/^stone-/).count()
+    await page.keyboard.press('Enter')
+    await expect(page.getByTestId(/^stone-/)).toHaveCount(before)
+  })
+})

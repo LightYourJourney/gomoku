@@ -12,11 +12,14 @@ export interface StatusPillProps {
   status: GameStatusDescriptor
 }
 
+/**
+ * 顶部状态药丸。**不是 live region**：播报交给 `BoardAnnouncer` 一处，
+ * 两个 `role="status"` 会把同一件事念两遍。这里是给眼睛看的。
+ */
 export function StatusPill({ status }: StatusPillProps) {
   return (
     <div
-      role="status"
-      aria-live="polite"
+      data-testid="status-pill"
       className={cx(
         'inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm font-medium transition-colors',
         TONE_CLASS[status.tone],
