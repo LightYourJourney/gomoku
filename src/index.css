@@ -142,3 +142,85 @@
     outline-offset: 2px;
   }
 }
+
+/* ── 动效 ────────────────────────────────────────────────────────
+   只在「变化发生的那一刻」播：落下的那颗子、最后一手的环、弹窗、反馈条。
+   降级统一由下面的媒体查询负责（JS 不判 matchMedia，理由见 lib/motion.ts）。 */
+
+@keyframes motion-stone-drop {
+  0% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(0.96);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes motion-last-move-pulse {
+  0% {
+    opacity: 0.25;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes motion-panel-in {
+  from {
+    transform: translateY(6px);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+@keyframes motion-banner-in {
+  from {
+    transform: translateY(-4px);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+/* SVG 元素上的 transform 以自身为中心，scale 才是「从中心长出来」 */
+.motion-stone-drop {
+  animation: motion-stone-drop 180ms ease-out;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.motion-last-move-pulse {
+  animation: motion-last-move-pulse 260ms ease-out;
+}
+
+.motion-panel-in {
+  animation: motion-panel-in 160ms ease-out;
+}
+
+.motion-banner-in {
+  animation: motion-banner-in 140ms ease-out;
+}
+
+/*
+ * 减少动态：关掉动画（含上面四个）。
+ * 保留 150ms 级别的 transition——那是最短的状态反馈，不属于「动效」，
+ * 关掉反而会让按钮与链接的悬停变成无反馈的瞬间跳变。
+ */
+@media (prefers-reduced-motion: reduce) {
+  .motion-stone-drop,
+  .motion-last-move-pulse,
+  .motion-panel-in,
+  .motion-banner-in {
+    animation: none;
+  }
+}

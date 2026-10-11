@@ -2,6 +2,7 @@ import { useId, useState, type CSSProperties } from 'react'
 import { idx } from '../../core/board'
 import { BOARD_SIZE, type Board as BoardModel, type Player, type Point } from '../../core/types'
 import { columnLabel, formatPoint, rowLabel } from '../../lib/coords'
+import { motionClass } from '../../lib/motion'
 
 export type MarkTone = 'accent' | 'good' | 'bad'
 
@@ -260,6 +261,8 @@ export function Board({
               data-player={player}
               data-last={key === lastKey || undefined}
               data-win={winKeys.has(key) || undefined}
+              // 只有最新一手播落下动效——每颗子都播会让整盘一起闪
+              className={key === lastKey ? motionClass('stoneDrop') : undefined}
             >
               <circle
                 cx={point.x + 0.04}
@@ -287,6 +290,7 @@ export function Board({
               />
               {key === lastKey && (
                 <circle
+                  className={motionClass('lastMovePulse')}
                   cx={point.x}
                   cy={point.y}
                   r={0.47}

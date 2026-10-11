@@ -1,4 +1,5 @@
 import { cx } from '../../lib/cx'
+import { motionClass } from '../../lib/motion'
 
 export interface FeedbackBannerProps {
   readonly ok: boolean
@@ -19,6 +20,7 @@ export function FeedbackBanner({ ok, message }: FeedbackBannerProps) {
       data-testid="feedback"
       data-ok={ok}
       className={cx(
+        motionClass('bannerIn'),
         'rounded-lg px-3 py-2 text-xs leading-relaxed',
         ok ? 'bg-good-soft text-good' : 'bg-danger-soft text-danger',
       )}

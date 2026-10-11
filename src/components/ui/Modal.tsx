@@ -1,4 +1,6 @@
 import { useEffect, useRef, type ReactNode } from 'react'
+import { cx } from '../../lib/cx'
+import { motionClass } from '../../lib/motion'
 import { createPortal } from 'react-dom'
 
 export interface ModalProps {
@@ -34,7 +36,10 @@ export function Modal({ open, title, onClose, children, footer }: ModalProps) {
         aria-modal="true"
         aria-label={title}
         tabIndex={-1}
-        className="w-full max-w-sm rounded-2xl border border-border bg-surface p-5 shadow-panel outline-none"
+        className={cx(
+          'w-full max-w-sm rounded-2xl border border-border bg-surface p-5 shadow-panel outline-none',
+          motionClass('panelIn'),
+        )}
       >
         <h2 className="text-base font-semibold text-fg">{title}</h2>
         <div className="mt-3 text-sm text-muted">{children}</div>
