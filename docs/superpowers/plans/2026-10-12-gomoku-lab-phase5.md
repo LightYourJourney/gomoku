@@ -29,7 +29,7 @@ ROADMAP 原文写「落子与面板动画落地时再装回来」。**改这条*
 
 ### Ruling 2：键盘用 ARIA grid 模式，加在现有命中区上
 
-棋盘已经是 225 个 `<rect>` 命中区。把它们升级成 `role="gridcell"`（带坐标与状态的可读名），容器在可交互时是 `role="grid"`、只读回放时仍是 `role="img"`；**roving tabindex**——整张盘只有当前焦点格 `tabIndex=0`，Tab 进出一跳，方向键在格间移动，Enter/Space 落子。**不做**「225 个 Tab 停靠点」（那对键盘用户是酷刑），也不另建一套隐藏控件（两套 DOM 迟早不一致）。**代价**：`Board.test.tsx` 里关于 `role="img"` 的断言要跟着改，属于有意变更。
+棋盘已经是 225 个 `<rect>` 命中区。把它们升级成 `role="gridcell"`（带坐标与状态的可读名），容器在可交互时是 `role="grid"`、只读回放时仍是 `role="img"`；**roving tabindex**——整张盘只有当前焦点格 `tabIndex=0`，Tab 进出一跳，方向键在格间移动，Enter/Space 落子。**不做**「225 个 Tab 停靠点」（那对键盘用户是酷刑），也不另建一套隐藏控件（两套 DOM 迟早不一致）。**代价**：几乎没有——`Board.test.tsx` 里并没有 `role="img"` 的断言（终审核过），只读态保持 `role="img"` 是纯增量。
 
 ---
 
@@ -37,7 +37,7 @@ ROADMAP 原文写「落子与面板动画落地时再装回来」。**改这条*
 
 规格隐含、但各任务自身测试不会覆盖、最容易伤到真实用户的情形。每条都绑到 owning task：
 
-1. **键盘用户在 AI 思考期间落子** —— 键盘没有「禁用态」的视觉反馈，玩家按 Enter 没反应会以为坏了。T2 要求：不可落子时（AI 思考 / 终局 / 非本回合）有明确播报，且 e2e 覆盖。
+1. **键盘用户在 AI 思考期间落子** —— 键盘没有「禁用态」的视觉反馈，玩家按 Enter 没反应会以为坏了。T2b 的播报负责说出原因，T2 的 e2e 在思考期间真按一次 Enter 并断言盘面不变。
 2. **动效让前庭敏感用户不适** —— `prefers-reduced-motion: reduce` 必须真正生效（不是只写个 media query 却仍跑 JS 动画）。T1 的测试在 reduced-motion 下断言不发生位移/缩放类动画。
 3. **焦点丢失** —— 落子后棋盘重渲染，焦点若被重置到 body，键盘用户就得重新 Tab 进来。T2 要求落子后焦点仍在原格（或落在最新一手），并有测试钉住。
 4. **生产构建与开发环境行为不一致** —— 之前所有浏览器验证都跑在 dev server 上；worker 路径、资源哈希、`base` 前缀的问题只有 `dist` 才暴露。T6 的 `e2e:prod` 必须真跑一遍完整对局。
@@ -53,7 +53,9 @@ src/
 ├─ components/
 │  ├─ AppErrorBoundary.tsx        [新] 顶层错误边界 + 兜底 UI
 │  └─ board/Board.tsx             [改] ARIA grid、roving tabindex、键盘事件、焦点环
-├─ features/battle/BattleScreen.tsx  [改] aria-live 播报、接入动效类名
+├─ features/battle/
+│  ├─ BattleScreen.tsx            [改] 接入动效类名、终局胜负音、挂播报
+│  └─ BoardAnnouncer.tsx          [新] aria-live 状态播报（棋盘自己说不出原因，见 T2）
 ├─ lib/
 │  ├─ sound.ts                    [改] 胜负音 + AudioContext 预热
 │  └─ motion.ts                   [新] 动效类名与 reduced-motion 判定（纯函数，可测）
@@ -106,7 +108,23 @@ it('reduced-motion 的降级写在 CSS 里，JS 不做媒体查询分支', () =>
 
 - [ ] **Step 2: 确认红**（模块不存在）
 - [ ] **Step 3: 实现** —— `motion.ts` 导出常量与 `motionClass`；`index.css` 写四处 keyframes 与 reduced-motion 兜底；`Board` 给刚落下的棋子与最后一手加类名（**只给最新一手**——225 颗子每颗都播动画会让整盘闪）；Modal/Banner 同类处理。
-- [ ] **Step 4: 新增一条 CSS 断言测试**（`src/lib/motion.test.ts` 内读 `index.css` 源文件）：断言存在 `prefers-reduced-motion: reduce` 且其中包含 `animation: none`。**这条故意读源码**——CSS 动画在 jsdom 里不会真的跑，读源码是这里唯一能钉住「兜底真的写了」的办法，在注释里写明这一点。
+- [ ] **Step 4: reduced-motion 用真浏览器验，不读源码**（终审否掉了「读 index.css 断言含 `animation: none`」的写法：那是实现的复印件，钉不住行为，而且 jsdom 不跑动画不代表浏览器里没跑）。加进 `e2e/a11y.spec.ts`：
+
+```ts
+test.describe('prefers-reduced-motion', () => {
+  test.use({ reducedMotion: 'reduce' })
+
+  test('落子不发生位移/缩放动画', async ({ page }) => {
+    await page.goto('/')
+    await page.getByTestId('intersection-7-7').click()
+    const stone = page.getByTestId('stone-7-7')
+    await expect(stone).toHaveAttribute('data-player', '1')
+    // reduce 下 animation-name 必须是 none —— 真的问浏览器，不是读源码
+    await expect(stone).toHaveCSS('animation-name', 'none')
+  })
+})
+```
+  对照组（不设 `reducedMotion`）断言 `animation-name` **不是** `none`——两条一起才说明「有人真的在跑、reduce 时真的停了」。
 - [ ] **Step 5: 全量测试过**；**Step 6: Commit** `feat(ui): 落子与面板动效（CSS，含 reduced-motion 兜底）`
 
 ## Task 2：键盘操作与 ARIA grid
@@ -117,9 +135,11 @@ it('reduced-motion 的降级写在 CSS 里，JS 不做媒体查询分支', () =>
 
 **Interfaces:**
 - Produces:
-  - **不引入新的 prop**：可交互（`interactive === true`）即有键盘与 grid 语义，调用方没有第二个旋钮要记；回放棋盘 `interactive={false}`，自然退回 `role="img"`。
-  - 键盘行为：容器 `tabIndex={0}`（可交互时）；`role="grid"`，225 个命中区 `role="gridcell"`，`aria-label` 形如 `D8 空位` / `D8 黑棋（最后一手）`；焦点格 `tabIndex={0}`、其余 `-1`；方向键移动焦点（越界即停，不循环）、`Home`/`End` 到行首/行尾、`Enter`/`Space` 落子。
-  - 播报：`data-testid="board-announcer"` 的 `aria-live="polite"` 视觉隐藏区，内容由 `Board` 从 props 派生（最后一手 + 轮到谁 + 不可落子的原因）。testid 在组件测试与 e2e 里同名。
+  - **不引入新的 prop**：可交互（`interactive === true`）即有键盘与 grid 语义；回放棋盘 `interactive={false}`，自然退回 `role="img"`（只读态**不**建 grid）。
+  - 结构：容器 `role="grid"`；**每行包一层 `<g role="row">`**（`gridcell` 必须有 `row` 作上下文，平铺 225 个 cell 是无主的）；命中区 `role="gridcell"`，`aria-label` 形如 `D8 空位` / `D8 黑棋（最后一手）`。
+  - **roving tabindex 的真形态**：容器 **不设 `tabIndex`**（容器可聚焦 + 焦点格可聚焦 = 盘内两个 Tab 停靠点，与「Tab 进出一跳」矛盾——终审实测过）；整张盘只有**当前焦点格** `tabIndex={0}`，其余 `-1`；进盘时 DOM 焦点落在焦点格上；方向键移动后**调用新格的 `.focus()`**（只改 tabIndex 不搬 DOM 焦点，读屏软件跟不过去）。
+  - 默认焦点格是天元 (7,7)。
+  - 播报**不在 Board 里**——Board 的 props 只有一个 `interactive: boolean`，分不出「AI 思考中 / 非本回合 / 终局」，说不出不可落子的原因。播报归 `BattleScreen`（它本来就握着 `game` 与 `aiThinking`），见下方 T2b。`data-testid="board-announcer"` 在组件测试与 e2e 里同名。
 
 - [ ] **Step 1: 写失败测试**（组件级，`Board.test.tsx` 追加）：
 
@@ -133,12 +153,21 @@ it('可交互时是可聚焦的 grid，每个交叉点有坐标与状态的可�
 it('方向键在格间移动，Enter 落子', async () => {
   const onPlay = vi.fn()
   render(<Board {...base} interactive onPlay={onPlay} />)
-  const board = screen.getByRole('grid')
-  board.focus()
-  fireEvent.keyDown(board, { key: 'ArrowRight' })
-  fireEvent.keyDown(board, { key: 'ArrowDown' })
-  fireEvent.keyDown(board, { key: 'Enter' })
-  expect(onPlay).toHaveBeenCalledWith({ x: 1, y: 1 })   // 从 (0,0) 出发
+  // 默认焦点格是天元 (7,7)：右一格、下一格 → (8,8)
+  const start = screen.getByRole('gridcell', { name: 'H8 空位' })
+  expect(start).toHaveAttribute('tabindex', '0')
+  start.focus()
+  fireEvent.keyDown(start, { key: 'ArrowRight' })
+  fireEvent.keyDown(start, { key: 'ArrowDown' })
+  fireEvent.keyDown(document.activeElement!, { key: 'Enter' })
+  expect(onPlay).toHaveBeenCalledWith({ x: 8, y: 8 })
+})
+
+it('整张盘只有一个 Tab 停靠点', () => {
+  render(<Board {...base} interactive onPlay={vi.fn()} />)
+  const focusable = screen.getAllByRole('gridcell').filter((cell) => cell.getAttribute('tabindex') === '0')
+  expect(focusable).toHaveLength(1)
+  expect(screen.getByRole('grid')).not.toHaveAttribute('tabindex')
 })
 
 it('不可落子时不落子，并播报原因', () => {
@@ -174,7 +203,11 @@ test('全程用键盘下完一手，有播报、且 AI 思考期间按 Enter 不
   await expect(page.getByTestId('board-announcer')).toContainText('黑棋')
 })
 ```
-- [ ] **Step 6: Commit** `feat(a11y): 棋盘键盘操作与 ARIA grid`
+- [ ] **Step 6: 新增 T2b —— 播报搬到 BattleScreen**（`src/features/battle/BoardAnnouncer.tsx`，`role="status"` 的 `aria-live="polite"` 区）：
+  - 文案由 `game` 与 `aiThinking` 派生：刚落下最后一手 →「黑棋落在 D8」；轮到玩家 →「轮到你落子」；AI 思考中 →「AI 正在思考」；终局 → 结果文案。
+  - 失败测试（`BoardAnnouncer.test.tsx`）：四种状态各断言一条文案。**「AI 思考中」这条是 Review Focus 1 的 owning test**——键盘玩家在 AI 思考时按 Enter 没反应，必须能从播报里知道为什么。
+  - e2e 补一步：在 AI 思考期间按 Enter → `stone-` 计数不变、播报含「思考」。
+- [ ] **Step 7: Commit** `feat(a11y): 棋盘键盘操作、ARIA grid 与状态播报`
 
 ## Task 3：音效补完与自动播放策略
 
@@ -183,14 +216,14 @@ test('全程用键盘下完一手，有播报、且 AI 思考期间按 Enter 不
 - Test: `src/lib/sound.test.ts`（追加）
 
 **Interfaces:**
-- Produces: `StoneSound` 增两个方法——`win(): void`、`lose(): void`（短促的上行 / 下行音，与落子音同一套合成器）；新增 `armOnFirstGesture(target: EventTarget): () => void`，绑定一次 `pointerdown` 预热 `AudioContext`（这是 ROADMAP 长期待办里「彻底的做法」）。
+- Produces: `StoneSound` 增两个方法——`win(): void`、`lose(): void`（短促的上行 / 下行音，与落子音同一套合成器）；再加 `arm(target: EventTarget): () => void`——绑定一次 `pointerdown`，**在处理器里 `createContext()` 并 `resume()`**（声音实例自己握着 context 工厂，所以预热必须挂在实例上；只 create 不 resume 等于白造一个被挂起的 AudioContext，预热是无效的——终审指出的正是这一点）。`resume()` 对已在运行的 context 是空操作。
 - **音效开关照旧**（`settings.soundEnabled`），新增的两处也必须受它约束。
 
 - [ ] **Step 1: 失败测试**（注入假 AudioContext，沿用 `sound.test.ts` 现有做法）：
   - `win()` / `lose()` 各创建并启动振荡器，频率走向一个升一个降（断言 `frequency.setValueAtTime` 的两次取值大小关系）
-  - `armOnFirstGesture` 在 `pointerdown` 后调用一次 `createContext`，重复触发只预热一次；返回的清理函数解绑后不再触发
+  - `arm` 在 `pointerdown` 后调用一次 `createContext` **并 `resume()`**；重复触发只预热一次；返回的清理函数解绑后不再触发
 - [ ] **Step 2: 确认红**；**Step 3: 实现**；**Step 4: 过绿**
-- [ ] **Step 5: 接线**：BattleScreen 在终局（`status !== 'playing'` 且是玩家视角的胜/负）播放对应音；`main.tsx`（或 App）在挂载时 `armOnFirstGesture(window)`。
+- [ ] **Step 5: 接线**：BattleScreen 在**对局从进行中变成终局**时播一次胜负音——判据必须是 `game.status`，**不能是 `status`**（那个变量是 `describeStatus()` 的显示描述对象，`status !== 'playing'` 恒为真，会在每次状态变化时都放一遍胜负音）；用 `useRef` 记住上一次的 `game.status` 做边沿触发，玩家视角胜/负分别播 `win`/`lose`。`App` 挂载时 `sound.arm(window)` 并在卸载时调用返回的清理函数。
 - [ ] **Step 6: Commit** `feat(sound): 胜负音与 AudioContext 首次手势预热`
 
 ## Task 4：错误边界
@@ -228,7 +261,7 @@ it('正常渲染时原样透传子树', () => {
 
 **Files:**
 - Create: `e2e/tablet.spec.ts`（`tablet` project，`devices['iPad (gen 7) landscape']` + touch）
-- Modify: `playwright.config.ts`（加一个 project）
+- Modify: `playwright.config.ts`：**chrome project 的 `testIgnore` 必须同时排掉 `tablet.spec.ts` 与 `prod.spec.ts`**（现在只排了 mobile；不排的话平板用例会在没有触摸能力的桌面上下文里跑，`page.touchscreen` 直接抛错，`yarn e2e` 必红），新 tablet project 用 `testMatch: '**/tablet.spec.ts'`
 
 **Interfaces:**
 - Consumes: 现有 `mobile.spec.ts` 的做法（CDP 触摸序列、`touch-action` 断言）
@@ -249,7 +282,7 @@ it('正常渲染时原样透传子树', () => {
 - Modify: `package.json`（`"e2e:prod": "playwright test --config playwright.prod.config.ts"`）
 
 **Interfaces:**
-- Produces: 一条**独立通道**：`webServer.command = yarn build && yarn preview --port 5182`，`baseURL = http://127.0.0.1:5182`，只跑 `prod.spec.ts`。
+- Produces: 一条**独立通道**（独立配置文件，避免被主配置的 projects 收走）：`webServer.command = yarn build && yarn preview --port 5182 --strictPort`、`webServer.url = http://127.0.0.1:5182`（**只写 baseURL、不给 webServer.url，Playwright 会直接报错**）、`testMatch: '**/prod.spec.ts'`。`yarn preview --port 5182` 的传参在 yarn 1.22 下实测透传，不需要 `--`。
 - 冒烟用例（这是全仓第一次真正在 `dist` 上做验证）：
   1. 首屏渲染出棋盘与顶栏
   2. **Worker 真的跑起来**：下一手 → AI 应手（`data-testid="stone-"` 计数变 2）——worker 的 module 加载在产物里的路径与 dev 不同，这是最容易断的地方
@@ -307,10 +340,12 @@ it('正常渲染时原样透传子树', () => {
 
 **第 2 轮（占位符与含糊处）改了 2 处**：T2 的 Interfaces 里有一段自言自语没清；T7 的提交信息是空壳（`perf: <按实测结果命名>`），改成写实要求 + 「测过、不做」也要留理由。
 
+**终审（Opus，独立上下文）改了 8 处**——全部已核实属实并落盘：① 新 spec 会被 chrome project 收走（它只排除了 mobile），`yarn e2e` 必红；② T2 测试与实现自相矛盾（焦点起点）；③ 容器与焦点格双 Tab 停靠点，roving tabindex 的真形态要说清（只改 tabIndex 不搬 DOM 焦点，读屏跟不上）；④ 「AI 思考中」的播报在 Board 里说不出（props 只有一个布尔），搬到 BattleScreen；⑤ `armOnFirstGesture` 拿不到 context，预热无效（只 create 不 resume）；⑥ 终局判据写成了描述对象（恒真），会每次都放胜负音；⑦ reduced-motion 的断言读源码＝复印件，改为真浏览器问 computed style；⑧ `gridcell` 缺 `role="row"` 上下文。
+
 **第 3 轮（类型与接口一致性）改了 1 处**：`board-announcer` 的 testid 只在 e2e 里出现过，没进 T2 的 Interfaces——现在两处同名。
 
 - [x] 8 条验收项 → 任务映射：视觉打磨=T1；移动/平板/误触=T5；音效与动画=T1+T3；性能=T7；错误处理=T4；测试补全（键盘/无障碍）=T2+T9；发布构建与部署=T6+T8；使用文档=T8
-- [x] 无占位符；类型一致性（`StoneSound.win/lose`、`armOnFirstGesture`、`AppErrorBoundary`、`board-announcer`、`VITE_BASE` 在各任务间一致）
-- [x] Review Focus 六条各绑到任务：1→T2；2→T1；3→T2；4→T6；5→T4；6→T5
+- [x] 无占位符；类型一致性（`StoneSound.win/lose/arm`、`BoardAnnouncer`、`AppErrorBoundary`、`board-announcer`、`VITE_BASE` 在各任务间一致）
+- [x] Review Focus 六条各绑到任务：1→T2b（播报）+T2（e2e 思考期按 Enter）；2→T1（真浏览器断言 animation-name）；3→T2；4→T6；5→T4；6→T5
 - [x] 约束自查：不新增依赖、无 `Date.now()`、纯逻辑层未被污染、文案简体
 - [x] 每一条「写进文档的数字」都有测量步骤（T7 Step 1、T9 Step 2）
