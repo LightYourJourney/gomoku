@@ -41,6 +41,16 @@ yarn lint && yarn typecheck && yarn test && yarn build && yarn e2e
 
 五条全绿才算完成。改了棋盘交互或布局，再加一次真实浏览器目视复核。
 
+阶段收尾（以及任何改了构建配置、Worker 或资源路径的改动）再加一条：
+
+```bash
+yarn e2e:prod
+```
+
+它自带一次 `yarn build`，跑在 `dist` 产物上（独立端口与配置，见
+`playwright.prod.config.ts`）——Worker 的 module 路径、CSS 打包、代码分割
+在构建之后与 dev 下并不一样，只有这条通道能发现差异。
+
 ## 文档同步
 
 以下改动必须同步更新文档，否则视为未完成：
