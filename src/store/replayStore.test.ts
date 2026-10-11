@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi, afterEach } from 'vitest'
+import type { UseBoundStore, StoreApi } from 'zustand'
 import { BLACK, WHITE, type Point } from '../core/types'
 import { resign } from '../core/game'
 import { createReplayStore, REPLAY_STEP_MS, type ReplayStore } from './replayStore'
@@ -36,7 +37,7 @@ function resignRecord(): ReplayRecord {
   }
 }
 
-let store: ReplayStore
+let store: UseBoundStore<StoreApi<ReplayStore>>
 
 beforeEach(() => {
   store = createReplayStore()
