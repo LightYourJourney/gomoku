@@ -51,10 +51,10 @@ components / features   ← 展示层，只做渲染与事件转发
 
 **为什么分两种存储**：对局存档每次落子都要写、数据小、丢了就丢了；学习进度写得少但**丢了会让人白学一遍**，值得用更耐久的 IndexedDB。进度层在 IndexedDB 不可用时（隐私模式、open 抛错、被其他标签页占用）整体降级为内存态——进度丢了可以接受，白屏不行。
 
-**`lib/`** —— 无状态工具：主题解析、WebAudio 音效合成、坐标格式化、类名拼接。
+**`lib/`** —— 无状态工具：主题解析、WebAudio 音效合成、动效类名（`motion.ts`）、坐标格式化、类名拼接。
 
 **`components/`** —— 展示。
-`ui/` 是与业务无关的原子组件；`board/` 是棋盘（`Board` + `BoardStage` 容器）；`panels/` 是业务面板。面板全部通过 props 接收数据与回调，不直接读 store。
+`ui/` 是与业务无关的原子组件；`board/` 是棋盘（`Board` + `BoardStage` 容器）；`panels/` 是业务面板；`AppErrorBoundary` 是顶层错误边界。面板全部通过 props 接收数据与回调，不直接读 store。
 
 **`features/`** —— 容器。`shell/` 是三个页面共用的顶栏（品牌 + 导航 + 主题）；`battle/` 是对战页，并承载 `status.ts` 这类纯推导逻辑；`learn/` 是课程列表与课程运行器；`puzzles/` 是残局挑战。
 
@@ -170,6 +170,22 @@ type PuzzleGoal =
 **命中区是按格铺开的正方形**，边长一整格，相邻格子严丝合缝。用圆形热区会在相邻交叉点之间留下死区。这里有个容易踩的坑：`pointer-events: all` 的命中范围是「内部 + 周界」，而未指定 `stroke` 时 `stroke-width` 的初始值是 1，每个格子会向外多出半格，导致点在交叉点正中反而落到右下相邻那一格——所以必须同时把 `strokeWidth` 置 0。
 
 **自适应尺寸**用 CSS 容器查询：容器声明 `container-type: size`，棋盘取 `width: min(100cqw, 100cqh)` 配 `aspect-ratio: 1`，即「能容纳的最大正方形」，不需要 JS 测量。
+
+## 键盘与无障碍
+
+可交互时棋盘是 `role="grid"`：每行一个 `role="row"`，每个交叉点一个 `role="gridcell"`。gridcell 必须有 row 作上下文，平铺 225 个 cell 是无主的；只读棋盘（复盘）退回 `role="img"`，不谎报有交互。
+
+**roving tabindex**：整盘只有一个 `tabIndex=0` 的停靠点（默认天元），其余为 -1。方向键移动焦点、`Home`/`End` 跳到本行两端、`Enter`/`空格` 落子，越界即停不绕回。移动时**必须真的调 `focus()`**——读屏跟的是真实焦点，只改 `tabIndex` 等于原地打转。两处克制：挂载时不抢焦点（页面加载就把焦点拽到棋盘上对读屏用户是绑架），以及轮到 AI 时若玩家已把焦点 Tab 到别处（例如悔棋按钮），思考结束也不抢回来。
+
+**播报只有一处**：`BoardAnnouncer`（`role="status"`）说清「最后一手在哪」与「为什么按了没反应」（AI 思考中 / 等待对手）。状态药丸是同一份信息的可见版本，**不是** live region——两个 live region 会把同一件事念两遍。终局文案直接复用 `describeStatus`，避免同一屏幕上两种说法。
+
+**动效降级不判 `matchMedia`**：`motion.ts` 只返回类名，是否播动画交给 `index.css` 的 `@media (prefers-reduced-motion: reduce)`。用 JS 判有两个坑——用户中途改系统设置时分支不会更新；jsdom 里 `matchMedia` 缺失，靠它判定会让测试与真实行为脱节。
+
+## 错误边界
+
+`AppErrorBoundary` 包在 `App` 外层（`main.tsx`），用 class 组件实现——这是框架约束不是风格选择，React 只有 `componentDidCatch` / `getDerivedStateFromError` 两个 class 生命周期。
+
+兜底界面刻意用**最简 DOM 加内联样式**：不碰 store、不碰主题变量、不碰自有组件。它是最后一道防线，自己再依赖什么就可能跟着一起坏，那就真白屏了。
 
 ## 主题
 
