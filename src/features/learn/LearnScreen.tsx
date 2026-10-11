@@ -115,9 +115,9 @@ export function LearnScreen() {
                   </span>
                   <span className="min-w-0">
                     <span className="block text-sm font-medium text-fg">{entry.title}</span>
-                    <span className="block truncate text-xs text-faint">{entry.summary}</span>
+                    <span className="block truncate text-xs text-muted">{entry.summary}</span>
                   </span>
-                  <span className="ml-auto text-xs text-faint">›</span>
+                  <span className="ml-auto text-xs text-muted">›</span>
                 </button>
               </li>
             )

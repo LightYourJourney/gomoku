@@ -104,7 +104,7 @@ export function PuzzleScreen() {
                             {solved ? '✓' : '·'}
                           </span>
                           <span className="min-w-0 truncate text-sm text-fg">{entry.title}</span>
-                          <span className="ml-auto text-xs text-faint">›</span>
+                          <span className="ml-auto text-xs text-muted">›</span>
                         </button>
                       </li>
                     )

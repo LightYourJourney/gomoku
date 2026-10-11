@@ -37,47 +37,57 @@ export class AppErrorBoundary extends Component<AppErrorBoundaryProps, AppErrorB
     if (error === null) return this.props.children
 
     return (
+      /*
+       * 颜色全部写死，一个都不继承。兜底界面可能在任何主题下出现（主题类挂在
+       * `documentElement` 上，应用挂载之后再崩就还在），继承来的文字色配上写死的
+       * 浅底会变成白底浅字——实测深色主题下是 1.11:1，等于看不见。
+       */
       <div
         role="alert"
         style={{
           fontFamily: 'system-ui, sans-serif',
-          maxWidth: '34rem',
-          margin: '4rem auto',
-          padding: '0 1.5rem',
+          background: '#ffffff',
+          color: '#1c1917',
+          minHeight: '100dvh',
+          padding: '4rem 1.5rem',
           lineHeight: 1.7,
         }}
       >
-        <h1 style={{ fontSize: '1.25rem', margin: '0 0 0.75rem' }}>出了点问题</h1>
-        <p style={{ margin: '0 0 1rem' }}>
-          界面没能画出来。这一局的数据还在本机，重新加载后可以接着下。
-        </p>
-        <pre
-          style={{
-            margin: '0 0 1.25rem',
-            padding: '0.75rem',
-            background: '#f4f4f5',
-            borderRadius: '0.5rem',
-            fontSize: '0.8125rem',
-            whiteSpace: 'pre-wrap',
-            wordBreak: 'break-word',
-          }}
-        >
-          {error.message}
-        </pre>
-        <button
-          type="button"
-          onClick={() => window.location.reload()}
-          style={{
-            padding: '0.5rem 1rem',
-            fontSize: '0.875rem',
-            border: '1px solid #d4d4d8',
-            borderRadius: '0.5rem',
-            background: '#fff',
-            cursor: 'pointer',
-          }}
-        >
-          重新加载
-        </button>
+        <div style={{ maxWidth: '34rem', margin: '0 auto' }}>
+          <h1 style={{ fontSize: '1.25rem', margin: '0 0 0.75rem' }}>出了点问题</h1>
+          <p style={{ margin: '0 0 1rem' }}>
+            界面没能画出来。这一局的数据还在本机，重新加载后可以接着下。
+          </p>
+          <pre
+            style={{
+              margin: '0 0 1.25rem',
+              padding: '0.75rem',
+              background: '#f4f4f5',
+              color: '#1c1917',
+              borderRadius: '0.5rem',
+              fontSize: '0.8125rem',
+              whiteSpace: 'pre-wrap',
+              wordBreak: 'break-word',
+            }}
+          >
+            {error.message}
+          </pre>
+          <button
+            type="button"
+            onClick={() => window.location.reload()}
+            style={{
+              padding: '0.5rem 1rem',
+              fontSize: '0.875rem',
+              border: '1px solid #a1a1aa',
+              borderRadius: '0.5rem',
+              background: '#f4f4f5',
+              color: '#1c1917',
+              cursor: 'pointer',
+            }}
+          >
+            重新加载
+          </button>
+        </div>
       </div>
     )
   }

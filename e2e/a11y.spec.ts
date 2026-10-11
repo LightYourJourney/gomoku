@@ -92,16 +92,40 @@ test.describe('键盘操作', () => {
     expect(ring.width).toBeLessThan(cell.width * 1.4) // 也不能大到糊住棋盘
   })
 
-  test('AI 思考期间按回车不落子，播报要说出原因', async ({ page }) => {
+  test('AI 思考期间整盘不再是 grid：键盘进不去，播报说出原因', async ({ page }) => {
     await page.goto('/')
     await page.getByRole('radio', { name: '人机对战' }).click()
     // 专家档的时间预算是 2600ms（见 ai/difficulty.ts）——下面这几步 CDP 往返
-    // 是毫秒级的，所以断言期间 AI 不会插进来。真插进来了也会让计数对不上而失败，
-    // 不会变成假绿。
+    // 是毫秒级的，所以断言期间 AI 不会插进来。真插进来了断言也会失败，不会假绿。
     await page.getByRole('radio', { name: '专家' }).click()
 
-    await page.getByRole('gridcell', { name: 'H8 空位' }).focus()
+    // 真按 Tab 进棋盘，而不是程序化 `.focus()`——这是使用说明里写给玩家的入口，
+    // 也是 SVG 元素 Tab 可达性唯一会被验到的地方。
+    await expect(page.getByRole('gridcell', { name: 'H8 空位' })).toHaveCount(1)
+    let tabs = 0
+    while (tabs < 12) {
+      await page.keyboard.press('Tab')
+      tabs += 1
+      const onCell = await page.evaluate(
+        () => document.activeElement?.getAttribute('role') === 'gridcell',
+      )
+      if (onCell) break
+    }
+    expect(tabs, '按 Tab 应该能在 12 步之内进到棋盘里').toBeLessThan(12)
+    expect(await page.evaluate(() => document.activeElement?.getAttribute('aria-label'))).toBe(
+      'H8 空位',
+    )
+
     await page.keyboard.press('Enter')
+    await expect(page.getByTestId('stone-7-7')).toBeVisible()
+    await expect(page.getByTestId('status-pill')).toHaveText('AI 思考中…')
+
+    // 思考期间整盘退回只读：**连 role=gridcell 都不再有**，键盘用户根本落不了子。
+    // 这条断言是有鉴别力的——把 BattleScreen 里 interactive 的 aiThinking 守卫去掉，
+    // 格子在思考期间仍然是 gridcell，这里立刻红。
+    // （原先断言的是「焦点停在刚落的那一格上、再按回车也不落子」，那是恒真的：
+    //   已占用的格子在「已有子」那一支就返回了，与思考守卫无关。）
+    await expect(page.getByRole('gridcell')).toHaveCount(0)
 
     // 键盘玩家按 Enter 没反应时，「为什么」只能从这条播报里知道
     await expect(page.getByTestId('board-announcer')).toContainText('AI 正在思考')

@@ -44,6 +44,25 @@ test('AI 真的应手——Worker 在产物里的加载路径与 dev 不同，�
   await expect(page.getByTestId('status-pill')).toHaveText('轮到你落子')
 })
 
+test('完整下一局：九手成五、终局弹窗、入库——产物里从落子到持久化整条链路', async ({ page }) => {
+  await page.goto('/')
+  await page.getByRole('radio', { name: '本地双人' }).click()
+
+  // 黑棋第 7 行连五点、白棋在第 9 行陪走四点，第 9 手黑棋成五终局
+  const moves: Array<[number, number]> = [
+    [3, 7], [3, 9], [4, 7], [4, 9], [5, 7], [5, 9], [6, 7], [6, 9], [7, 7],
+  ]
+  for (const [x, y] of moves) {
+    await page.getByTestId(`intersection-${x}-${y}`).click()
+  }
+
+  await expect(page.getByTestId(/^stone-/)).toHaveCount(9)
+  // 本地双人没有「你」这个视角，终局文案是棋色（人机模式下才会说「你赢了」）
+  await expect(page.getByRole('dialog')).toContainText('黑棋获胜')
+  // IndexedDB 在产物里同样要能写进去
+  await expect(page.getByText(/这局已存入棋谱库/)).toBeVisible()
+})
+
 test('复盘页进得去——代码分割后的 chunk 在生产环境要能取到', async ({ page }) => {
   await page.goto('/')
 
