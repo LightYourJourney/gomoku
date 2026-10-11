@@ -7,6 +7,7 @@ import {
   GAME_RECORDS_SCHEMA_VERSION,
   indexedDbGameRecords,
   memoryGameRecords,
+  saveGameReplacing,
   __setGameRecordsIndexedDbFactory,
   type GameRecord,
 } from './gameRecords'
@@ -217,5 +218,43 @@ describe('put 如实报告有没有真正落库', () => {
     } finally {
       if (saved !== undefined) Object.defineProperty(globalThis, 'indexedDB', saved)
     }
+  })
+})
+
+describe('saveGameReplacing：替换而不是留下两条', () => {
+  it('带 replacesSeq 时旧条被删、只剩新条', async () => {
+    const first = (await indexedDbGameRecords.put(winRecord())).record
+    const result = await saveGameReplacing(resignRecord(), first.seq)
+
+    expect(result.persisted).toBe(true)
+    expect(await indexedDbGameRecords.get(first.seq)).toBeNull()
+    expect(await indexedDbGameRecords.list()).toHaveLength(1)
+  })
+
+  it('没有 replacesSeq 但内容相同的旧条也会被替换（刷新后重新终局的路径）', async () => {
+    const first = (await indexedDbGameRecords.put(winRecord())).record
+    // 模拟「刷新后 recordedSeq 丢了」：不知道旧 seq，但手顺一样
+    const again = await saveGameReplacing(winRecord(), null)
+
+    expect(await indexedDbGameRecords.list()).toHaveLength(1)
+    expect(again.record.seq).not.toBe(first.seq)
+  })
+
+  it('没真正落库时**不删**旧条——宁可多一条，也不能整局消失', async () => {
+    const first = (await indexedDbGameRecords.put(winRecord())).record
+
+    const saved = Object.getOwnPropertyDescriptor(globalThis, 'indexedDB')
+    Reflect.deleteProperty(globalThis, 'indexedDB')
+    try {
+      __setGameRecordsIndexedDbFactory(null)
+      const result = await saveGameReplacing(resignRecord(), first.seq)
+      expect(result.persisted).toBe(false)
+    } finally {
+      if (saved !== undefined) Object.defineProperty(globalThis, 'indexedDB', saved)
+      __setGameRecordsIndexedDbFactory(null)
+    }
+
+    // 旧的还在（先写后删的意义就在这里）
+    expect(await indexedDbGameRecords.get(first.seq)).not.toBeNull()
   })
 })

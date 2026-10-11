@@ -340,5 +340,12 @@ describe('分析管线 —— 满盘和棋（无可走点）', () => {
     await Promise.resolve()
 
     expect(store.getState().running).toBe(false)
+    // 最后一手没有可比的首选着法 → 不给结论（不编一个 loss = engineScore 出来），
+    // 总数也相应少一手，面板不会停在「N-1 / N」。
+    // 手 7 的「后续局面」正是这个满盘局面，它也评估不了——两首都跳过
+    expect(store.getState().verdicts.size).toBe(7)
+    expect(store.getState().total).toBe(8)
+    expect(store.getState().verdicts.has(7)).toBe(false)
+    expect(store.getState().verdicts.has(8)).toBe(false)
   })
 })

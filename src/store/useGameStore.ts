@@ -1,6 +1,6 @@
 import { createBrowserAiEngine } from '../ai/browserEngine'
 import { opponentOf } from '../core/board'
-import { indexedDbGameRecords } from '../persist/gameRecords'
+import { saveGameReplacing } from '../persist/gameRecords'
 import { loadSession, saveSession } from '../persist/storage'
 import { createGameStore } from './gameStore'
 
@@ -16,14 +16,9 @@ export const appEngine = createBrowserAiEngine()
 
 export const useGameStore = createGameStore(appEngine, {
   // 终局自动入库。返回 promise 让 store 能把「存上了 / 没存上」如实反映到界面。
-  //
-  // 终局后悔棋再终局时 `replacesSeq` 指向上次存的那条：先删旧再写新，
-  // 同一局在棋谱库里始终只有一条。返回值是新的 seq，供下一次替换。
+  // 替换语义（同一局只留一条）与「先写后删」的顺序都在 saveGameReplacing 里。
   onGameEnd: async (input) => {
-    if (input.replacesSeq !== null) {
-      await indexedDbGameRecords.delete(input.replacesSeq)
-    }
-    const { record, persisted } = await indexedDbGameRecords.put(input)
+    const { record, persisted } = await saveGameReplacing(input, input.replacesSeq)
     // 没真正落库（隐私模式退了内存兜底）→ 抛错，让界面如实说「没能保存这局」，
     // 而不是显示「已存入」然后刷新就没了。
     if (!persisted) throw new Error('没能写入棋谱库')

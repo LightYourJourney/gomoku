@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, within } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { UseBoundStore, StoreApi } from 'zustand'
 import { BLACK, type Point } from '../../core/types'
@@ -228,3 +228,69 @@ describe('ReviewScreen 离开页面时停掉后台工作', () => {
     expect(injectedAnalysis.getState().running).toBe(false)
   })
 })
+
+describe('分析结论列表：只列真有亏损的手', () => {
+  it('与引擎一致的着手不占亏损榜——哪怕它的分差被捷径评分撑得很大', async () => {
+    // 真实对局里出现过的情形：引擎走捷径（必胜/必防，±WIN_SCORE 量纲），
+    // 玩家照走了同一手。旧实现按 loss 排序把这手排到最前，榜单三行
+    // 全是「与引擎一致」。修法必须落在**界面实际用的那条路径**上
+    // （buildSummary），而不是只改一个没人调用的函数。
+    const storage = memoryGameRecords()
+    // 3 手：黑 (3,7) → 白 (3,9) → 黑 (4,7)，第 3 手成五不成立，这里只要一个终局
+    const record = threeMoveRecord()
+    await storage.put(record)
+
+    const injectedReplay = createReplayStore()
+    const injectedAnalysis = createAnalysisStore()
+    render(
+      <ReviewScreen
+        storage={storage}
+        engine={scriptedEngine()}
+        stores={{ replay: injectedReplay, analysis: injectedAnalysis }}
+      />,
+    )
+    fireEvent.click((await screen.findAllByTestId(/^record-/))[0]!)
+    fireEvent.click(await screen.findByRole('button', { name: '开始分析' }))
+
+    // 等分析跑完
+    await waitFor(() => expect(injectedAnalysis.getState().running).toBe(false))
+
+    const rows = screen.queryAllByTestId(/^verdict-/)
+    // 手 0 与引擎首选相同（loss 强制 0）、手 2 是终局手（loss 0）——
+    // 只有手 1 真有亏损，榜单应当只有它。
+    expect(rows).toHaveLength(1)
+    expect(rows[0]).toHaveAttribute('data-testid', 'verdict-1')
+  })
+})
+
+/** 按 moveIndex 给出脚本化响应的引擎：手 0 与引擎首选相同，手 1 走亏。 */
+function scriptedEngine(): AiEngine {
+  return {
+    search(request) {
+      const index = request.moveIndex ?? 0
+      const replies: Record<number, { move: { x: number; y: number }; score: number }> = {
+        0: { move: { x: 3, y: 7 }, score: 1_000_000 }, // 捷径：与玩家手 0 相同
+        1: { move: { x: 9, y: 9 }, score: 500 }, // 引擎要下 (9,9)，玩家下了别的
+        2: { move: { x: 2, y: 2 }, score: 0 },
+      }
+      const picked = replies[index] ?? { move: { x: 2, y: 2 }, score: 0 }
+      return Promise.resolve({
+        requestId: request.requestId,
+        gameVersion: request.gameVersion,
+        moveIndex: index,
+        move: picked.move,
+        score: picked.score,
+        depth: 1,
+        nodes: 1,
+        elapsedMs: 1,
+        confidence: 'exact' as const,
+        reason: 'search' as const,
+        candidates: [],
+        urgency: 'normal' as const,
+      })
+    },
+    handleResponse() {},
+    handleError() {},
+    dispose() {},
+  }
+}

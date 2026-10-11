@@ -91,9 +91,11 @@ export function createAnalysisStore(): UseBoundStore<StoreApi<AnalysisStore>> {
       // 面板永远停在「分析中 N-1 / N」。
       if (response.move === null) {
         pending.delete(index)
-        // 这个局面的评分同样是**上一手**的「后续评分」半边——
-        // 少了这一句，上一手的结论永远拼不出来。
-        tryEmit(index - 1)
+        // 上一手无法评估（没有「走完之后」的引擎判断）——直接跳过它，
+        // 不给一个编出来的结论，总数也少一手，面板不会停在「N-1 / N」。
+        if (pending.delete(index - 1)) {
+          set({ total: Math.max(0, get().total - 1) })
+        }
         finishIfDone()
         pump()
         return
@@ -117,8 +119,15 @@ export function createAnalysisStore(): UseBoundStore<StoreApi<AnalysisStore>> {
       pump()
     }
 
-    /** 局面 i 也是「第 i-1 手的后续局面」：补上 reply 半边。 */
+    /**
+     * 局面 i 也是「第 i-1 手的后续局面」：补上 reply 半边。
+     *
+     * `move === null`（满盘，无棋可走）时**不补**：这个局面没有引擎判断，
+     * 强行拿 `score: 0` 当「走完这手之后的评分」会算出一个凭空的巨额亏损。
+     */
     function fillReply(index: number, response: SearchResponse) {
+      if (response.move === null) return
+
       const prev = pending.get(index - 1)
       if (prev !== undefined && !prev.playedIsWinning) {
         prev.reply = {

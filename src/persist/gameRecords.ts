@@ -150,6 +150,46 @@ export function memoryGameRecords(): GameRecordsStorage {
   }
 }
 
+/**
+ * 存一局，并保证**同一局在库里只有一条**。
+ *
+ * 顺序是刻意的：**先写新的，成功了再删旧的**。反过来（先删后写）时，
+ * 若写入退到内存兜底（隐私模式、配额满），旧条已经删了、新条没落库——
+ * 刷新之后整局从棋谱里消失，比多一条严重得多。
+ *
+ * `replacesSeq` 为 null 时按**内容**找旧条（同样的手顺 + 同样的先手方
+ * 视为同一局）。这条路径覆盖「终局后刷新页面、再悔棋重下到终局」：
+ * 那时内存里的 seq 链接已经随刷新丢了，只剩手顺可比。
+ */
+export async function saveGameReplacing(
+  input: GameRecordInput,
+  replacesSeq: number | null,
+): Promise<PutResult> {
+  const saved = await indexedDbGameRecords.put(input)
+  if (!saved.persisted) return saved // 没落库就不动旧的
+
+  let target = replacesSeq
+  if (target === null) {
+    const existing = await indexedDbGameRecords.list()
+    const sameGame = existing.find(
+      (record) =>
+        record.seq !== saved.record.seq &&
+        record.firstPlayer === input.firstPlayer &&
+        record.moves.length === input.moves.length &&
+        record.moves.every(
+          (point, index) =>
+            point.x === input.moves[index]?.x && point.y === input.moves[index]?.y,
+        ),
+    )
+    target = sameGame?.seq ?? null
+  }
+
+  if (target !== null && target !== saved.record.seq) {
+    await indexedDbGameRecords.delete(target)
+  }
+  return saved
+}
+
 // ── IndexedDB 实现 ───────────────────────────────────────────────
 
 const STORE = RECORDS_STORE

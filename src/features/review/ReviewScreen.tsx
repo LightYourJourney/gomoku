@@ -6,7 +6,7 @@ import type { GameRecord, GameRecordsStorage } from '../../persist/gameRecords'
 import { DIFFICULTY_LABELS } from '../../ai/difficulty'
 import { ENGINE_VERSION } from '../../ai/version'
 import { formatPoint } from '../../lib/coords'
-import { verdictLabel } from '../../analysis/analyze'
+import { buildSummary, verdictLabel } from '../../analysis/analyze'
 import { Button } from '../../components/ui/Button'
 import { Panel } from '../../components/ui/Panel'
 import { AppHeader } from '../shell/AppHeader'
@@ -40,8 +40,10 @@ export function ReviewScreen({ storage, engine, stores }: ReviewScreenProps) {
   const replay = stores?.replay ?? ownReplay
   const analysis = stores?.analysis ?? ownAnalysis
 
-  // 离开复盘页就停掉分析：它和对局共用一个 Worker，后台继续跑会拖慢
-  // 玩家回到对战页之后的每一步 AI 应手。回放也一并停。
+  // 离开复盘页就停掉分析：结果不再有人看，继续跑没有意义。
+  // 注意 `stop()` 只能**丢弃结果**——引擎没有取消接口，已经发出去的那一次
+  // 搜索仍会在共用的 Worker 上跑完（最多一个预算，400ms），之后不再发新的。
+  // 回放也一并停。
   useEffect(() => {
     return () => {
       analysis.getState().stop()
@@ -114,8 +116,11 @@ function AnalysisPanel({ store, engine, replay }: AnalysisPanelProps) {
     store.getState().start({ record: current, engine, difficulty, budgetMs })
   }
 
-  const verdicts = [...state.verdicts.values()].sort((a, b) => a.moveIndex - b.moveIndex)
-  const topLosses = [...verdicts].sort((a, b) => b.loss - a.loss).slice(0, 3)
+  // 榜单必须走 buildSummary：它保证「loss 为 0 的手（含与引擎一致）不进榜」。
+  // 曾经这里自己 sort + slice，于是 analyze.ts 里那条过滤落在死代码上，
+  // 界面照样把「与引擎一致」排进前三行。
+  const verdicts = [...state.verdicts.values()]
+  const topLosses = buildSummary(verdicts).topLosses
 
   return (
     <Panel title="引擎分析" bodyClassName="space-y-3 p-3.5">
