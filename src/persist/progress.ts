@@ -1,3 +1,5 @@
+import { DB_NAME, DB_VERSION, ensureSchema, PROGRESS_STORE as STORE } from './schema'
+
 /**
  * 进度格式版本。
  *
@@ -37,9 +39,6 @@ export interface ProgressStorage {
   clear(): Promise<void>
 }
 
-const DB_NAME = 'gomoku-lab'
-const DB_VERSION = 1
-const STORE = 'progress'
 const KEY = 'learning'
 
 /** 注入点。生产路径不调用；测试用它模拟「隐私模式」或者干脆关掉 IndexedDB。 */
@@ -86,7 +85,7 @@ function openDatabase(): Promise<IDBDatabase> {
 
     request.onupgradeneeded = () => {
       const db = request.result
-      if (!db.objectStoreNames.contains(STORE)) db.createObjectStore(STORE)
+      ensureSchema(db)
     }
     request.onsuccess = () => resolve(request.result)
     request.onerror = () => reject(new Error('打不开进度库'))

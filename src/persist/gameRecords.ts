@@ -2,6 +2,7 @@ import { replay } from '../core/game'
 import { inBounds } from '../core/board'
 import { BLACK, WHITE, type Player, type Point } from '../core/types'
 import { isDifficulty } from '../ai/difficulty'
+import { DB_NAME, DB_VERSION, ensureSchema, RECORDS_STORE } from './schema'
 import type { Difficulty } from '../ai/types'
 
 /**
@@ -139,9 +140,7 @@ export function memoryGameRecords(): GameRecordsStorage {
 
 // ── IndexedDB 实现 ───────────────────────────────────────────────
 
-const DB_NAME = 'gomoku-lab'
-const DB_VERSION = 1
-const STORE = 'records'
+const STORE = RECORDS_STORE
 
 /** 注入点。生产路径不调用；测试用它模拟「隐私模式」或者干脆关掉 IndexedDB。 */
 let factory: IDBFactory | null = null
@@ -184,9 +183,7 @@ function openDatabase(): Promise<IDBDatabase> {
 
     request.onupgradeneeded = () => {
       const db = request.result
-      if (!db.objectStoreNames.contains(STORE)) {
-        db.createObjectStore(STORE, { keyPath: 'seq', autoIncrement: true })
-      }
+      ensureSchema(db)
     }
     request.onsuccess = () => resolve(request.result)
     request.onerror = () => reject(new Error('打不开棋谱库'))

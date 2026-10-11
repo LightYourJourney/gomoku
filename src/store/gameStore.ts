@@ -63,6 +63,14 @@ export interface GameStore {
   readonly hintError: string | null
   readonly pendingHintRequestId: number | null
 
+  /**
+   * 这一局的棋谱有没有存上。
+   *
+   * 界面据此如实显示「已存入棋谱库」或「没能保存这局」——**不许假装成功**：
+   * 隐私模式、配额满都会让写入失败，玩家有权知道这局丢了。
+   */
+  readonly recordSaveState: RecordSaveState
+
   newGame(options?: { mode?: GameMode; humanColor?: Player; difficulty?: Difficulty }): void
   /** 从本地存档恢复。传 null 表示没有存档，保持当前状态。 */
   restore(session: PersistedSession | null): void
@@ -89,6 +97,9 @@ export interface GameStore {
  * 它同样只读，不会挤占落子请求的预算。
  */
 export const HINT_BUDGET_MS = 800
+
+/** 终局入库的进度，供对局结束时的界面显示。 */
+export type RecordSaveState = 'idle' | 'saving' | 'saved' | 'failed'
 
 /** 局面一变就要把提示整体清掉。 */
 const HINT_CLEARED = {
@@ -163,8 +174,66 @@ export function shouldAiMove(
   )
 }
 
-export function createGameStore(engine: AiEngine): UseBoundStore<StoreApi<GameStore>> {
+/**
+ * 一局结束时交给外部的信息。形状即棋谱库的入库输入（不含 `winner`——
+ * 它由存储层用 `replay` 推导，不信任调用方）。
+ */
+export interface GameEndInput {
+  readonly moves: readonly Point[]
+  readonly firstPlayer: Player
+  readonly mode: GameMode
+  readonly humanColor: Player
+  readonly difficulty: Difficulty
+  readonly resignedBy: Player | null
+}
+
+export interface GameStoreOptions {
+  /**
+   * 对局**从进行中变成终局**时回调一次（五连 / 和棋 / 认输）。
+   *
+   * `newGame` 与 `restore` 不触发——重开一局、刷新恢复都不是「结束了一局」，
+   * 触发的话同一局会被重复入库。
+   */
+  readonly onGameEnd?: (input: GameEndInput) => void | Promise<unknown>
+}
+
+export function createGameStore(
+  engine: AiEngine,
+  options: GameStoreOptions = {},
+): UseBoundStore<StoreApi<GameStore>> {
+  /**
+   * 只在「进行中 → 终局」这一跃迁上回调。落子路径有三条（玩家、AI、认输），
+   * 都汇到这里判定，避免各处各写一遍「是不是刚结束」。
+   */
+  function makeNotifier(set: (partial: Partial<GameStore>) => void) {
+  return function notifyGameEnd(before: GameStore, after: GameState): void {
+    if (before.game.status !== 'playing' || after.status === 'playing') return
+
+    const input: GameEndInput = {
+      moves: after.moves,
+      firstPlayer: after.firstPlayer,
+      mode: before.mode,
+      humanColor: before.humanColor,
+      difficulty: before.difficulty,
+      resignedBy:
+        after.status === 'resigned' && after.winner !== null ? opponentOf(after.winner) : null,
+    }
+
+    const result = options.onGameEnd?.(input)
+    if (result === undefined) return
+
+    // 存储是异步的，界面需要知道最终成没成
+    set({ recordSaveState: 'saving' })
+    void Promise.resolve(result).then(
+      () => set({ recordSaveState: 'saved' }),
+      () => set({ recordSaveState: 'failed' }),
+    )
+  }
+  }
+
   return create<GameStore>()((set, get) => {
+    const notifyGameEnd = makeNotifier(set)
+
     return {
       game: createGame(),
       mode: 'pve',
@@ -174,6 +243,7 @@ export function createGameStore(engine: AiEngine): UseBoundStore<StoreApi<GameSt
       aiError: null,
       aiInfo: null,
       pendingRequestId: null,
+      recordSaveState: 'idle',
       ...HINT_CLEARED,
 
       newGame(options = {}) {
@@ -187,6 +257,7 @@ export function createGameStore(engine: AiEngine): UseBoundStore<StoreApi<GameSt
           aiError: null,
           aiInfo: null,
           pendingRequestId: null,
+          recordSaveState: 'idle',
           ...HINT_CLEARED,
         })
 
@@ -238,6 +309,7 @@ export function createGameStore(engine: AiEngine): UseBoundStore<StoreApi<GameSt
 
         // 提示是按旧局面算的，落子之后就不再适用了。
         set({ game: outcome.state, aiError: null, ...HINT_CLEARED })
+        notifyGameEnd(current, outcome.state)
         get().requestAiMove()
       },
 
@@ -262,13 +334,15 @@ export function createGameStore(engine: AiEngine): UseBoundStore<StoreApi<GameSt
         const current = get()
         if (current.game.status !== 'playing') return
 
+        const resigned = resignGame(current.game, current.humanColor)
         set({
-          game: resignGame(current.game, current.humanColor),
+          game: resigned,
           aiThinking: false,
           aiInfo: null,
           pendingRequestId: null,
           ...HINT_CLEARED,
         })
+        notifyGameEnd(current, resigned)
       },
 
       requestAiMove() {
@@ -348,6 +422,7 @@ export function createGameStore(engine: AiEngine): UseBoundStore<StoreApi<GameSt
             reason: response.reason,
           },
         })
+        notifyGameEnd(current, outcome.state)
       },
 
       dismissAiError() {

@@ -36,8 +36,9 @@ export function ReplayBoard({ store, onExit, extraPanel }: ReplayBoardProps) {
 
   const total = record.moves.length
 
-  // 落子编号：已走的每一手按顺序编号（label 省略时 Board 按下标显示 1/2/3…）
-  const marks = position.moves.map((point) => ({ point }))
+  // 落子编号：已走的每一手按顺序编号（label 省略时 Board 按下标显示 1/2/3…）。
+  // 用小半径，棋子露在数字外面——否则看不出每一手是谁下的。
+  const marks = position.moves.map((point) => ({ point, radius: 0.26 }))
 
   return (
     <div className="flex min-h-0 flex-1 flex-col lg:grid lg:grid-cols-[minmax(0,1fr)_344px] lg:grid-rows-[auto_minmax(0,1fr)]">

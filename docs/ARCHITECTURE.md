@@ -5,11 +5,13 @@
 ```
 components / features   ← 展示层，只做渲染与事件转发
         ↓
-      store             ← Zustand：对局状态、设置、AI 请求编排
+      store             ← Zustand：对局状态、设置、AI 请求编排、回放与分析管线
+        ↓
+    analysis → learn    ← 分析结论的纯函数与教学内容（都不碰浏览器）
         ↓
    ai  →  core          ← 引擎与纯规则
         ↓
-     browser APIs       ← Worker / localStorage / WebAudio（只在这三处出现）
+     browser APIs       ← Worker / localStorage / IndexedDB / WebAudio
 ```
 
 **依赖方向严格单向**：`components → features → store → ai/core`，`ai → core`。`core` 不依赖任何其他层，也不碰 React、DOM、时间与随机数。这条约束让规则与引擎可以脱离浏览器直接单测。
@@ -38,11 +40,14 @@ components / features   ← 展示层，只做渲染与事件转发
 
 **共用局面为什么值得单独抽一个文件**：同一个局面会被讲解、练习和题库一起引用（`FOUR_THREE` 就被 5 处用），抄几遍的话改一处必漏几处。但它同时是个陷阱——**两道题共用同一块盘面时，题面很容易照着「我以为的差别」写，而盘面其实一模一样**。第四轮审查抓到过一次，见 `docs/TEST_REPORT.md` 的「二之六」。抽常量之后仍要逐题核对题面描述与盘面是否相符。
 
+**`analysis/`** —— 复盘的纯逻辑。
+`analyze.ts` 定义单手结论（`MoveVerdict`：分差 + 可靠度 + 引擎出处）、结论文案与缓存键。**只做纯函数，不发请求**——请求编排在 store 层。结论里没有「最佳 / 失误」这类固定档位：把连续的分差压进几个标签等于替玩家下结论，而且阈值一拍脑袋就会把「稍有出入」说成「失误」。
+
 **`store/`** —— 状态编排。
-`gameStore.ts` 是对局与 AI 请求的状态机（工厂函数 `createGameStore(engine)`，可注入假引擎测试）；`useGameStore.ts` 组装真实引擎与存档，是应用唯一的单例入口；`learnStore.ts` 是学习进度与当前视图（工厂函数 `createLearnStore(storage)`，可注入假存储测试）；`settingsStore.ts` 是主题、坐标、音效等偏好。
+`gameStore.ts` 是对局与 AI 请求的状态机（工厂函数 `createGameStore(engine)`，可注入假引擎测试）；`useGameStore.ts` 组装真实引擎与存档，是应用唯一的单例入口；`learnStore.ts` 是学习进度与当前视图（工厂函数 `createLearnStore(storage)`，可注入假存储测试）；`settingsStore.ts` 是主题、坐标、音效等偏好；`replayStore.ts` 是回放器（棋谱 + 游标 + 派生局面 + 自动播放）；`analysisStore.ts` 是分析管线（逐局面排队、请求共享、会话内缓存）；`requestCounter.ts` 是**全局唯一**的请求号计数器——对局、提示、分析三类请求共用它。
 
 **`persist/`** —— 存档。
-`storage.ts` 负责对局存档的序列化与**结构校验**（localStorage）；`progress.ts` 负责学习进度（IndexedDB）。两处同一条口径：任何一处不符合预期都当作没有数据，宁可重来也不把半成品灌进状态机。
+`storage.ts` 负责对局存档的序列化与**结构校验**（localStorage）；`progress.ts` 负责学习进度、`gameRecords.ts` 负责多局棋谱（两者都在 IndexedDB）；`schema.ts` 是**库名、版本与建表的唯一出处**——两个模块共用一个库，各写一份版本号的话，先打开的那个只建自己的表，另一个同版本打开不触发升级、表不存在，事务失败后被内存兜底吞掉，症状是「界面说已保存、刷新就没了」。两处同一条口径：任何一处不符合预期都当作没有数据，宁可重来也不把半成品灌进状态机。
 
 **为什么分两种存储**：对局存档每次落子都要写、数据小、丢了就丢了；学习进度写得少但**丢了会让人白学一遍**，值得用更耐久的 IndexedDB。进度层在 IndexedDB 不可用时（隐私模式、open 抛错、被其他标签页占用）整体降级为内存态——进度丢了可以接受，白屏不行。
 
@@ -83,6 +88,30 @@ GameStore.applyHintResponse：只写 hint / hintUrgency，**不调用 applyMove*
 Board.marks → 棋盘上按推荐顺序画编号 1/2/3 的标记
 ```
 
+```
+一局结束（五连 / 和棋 / 认输）
+   ↓
+gameStore 的 notifyGameEnd：只在「进行中 → 终局」这一跃迁上回调
+   ↓
+useGameStore 装配的 onGameEnd → indexedDbGameRecords.put（棋谱库）
+   ↓
+recordSaveState: saving → saved / failed —— 结果弹窗如实显示
+```
+
+```
+复盘页打开一局 → replayStore.open
+   ↓
+position = replay(moves.slice(0, cursor))（纯派生，游标是唯一可变状态）
+   ↓
+点「开始分析」→ analysisStore 逐局面排队（每手 1 个请求，相邻手共享后续局面）
+   ↓
+AiEngine.search（purpose: 'analyze'，与对局共用同一个 Worker 与全局请求号）
+   ↓
+响应按 moveIndex 配对 → buildVerdict（loss = engineScore − (−对手评分)）
+   ↓
+面板按分差排序列出前 3 手，标注引擎版本 · 档位 · 预算
+```
+
 ## 教学内容的判定模型
 
 课程练习与残局题共用一套结构（`learn/types.ts` 的 `Practice`）：**题目只声明局面与目标，不声明答案坐标**。
@@ -106,7 +135,7 @@ type PuzzleGoal =
 
 **`forcedWin` 的判定必须在落子前的盘面上做**（`isForcedWinStart`），不能拿落子后的盘面去调 `findForcedWin`：那个函数假定「传进来的盘面轮到攻方走」，而玩家落子之后轮到的是对手——等于白送一手，会把输棋判成赢棋。
 
-## 并发的五处关键约定
+## 并发的六条关键约定
 
 **过期响应必须丢弃。** 每个 AI 请求带 `requestId`（只增不减，跨对局也不重复）与 `gameVersion`（发起时的局面版本）。响应回来时两道闸门都要过：`requestId` 必须是当前在飞的那一个，`gameVersion` 必须等于当前棋局版本。悔棋、重新开始、切换执子都会把 `pendingRequestId` 置空，于是所有在飞的旧响应全部作废。这个判断位于 store 的纯函数 action 中，可以脱离浏览器直接单测。
 
@@ -117,6 +146,8 @@ type PuzzleGoal =
 这里不能省掉重试：如果只给一句「知道了」，AI 欠着的那一手永远补不上（`playHuman` 被 `canHumanPlay` 挡住），玩家执白时更是连悔棋都没有（盘上只有 AI 的着手，`canUndo` 为假），只剩重开或认输两条路。
 
 **存档必须能还原「结果」。** 手顺能还原出胜负与和棋——最后一手就在手顺里。唯独认输还原不出来，所以 `PersistedSession` 单独存一个 `resignedBy`（由 `winner` 反推）。少了它，认输后刷新页面会让这局复活成进行中，AI 还会接着往下走。
+
+**分析与对局共用同一个 Worker，但绝不改变棋局。** 分析请求 `purpose: 'analyze'`、`gameVersion: 0`，过期校验改走 `moveIndex`（响应里的手序号必须等于队列头）。三类请求（落子 / 提示 / 分析）的 `requestId` 全部来自 `requestCounter.ts` 的同一个计数器——分成多个计数器迟早撞号，撞号意味着迟到的分析响应可能被当成对局请求去兑现。分析只在复盘页发起，串行排队、同一时刻最多 1 个在飞，400ms 预算有界，不会长时间占住 Worker。
 
 **提示请求与落子请求必须彻底隔离。** 两者走同一条引擎、同一套过期校验，但分别记在 `pendingHintRequestId` 与 `pendingRequestId` 上：**提示在飞时玩家照常落子**（`canHumanPlay` 不看提示状态）。（请求号仍来自同一个只增不减的计数器——分成两个计数器迟早会撞号，撞号意味着迟到的提示响应会去兑现落子请求。）
 

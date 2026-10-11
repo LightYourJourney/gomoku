@@ -37,6 +37,7 @@ export function BattleScreen() {
   const aiThinking = useGameStore((state) => state.aiThinking)
   const aiError = useGameStore((state) => state.aiError)
   const aiInfo = useGameStore((state) => state.aiInfo)
+  const recordSaveState = useGameStore((state) => state.recordSaveState)
   const newGame = useGameStore((state) => state.newGame)
   const playHuman = useGameStore((state) => state.playHuman)
   const undoMove = useGameStore((state) => state.undoMove)
@@ -179,6 +180,7 @@ export function BattleScreen() {
         open={resultOpen}
         status={status}
         moves={moveCount}
+        saveState={recordSaveState}
         onRestart={() => newGame()}
         onClose={() => setResultDismissed(true)}
       />

@@ -1,5 +1,6 @@
 import 'fake-indexeddb/auto'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { DB_NAME, DB_VERSION, ensureSchema } from './schema'
 import {
   __setIndexedDbFactory,
   clearProgress,
@@ -187,13 +188,12 @@ describe('学习进度存储 —— 损坏数据', () => {
 
 /** 绕过类型直接往库里写一份原始数据，用来构造「存进去的东西坏了」的情形。 */
 async function writeRaw(value: unknown): Promise<void> {
-  const request = globalThis.indexedDB.open('gomoku-lab', 1)
+  // 用共享 schema 的库名与版本——硬编码会与真实打开方式错开（版本不同
+  // 会触发升级或 VersionError），测试就测不到真实路径了。
+  const request = globalThis.indexedDB.open(DB_NAME, DB_VERSION)
 
   await new Promise<void>((resolve, reject) => {
-    request.onupgradeneeded = () => {
-      const db = request.result
-      if (!db.objectStoreNames.contains('progress')) db.createObjectStore('progress')
-    }
+    request.onupgradeneeded = () => ensureSchema(request.result)
     request.onsuccess = () => resolve()
     request.onerror = () => reject(new Error('打不开数据库'))
   })

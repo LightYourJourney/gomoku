@@ -11,6 +11,13 @@ export interface BoardMark {
   readonly label?: string
   /** 默认 `accent`（强调色，AI 提示用）；`good` / `bad` 用于判题反馈。 */
   readonly tone?: MarkTone
+  /**
+   * 圆的半径，默认 0.4（一格为 1）。
+   *
+   * 回放的落子编号用小半径（0.26）：默认尺寸会把棋子整个盖住，
+   * 看不出那一手是黑是白——编号的意义就少了一半。
+   */
+  readonly radius?: number
 }
 
 /** 三种色调对应的填充色。避开棋盘木色，也互相分得开。 */
@@ -317,6 +324,7 @@ export function Board({
         <g data-testid="board-marks" pointerEvents="none">
           {visibleMarks.map((mark, index) => {
             const tone = mark.tone ?? 'accent'
+            const radius = mark.radius ?? 0.4
 
             return (
               <g
@@ -327,14 +335,14 @@ export function Board({
                 <circle
                   cx={mark.point.x}
                   cy={mark.point.y}
-                  r={0.4}
+                  r={radius}
                   fill={MARK_FILL[tone]}
                   opacity={0.92}
                 />
                 <text
                   x={mark.point.x}
                   y={mark.point.y}
-                  fontSize={0.5}
+                  fontSize={radius * 1.25}
                   fontFamily="var(--font-mono)"
                   fontWeight="700"
                   textAnchor="middle"

@@ -7,8 +7,10 @@ import {
   GAME_RECORDS_SCHEMA_VERSION,
   indexedDbGameRecords,
   memoryGameRecords,
+  __setGameRecordsIndexedDbFactory,
   type GameRecord,
 } from './gameRecords'
+import { DB_NAME, PROGRESS_STORE } from './schema'
 
 /** 黑棋第 7 行五连、白棋下方散四子——第 9 手黑棋成五。 */
 const FIVE_IN_NINE = [
@@ -154,5 +156,45 @@ describe('棋谱库 —— 降级', () => {
     } finally {
       if (saved !== undefined) Object.defineProperty(globalThis, 'indexedDB', saved)
     }
+  })
+})
+
+describe('与进度库共用同一个 IndexedDB', () => {
+  it('老库（v1、只有 progress 表）被打开后，records 表也就位了', async () => {
+    // 回归测试：两个模块曾各写一份版本号（都是 1），且各自只建自己的表。
+    // 老用户库里只有 progress 表——棋谱模块用同样的版本号打开，不会触发
+    // onupgradeneeded，records 表永远不存在；事务失败后被内存兜底吞掉，
+    // 症状是「界面说已保存、刷新就没了」。
+    //
+    // 断言必须**直接看表**，不能走 put/get：内存兜底会把失败伪装成成功。
+    await new Promise<void>((resolve, reject) => {
+      const del = globalThis.indexedDB.deleteDatabase(DB_NAME)
+      del.onsuccess = () => resolve()
+      del.onerror = () => reject(new Error('删库失败'))
+      del.onblocked = () => resolve()
+    })
+
+    await new Promise<void>((resolve, reject) => {
+      const legacy = globalThis.indexedDB.open(DB_NAME, 1)
+      legacy.onupgradeneeded = () => legacy.result.createObjectStore(PROGRESS_STORE)
+      legacy.onsuccess = () => {
+        legacy.result.close()
+        resolve()
+      }
+      legacy.onerror = () => reject(new Error('建旧库失败'))
+    })
+
+    // 走真实路径打开一次（内存态清掉，确保不是兜底在应答）
+    __setGameRecordsIndexedDbFactory(null)
+    await indexedDbGameRecords.put(winRecord())
+
+    const db = await new Promise<IDBDatabase>((resolve, reject) => {
+      const req = globalThis.indexedDB.open(DB_NAME)
+      req.onsuccess = () => resolve(req.result)
+      req.onerror = () => reject(new Error('打不开'))
+    })
+    expect(db.objectStoreNames.contains(PROGRESS_STORE)).toBe(true)
+    expect(db.objectStoreNames.contains('records')).toBe(true)
+    db.close()
   })
 })

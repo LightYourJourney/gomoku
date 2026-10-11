@@ -68,13 +68,23 @@ export function buildSummary(verdicts: readonly MoveVerdict[]): AnalysisSummary 
 /**
  * 分差 → 人话。
  *
+ * 两条措辞纪律，都是被真实对局教出来的：
+ *
+ * 1. **「与引擎一致」只在着法真的相同时说**。loss 会被钳到 0（开局/必胜/必防
+ *    这些捷径的评分与真实评估不同量纲），拿 loss === 0 当「一致」会在
+ *    着法明明不同时报「一致」——玩家的眼睛和文字打架。
+ * 2. **大分差不叫「错过直接取胜」**。分差只是评估的落差，玩家当时可能
+ *    根本没有胜机（该防没防、局面直接崩）。声称「错过取胜」是编造一个
+ *    并不存在的机会。
+ *
  * 「分差约 N 子」是**粗略换算**：10_000 是 shapeScore 里「一档棋型」（活三）
- * 的量级，拿它当「一子」的分母只是给玩家一个数量级感受，不是精确定义——
- * 评分本身不线性于子数，这是评估函数的固有局限，如实标注在注释里。
+ * 的量级，拿它当分母只给数量级感受，不是精确定义——评分不线性于子数，
+ * 这是评估函数的固有局限。
  */
 export function verdictLabel(v: MoveVerdict): string {
-  if (v.loss === 0) return '与引擎一致'
-  if (v.loss >= WIN_SCORE / 2) return '错过直接取胜'
+  if (v.move.x === v.engineMove.x && v.move.y === v.engineMove.y) return '与引擎一致'
+  if (v.loss === 0) return '与引擎首选相当'
+  if (v.loss >= WIN_SCORE / 2) return '分差极大'
   return `分差约 ${Math.round(v.loss / 10_000)} 子`
 }
 

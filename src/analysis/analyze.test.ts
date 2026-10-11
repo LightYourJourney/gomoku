@@ -72,23 +72,40 @@ describe('buildSummary', () => {
 })
 
 describe('verdictLabel', () => {
-  it('loss 0 → 与引擎一致', () => {
+  it('着法与引擎首选相同 → 与引擎一致', () => {
     expect(verdictLabel(verdict())).toBe('与引擎一致')
   })
 
+  it('着法不同但分差为 0 → 与引擎首选相当，**不说「一致」**', () => {
+    // 真实对局里出现过：开局捷径给 engineScore 0，而对手视角评分取负后
+    // 大于 0，loss 被钳成 0——此时着法明明不同，说「一致」是误导。
+    const label = verdictLabel(
+      verdict({ played: AT, engineMove: { x: 3, y: 3 }, engineScore: 0, playedScore: 50 }),
+    )
+    expect(label).toBe('与引擎首选相当')
+    expect(label).not.toContain('一致')
+  })
+
   it('小分差 → 分差约 N 子（粗略换算）', () => {
-    const label = verdictLabel(verdict({ engineScore: 30_000, playedScore: 10_000 }))
+    const label = verdictLabel(
+      verdict({ engineScore: 30_000, playedScore: 10_000, engineMove: { x: 3, y: 3 } }),
+    )
     expect(label).toBe('分差约 2 子')
   })
 
-  it('大分差（错过取胜级差距）→ 错过直接取胜', () => {
-    const label = verdictLabel(verdict({ engineScore: WIN_SCORE, playedScore: 0 }))
-    expect(label).toBe('错过直接取胜')
+  it('大分差 → 分差极大——不声称「错过取胜」', () => {
+    // 玩家可能本来就没有胜机（例如该防没防、局面直接崩），
+    // 说「错过直接取胜」是在编造一个当时并不存在的机会。
+    const label = verdictLabel(
+      verdict({ engineScore: WIN_SCORE, playedScore: 0, engineMove: { x: 3, y: 3 } }),
+    )
+    expect(label).toBe('分差极大')
+    expect(label).not.toContain('错过')
   })
 
   it('任何文案都不含「失误」——不设固定档位', () => {
     for (const loss of [0, 1, 5_000, 30_000, WIN_SCORE - 1]) {
-      const entry = verdict({ engineScore: loss, playedScore: 0 })
+      const entry = verdict({ engineScore: loss, playedScore: 0, engineMove: { x: 3, y: 3 } })
       expect(verdictLabel(entry)).not.toContain('失误')
     }
   })

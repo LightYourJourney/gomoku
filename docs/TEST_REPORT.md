@@ -8,8 +8,8 @@
 
 | 项 | 数量 |
 | --- | --- |
-| 单元 / 组件用例 | **563**（32 个文件） |
-| 端到端用例 | **27**（桌面 20 + 移动触屏 7） |
+| 单元 / 组件用例 | **643**（38 个文件） |
+| 端到端用例 | **31**（桌面 24 + 移动触屏 7） |
 | 基准脚本 | `yarn bench`，结果见 `docs/AI_ENGINE.md` 的「实测」一节 |
 
 各阶段发现并修复的问题：
@@ -23,6 +23,30 @@
 | Phase 3 | 4（含 2 个竞态、1 个静默丢标记） | 1 | 4（浏览器验证时发现） |
 | Phase 3 两轴审查（第三轮，`/code-review max --fix`） | 1（`bestGreedy` 硬编码难度档，真实回归） | 9 | — |
 | Phase 3 两轴审查（第四轮） | 4（内容教错）+ 2（测试名不副实） | 9 | — |
+| Phase 4 | 3（存储 schema 冲突、分析结论文案说谎、回放编号遮住棋子） | — | 1（目视复核抓到文案） |
+
+---
+
+## 〇之三、Phase 4 摘要
+
+完整设计见 `docs/ARCHITECTURE.md` 的「关键数据流」与「并发的六条关键约定」。这里只记与测试有关的部分。
+
+**新增测试文件**：`persist/gameRecords.test.ts`（10）、`analysis/analyze.test.ts`（15）、`store/replayStore.test.ts`（15）、`store/analysisStore.test.ts`（10）、`features/review/review.test.tsx`（11）、`components/panels/ResultDialog.test.tsx`（4）；扩充 `ai/search.test.ts`（35）、`store/gameStore.test.ts`（85）、`components/board/Board.test.tsx`（23）、`persist/progress.test.ts`（16）、`store/learnStore.test.ts`（16）。
+
+**新增端到端用例**：`e2e/review.spec.ts`（4 条：终局入库 → 列表、回放与自动播放、刷新后持久、分析跑完并标注引擎出处）。
+
+**这一阶段抓到的问题**（按发现顺序）：
+
+| 问题 | 性质 | 怎么抓到的 |
+| --- | --- | --- |
+| `progress.ts` 与 `gameRecords.ts` 各写一份 DB 版本号（都是 1），棋谱表根本建不出来，事务失败又被内存兜底吞掉——界面说「已存入」、刷新就没了 | 真实缺陷 | **端到端**（单元测试里两边各用各的假实现，永远碰不到面） |
+| 分析结论「与引擎一致」在着法明明不同时也会显示（loss 被钳成 0） | 文案说谎 | 真实浏览器目视复核 |
+| 大分差标成「错过直接取胜」——那两手是白棋下崩了，根本不存在「错过」的机会 | 文案说谎 | 真实浏览器目视复核 |
+| 回放编号用默认半径把棋子整个盖住，看不出每手是谁下的 | 体验缺陷 | 真实浏览器目视复核 |
+
+**反向验证**（改坏实现确认测试会红）：`replayStore` 去掉 `goTo` 的 clamp → clamp 用例红；回放棋盘 `interactive` 改 true → 悬停预览用例红；去掉 ReplayBoard 的卸载清理 → 定时器用例红；`schema.ts` 退回「各建各表 + 版本 1」→ 老库升级用例红。
+
+**一条被证伪的断言**：回放棋盘的「不可交互」最初只断言「点击后游标不动」——`onPlay` 是空实现时两边都成立，变异测试不红。改成断言「悬停不出现落子预览」后才真正有鉴别力。
 
 ---
 
@@ -90,8 +114,8 @@ Phase 1 收尾时为 16 个文件 / 261 个用例；下表保留当时的明细�
 
 ```
 yarn test
-Test Files  32 passed (32)
-     Tests  563 passed (563)
+Test Files  38 passed (38)
+     Tests  643 passed (643)
 ```
 
 | 测试文件 | 用例数 | 覆盖内容 |
@@ -115,16 +139,24 @@ Test Files  32 passed (32)
 | `features/learn/PracticeBoard.test.tsx` | 11 | 练习交互：落子 → 判定 → 反馈、做错可重试、**一次通过只上报一次**（防重复回调） |
 | `features/learn/screens.test.tsx` | 18 | 课程列表 / 讲解页 / 练习页 / 残局列表与详情的渲染与导航、**换课必须重建组件**（`key` 换成 `lesson.id` 的那条回归） |
 | `persist/progress.test.ts` | 15 | IndexedDB 读写与清空、schema 版本、**真的把全局 `indexedDB` 摘掉**验降级、`open` 抛错 / `onerror` / 只读存取器三种不可用形态 |
-| `store/learnStore.test.ts` | 14 | 进度载入、完成课程与解题的幂等、`lastVisited` 的位置恢复、**加载完成前的导航也要落盘**（`pendingPersist` 队列） |
+| `store/learnStore.test.ts` | 16 | 进度载入、完成课程与解题的幂等、`lastVisited` 的位置恢复、**加载完成前的导航也要落盘**（`pendingPersist` 队列）、`'review'` 视图 |
+| `persist/gameRecords.test.ts` | 10 | 棋谱库：自增 seq 与降序列表、winner 推导（五连 / 认输 / 和棋）、损坏记录整条跳过、**真的摘掉全局 indexedDB** 验降级、**老库（v1 只有 progress 表）打开后 records 表也就位**（schema 冲突回归） |
+| `analysis/analyze.test.ts` | 15 | 单手结论：loss 公式与钳位、终局手恒 0、Top3 排序、**文案三条纪律**（着法相同才说「一致」、分差 0 但着法不同说「相当」、大分差不声称「错过取胜」）、缓存键掺引擎版本 |
+| `store/replayStore.test.ts` | 15 | 游标 clamp、派生完整性、认输标记只在末尾应用、0 手认输局不崩、自动播放（fake timers）到尾自停 / pause / 不叠加定时器 |
+| `store/analysisStore.test.ts` | 10 | 串行排队（最多 1 个在飞）、**请求共享**（9 手局 9 个请求）、loss 编排、过期/错配响应丢弃、错误路径、缓存复用、与 gameStore 交错取号不撞号 |
+| `features/review/review.test.tsx` | 11 | 棋谱列表空态与降序、回放器计数与编号标记、**不可交互（悬停无落子预览）**、卸载清理、三段流转、分析面板出处标注 |
+| `components/panels/ResultDialog.test.tsx` | 4 | 入库四态文案：保存中 / 已存入 / **没能保存（不假装成功）** / 无入库动作时不显示 |
 
 ### 端到端测试（Playwright + 本机 Chrome，不下载 Chromium）
 
 ```
 yarn e2e
-27 passed
+31 passed
 ```
 
 **桌面组（20 条：对战 12 + 学习 8）**：人机对战完整一手往返、五个位置的落子位置正确性（含四角）、悔棋撤销一轮、重新开始清空、刷新恢复且补完 AI 那一手、**认输后刷新不复活**、认输弹窗与终局拒收落子、本地双人模式不触发 AI，以及 Phase 2 新增的四条：**请求提示后棋盘出现候选标记且棋局一手未变**、提示之后落子标记消失、收起提示只清标记不动棋局、**专家档深算期间悔棋后迟到的 AI 响应不会把棋子补回来**（后者等过 3.5 秒再断言，确认那一手是作废了而不是只是慢）。
+
+复盘组的 4 条（`e2e/review.spec.ts`）：终局入库 → 弹窗如实显示 → 列表出现该记录；回放（编号、走一步退一步、自动播放开着切走再切回不自走）；**刷新后棋谱仍在**（IndexedDB 持久，等「已存入」信号再刷新——不等会打断写入事务）；分析跑完 9/9 并标注「400ms · 引擎 search-1」。
 
 学习组的 8 条（`e2e/learn.spec.ts`）：从对战页进课程页并走到练习、练习做对与做错的两种反馈、三级提示到第三问才标点位、做完一节课刷新后完成标记仍在、残局做对一题后进度 +1 且刷新仍在、六个分类标题、**点「下一节」换课必须从头讲起**（`key={lesson.id}` 那条回归的端到端对照）。
 

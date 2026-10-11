@@ -273,3 +273,46 @@ describe('Board —— 坐标', () => {
     expect(screen.queryAllByTestId('coord')).toHaveLength(0)
   })
 })
+
+describe('Board —— 标记的紧凑尺寸', () => {
+  it('radius 自定义时圆与小字号同步缩放（回放编号用，不遮住棋子）', () => {
+    const { container } = render(
+      <Board
+        board={boardFromLines(['...............', '...............', '...............', '...............', '...............', '...............', '...............', '.....B.........'])}
+        lastMove={null}
+        winLine={null}
+        nextPlayer={BLACK}
+        showCoords={false}
+        interactive={false}
+        onPlay={() => {}}
+        marks={[{ point: { x: 7, y: 7 }, radius: 0.26 }]}
+      />,
+    )
+
+    const mark = container.querySelector('[data-testid="board-mark-7-7"]')
+    const circle = mark?.querySelector('circle')
+    const text = mark?.querySelector('text')
+
+    expect(Number(circle?.getAttribute('r'))).toBeCloseTo(0.26)
+    // 字号跟着半径走：0.26 * 1.25 = 0.325
+    expect(Number(text?.getAttribute('font-size'))).toBeCloseTo(0.325)
+  })
+
+  it('不传 radius 时保持默认 0.4', () => {
+    const { container } = render(
+      <Board
+        board={boardFromLines(['...............', '...............', '...............', '...............', '...............', '...............', '...............', '.....B.........'])}
+        lastMove={null}
+        winLine={null}
+        nextPlayer={BLACK}
+        showCoords={false}
+        interactive={false}
+        onPlay={() => {}}
+        marks={[{ point: { x: 7, y: 7 } }]}
+      />,
+    )
+
+    const circle = container.querySelector('[data-testid="board-mark-7-7"] circle')
+    expect(Number(circle?.getAttribute('r'))).toBeCloseTo(0.4)
+  })
+})

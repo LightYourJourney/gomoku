@@ -1,5 +1,6 @@
 import { createBrowserAiEngine } from '../ai/browserEngine'
 import { opponentOf } from '../core/board'
+import { indexedDbGameRecords } from '../persist/gameRecords'
 import { loadSession, saveSession } from '../persist/storage'
 import { createGameStore } from './gameStore'
 
@@ -13,7 +14,10 @@ import { createGameStore } from './gameStore'
  */
 export const appEngine = createBrowserAiEngine()
 
-export const useGameStore = createGameStore(appEngine)
+export const useGameStore = createGameStore(appEngine, {
+  // 终局自动入库。返回 promise 让 store 能把「存上了 / 没存上」如实反映到界面。
+  onGameEnd: (input) => indexedDbGameRecords.put(input),
+})
 
 /**
  * 应用启动时调用一次。

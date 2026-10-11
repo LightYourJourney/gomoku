@@ -995,3 +995,119 @@ describe('AI 提示', () => {
     expect(state().aiThinking).toBe(false)
   })
 })
+
+describe('终局入库回调 onGameEnd', () => {
+  /** 双方轮流在 (x,7) 上摆黑棋五连：pvp 模式下手动喂每一手。 */
+  function playToWin(target: ReturnType<typeof createGameStore>) {
+    target.getState().setMode('pvp')
+    for (const x of [3, 4, 5, 6, 7]) {
+      target.getState().playHuman({ x, y: 7 })
+      if (x !== 7) target.getState().playHuman({ x, y: 9 })
+    }
+  }
+
+  it('五连终局时回调一次，带完整对局信息', () => {
+    const ended: unknown[] = []
+    const s = createGameStore(engine, { onGameEnd: (input) => void ended.push(input) })
+    playToWin(s)
+
+    expect(ended).toHaveLength(1)
+    expect(ended[0]).toMatchObject({
+      moves: expect.any(Array),
+      firstPlayer: BLACK,
+      mode: 'pvp',
+      humanColor: BLACK,
+      resignedBy: null,
+    })
+  })
+
+  it('认输终局也触发，resignedBy 是认输方', () => {
+    const ended: Array<{ resignedBy: unknown }> = []
+    const s = createGameStore(engine, { onGameEnd: (input) => void ended.push(input) })
+    s.getState().setMode('pvp')
+    s.getState().playHuman({ x: 7, y: 7 })
+    s.getState().resign()
+
+    expect(ended).toHaveLength(1)
+    expect(ended[0]?.resignedBy).toBe(BLACK)
+  })
+
+  it('进行中不触发——只有状态从 playing 变成终局才调一次', () => {
+    const ended: unknown[] = []
+    const s = createGameStore(engine, { onGameEnd: (input) => void ended.push(input) })
+    s.getState().setMode('pvp')
+    s.getState().playHuman({ x: 3, y: 7 })
+
+    expect(ended).toHaveLength(0)
+  })
+
+  it('newGame 与 restore 不触发——重开一局不是「结束了一局」', () => {
+    const ended: unknown[] = []
+    const s = createGameStore(engine, { onGameEnd: (input) => void ended.push(input) })
+    playToWin(s)
+    expect(ended).toHaveLength(1)
+
+    s.getState().newGame()
+    expect(ended).toHaveLength(1)
+
+    s.getState().restore({
+      schemaVersion: SCHEMA_VERSION,
+      moves: [{ x: 3, y: 7 }],
+      firstPlayer: BLACK,
+      mode: 'pvp',
+      humanColor: BLACK,
+      difficulty: 'easy',
+      resignedBy: null,
+    })
+    expect(ended).toHaveLength(1)
+  })
+
+  it('不传 onGameEnd 时一切照常，不报错', () => {
+    const s = createGameStore(engine)
+    expect(() => playToWin(s)).not.toThrow()
+    expect(s.getState().game.status).toBe('won')
+  })
+})
+
+describe('终局入库的状态（供界面显示）', () => {
+  function playToWin(target: ReturnType<typeof createGameStore>) {
+    target.getState().setMode('pvp')
+    for (const x of [3, 4, 5, 6, 7]) {
+      target.getState().playHuman({ x, y: 7 })
+      if (x !== 7) target.getState().playHuman({ x, y: 9 })
+    }
+  }
+
+  it('写入成功后状态是 saved', async () => {
+    const s = createGameStore(engine, { onGameEnd: () => Promise.resolve() })
+    playToWin(s)
+
+    expect(s.getState().recordSaveState).toBe('saving')
+    await flush()
+    expect(s.getState().recordSaveState).toBe('saved')
+  })
+
+  it('写入失败后状态是 failed——如实说没存上，不假装成功', async () => {
+    const s = createGameStore(engine, { onGameEnd: () => Promise.reject(new Error('配额满')) })
+    playToWin(s)
+    await flush()
+
+    expect(s.getState().recordSaveState).toBe('failed')
+  })
+
+  it('未设回调时状态保持 idle', () => {
+    const s = createGameStore(engine)
+    playToWin(s)
+    expect(s.getState().recordSaveState).toBe('idle')
+  })
+
+  it('新的一局把状态清回 idle', async () => {
+    const s = createGameStore(engine, { onGameEnd: () => Promise.resolve() })
+    playToWin(s)
+    await flush()
+    expect(s.getState().recordSaveState).toBe('saved')
+
+    s.getState().newGame()
+    expect(s.getState().recordSaveState).toBe('idle')
+  })
+})

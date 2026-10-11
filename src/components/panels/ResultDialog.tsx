@@ -1,4 +1,5 @@
 import type { GameStatusDescriptor } from '../../features/battle/status'
+import type { RecordSaveState } from '../../store/gameStore'
 import { Button } from '../ui/Button'
 import { Modal } from '../ui/Modal'
 import { StoneDot } from './StoneDot'
@@ -7,11 +8,26 @@ export interface ResultDialogProps {
   open: boolean
   status: GameStatusDescriptor
   moves: number
+  /** 这一局的棋谱入库进度。界面如实显示，失败也如实说。 */
+  saveState: RecordSaveState
   onRestart: () => void
   onClose: () => void
 }
 
-export function ResultDialog({ open, status, moves, onRestart, onClose }: ResultDialogProps) {
+const SAVE_LABELS: Record<Exclude<RecordSaveState, 'idle'>, string> = {
+  saving: '正在存入棋谱库…',
+  saved: '这局已存入棋谱库',
+  failed: '没能保存这局',
+}
+
+export function ResultDialog({
+  open,
+  status,
+  moves,
+  saveState,
+  onRestart,
+  onClose,
+}: ResultDialogProps) {
   return (
     <Modal
       open={open}
@@ -32,7 +48,10 @@ export function ResultDialog({ open, status, moves, onRestart, onClose }: Result
         {status.player !== null && <StoneDot player={status.player} size={20} />}
         <span className="text-base font-semibold text-fg">{status.label}</span>
       </div>
-      <p className="mt-2 text-xs text-faint">共 {moves} 手。</p>
+      <p className="mt-2 text-xs text-faint">
+        共 {moves} 手。
+        {saveState !== 'idle' && <> {SAVE_LABELS[saveState]}</>}
+      </p>
     </Modal>
   )
 }
