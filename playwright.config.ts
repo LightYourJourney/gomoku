@@ -17,13 +17,23 @@ export default defineConfig({
       name: 'chrome',
       // 用本机已安装的 Chrome，不额外下载 Chromium。
       use: { ...devices['Desktop Chrome'], channel: 'chrome' },
-      testIgnore: '**/mobile.spec.ts',
+      // 触屏用例必须在开了触摸的上下文里跑：桌面上下文里 page.touchscreen 直接抛错。
+      // prod.spec.ts 属于生产构建通道（playwright.prod.config.ts），这里也不该收。
+      testIgnore: ['**/mobile.spec.ts', '**/tablet.spec.ts', '**/prod.spec.ts'],
     },
     {
       name: 'mobile',
       // 触屏相关的要求（误触、页面滚动干扰）只有在真正开启触摸的上下文里才验得了。
       use: { ...devices['Pixel 7'], channel: 'chrome' },
       testMatch: '**/mobile.spec.ts',
+    },
+    {
+      name: 'tablet',
+      // 平板横屏 1080×810：`lg` 断点（1024px）之上，走三栏布局。
+      // iPad 的设备描述符自带 browserName: 'webkit'，得显式改回 chromium——
+      // 本仓库统一用本机 Chrome，且 webkit 不认 channel: 'chrome'。
+      use: { ...devices['iPad (gen 7) landscape'], browserName: 'chromium', channel: 'chrome' },
+      testMatch: '**/tablet.spec.ts',
     },
   ],
   webServer: {
