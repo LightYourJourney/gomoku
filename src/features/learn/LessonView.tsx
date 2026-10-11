@@ -58,7 +58,8 @@ export function LessonView({
         )}
       </div>
 
-      <div className="flex min-h-0 flex-1 flex-col lg:grid lg:grid-cols-[minmax(0,1fr)_344px] lg:grid-rows-[auto_minmax(0,1fr)]">
+      {/* 正文进 main；上面那条返回/翻页工具栏是页面级控件，留在外面。 */}
+      <main className="flex min-h-0 flex-1 flex-col lg:grid lg:grid-cols-[minmax(0,1fr)_344px] lg:grid-rows-[auto_minmax(0,1fr)]">
         {onPractice ? (
           <PracticeBoard
             // 换课时必须重建：`step` 是组件内部状态，复用实例会让新一课直接
@@ -81,7 +82,7 @@ export function LessonView({
         ) : (
           <StepView step={lesson.steps[step]!} index={step} total={practiceIndex} />
         )}
-      </div>
+      </main>
 
       {solved && onPractice && (
         <p className="shrink-0 px-3 pb-3 text-xs text-faint">

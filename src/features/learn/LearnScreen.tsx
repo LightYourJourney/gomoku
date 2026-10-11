@@ -70,7 +70,7 @@ export function LearnScreen() {
     <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
       <AppHeader />
 
-      <div className="mx-auto w-full max-w-3xl px-3 py-5 lg:px-6">
+      <main className="mx-auto w-full max-w-3xl px-3 py-5 lg:px-6">
         <header className="mb-4 flex items-baseline gap-3">
           <h1 className="text-lg font-semibold text-fg">互动教学</h1>
           {/* 进度还没读出来时不要断言「已完成 0 节」——那是在说一件还不知道的事 */}
@@ -130,7 +130,7 @@ export function LearnScreen() {
             看棋型，所以想出别的走法一样算对。
           </p>
         </Panel>
-      </div>
+      </main>
     </div>
   )
 }

@@ -116,6 +116,17 @@ export function Board({
   const focusCellRef = useRef<SVGRectElement | null>(null)
 
   /**
+   * 棋盘此刻是否真的握着 DOM 焦点。
+   *
+   * 焦点环按它显隐，而不是按 `focused`——`focused` 是「Tab 会落在哪一格」的
+   * roving 停靠点，开局就有一个（天元），拿它当焦点指示会在空盘上凭空画一个环。
+   *
+   * 监听挂在 `<svg>` 上一对，**不是每格一个**：225 个 focus 处理器会让每次
+   * 焦点变化都重建整盘，实测把用例耗时翻了一倍（14s → 24s）。
+   */
+  const [hasFocus, setHasFocus] = useState(false)
+
+  /**
    * 把 DOM 焦点搬到某一格上。
    *
    * roving tabindex 只改 `tabIndex` 是不够的——读屏软件跟的是**真实的焦点**，
@@ -181,6 +192,26 @@ export function Board({
     }
   }
 
+  /**
+   * 焦点环画成 SVG 元素，而不是靠 CSS 的 outline。
+   *
+   * SVG 里 outline-width / outline-offset 按**用户坐标**算：1 单位 = 一整格，
+   * 于是 `outline: 2px` 变成两个格子宽的边框，焦点框能横跨半个棋盘（实测踩到，
+   * 只有截图看得见）。自己画一枚环，单位就是棋盘自己的坐标系，多大就是多大。
+   */
+  const focusRing = interactive && hasFocus ? (
+    <circle
+      data-testid="focus-ring"
+      cx={focused.x}
+      cy={focused.y}
+      r={0.56}
+      fill="none"
+      stroke="var(--c-accent)"
+      strokeWidth={0.07}
+      pointerEvents="none"
+    />
+  ) : null
+
   /** 一格的可读名：坐标 + 状态。键盘用户靠它知道自己在哪、这一格有什么。 */
   const cellLabel = (point: Point): string => {
     const cell = board[idx(point.x, point.y)]
@@ -206,6 +237,9 @@ export function Board({
     if (!interactive) return
     if (board[idx(point.x, point.y)] !== 0) return
     setHovered(null)
+    // 点过哪一格，Tab 停靠点就跟到哪一格——否则点完再按方向键会从旧格继续。
+    // 不走 moveFocus：那是键盘路径，不该让鼠标也开启「AI 走完自动还焦点」。
+    setFocused(point)
     onPlay(point)
   }
 
@@ -231,6 +265,9 @@ export function Board({
           : `五子棋棋盘，已落子 ${stones.length} 手${lastMove ? `，最后一手在 ${formatPoint(lastMove)}` : ''}`
       }
       onMouseLeave={() => setHovered(null)}
+      // 焦点进出整盘各一次；格与格之间移动会成对触发，React 会合并成一次更新
+      onFocus={() => setHasFocus(true)}
+      onBlur={() => setHasFocus(false)}
     >
       <defs>
         <linearGradient id={`${uid}-wood`} x1="0" y1="0" x2="0.85" y2="1">
@@ -459,6 +496,8 @@ export function Board({
           pointerEvents="none"
         />
       )}
+
+      {focusRing}
 
       {/*
         命中区。可交互时按 ARIA grid 组织：每行是一个 role="row"，

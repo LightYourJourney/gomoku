@@ -4,6 +4,10 @@
 
 /*
  * 设计令牌
+ *
+ * 深浅两套的 `faint` / `accent` / `good` / `warn` 是按 WCAG AA 的 4.5:1 反推出来的，
+ * 不是随手挑的——它们要压在自己的浅底上（`bg-good-soft text-good` 这类），
+ * 而原先浅色主题下只有 2.6–4.1。改动这些值前先跑 `src/lib/contrast.test.ts`。
  * 浅色 / 深色两套值挂在 :root 与 .dark 上，再通过 @theme inline 暴露给 Tailwind。
  * 组件里直接写 bg-surface / text-muted，不需要到处散落 dark: 前缀。
  */
@@ -17,15 +21,15 @@
   --c-border-strong: #cdc5b6;
   --c-fg: #1c1917;
   --c-muted: #6f675e;
-  --c-faint: #9c938a;
-  --c-accent: #2f7f6f;
+  --c-faint: #736a61;
+  --c-accent: #2c7768;
   --c-accent-soft: #e2efeb;
   --c-accent-fg: #ffffff;
   --c-danger: #b8412c;
   --c-danger-soft: #f7e6e1;
-  --c-good: #2f8f46;
+  --c-good: #287b3c;
   --c-good-soft: #e4f1e6;
-  --c-warn: #a97218;
+  --c-warn: #936315;
   --c-warn-soft: #f8eed8;
 
   --c-board-a: #edd3a6;
@@ -52,7 +56,7 @@
   --c-border-strong: #3b424f;
   --c-fg: #ece8e3;
   --c-muted: #9aa0aa;
-  --c-faint: #6c737e;
+  --c-faint: #848a95;
   --c-accent: #52b39c;
   --c-accent-soft: #17332d;
   --c-accent-fg: #07211b;
@@ -140,6 +144,16 @@
   :focus-visible {
     outline: 2px solid var(--c-accent);
     outline-offset: 2px;
+  }
+
+  /*
+   * 棋盘上的焦点格**不用 outline**：SVG 里 outline-width 与 outline-offset 按
+   * 用户坐标解释（1 单位 = 一整格），2px 就成了两个格子宽，焦点框会横跨半个棋盘。
+   * 棋盘自己画一枚 focus-ring（见 Board.tsx），单位就是它自己的坐标系。
+   */
+  svg [role='gridcell']:focus,
+  svg [role='gridcell']:focus-visible {
+    outline: none;
   }
 }
 

@@ -179,6 +179,15 @@ type PuzzleGoal =
 
 **播报只有一处**：`BoardAnnouncer`（`role="status"`）说清「最后一手在哪」与「为什么按了没反应」（AI 思考中 / 等待对手）。状态药丸是同一份信息的可见版本，**不是** live region——两个 live region 会把同一件事念两遍。终局文案直接复用 `describeStatus`，避免同一屏幕上两种说法。
 
+**焦点环是画出来的 SVG 元素，不是 CSS 的 `outline`**：SVG 里 `outline-width` 与 `outline-offset`
+按**用户坐标**解释（1 单位 = 一整格），`outline: 2px` 于是成了两个格子宽的边框，焦点框能横跨半个棋盘。
+`index.css` 里把 `svg [role='gridcell']:focus` 的 outline 关掉，改由 `Board` 画一枚 `focus-ring`
+（半径 0.56 格）。它只在棋盘**真的握着 DOM 焦点**时显示（`focus` / `blur` 监听挂在 `<svg>` 上一对，
+不是每格一个——225 个处理器会把每次焦点变化都变成整盘重建）。
+
+**配色有对比度守卫**：`lib/contrast.test.ts` 直接读 `index.css` 的原文，按两套主题逐对核算
+WCAG AA 的 4.5:1。`faint` / `good` / `warn` / `accent` 的值就是按它反推出来的，改色前先跑它。
+
 **动效降级不判 `matchMedia`**：`motion.ts` 只返回类名，是否播动画交给 `index.css` 的 `@media (prefers-reduced-motion: reduce)`。用 JS 判有两个坑——用户中途改系统设置时分支不会更新；jsdom 里 `matchMedia` 缺失，靠它判定会让测试与真实行为脱节。
 
 ## 错误边界

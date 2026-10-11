@@ -71,6 +71,27 @@ test.describe('键盘操作', () => {
     await expect(page.getByTestId('board-announcer')).toContainText('最后一手在 I8')
   })
 
+  test('焦点指示只占一格——它必须看得见，也不能糊住半个棋盘', async ({ page }) => {
+    // 这条是目视复核换来的：焦点指示原先靠全局 `:focus-visible` 的 outline，
+    // 而 SVG 里 outline-width / outline-offset 按**用户坐标**解释，
+    // 于是 2px 变成 2 个格子宽，焦点框横跨半个棋盘。单元测试看不到，
+    // 只有真浏览器能量出它到底多大。
+    await page.goto('/')
+    await page.getByRole('radio', { name: '本地双人' }).click()
+
+    await page.getByRole('gridcell', { name: 'H8 空位' }).focus()
+    await page.keyboard.press('ArrowRight')
+
+    const ring = await page.getByTestId('focus-ring').boundingBox()
+    const cell = await page.getByTestId('intersection-8-7').boundingBox()
+    expect(ring).not.toBeNull()
+    expect(cell).not.toBeNull()
+    if (ring === null || cell === null) return
+
+    expect(ring.width).toBeGreaterThan(cell.width * 0.8) // 不能小到看不见
+    expect(ring.width).toBeLessThan(cell.width * 1.4) // 也不能大到糊住棋盘
+  })
+
   test('AI 思考期间按回车不落子，播报要说出原因', async ({ page }) => {
     await page.goto('/')
     await page.getByRole('radio', { name: '人机对战' }).click()

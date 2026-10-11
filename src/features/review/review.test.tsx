@@ -159,6 +159,22 @@ afterEach(() => {
 
 // ── ReviewScreen 组装 ────────────────────────────────────────
 
+describe('ReviewScreen 的地标', () => {
+  it('列表与回放两条路径都有 main', async () => {
+    const storage = memoryGameRecords()
+    await storage.put(nineMoveRecord())
+    render(<ReviewScreen storage={storage} engine={idleEngine()} />)
+
+    // 列表
+    expect(await screen.findByRole('main')).toBeInTheDocument()
+
+    // 点开一局后仍是 main（回放换的是内容，不是地标）
+    fireEvent.click((await screen.findAllByTestId(/^record-/))[0]!)
+    await screen.findByTestId('move-counter')
+    expect(screen.getByRole('main')).toBeInTheDocument()
+  })
+})
+
 describe('ReviewScreen 三段流转', () => {
   it('从列表点开一局 → 回放器出现', async () => {
     const storage = memoryGameRecords()

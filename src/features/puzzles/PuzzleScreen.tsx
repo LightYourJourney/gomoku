@@ -54,7 +54,7 @@ export function PuzzleScreen() {
     <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
       <AppHeader />
 
-      <div className="mx-auto w-full max-w-3xl px-3 py-5 lg:px-6">
+      <main className="mx-auto w-full max-w-3xl px-3 py-5 lg:px-6">
         <header className="mb-4 flex items-baseline gap-3">
           <h1 className="text-lg font-semibold text-fg">残局挑战</h1>
           {/* 进度还没读出来时不要断言「已通过 0 题」——那是在说一件还不知道的事 */}
@@ -114,7 +114,7 @@ export function PuzzleScreen() {
             )
           })}
         </div>
-      </div>
+      </main>
     </div>
   )
 }
@@ -143,7 +143,8 @@ function PuzzleView({ puzzle, onExit }: PuzzleViewProps) {
         <span className="ml-auto text-xs text-faint">{CATEGORY_LABELS[puzzle.category]}</span>
       </div>
 
-      <div className="flex min-h-0 flex-1 flex-col lg:grid lg:grid-cols-[minmax(0,1fr)_344px] lg:grid-rows-[auto_minmax(0,1fr)]">
+      {/* 正文进 main；上面那条返回/标题工具栏是页面级控件，留在外面。 */}
+      <main className="flex min-h-0 flex-1 flex-col lg:grid lg:grid-cols-[minmax(0,1fr)_344px] lg:grid-rows-[auto_minmax(0,1fr)]">
         <PracticeBoard
           // 换 key 强制重建，用来实现「再来一次」
           key={`${puzzle.id}:${round}`}
@@ -158,7 +159,7 @@ function PuzzleView({ puzzle, onExit }: PuzzleViewProps) {
             </div>
           }
         />
-      </div>
+      </main>
 
       {solved && (
         <p className="shrink-0 px-3 pb-3 text-xs text-faint">做对的题会记在进度里，刷新也不会丢。</p>

@@ -73,16 +73,18 @@ export function ReviewScreen({ storage, engine, stores }: ReviewScreenProps) {
           <div className="flex shrink-0 items-center gap-2 border-b border-border px-3 py-2">
             <Button onClick={closeRecord}>← 棋谱列表</Button>
           </div>
-          <ReplayBoard
-            store={replay}
-            onExit={closeRecord}
-            extraPanel={<AnalysisPanel store={analysis} engine={engine} replay={replay} />}
-          />
+          <main className="flex min-h-0 flex-1 flex-col">
+            <ReplayBoard
+              store={replay}
+              onExit={closeRecord}
+              extraPanel={<AnalysisPanel store={analysis} engine={engine} replay={replay} />}
+            />
+          </main>
         </>
       ) : (
-        <div className="min-h-0 flex-1 overflow-y-auto">
+        <main className="min-h-0 flex-1 overflow-y-auto">
           <GameLibrary storage={storage} onOpen={openRecord} />
-        </div>
+        </main>
       )}
     </div>
   )

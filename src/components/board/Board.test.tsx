@@ -425,6 +425,37 @@ describe('Board —— 键盘与 grid 语义', () => {
     expect(document.activeElement).toHaveAccessibleName('H8 黑棋（最后一手）')
   })
 
+  it('没人碰键盘时不画焦点环——它说的是「焦点在这儿」，不是装饰', () => {
+    setup({ interactive: true })
+
+    expect(screen.queryByTestId('focus-ring')).not.toBeInTheDocument()
+  })
+
+  it('焦点环跟着真实焦点走，离开棋盘就不画了', () => {
+    setup({ interactive: true })
+
+    // jsdom 的 `.focus()` 不发 focusin（React 19 的 onFocus 挂的是它），
+    // 所以这里显式驱动事件；真实浏览器里的表现由 e2e 的「焦点指示只占一格」守。
+    const cell = screen.getByRole('gridcell', { name: 'H8 空位' })
+    fireEvent.focusIn(cell)
+    expect(screen.getByTestId('focus-ring')).toHaveAttribute('cx', '7')
+    expect(screen.getByTestId('focus-ring')).toHaveAttribute('cy', '7')
+
+    fireEvent.keyDown(cell, { key: 'ArrowRight' })
+    expect(screen.getByTestId('focus-ring')).toHaveAttribute('cx', '8')
+
+    fireEvent.focusOut(cell)
+    expect(screen.queryByTestId('focus-ring')).not.toBeInTheDocument()
+  })
+
+  it('只读棋盘不画焦点环', () => {
+    setup({ interactive: false })
+
+    // 就算焦点事件真的打进来也不该画——只读棋盘没有「键盘落点」这回事
+    fireEvent.focusIn(screen.getByRole('img'))
+    expect(screen.queryByTestId('focus-ring')).not.toBeInTheDocument()
+  })
+
   it('思考结束后焦点回到棋盘上（期间没人接管）', () => {
     const { rerender } = setup({ interactive: true })
 

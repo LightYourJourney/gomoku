@@ -15,6 +15,17 @@ const openLesson = (id: string): void => {
   fireEvent.click(screen.getByTestId(`lesson-${id}`))
 }
 
+describe.each([
+  ['教学页', <LearnScreen key="learn" />],
+  ['残局页', <PuzzleScreen key="puzzles" />],
+])('%s 的地标', (_name, element) => {
+  it('正文包在 main 里——读屏用户靠地标跳转，没有它就只能从头听', () => {
+    render(element)
+
+    expect(screen.getByRole('main')).toBeInTheDocument()
+  })
+})
+
 describe('LearnScreen —— 课程列表', () => {
   it('列出全部 8 节课', () => {
     render(<LearnScreen />)
@@ -121,6 +132,22 @@ describe('LearnScreen —— 课程列表', () => {
     render(<LearnScreen />)
 
     expect(screen.getByTestId('lesson-rules')).toBeInTheDocument()
+  })
+})
+
+describe('详情页的地标', () => {
+  it('课程内页也有 main：讲解与练习都得包在里头', () => {
+    render(<LearnScreen />)
+    openLesson('rules')
+
+    expect(screen.getByRole('main')).toBeInTheDocument()
+  })
+
+  it('残局内页也有 main', () => {
+    render(<PuzzleScreen />)
+    fireEvent.click(screen.getByTestId('puzzle-win-h'))
+
+    expect(screen.getByRole('main')).toBeInTheDocument()
   })
 })
 
