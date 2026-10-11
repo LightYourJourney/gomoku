@@ -49,8 +49,11 @@ export type Urgency = 'win' | 'mustBlock' | 'danger' | 'normal'
  * - `play`：出着法。
  * - `hint`：只做分析，**绝不落子**。走同一条引擎、同一套过期校验，
  *   但响应只写提示状态，不碰棋局。
+ * - `analyze`：复盘分析用的只读请求，语义与 `hint` 相同（绝不落子），
+ *   但预算独立（分析一次要跑很多手，各走各的）。`moveIndex` 标明分析的是
+ *   第几手，响应原样带回，供分析管线配对。
  */
-export type RequestPurpose = 'play' | 'hint'
+export type RequestPurpose = 'play' | 'hint' | 'analyze'
 
 export interface SearchRequest {
   readonly requestId: number
@@ -63,11 +66,15 @@ export interface SearchRequest {
   /** 覆盖难度自带的时间预算，单位毫秒。 */
   readonly budgetMs?: number
   readonly purpose: RequestPurpose
+  /** `analyze` 用：分析的是第几手（0-based）。响应原样带回。 */
+  readonly moveIndex?: number
 }
 
 export interface SearchResponse {
   readonly requestId: number
   readonly gameVersion: number
+  /** `analyze` 请求原样带回的手序号，供分析管线配对。 */
+  readonly moveIndex?: number
   /** null 表示无棋可走。 */
   readonly move: Point | null
   readonly score: number

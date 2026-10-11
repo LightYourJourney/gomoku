@@ -566,6 +566,7 @@ export function chooseMove(request: SearchRequest): SearchResponse {
   return {
     requestId: request.requestId,
     gameVersion: request.gameVersion,
+    moveIndex: request.moveIndex,
     move: outcome.move,
     score: outcome.score,
     depth: outcome.depth,

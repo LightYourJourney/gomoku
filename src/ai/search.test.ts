@@ -555,3 +555,24 @@ describe('chooseMove —— 难度差异', () => {
     expect(result.gameVersion).toBe(7)
   })
 })
+
+describe('analyze 用途', () => {
+  it("purpose: 'analyze' 的请求走完整搜索并原样回传 moveIndex", () => {
+    const board = boardFromLines([
+      '...............',
+      '...............',
+      '...............',
+      '...............',
+      '...............',
+      '...............',
+      '...............',
+      '.....BWB.......',
+    ])
+
+    const result = ask(board, BLACK, 'easy', { purpose: 'analyze', moveIndex: 5 })
+
+    expect(result.moveIndex).toBe(5)
+    expect(result.move).not.toBeNull()
+    expect(result.confidence).toBe('exact')
+  })
+})
