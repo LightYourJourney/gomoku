@@ -19,6 +19,7 @@ import type {
   Urgency,
 } from '../ai/types'
 import type { PersistedSession } from '../persist/storage'
+import { nextRequestId } from './requestCounter'
 
 export type GameMode = 'pve' | 'pvp'
 
@@ -163,9 +164,6 @@ export function shouldAiMove(
 }
 
 export function createGameStore(engine: AiEngine): UseBoundStore<StoreApi<GameStore>> {
-  // 只增不减，跨对局也不会重复，因此过期的响应永远对不上号。
-  let nextRequestId = 1
-
   return create<GameStore>()((set, get) => {
     return {
       game: createGame(),
@@ -277,7 +275,7 @@ export function createGameStore(engine: AiEngine): UseBoundStore<StoreApi<GameSt
         const current = get()
         if (!shouldAiMove(current) || current.aiThinking) return
 
-        const requestId = nextRequestId++
+        const requestId = nextRequestId()
         const { game } = current
 
         set({ aiThinking: true, aiError: null, pendingRequestId: requestId })
@@ -364,7 +362,7 @@ export function createGameStore(engine: AiEngine): UseBoundStore<StoreApi<GameSt
         if (!canHumanPlay(current)) return
         if (current.hintThinking) return
 
-        const requestId = nextRequestId++
+        const requestId = nextRequestId()
         const { game } = current
 
         set({ hintThinking: true, hintError: null, pendingHintRequestId: requestId })
