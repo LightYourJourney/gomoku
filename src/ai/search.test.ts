@@ -10,7 +10,7 @@ function ask(
   board: Board,
   player: Player,
   difficulty: Difficulty = 'easy',
-  extra: Omit<Partial<SearchRequest>, 'purpose'> = {},
+  extra: Partial<Omit<SearchRequest, 'board' | 'player' | 'difficulty'>> = {},
 ): SearchResponse {
   return chooseMove({
     requestId: 1,
