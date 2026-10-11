@@ -1,0 +1,148 @@
+import { useState } from 'react'
+import { useStore } from 'zustand'
+import { createReplayStore } from '../../store/replayStore'
+import { createAnalysisStore } from '../../store/analysisStore'
+import type { GameRecord, GameRecordsStorage } from '../../persist/gameRecords'
+import { DIFFICULTY_LABELS } from '../../ai/difficulty'
+import { ENGINE_VERSION } from '../../ai/version'
+import { formatPoint } from '../../lib/coords'
+import { verdictLabel } from '../../analysis/analyze'
+import { Button } from '../../components/ui/Button'
+import { Panel } from '../../components/ui/Panel'
+import { AppHeader } from '../shell/AppHeader'
+import type { AiEngine } from '../../ai/engine'
+import { GameLibrary } from './GameLibrary'
+import { ReplayBoard } from './ReplayBoard'
+
+export interface ReviewScreenProps {
+  readonly storage: GameRecordsStorage
+  readonly engine: AiEngine
+}
+
+/**
+ * 复盘页：棋谱列表 → 逐手回放 → 引擎分析。
+ *
+ * 两个 store 用 ref 持有：它们是本页面的会话状态，离开页面即丢弃
+ * （回放游标不持久化是有意的——它是浏览行为，不是进度）。
+ */
+export function ReviewScreen({ storage, engine }: ReviewScreenProps) {
+  // 惰性单例：useState 的初始化函数只跑一次，且不会在渲染期读 ref。
+  const [replay] = useState(createReplayStore)
+  const [analysis] = useState(createAnalysisStore)
+
+  const [open, setOpen] = useState(false)
+
+  function openRecord(record: GameRecord) {
+    analysis.getState().stop()
+    replay.getState().open(record)
+    setOpen(true)
+  }
+
+  function closeRecord() {
+    analysis.getState().stop()
+    replay.getState().close()
+    setOpen(false)
+  }
+
+  return (
+    <div className="flex min-h-0 flex-1 flex-col">
+      <AppHeader />
+      {open ? (
+        <>
+          <div className="flex shrink-0 items-center gap-2 border-b border-border px-3 py-2">
+            <Button onClick={closeRecord}>← 棋谱列表</Button>
+          </div>
+          <ReplayBoard
+            store={replay}
+            onExit={closeRecord}
+            extraPanel={<AnalysisPanel store={analysis} engine={engine} replay={replay} />}
+          />
+        </>
+      ) : (
+        <div className="min-h-0 flex-1 overflow-y-auto">
+          <GameLibrary storage={storage} onOpen={openRecord} />
+        </div>
+      )}
+    </div>
+  )
+}
+
+interface AnalysisPanelProps {
+  readonly store: ReturnType<typeof createAnalysisStore>
+  readonly engine: AiEngine
+  readonly replay: ReturnType<typeof createReplayStore>
+}
+
+/**
+ * 分析面板。
+ *
+ * 头部必须注明**引擎版本、档位与预算**——同一局面换个预算结论就可能不同，
+ * 不写明出处等于给一个无法解读的分数。结论只呈现分差与推荐着法，
+ * 不贴「失误」标签。
+ */
+function AnalysisPanel({ store, engine, replay }: AnalysisPanelProps) {
+  const state = useAnalysis(store)
+  const record = replay.getState().record
+
+  if (record === null) return null
+
+  const difficulty = 'easy' as const
+  const budgetMs = 400
+
+  function start() {
+    const current = replay.getState().record
+    if (current === null) return
+    store.getState().start({ record: current, engine, difficulty, budgetMs })
+  }
+
+  const verdicts = [...state.verdicts.values()].sort((a, b) => a.moveIndex - b.moveIndex)
+  const topLosses = [...verdicts].sort((a, b) => b.loss - a.loss).slice(0, 3)
+
+  return (
+    <Panel title="引擎分析" bodyClassName="space-y-3 p-3.5">
+      {/* 结论的出处必须写在最前面：换档位或预算，同一手的结论就可能不同 */}
+      <p data-testid="analysis-source" className="text-[11px] text-faint">
+        {DIFFICULTY_LABELS[difficulty]} · {budgetMs}ms · 引擎 {ENGINE_VERSION}
+      </p>
+      {!state.running && verdicts.length === 0 ? (
+        <>
+          <p className="text-xs text-faint">
+            逐手跑一遍引擎，找出与引擎首选差得最多的几手。分析只读，不会改动棋谱。
+          </p>
+          <Button block variant="primary" onClick={start}>
+            开始分析
+          </Button>
+        </>
+      ) : state.running ? (
+        <p className="text-xs text-muted">
+          分析中… <span data-testid="analysis-progress">{state.verdicts.size} / {state.total}</span>
+        </p>
+      ) : (
+        <div className="space-y-2">
+          <p data-testid="analysis-progress" className="text-xs text-faint">
+            已完成 {state.verdicts.size} / {state.total} 手
+          </p>
+          {topLosses.map((verdict) => (
+            <div key={verdict.moveIndex} data-testid={`verdict-${verdict.moveIndex}`} className="rounded-lg border border-border p-2">
+              <div className="flex items-baseline justify-between text-xs">
+                <span className="text-muted">第 {verdict.moveIndex + 1} 手</span>
+                <span className="text-fg">{verdictLabel(verdict)}</span>
+              </div>
+              <div className="mt-1 font-mono text-[11px] text-faint">
+                实际 {formatPoint(verdict.move)} · 引擎推荐 {formatPoint(verdict.engineMove)}
+              </div>
+              <div className="mt-0.5 text-[11px] text-faint">
+                深度 {verdict.engineDepth} · 节点 {verdict.engineNodes} ·{' '}
+                {verdict.confidence === 'exact' ? '搜索完成' : '预算内未搜完（启发式）'}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </Panel>
+  )
+}
+
+function useAnalysis(store: ReturnType<typeof createAnalysisStore>) {
+  return useStore(store)
+}

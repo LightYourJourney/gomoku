@@ -3,7 +3,17 @@ import { opponentOf } from '../core/board'
 import { loadSession, saveSession } from '../persist/storage'
 import { createGameStore } from './gameStore'
 
-export const useGameStore = createGameStore(createBrowserAiEngine())
+/**
+ * 应用唯一的 AI 引擎实例。
+ *
+ * 导出它，供复盘页的分析管线复用**同一个 Worker**——分析与对局靠
+ * `nextRequestId()` 的全局唯一号区分（见 `requestCounter.ts`），
+ * 与「提示和落子共用引擎」是同一条设计。分析请求有 400ms 上限，
+ * 不会长时间占住 Worker。
+ */
+export const appEngine = createBrowserAiEngine()
+
+export const useGameStore = createGameStore(appEngine)
 
 /**
  * 应用启动时调用一次。

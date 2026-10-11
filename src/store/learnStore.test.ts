@@ -190,3 +190,17 @@ describe('位置与视图', () => {
     expect(state().progress.lastVisited).toBeNull()
   })
 })
+
+describe("视图扩展 —— 'review'", () => {
+  it("setView('review') 后 view 是 'review'", () => {
+    state().setView('review')
+
+    expect(state().view).toBe('review')
+  })
+
+  it("setView('review') 把 lastView 落盘", () => {
+    state().setView('review')
+
+    expect(state().progress.lastView).toBe('review')
+  })
+})

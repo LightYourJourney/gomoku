@@ -6,7 +6,8 @@ import type { GameRecord } from '../persist/gameRecords'
 /** 自动播放的步进间隔。 */
 export const REPLAY_STEP_MS = 900
 
-export type ReplayRecord = Omit<GameRecord, 'seq' | 'schemaVersion'>
+/** 回放器持有完整记录（含 seq）——分析管线要按 seq 做缓存键。 */
+export type ReplayRecord = GameRecord
 
 export interface ReplayStore {
   readonly record: ReplayRecord | null

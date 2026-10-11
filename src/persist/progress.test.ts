@@ -207,3 +207,24 @@ async function writeRaw(value: unknown): Promise<void> {
   })
   db.close()
 }
+
+describe("lastView 的 'review' 取值", () => {
+  it("lastView 为 'review' 的进度能完整读回，不丢课程与刷题记录", async () => {
+    const review: LearningProgress = {
+      schemaVersion: PROGRESS_SCHEMA_VERSION,
+      completedLessons: ['rules'],
+      solvedPuzzles: ['win-h'],
+      lastVisited: null,
+      lastView: 'review',
+    }
+    await saveProgress(review)
+
+    // 模拟「重启」：清掉内存态，逼 loadProgress 走 IndexedDB → parseProgress。
+    // 不清的话 save 写进内存的未过滤数据会掩盖白名单的拒收——那正是要测的。
+    __setIndexedDbFactory(null) // 副作用：memoryFallback = null
+    // 恢复全局 IDB 工厂（上面那步把它指回全局了；fake-indexeddb 仍是全局）
+    __setIndexedDbFactory(null)
+
+    expect(await loadProgress()).toEqual(review)
+  })
+})

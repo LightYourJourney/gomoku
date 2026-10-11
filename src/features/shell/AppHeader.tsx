@@ -87,11 +87,12 @@ const NAV_LABELS: Record<View, string> = {
   battle: '对战',
   learn: '教学',
   puzzles: '残局',
+  review: '复盘',
 }
 
-const NAV_ORDER: readonly View[] = ['battle', 'learn', 'puzzles']
+const NAV_ORDER: readonly View[] = ['battle', 'learn', 'puzzles', 'review']
 
-/** 顶层导航。三个页面共用同一个顶栏，切换时只换中间那块内容。 */
+/** 顶层导航。四个页面共用同一个顶栏，切换时只换中间那块内容。 */
 function AppNav() {
   const view = useLearnStore((state) => state.view)
   const setView = useLearnStore((state) => state.setView)

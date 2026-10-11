@@ -19,7 +19,7 @@ export interface LearningProgress {
    *
    * 不存它的话，在残局页刷新会被踢回对战页——「刷新后回到原处」就只覆盖了课程。
    */
-  readonly lastView: 'battle' | 'learn' | 'puzzles'
+  readonly lastView: 'battle' | 'learn' | 'puzzles' | 'review'
 }
 
 export const EMPTY_PROGRESS: LearningProgress = {
@@ -114,7 +114,9 @@ function parseProgress(value: unknown): LearningProgress | null {
   if (completedLessons === null || solvedPuzzles === null) return null
 
   const view = raw.lastView
-  if (view !== 'battle' && view !== 'learn' && view !== 'puzzles') return null
+  // 白名单与 lastView 的联合类型同步——新视图上线时这里漏改，用户一刷新
+  // 整条进度就会被当成损坏数据丢弃（'review' 上线时真发生过，见 TEST_REPORT）。
+  if (view !== 'battle' && view !== 'learn' && view !== 'puzzles' && view !== 'review') return null
 
   let lastVisited: LearningProgress['lastVisited'] = null
   if (raw.lastVisited !== null && raw.lastVisited !== undefined) {

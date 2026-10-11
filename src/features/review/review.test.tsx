@@ -1,0 +1,205 @@
+import { act, fireEvent, render, screen, within } from '@testing-library/react'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import type { UseBoundStore, StoreApi } from 'zustand'
+import { BLACK, type Point } from '../../core/types'
+import { createReplayStore, REPLAY_STEP_MS, type ReplayStore } from '../../store/replayStore'
+import { memoryGameRecords, type GameRecord } from '../../persist/gameRecords'
+import type { AiEngine } from '../../ai/engine'
+import { GameLibrary } from './GameLibrary'
+import { ReplayBoard } from './ReplayBoard'
+import { ReviewScreen } from './ReviewScreen'
+
+type ReplayRecord = Omit<GameRecord, 'seq' | 'schemaVersion'>
+
+const NINE_MOVES: readonly Point[] = [
+  { x: 3, y: 7 }, { x: 3, y: 9 }, { x: 4, y: 7 }, { x: 4, y: 9 },
+  { x: 5, y: 7 }, { x: 5, y: 9 }, { x: 6, y: 7 }, { x: 6, y: 9 },
+  { x: 7, y: 7 },
+]
+
+function nineMoveRecord(): ReplayRecord {
+  return {
+    moves: [...NINE_MOVES],
+    firstPlayer: BLACK,
+    mode: 'pve',
+    humanColor: BLACK,
+    difficulty: 'easy',
+    resignedBy: null,
+    winner: BLACK,
+  }
+}
+
+function threeMoveRecord(): ReplayRecord {
+  return {
+    moves: NINE_MOVES.slice(0, 3),
+    firstPlayer: BLACK,
+    mode: 'pvp',
+    humanColor: BLACK,
+    difficulty: 'easy',
+    resignedBy: null,
+    winner: null,
+  } as ReplayRecord
+}
+
+// ── GameLibrary ──────────────────────────────────────────────
+
+describe('GameLibrary', () => {
+  it('空库显示引导文案', async () => {
+    render(<GameLibrary storage={memoryGameRecords()} onOpen={vi.fn()} />)
+
+    expect(await screen.findByText('还没有保存的对局')).toBeInTheDocument()
+  })
+
+  it('列出棋谱按 seq 降序，点击回调用完整记录', async () => {
+    const storage = memoryGameRecords()
+    await storage.put(nineMoveRecord())
+    const second = await storage.put(threeMoveRecord())
+    const onOpen = vi.fn()
+    render(<GameLibrary storage={storage} onOpen={onOpen} />)
+
+    const items = await screen.findAllByTestId(/^record-/)
+    expect(items).toHaveLength(2)
+    // 最近的（seq 大的）在前
+    expect(items[0]).toHaveAttribute('data-testid', `record-${second.seq}`)
+
+    fireEvent.click(items[0])
+    expect(onOpen).toHaveBeenCalledWith(expect.objectContaining({ seq: second.seq }))
+  })
+
+  it('每条显示模式与手数', async () => {
+    const storage = memoryGameRecords()
+    await storage.put(nineMoveRecord())
+    render(<GameLibrary storage={storage} onOpen={vi.fn()} />)
+
+    const item = (await screen.findAllByTestId(/^record-/))[0]!
+    expect(within(item).getByText(/人机|双人/)).toBeInTheDocument()
+    expect(within(item).getByText(/9 手/)).toBeInTheDocument()
+  })
+})
+
+
+// ── ReplayBoard ──────────────────────────────────────────────
+
+let replay: UseBoundStore<StoreApi<ReplayStore>>
+const fullRecord = { seq: 1, schemaVersion: 1, ...nineMoveRecord() } as GameRecord
+
+beforeEach(() => {
+  replay = createReplayStore()
+})
+
+describe('ReplayBoard', () => {
+  it('渲染派生局面与手数计数', () => {
+    act(() => replay.getState().open(fullRecord))
+    render(<ReplayBoard store={replay} onExit={vi.fn()} />)
+
+    expect(screen.getByTestId('move-counter')).toHaveTextContent('0 / 9')
+  })
+
+  it('落子编号：stepNext 后第 1 手的位置出现编号标记', () => {
+    act(() => replay.getState().open(fullRecord))
+    render(<ReplayBoard store={replay} onExit={vi.fn()} />)
+
+    act(() => replay.getState().stepNext())
+
+    const first = fullRecord.moves[0]!
+    expect(screen.getByTestId(`board-mark-${first.x}-${first.y}`)).toBeInTheDocument()
+  })
+
+  it('不可交互：悬停不出现落子预览（回放棋盘是只读的）', () => {
+    act(() => replay.getState().open(fullRecord))
+    render(<ReplayBoard store={replay} onExit={vi.fn()} />)
+
+    // 空交叉点悬停：可交互棋盘会画落子预览，回放棋盘不该有。
+    // 这是 interactive 的**可见**差异——只断言「点击后游标不动」是无效的，
+    // onPlay 是空实现时它两边都成立（变异测试证实过）。
+    const empty = fullRecord.moves.find(
+      (move) => !fullRecord.moves.some((other) => other.x === move.x && other.y === move.y - 1),
+    )!
+    fireEvent.mouseEnter(screen.getByTestId(`intersection-${empty.x}-${empty.y - 1}`))
+    expect(screen.queryByTestId('hover-stone')).not.toBeInTheDocument()
+  })
+
+  it('cursor=0 时「上一步」禁用；到尾时「下一步」禁用', () => {
+    act(() => replay.getState().open(fullRecord))
+    render(<ReplayBoard store={replay} onExit={vi.fn()} />)
+
+    expect(screen.getByRole('button', { name: '上一步' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: '下一步' })).toBeEnabled()
+
+    act(() => replay.getState().goTo(9))
+    expect(screen.getByRole('button', { name: '下一步' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: '上一步' })).toBeEnabled()
+  })
+
+  it('卸载后自动播放定时器不再推进（Review Focus 第 4 条）', () => {
+    vi.useFakeTimers()
+    try {
+      act(() => replay.getState().open(fullRecord))
+      const { unmount } = render(<ReplayBoard store={replay} onExit={vi.fn()} />)
+
+      // 组件内的「自动播放」按钮触发 play
+      fireEvent.click(screen.getByRole('button', { name: '自动播放' }))
+      expect(replay.getState().playing).toBe(true)
+
+      unmount()
+      // 卸载后推进大量时间：游标必须停在原地
+      vi.advanceTimersByTime(REPLAY_STEP_MS * 10)
+      expect(replay.getState().cursor).toBe(0)
+      expect(replay.getState().playing).toBe(false)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+})
+
+afterEach(() => {
+  vi.restoreAllMocks()
+})
+
+// ── ReviewScreen 组装 ────────────────────────────────────────
+
+describe('ReviewScreen 三段流转', () => {
+  it('从列表点开一局 → 回放器出现', async () => {
+    const storage = memoryGameRecords()
+    await storage.put(nineMoveRecord())
+    render(<ReviewScreen storage={storage} engine={idleEngine()} />)
+
+    const item = (await screen.findAllByTestId(/^record-/))[0]!
+    fireEvent.click(item)
+
+    expect(await screen.findByTestId('move-counter')).toHaveTextContent('0 / 9')
+    expect(screen.getByRole('button', { name: /回到棋谱列表/ })).toBeInTheDocument()
+  })
+
+  it('分析面板标注引擎档位、预算与版本（结论的出处）', async () => {
+    const storage = memoryGameRecords()
+    await storage.put(nineMoveRecord())
+    render(<ReviewScreen storage={storage} engine={idleEngine()} />)
+    fireEvent.click((await screen.findAllByTestId(/^record-/))[0]!)
+
+    const source = await screen.findByTestId('analysis-source')
+    expect(source).toHaveTextContent(/ms/)
+    expect(source).toHaveTextContent(/引擎 search-1/)
+  })
+
+  it('点「开始分析」后进入分析中状态，进度可见', async () => {
+    const storage = memoryGameRecords()
+    await storage.put(nineMoveRecord())
+    render(<ReviewScreen storage={storage} engine={idleEngine()} />)
+    fireEvent.click((await screen.findAllByTestId(/^record-/))[0]!)
+
+    fireEvent.click(screen.getByRole('button', { name: '开始分析' }))
+
+    expect(await screen.findByTestId('analysis-progress')).toHaveTextContent('0 / 9')
+  })
+})
+
+/** 永不 resolve 的引擎：让「分析中」状态稳定可断言。 */
+function idleEngine(): AiEngine {
+  return {
+    search: () => new Promise(() => {}),
+    handleResponse() {},
+    handleError() {},
+    dispose() {},
+  }
+}
