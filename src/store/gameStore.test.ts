@@ -1111,3 +1111,34 @@ describe('终局入库的状态（供界面显示）', () => {
     expect(s.getState().recordSaveState).toBe('idle')
   })
 })
+
+describe('终局后悔棋再终局：同一局只留一条棋谱', () => {
+  it('第二次终局带上 replacesSeq，指向第一次存下的那条', async () => {
+    const inputs: Array<{ replacesSeq: number | null }> = []
+    let nextSeq = 1
+    const s = createGameStore(engine, {
+      onGameEnd: (input) => {
+        inputs.push({ replacesSeq: input.replacesSeq })
+        return Promise.resolve(nextSeq++)
+      },
+    })
+
+    s.getState().setMode('pvp')
+    for (const x of [3, 4, 5, 6, 7]) {
+      s.getState().playHuman({ x, y: 7 })
+      if (x !== 7) s.getState().playHuman({ x, y: 9 })
+    }
+    await flush()
+    expect(inputs).toHaveLength(1)
+    expect(inputs[0]?.replacesSeq).toBeNull() // 第一次：新的一条
+
+    // 终局后悔棋（既有行为，测试在别处钉着）→ 换个走法再终局
+    s.getState().undoMove()
+    s.getState().playHuman({ x: 2, y: 7 }) // 换个方向再连一次？——回到同一局面即可
+    await flush()
+
+    // 第二次终局必须告诉外部「这条替换掉 seq=1 那条」，否则棋谱库出现两条
+    expect(inputs).toHaveLength(2)
+    expect(inputs[1]?.replacesSeq).toBe(1)
+  })
+})

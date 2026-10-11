@@ -65,11 +65,20 @@ export function createAnalysisStore(): UseBoundStore<StoreApi<AnalysisStore>> {
     /** 等待请求的局面序号（0-based 局面 = moveIndex；终局手没有局面 N）。 */
     let queue: number[] = []
     let inflightIndex: number | null = null
+    /**
+     * 本次分析的标识，每次 `start` 递增。
+     *
+     * 光比 `inflightIndex` 不够：每个 run 的局面号都从 0 开始，上一局的
+     * 迟到响应会被下一局当成自己的（局面号恰好相同），于是 B 的响应全被
+     * 丢弃、分析永久卡死。响应必须连同 run 一起核对。
+     */
+    let runId = 0
 
     function reset() {
       pending.clear()
       queue = []
       inflightIndex = null
+      runId++ // 让所有在飞响应作废
     }
 
     /** 一个局面请求完成后：填入挂起结论、可能直接拼出 verdict、推进队列。 */
@@ -77,9 +86,21 @@ export function createAnalysisStore(): UseBoundStore<StoreApi<AnalysisStore>> {
       const rec = record
       if (rec === null || engine === null) return
 
+      // 无棋可走（满盘和棋的末局）：这一手没有「引擎首选」可比，
+      // 拼不出结论，但**必须继续收尾**——直接 return 会让队列停在这里，
+      // 面板永远停在「分析中 N-1 / N」。
+      if (response.move === null) {
+        pending.delete(index)
+        // 这个局面的评分同样是**上一手**的「后续评分」半边——
+        // 少了这一句，上一手的结论永远拼不出来。
+        tryEmit(index - 1)
+        finishIfDone()
+        pump()
+        return
+      }
+
       // 这个局面是哪几手的「局面请求」？第 index 手（若 index < 总手数）。
       const entry = pending.get(index)
-      if (response.move === null) return
 
       if (entry !== undefined) {
         entry.position = {
@@ -153,13 +174,21 @@ export function createAnalysisStore(): UseBoundStore<StoreApi<AnalysisStore>> {
 
       patch({ verdicts })
 
-      // 全部完成：写缓存、收尾
+      finishIfDone()
+    }
+
+    /** 队列排空且没有再挂起的结论 → 写缓存、收尾。 */
+    function finishIfDone() {
       const rec = record
-      if (rec !== null && get().verdicts.size >= rec.moves.length) {
-        cache.set(cacheKey(rec.seq, difficulty, budgetMs), [...get().verdicts.values()].sort((a, b) => a.moveIndex - b.moveIndex))
-        patch({ running: false })
-        reset()
-      }
+      if (rec === null || !get().running) return
+      if (queue.length > 0 || inflightIndex !== null) return
+      if (pending.size > 0) return
+
+      cache.set(
+        cacheKey(rec.seq, difficulty, budgetMs),
+        [...get().verdicts.values()].sort((a, b) => a.moveIndex - b.moveIndex),
+      )
+      set({ running: false })
     }
 
     function patch(patchData: Partial<AnalysisStore>) {
@@ -174,6 +203,7 @@ export function createAnalysisStore(): UseBoundStore<StoreApi<AnalysisStore>> {
 
       const index = queue.shift()!
       inflightIndex = index
+      const run = runId
 
       // 分析不碰对局，但过期闸门照用：gameVersion 恒 0，配对走 moveIndex。
       void engine
@@ -189,20 +219,20 @@ export function createAnalysisStore(): UseBoundStore<StoreApi<AnalysisStore>> {
         })
         .then(
           (response) => {
-            if (get().target === null || inflightIndex !== index) {
-              inflightIndex = null
-              return // stop() 或已被取代：静默丢弃
-            }
-            if (response.moveIndex !== index || response.gameVersion !== 0) {
-              inflightIndex = null
-              return
-            }
+            // 三道闸门：属于当前这一次分析（run）、是当前在飞的那一个、
+            // 响应自带的手序号与局面版本对得上。任何一条不过就整体丢弃——
+            // **不许动 inflightIndex**：那是当前 run 的状态，
+            // 上一局的迟到响应没有资格改写它。
+            if (run !== runId) return
+            if (get().target === null || inflightIndex !== index) return
+            if (response.moveIndex !== index || response.gameVersion !== 0) return
 
             inflightIndex = null
             fillReply(index, response)
             onPositionResponse(index, response)
           },
           (error: unknown) => {
+            if (run !== runId) return
             inflightIndex = null
             if (get().target === null) return
             patch({
@@ -247,6 +277,12 @@ export function createAnalysisStore(): UseBoundStore<StoreApi<AnalysisStore>> {
           running: true,
           error: null,
         })
+
+        // 没有可分析的手（开了就认输）：立刻收尾，不要停在「分析中」。
+        if (rec.moves.length === 0) {
+          set({ running: false })
+          return
+        }
 
         // 缓存命中：零请求直接填充
         const cached = cache.get(cacheKey(rec.seq, diff, budget))

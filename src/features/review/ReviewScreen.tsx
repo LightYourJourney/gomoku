@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useStore } from 'zustand'
 import { createReplayStore } from '../../store/replayStore'
 import { createAnalysisStore } from '../../store/analysisStore'
@@ -17,6 +17,14 @@ import { ReplayBoard } from './ReplayBoard'
 export interface ReviewScreenProps {
   readonly storage: GameRecordsStorage
   readonly engine: AiEngine
+  /**
+   * 注入 store 实例（测试用）。生产不传，组件自己建——
+   * 两个 store 是这一页的会话状态，离开就丢（回放游标不持久化是有意的）。
+   */
+  readonly stores?: {
+    readonly replay: ReturnType<typeof createReplayStore>
+    readonly analysis: ReturnType<typeof createAnalysisStore>
+  }
 }
 
 /**
@@ -25,10 +33,21 @@ export interface ReviewScreenProps {
  * 两个 store 用 ref 持有：它们是本页面的会话状态，离开页面即丢弃
  * （回放游标不持久化是有意的——它是浏览行为，不是进度）。
  */
-export function ReviewScreen({ storage, engine }: ReviewScreenProps) {
+export function ReviewScreen({ storage, engine, stores }: ReviewScreenProps) {
   // 惰性单例：useState 的初始化函数只跑一次，且不会在渲染期读 ref。
-  const [replay] = useState(createReplayStore)
-  const [analysis] = useState(createAnalysisStore)
+  const [ownReplay] = useState(createReplayStore)
+  const [ownAnalysis] = useState(createAnalysisStore)
+  const replay = stores?.replay ?? ownReplay
+  const analysis = stores?.analysis ?? ownAnalysis
+
+  // 离开复盘页就停掉分析：它和对局共用一个 Worker，后台继续跑会拖慢
+  // 玩家回到对战页之后的每一步 AI 应手。回放也一并停。
+  useEffect(() => {
+    return () => {
+      analysis.getState().stop()
+      replay.getState().pause()
+    }
+  }, [analysis, replay])
 
   const [open, setOpen] = useState(false)
 

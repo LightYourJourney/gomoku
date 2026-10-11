@@ -27,12 +27,12 @@ describe('buildVerdict', () => {
   })
 
   it('比引擎差时 loss = engineScore − playedScore', () => {
-    const result = verdict({ engineScore: 800, playedScore: 300 })
+    const result = verdict({ engineMove: { x: 3, y: 3 }, engineScore: 800, playedScore: 300 })
     expect(result.loss).toBe(500)
   })
 
   it('playedScore 高于 engineScore（防御分支）时 loss 钳到 0', () => {
-    const result = verdict({ engineScore: 300, playedScore: 900 })
+    const result = verdict({ engineMove: { x: 3, y: 3 }, engineScore: 300, playedScore: 900 })
     expect(result.loss).toBe(0)
   })
 
@@ -51,12 +51,13 @@ describe('buildVerdict', () => {
 
 describe('buildSummary', () => {
   it('按 loss 降序取前 3', () => {
+    const away = { x: 3, y: 3 }
     const verdicts = [
-      verdict({ moveIndex: 0, engineScore: 100, playedScore: 0 }), // loss 100
-      verdict({ moveIndex: 1, engineScore: 0, playedScore: 0 }), // loss 0
-      verdict({ moveIndex: 2, engineScore: 900, playedScore: 100 }), // loss 800
-      verdict({ moveIndex: 3, engineScore: 500, playedScore: 450 }), // loss 50
-      verdict({ moveIndex: 4, engineScore: 700, playedScore: 200 }), // loss 500
+      verdict({ moveIndex: 0, engineMove: away, engineScore: 100, playedScore: 0 }), // loss 100
+      verdict({ moveIndex: 1, engineScore: 0, playedScore: 0 }), // 与引擎一致 → 不入榜
+      verdict({ moveIndex: 2, engineMove: away, engineScore: 900, playedScore: 100 }), // loss 800
+      verdict({ moveIndex: 3, engineMove: away, engineScore: 500, playedScore: 450 }), // loss 50
+      verdict({ moveIndex: 4, engineMove: away, engineScore: 700, playedScore: 200 }), // loss 500
     ]
 
     const summary = buildSummary(verdicts)
@@ -66,7 +67,9 @@ describe('buildSummary', () => {
   })
 
   it('不足 3 条时有多少取多少', () => {
-    const summary = buildSummary([verdict({ moveIndex: 0 })])
+    const summary = buildSummary([
+      verdict({ moveIndex: 0, engineMove: { x: 3, y: 3 }, engineScore: 500, playedScore: 100 }),
+    ])
     expect(summary.topLosses).toHaveLength(1)
   })
 })
@@ -126,5 +129,37 @@ describe('cacheKey', () => {
 
   it('键掺引擎版本——换 ENGINE_VERSION 必须重算', () => {
     expect(base.startsWith(`v1:${ENGINE_VERSION}:`)).toBe(true)
+  })
+})
+
+describe('着法相同即无亏损（捷径评分与真实评估不可比）', () => {
+  it('与引擎首选相同时 loss 恒 0，哪怕两个评分来自不同量纲', () => {
+    // 真引擎实测：必胜/必防走的是捷径（±WIN_SCORE 量纲），
+    // 而「走完之后」的评分来自真实评估——两者相减没有意义。
+    // 着法都相同了，说自己亏了 98 万是荒谬的。
+    const result = buildVerdict({
+      moveIndex: 0,
+      played: AT,
+      engineMove: AT,
+      engineScore: 1_000_000,
+      playedScore: 12_000,
+      isWinningMove: false,
+      confidence: 'exact',
+      engineDepth: 0,
+      engineNodes: 0,
+    })
+    expect(result.loss).toBe(0)
+  })
+
+  it('亏损榜不含着法与引擎一致的着手', () => {
+    const verdicts = [
+      buildVerdict({ moveIndex: 0, played: AT, engineMove: AT, engineScore: 1_000_000, playedScore: 1, isWinningMove: false, confidence: 'exact', engineDepth: 0, engineNodes: 0 }),
+      buildVerdict({ moveIndex: 1, played: { x: 1, y: 1 }, engineMove: { x: 2, y: 2 }, engineScore: 900, playedScore: 100, isWinningMove: false, confidence: 'exact', engineDepth: 2, engineNodes: 50 }),
+    ]
+
+    const summary = buildSummary(verdicts)
+
+    expect(summary.moveVerdicts).toHaveLength(2)
+    expect(summary.topLosses.map((v) => v.moveIndex)).toEqual([1])
   })
 })

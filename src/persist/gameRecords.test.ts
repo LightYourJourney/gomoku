@@ -53,7 +53,7 @@ beforeEach(async () => {
 
 describe('棋谱库 —— IndexedDB', () => {
   it('put 一局能读回且带自增 seq，winner 由库内推导', async () => {
-    const saved = await indexedDbGameRecords.put(winRecord())
+    const saved = (await indexedDbGameRecords.put(winRecord())).record
 
     expect(saved.seq).toBeGreaterThan(0)
     expect(saved.schemaVersion).toBe(GAME_RECORDS_SCHEMA_VERSION)
@@ -64,8 +64,8 @@ describe('棋谱库 —— IndexedDB', () => {
   })
 
   it('再 put 一局 seq 递增，列表按 seq 降序', async () => {
-    const first = await indexedDbGameRecords.put(winRecord())
-    const second = await indexedDbGameRecords.put(resignRecord())
+    const first = (await indexedDbGameRecords.put(winRecord())).record
+    const second = (await indexedDbGameRecords.put(resignRecord())).record
 
     expect(second.seq).toBeGreaterThan(first.seq)
 
@@ -74,7 +74,7 @@ describe('棋谱库 —— IndexedDB', () => {
   })
 
   it('认输局的 winner 是认输方的对手', async () => {
-    const saved = await indexedDbGameRecords.put(resignRecord())
+    const saved = (await indexedDbGameRecords.put(resignRecord())).record
     expect(saved.winner).toBe(WHITE) // 黑认输，白胜
   })
 
@@ -84,7 +84,7 @@ describe('棋谱库 —— IndexedDB', () => {
     // 直接用 0 手 + resignedBy null 不成局——改用「棋盘放满无五连」的经典上色模式。
     // 225 点太慢，这里退而求其次：断言「没有胜负也没有认输」的输入推导为 null。
     // 实际构造：只有 2 颗互不相邻的子，不可能五连，但游戏未结束，winner 应为 null。
-    const saved = await indexedDbGameRecords.put({
+    const saved = (await indexedDbGameRecords.put({
       moves: [
         { x: 0, y: 0 }, { x: 14, y: 14 },
       ],
@@ -93,13 +93,13 @@ describe('棋谱库 —— IndexedDB', () => {
       humanColor: BLACK,
       difficulty: 'easy',
       resignedBy: null,
-    })
+    })).record
 
     expect(saved.winner).toBeNull()
   })
 
   it('delete 后列表变短', async () => {
-    const saved = await indexedDbGameRecords.put(winRecord())
+    const saved = (await indexedDbGameRecords.put(winRecord())).record
     await indexedDbGameRecords.delete(saved.seq)
 
     expect(await indexedDbGameRecords.get(saved.seq)).toBeNull()
@@ -151,8 +151,8 @@ describe('棋谱库 —— 降级', () => {
     try {
       expect(typeof indexedDB, '全局 indexedDB 应当已被摘掉').toBe('undefined')
 
-      const record = await indexedDbGameRecords.put(winRecord())
-      expect(await indexedDbGameRecords.get(record.seq)).toEqual(record)
+      const saved = await indexedDbGameRecords.put(winRecord())
+      expect(await indexedDbGameRecords.get(saved.record.seq)).toEqual(saved.record)
     } finally {
       if (saved !== undefined) Object.defineProperty(globalThis, 'indexedDB', saved)
     }
@@ -196,5 +196,26 @@ describe('与进度库共用同一个 IndexedDB', () => {
     expect(db.objectStoreNames.contains(PROGRESS_STORE)).toBe(true)
     expect(db.objectStoreNames.contains('records')).toBe(true)
     db.close()
+  })
+})
+
+describe('put 如实报告有没有真正落库', () => {
+  it('写进 IndexedDB 时 persisted 为真', async () => {
+    const saved = await indexedDbGameRecords.put(winRecord())
+    expect(saved.persisted).toBe(true)
+  })
+
+  it('IDB 不可用退到内存兜底时 persisted 为假——界面才知道要如实说「没存上」', async () => {
+    const saved = Object.getOwnPropertyDescriptor(globalThis, 'indexedDB')
+    Reflect.deleteProperty(globalThis, 'indexedDB')
+    try {
+      __setGameRecordsIndexedDbFactory(null)
+      const record = await indexedDbGameRecords.put(winRecord())
+      // 内存兜底：本次会话里能读能列，但刷新就没了
+      expect(record.persisted).toBe(false)
+      expect(await indexedDbGameRecords.get(record.record.seq)).toEqual(record.record)
+    } finally {
+      if (saved !== undefined) Object.defineProperty(globalThis, 'indexedDB', saved)
+    }
   })
 })

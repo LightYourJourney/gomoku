@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { UseBoundStore, StoreApi } from 'zustand'
 import { BLACK, type Point } from '../../core/types'
 import { createReplayStore, REPLAY_STEP_MS, type ReplayStore } from '../../store/replayStore'
+import { createAnalysisStore } from '../../store/analysisStore'
 import { memoryGameRecords, type GameRecord } from '../../persist/gameRecords'
 import type { AiEngine } from '../../ai/engine'
 import { GameLibrary } from './GameLibrary'
@@ -53,7 +54,7 @@ describe('GameLibrary', () => {
   it('列出棋谱按 seq 降序，点击回调用完整记录', async () => {
     const storage = memoryGameRecords()
     await storage.put(nineMoveRecord())
-    const second = await storage.put(threeMoveRecord())
+    const second = (await storage.put(threeMoveRecord())).record
     const onOpen = vi.fn()
     render(<GameLibrary storage={storage} onOpen={onOpen} />)
 
@@ -203,3 +204,27 @@ function idleEngine(): AiEngine {
     dispose() {},
   }
 }
+
+describe('ReviewScreen 离开页面时停掉后台工作', () => {
+  it('卸载后分析被停止——不再占着与对局共用的 Worker', async () => {
+    const storage = memoryGameRecords()
+    await storage.put(nineMoveRecord())
+
+    const injectedReplay = createReplayStore()
+    const injectedAnalysis = createAnalysisStore()
+    const { unmount } = render(
+      <ReviewScreen
+        storage={storage}
+        engine={idleEngine()}
+        stores={{ replay: injectedReplay, analysis: injectedAnalysis }}
+      />,
+    )
+    fireEvent.click((await screen.findAllByTestId(/^record-/))[0]!)
+    fireEvent.click(await screen.findByRole('button', { name: '开始分析' }))
+    expect(injectedAnalysis.getState().running).toBe(true)
+
+    unmount()
+
+    expect(injectedAnalysis.getState().running).toBe(false)
+  })
+})

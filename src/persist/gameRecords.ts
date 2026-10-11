@@ -38,11 +38,23 @@ export interface GameRecord {
 
 export type GameRecordInput = Omit<GameRecord, 'seq' | 'schemaVersion' | 'winner'>
 
+/**
+ * 入库结果。
+ *
+ * `persisted` 是**如实告知**：IndexedDB 不可用时记录只落在内存兜底里，
+ * 本次会话能读能列，但刷新就没了。界面必须能区分「真的存下了」与
+ * 「只是这次还看得到」——否则就是骗用户。
+ */
+export interface PutResult {
+  readonly record: GameRecord
+  readonly persisted: boolean
+}
+
 /** 存取接口。`review` 页面依赖这个形状而不是具体实现，测试可以注入假存储。 */
 export interface GameRecordsStorage {
   list(): Promise<readonly GameRecord[]>
   get(seq: number): Promise<GameRecord | null>
-  put(record: GameRecordInput): Promise<GameRecord>
+  put(record: GameRecordInput): Promise<PutResult>
   delete(seq: number): Promise<void>
 }
 
@@ -130,7 +142,7 @@ export function memoryGameRecords(): GameRecordsStorage {
         schemaVersion: GAME_RECORDS_SCHEMA_VERSION,
       }
       bySeq.set(stored.seq, stored)
-      return stored
+      return { record: stored, persisted: false } // 内存态：刷新不留
     },
     async delete(seq) {
       bySeq.delete(seq)
@@ -247,8 +259,9 @@ export const indexedDbGameRecords: GameRecordsStorage = {
     const payload = { ...createGameRecord(record), schemaVersion: GAME_RECORDS_SCHEMA_VERSION }
     try {
       const seq = await withStore<IDBValidKey>('readwrite', (store) => store.add(payload))
-      return { ...payload, seq: Number(seq) }
+      return { record: { ...payload, seq: Number(seq) }, persisted: true }
     } catch {
+      // 落到了内存兜底：本次会话照常可用，但**如实标成没落库**
       return fallbackToMemory().put(record)
     }
   },

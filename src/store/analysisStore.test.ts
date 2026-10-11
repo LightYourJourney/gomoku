@@ -35,8 +35,8 @@ function threeWinRecord(seq = 1): GameRecord {
 interface EngineSpy {
   engine: AiEngine
   requests: SearchRequest[]
-  /** settle 第 i 个发出的请求（按发出顺序） */
-  settle: (order: number, move: Point, score: number, depth?: number) => void
+  /** settle 第 i 个发出的请求（按发出顺序）。move 为 null 表示无棋可走。 */
+  settle: (order: number, move: Point | null, score: number, depth?: number) => void
   reject: (order: number, message: string) => void
 }
 
@@ -276,3 +276,69 @@ describe('requestCounter —— 全局唯一', () => {
   })
 })
 
+
+describe('分析管线 —— 跨 run 的迟到响应', () => {
+  it('上一局的迟到响应不会被下一局当成自己的：B 仍能跑完 9/9', async () => {
+    // 真实路径：分析 A 到一半切走（stop）→ 打开 B 开始分析 →
+    // A 的响应回来。旧闸门只比 inflightIndex，而每个 run 的局面号都从 0
+    // 开始，于是 A 的响应被 B 接受，B 自己的响应随后全被丢弃——
+    // 分析永久卡在「分析中 0/9」，缓存也永不写入。
+    const a = threeWinRecord(1)
+    const b = threeWinRecord(2)
+
+    store.getState().start({ record: a, engine: spy.engine, difficulty: 'easy', budgetMs: 400 })
+    store.getState().stop()
+    store.getState().start({ record: b, engine: spy.engine, difficulty: 'easy', budgetMs: 400 })
+
+    // A 的响应姗姗来迟
+    spy.settle(0, { x: 3, y: 7 }, 100)
+    await Promise.resolve()
+
+    // 把此后发出的每个请求依次结算，直到没有新的（或触发护栏）
+    const settled = new Set<number>([0])
+    for (let guard = 0; guard < 30; guard++) {
+      const next = spy.requests.findIndex((_, i) => !settled.has(i))
+      if (next === -1) break
+      spy.settle(next, { x: 3, y: 7 }, 100)
+      settled.add(next)
+      await Promise.resolve()
+    }
+
+    expect(store.getState().verdicts.size).toBe(9)
+    expect(store.getState().running).toBe(false)
+  })
+})
+
+describe('分析管线 —— 没有可分析的手', () => {
+  it('0 手棋谱（开了就认输）立即收尾，不停留在「分析中」', () => {
+    const empty: GameRecord = { ...threeWinRecord(3), moves: [], winner: null, resignedBy: BLACK }
+    store.getState().start({ record: empty, engine: spy.engine, difficulty: 'easy', budgetMs: 400 })
+
+    const state = store.getState()
+    expect(state.total).toBe(0)
+    expect(state.running).toBe(false)
+    expect(spy.requests).toHaveLength(0)
+    expect(state.verdicts.size).toBe(0)
+  })
+})
+
+describe('分析管线 —— 满盘和棋（无可走点）', () => {
+  it('最后局面的响应 move 为 null 时也要收尾，不卡在 N-1/N', async () => {
+    // nearlyFullBoard 那类局面走满时，末局的响应 move === null。
+    // 旧实现在 onPositionResponse 首行直接 return，队列再也不推进。
+    const record = threeWinRecord(4)
+    store.getState().start({ record, engine: spy.engine, difficulty: 'easy', budgetMs: 400 })
+
+    // 局面 0..7 正常应答，最后一手（index 8）对应的局面给 null
+    for (let i = 0; i < 8; i++) {
+      spy.settle(i, { x: 3, y: 7 }, 100)
+      await Promise.resolve()
+    }
+    // 第 9 个请求：末局，无棋可走
+    spy.settle(8, null, 0)
+    await Promise.resolve()
+    await Promise.resolve()
+
+    expect(store.getState().running).toBe(false)
+  })
+})

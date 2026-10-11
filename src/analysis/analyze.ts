@@ -48,7 +48,12 @@ export interface VerdictInput {
 }
 
 export function buildVerdict(input: VerdictInput): MoveVerdict {
-  const raw = input.isWinningMove ? 0 : input.engineScore - input.playedScore
+  // 着法与引擎首选相同 → 没有亏损，**不管两个评分差多少**。
+  // 引擎的必胜/必防/开局走的是捷径（±WIN_SCORE 量纲），而「走完之后」的
+  // 评分来自真实评估——两者相减没有意义。真引擎实测过：同一手会算出
+  // 「亏 98 万」，于是亏损榜上全是「与引擎一致」的行。
+  const sameMove = input.played.x === input.engineMove.x && input.played.y === input.engineMove.y
+  const raw = input.isWinningMove || sameMove ? 0 : input.engineScore - input.playedScore
   return {
     moveIndex: input.moveIndex,
     move: input.played,
@@ -61,7 +66,11 @@ export function buildVerdict(input: VerdictInput): MoveVerdict {
 }
 
 export function buildSummary(verdicts: readonly MoveVerdict[]): AnalysisSummary {
-  const topLosses = [...verdicts].sort((a, b) => b.loss - a.loss).slice(0, 3)
+  // 只列真有亏损的手：loss 为 0 的（含「与引擎一致」）不是「亏损最多的几手」。
+  const topLosses = verdicts
+    .filter((verdict) => verdict.loss > 0)
+    .sort((a, b) => b.loss - a.loss)
+    .slice(0, 3)
   return { moveVerdicts: [...verdicts], topLosses }
 }
 

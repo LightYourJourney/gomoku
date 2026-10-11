@@ -70,6 +70,8 @@ export interface GameStore {
    * 隐私模式、配额满都会让写入失败，玩家有权知道这局丢了。
    */
   readonly recordSaveState: RecordSaveState
+  /** 这一局的棋谱存成了哪一条（seq）；null = 还没存或没存上。 */
+  readonly recordedSeq: number | null
 
   newGame(options?: { mode?: GameMode; humanColor?: Player; difficulty?: Difficulty }): void
   /** 从本地存档恢复。传 null 表示没有存档，保持当前状态。 */
@@ -185,6 +187,13 @@ export interface GameEndInput {
   readonly humanColor: Player
   readonly difficulty: Difficulty
   readonly resignedBy: Player | null
+  /**
+   * 这一条要替换掉的棋谱 seq，`null` 表示新的一条。
+   *
+   * 终局悔棋是既有行为（回到进行中、可以接着下）。同一局因此可能终局两次，
+   * 第二次带着上一次存下的 seq——存储层据此替换，而不是留下两条同一局。
+   */
+  readonly replacesSeq: number | null
 }
 
 export interface GameStoreOptions {
@@ -194,7 +203,7 @@ export interface GameStoreOptions {
    * `newGame` 与 `restore` 不触发——重开一局、刷新恢复都不是「结束了一局」，
    * 触发的话同一局会被重复入库。
    */
-  readonly onGameEnd?: (input: GameEndInput) => void | Promise<unknown>
+  readonly onGameEnd?: (input: GameEndInput) => void | Promise<number | void>
 }
 
 export function createGameStore(
@@ -217,6 +226,7 @@ export function createGameStore(
       difficulty: before.difficulty,
       resignedBy:
         after.status === 'resigned' && after.winner !== null ? opponentOf(after.winner) : null,
+      replacesSeq: before.recordedSeq,
     }
 
     const result = options.onGameEnd?.(input)
@@ -225,7 +235,7 @@ export function createGameStore(
     // 存储是异步的，界面需要知道最终成没成
     set({ recordSaveState: 'saving' })
     void Promise.resolve(result).then(
-      () => set({ recordSaveState: 'saved' }),
+      (seq) => set({ recordSaveState: 'saved', recordedSeq: typeof seq === 'number' ? seq : null }),
       () => set({ recordSaveState: 'failed' }),
     )
   }
@@ -244,6 +254,7 @@ export function createGameStore(
       aiInfo: null,
       pendingRequestId: null,
       recordSaveState: 'idle',
+      recordedSeq: null,
       ...HINT_CLEARED,
 
       newGame(options = {}) {
@@ -258,6 +269,7 @@ export function createGameStore(
           aiInfo: null,
           pendingRequestId: null,
           recordSaveState: 'idle',
+          recordedSeq: null,
           ...HINT_CLEARED,
         })
 
