@@ -1,11 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { BLACK, type Point } from '../core/types'
+import type { Point } from '../core/types'
 import { WIN_SCORE } from '../ai/types'
 import { ENGINE_VERSION } from '../ai/version'
 import { buildSummary, buildVerdict, cacheKey, verdictLabel, type MoveVerdict } from './analyze'
 
 const AT: Point = { x: 7, y: 7 }
-const ELSEWHERE: Point = { x: 3, y: 3 }
 
 function verdict(overrides: Partial<Parameters<typeof buildVerdict>[0]> = {}): MoveVerdict {
   return buildVerdict({
@@ -15,6 +14,9 @@ function verdict(overrides: Partial<Parameters<typeof buildVerdict>[0]> = {}): M
     engineScore: 500,
     playedScore: 500,
     isWinningMove: false,
+    confidence: 'exact',
+    engineDepth: 2,
+    engineNodes: 100,
     ...overrides,
   })
 }
