@@ -1,6 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
+import { AppErrorBoundary } from './components/AppErrorBoundary.tsx'
 import './index.css'
 import { bootstrapStore } from './store/useGameStore'
 
@@ -12,6 +13,8 @@ if (container === null) throw new Error('找不到 #root 挂载点')
 
 createRoot(container).render(
   <StrictMode>
-    <App />
+    <AppErrorBoundary>
+      <App />
+    </AppErrorBoundary>
   </StrictMode>,
 )
