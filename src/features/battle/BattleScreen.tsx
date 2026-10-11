@@ -13,12 +13,20 @@ import { Panel } from '../../components/ui/Panel'
 import { AppHeader } from '../shell/AppHeader'
 import { DIFFICULTY_LABELS } from '../../ai/difficulty'
 import { BLACK } from '../../core/types'
-import { createStoneSound } from '../../lib/sound'
+import { createStoneSound, type StoneSound } from '../../lib/sound'
 import { canHumanPlay, canUndo, moverAt, shouldAiMove } from '../../store/gameStore'
 import { useSettingsStore } from '../../store/settingsStore'
 import { useGameStore } from '../../store/useGameStore'
 import { BoardAnnouncer } from './BoardAnnouncer'
 import { describeStatus } from './status'
+
+export interface BattleScreenProps {
+  /**
+   * 注入音效实例（测试用）。生产不传，组件自己建——
+   * 预热绑的就是这个实例的音频上下文，所以注入点必须在这一层。
+   */
+  readonly sound?: StoneSound
+}
 
 function InfoRow({ label, children }: { label: string; children: ReactNode }) {
   return (
@@ -29,7 +37,7 @@ function InfoRow({ label, children }: { label: string; children: ReactNode }) {
   )
 }
 
-export function BattleScreen() {
+export function BattleScreen({ sound: injectedSound }: BattleScreenProps = {}) {
   const settings = useSettingsStore()
   const game = useGameStore((state) => state.game)
   const mode = useGameStore((state) => state.mode)
@@ -56,8 +64,13 @@ export function BattleScreen() {
   const requestHint = useGameStore((state) => state.requestHint)
   const clearHint = useGameStore((state) => state.clearHint)
 
-  const sound = useMemo(() => createStoneSound(), [])
+  const ownSound = useMemo(() => createStoneSound(), [])
+  const sound = injectedSound ?? ownSound
   useEffect(() => () => sound.dispose(), [sound])
+
+  // 浏览器不允许在手势之前启动音频，所以第一次 pointerdown 时就把上下文
+  // 创建并 resume 好，别等落子那一下才现造（那一下已经晚了）。
+  useEffect(() => sound.arm(window), [sound])
 
   const status = describeStatus({ game, mode, humanColor, aiThinking })
   const moveCount = game.moves.length
@@ -75,6 +88,24 @@ export function BattleScreen() {
     setResultDismissed(false)
   }
   const resultOpen = game.status !== 'playing' && !resultDismissed
+
+  // 终局音效：只在「进行中 → 终局」这条边上响一次。
+  // 判据必须是 `game.status`——上面那个 `status` 是显示描述对象，拿它比字符串
+  // 恒为真，会在每次状态变化时都放一遍。
+  const soundedStatus = useRef(game.status)
+  useEffect(() => {
+    const previous = soundedStatus.current
+    soundedStatus.current = game.status
+    if (previous === game.status) return
+    if (game.status === 'playing' || game.status === 'draw') return
+    if (!settings.soundEnabled) return
+
+    // 本地双人是同一块屏幕上的两个人，没有「玩家视角」可言：
+    // 有人赢了就报「终局落定」的上行音。
+    const won = mode === 'pvp' || game.winner === humanColor
+    if (won) sound.win()
+    else sound.lose()
+  }, [game.status, game.winner, mode, humanColor, settings.soundEnabled, sound])
 
   // 用落子数而不是状态对象来判断「刚刚落了一手」，悔棋与刷新恢复都不会误响。
   const soundedCount = useRef(moveCount)
