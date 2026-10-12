@@ -258,3 +258,85 @@ describe('saveGameReplacing：替换而不是留下两条', () => {
     expect(await indexedDbGameRecords.get(first.seq)).not.toBeNull()
   })
 })
+
+/**
+ * 一个只会「请求成功、事务提交失败」的假 IndexedDB。
+ *
+ * 真实世界里事务在 **commit 阶段**失败（典型是配额在提交时才被判定超限）时，
+ * `request.onsuccess` **早已派发**，随后才走 `tx.onabort`。
+ * `fake-indexeddb` 不模拟这个阶段，所以只能自己造一个。
+ *
+ * 用 `setTimeout` 而不是微任务：要保证被测代码已经把 `tx.onabort` 挂上了。
+ */
+function abortingFactory(): IDBFactory {
+  const request = {
+    result: 42,
+    error: null,
+    onsuccess: null as (() => void) | null,
+    onerror: null as (() => void) | null,
+  }
+
+  const tx = {
+    // 刻意**不**提供 oncomplete：这个事务永远不会提交成功
+    oncomplete: null as (() => void) | null,
+    onerror: null as (() => void) | null,
+    onabort: null as (() => void) | null,
+    objectStore: () => ({
+      add: () => {
+        setTimeout(() => {
+          request.onsuccess?.() // 先：请求成功
+          setTimeout(() => tx.onabort?.(), 0) // 后：事务中止
+        }, 0)
+        return request
+      },
+    }),
+  }
+
+  const db = {
+    transaction: () => tx,
+    close: () => {},
+    objectStoreNames: { contains: () => true },
+  }
+
+  const openRequest = {
+    result: db,
+    onsuccess: null as (() => void) | null,
+    onerror: null as (() => void) | null,
+    onupgradeneeded: null as (() => void) | null,
+    onblocked: null as (() => void) | null,
+  }
+
+  return {
+    open: () => {
+      setTimeout(() => openRequest.onsuccess?.(), 0)
+      return openRequest
+    },
+  } as unknown as IDBFactory
+}
+
+describe('棋谱库 —— 事务提交阶段失败', () => {
+  /**
+   * `PutResult.persisted` 是**给用户看的诚实性承诺**：`useGameStore` 的
+   * `onGameEnd` 正是根据它决定显示「这局已存入棋谱库」还是「没能保存这局」。
+   * 所以它必须以**事务提交**为准，而不是单条请求成功。
+   */
+  it('请求成功但事务被中止时，如实报成没落库', async () => {
+    __setGameRecordsIndexedDbFactory(abortingFactory())
+    try {
+      const saved = await indexedDbGameRecords.put(winRecord())
+      expect(saved.persisted).toBe(false)
+    } finally {
+      __setGameRecordsIndexedDbFactory(null)
+    }
+  })
+
+  it('同一情形下 saveGameReplacing 也不假装成功', async () => {
+    __setGameRecordsIndexedDbFactory(abortingFactory())
+    try {
+      const saved = await saveGameReplacing(winRecord(), null)
+      expect(saved.persisted).toBe(false)
+    } finally {
+      __setGameRecordsIndexedDbFactory(null)
+    }
+  })
+})

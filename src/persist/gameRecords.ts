@@ -1,6 +1,6 @@
 import { replay } from '../core/game'
-import { inBounds } from '../core/board'
-import { BLACK, WHITE, type Player, type Point } from '../core/types'
+import { inBounds, opponentOf } from '../core/board'
+import type { Player, Point } from '../core/types'
 import { isDifficulty } from '../ai/difficulty'
 import { DB_NAME, DB_VERSION, ensureSchema, RECORDS_STORE } from './schema'
 import type { Difficulty } from '../ai/types'
@@ -69,7 +69,7 @@ function deriveWinner(
   resignedBy: Player | null,
 ): Player | null {
   const state = replay(moves, firstPlayer)
-  if (resignedBy !== null) return resignedBy === BLACK ? WHITE : BLACK
+  if (resignedBy !== null) return opponentOf(resignedBy)
   return state.winner
 }
 
@@ -258,13 +258,29 @@ function withStore<T>(
       new Promise<T>((resolve, reject) => {
         const tx = db.transaction(STORE, mode)
         const request = run(tx.objectStore(STORE))
-        request.onsuccess = () => {
+
+        /*
+         * 成功以**事务提交**为准，不是单条请求成功。
+         *
+         * 请求的 success 事件派发之后，事务才去尝试提交；提交失败走的是
+         * `tx.onabort`——那时 `request.onsuccess` 早就派发过了。只看 request
+         * 会把「没写进去」报成「写进去了」，而 `persisted` 正是界面
+         * 「这局已存入棋谱库 / 没能保存这局」的判据，等于骗用户。
+         *
+         * 口径与 `progress.ts` 的 `writeToIndexedDb` 一致：三个 tx 事件都算数。
+         * 多个回调重复调用 resolve/reject 是无害的（promise 只认第一次）。
+         */
+        tx.oncomplete = () => {
           db.close()
           resolve(request.result)
         }
-        request.onerror = () => {
+        tx.onerror = () => {
           db.close()
           reject(new Error('棋谱库读写失败'))
+        }
+        tx.onabort = () => {
+          db.close()
+          reject(new Error('棋谱库读写被中止'))
         }
       }),
     (error) => {
