@@ -35,6 +35,30 @@ async function touchStarts(page: Page): Promise<number> {
   return page.evaluate(() => window.__touchStarts ?? 0)
 }
 
+/**
+ * 把 Worker 换成一个**永不回应**的桩，于是「AI 思考中」这个窗口不会自己关上。
+ *
+ * 这一条要证的是「思考期间触摸棋盘不落子」——一个**只在窗口内成立**的性质。
+ * 窗口能开多久由专家档的 2600ms 预算决定，而下面的触摸、读数、断言加起来要
+ * 好几次 CDP 往返（实测高负载下每次可达 870ms），赌它不超过 2600ms 输过
+ * （F-18：余量只有 1.04 倍，全量跑里红过 `toHaveCount(1)`）。
+ * 桩掉 Worker 之后窗口根本不关，断言做多久都无所谓。
+ *
+ * 被测的性质（触摸落不到盘上）完全由 `aiThinking` 驱动，与引擎回得多快无关；
+ * 真实 Worker 的往返由 `e2e/battle.spec.ts` 端到端覆盖。必须在 `page.goto`
+ * **之前**调用——`appEngine` 是在模块导入时创建 Worker 的。
+ */
+async function holdAiThinking(page: Page): Promise<void> {
+  await page.addInitScript(() => {
+    class StubWorker {
+      postMessage(): void {}
+      addEventListener(): void {}
+      terminate(): void {}
+    }
+    Object.assign(globalThis, { Worker: StubWorker })
+  })
+}
+
 /** 切到本地双人：没有 AI 应手，连续落子不必等，命中测试只关心点在哪。 */
 async function useLocalTwoPlayer(page: Page): Promise<void> {
   await page.goto('/')
@@ -228,9 +252,11 @@ test.describe('触屏命中与误触', () => {
   })
 
   test('AI 思考期间触摸棋盘不落子，盘面不变', async ({ page }) => {
+    await holdAiThinking(page)
     await page.goto('/')
     await page.getByRole('radio', { name: '人机对战' }).click()
-    // 专家档预算 2600ms（见 ai/difficulty.ts），下面几步触摸是毫秒级的，AI 插不进来
+    // 选最慢的一档不是为了让窗口更长（桩掉 Worker 之后它根本不关），而是万一
+    // 这个桩失效了，剩下的余量仍是最宽的那一档
     await page.getByRole('radio', { name: '专家' }).click()
 
     const center = await page.getByTestId('intersection-7-7').boundingBox()

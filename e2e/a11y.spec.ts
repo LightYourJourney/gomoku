@@ -58,6 +58,34 @@ test.describe('播报区', () => {
   })
 })
 
+/**
+ * 把 Worker 换成一个**永不回应**的桩，于是「AI 思考中」这个窗口不会自己关上。
+ *
+ * 为什么需要它：这一条要证的是「思考期间**界面**是什么样」，而窗口能开多久由
+ * 专家档的 2600ms 预算决定。要让断言在窗口内做完，就得赌那几次 CDP 往返加起来
+ * 不超过 2600ms——实测高负载下每次往返能到 870ms，这个赌注输过（F-18：
+ * 余量只有 1.04 倍，8 实例 / 6 worker 下红过 6/8）。桩掉 Worker 之后，
+ * 断言做多久都无所谓：**窗口根本不关**。
+ *
+ * 与「用 mock 换掉有效断言」不是一回事：被测的性质（`aiThinking` 为真时整盘
+ * 退回只读、播报说出原因）完全由 store 的状态驱动，与引擎回得多快无关。
+ * 真实 Worker 的往返由 `battle.spec.ts` 与 `e2e:prod` 端到端覆盖。
+ *
+ * 必须在 `page.goto` **之前**调用：`appEngine` 是在模块导入时创建 Worker 的。
+ * （`tablet.spec.ts` 里有一份同样的桩，两处各自独立——见 FINDINGS 的 F-19：
+ * 这一层的小重复不值得抽一个跨 spec 的共享文件。）
+ */
+async function holdAiThinking(page: import('@playwright/test').Page): Promise<void> {
+  await page.addInitScript(() => {
+    class StubWorker {
+      postMessage(): void {}
+      addEventListener(): void {}
+      terminate(): void {}
+    }
+    Object.assign(globalThis, { Worker: StubWorker })
+  })
+}
+
 test.describe('键盘操作', () => {
   test('只用键盘就能落子：方向键移动焦点、回车落子', async ({ page }) => {
     await page.goto('/')
@@ -93,26 +121,11 @@ test.describe('键盘操作', () => {
   })
 
   test('AI 思考期间整盘不再是 grid：键盘进不去，播报说出原因', async ({ page }) => {
+    await holdAiThinking(page)
     await page.goto('/')
-    /**
-     * 这一页的实例身份。
-     *
-     * 跑测期间若有人改了 `src/`，dev server 会广播**整页刷新**——刷新之后会话
-     * 虽然能从 localStorage 恢复、AI 那一手也会被补完，但棋盘是**新挂载**的，
-     * `hasEverFocusedRef` 归零，于是没人再把焦点送回棋盘。那是环境造成的，
-     * 不是回归。见 `FINDINGS.md` 的 F-30：当初就是这条断言只留下一句
-     * `Received: null`，机制查了很久。
-     *
-     * `vite.config.ts` 已经把文档 / 用例 / 基准排除在 watcher 之外；
-     * 这一句兜住剩下的情况（改源码）。
-     */
-    const pageId = await page.evaluate(() => performance.timeOrigin)
     await page.getByRole('radio', { name: '人机对战' }).click()
-    // 专家档的时间预算是 2600ms（见 ai/difficulty.ts）。原先这里写着「下面这几步
-    // CDP 往返是毫秒级的，所以断言期间 AI 不会插进来」——**那句话是错的**：
-    // 实测（8 个实例 / 6 个 worker 并发）下面这一串断言要 ~2.5s，余量只有 1.04 倍，
-    // 高负载下 AI 的应手会落在断言中间，红在 `expect(gridcell).toHaveCount(0)` 上。
-    // 那是 F-18 那一族（`waitForTimeout` / 竞态窗口）的同一个病根，记在案上。
+    // 选最慢的一档不是为了让窗口更长（桩掉 Worker 之后它根本不关），而是万一将来
+    // 这个桩失效了（引擎换成别的机制创建 Worker），剩下的余量仍是最宽的那一档。
     await page.getByRole('radio', { name: '专家' }).click()
 
     // 真按 Tab 进棋盘，而不是程序化 `.focus()`——这是使用说明里写给玩家的入口，
@@ -137,8 +150,13 @@ test.describe('键盘操作', () => {
     await expect(page.getByTestId('status-pill')).toHaveText('AI 思考中…')
 
     // 思考期间整盘退回只读：**连 role=gridcell 都不再有**，键盘用户根本落不了子。
-    // 这条断言是有鉴别力的——把 BattleScreen 里 interactive 的 aiThinking 守卫去掉，
-    // 格子在思考期间仍然是 gridcell，这里立刻红。
+    //
+    // 这条断言确实有鉴别力，但**抓手是「整盘可交互与否」，不是 `canHumanPlay` 里的
+    // 哪一项**：实测把 `!aiThinking` 那一项删掉，这条**不会**红——AI 回合时
+    // `game.current` 本来就不是人，`game.current === humanColor` 已经把这一档排除了。
+    // 真正会让它红的是「思考期间整盘仍被算成可交互」（实测：把 `interactive` 算成
+    // `… || aiThinking`，立刻红 `Expected: 0 / Received: 225`）。
+    //
     // （原先断言的是「焦点停在刚落的那一格上、再按回车也不落子」，那是恒真的：
     //   已占用的格子在「已有子」那一支就返回了，与思考守卫无关。）
     await expect(page.getByRole('gridcell')).toHaveCount(0)
@@ -149,9 +167,51 @@ test.describe('键盘操作', () => {
     const before = await page.getByTestId(/^stone-/).count()
     await page.keyboard.press('Enter')
     await expect(page.getByTestId(/^stone-/)).toHaveCount(before)
+  })
 
-    // AI 走完，焦点要回到棋盘上。落子那一刻整盘不可聚焦、焦点会掉到 body，
-    // 如果没人把它接回来，键盘玩家得从页面最开头重新 Tab 一遍。
+  /**
+   * 与上一条**刻意分开**：上一条要的是「思考期间」，用桩把窗口钉住才测得准；
+   * 这一条要的是「思考**结束**之后」，必须让真实的 AI 走完那一手。
+   *
+   * 合成一条的话，「等 AI 走完」这个硬同步点会把前一半也拖进窗口竞速里
+   * ——那正是 F-18 的成因。
+   */
+  test('AI 走完那一手之后，焦点回到棋盘上', async ({ page }) => {
+    await page.goto('/')
+    /**
+     * 这一页的实例身份。
+     *
+     * 跑测期间若有人改了 `src/`，dev server 会广播**整页刷新**——刷新之后会话
+     * 虽然能从 localStorage 恢复、AI 那一手也会被补完，但棋盘是**新挂载**的，
+     * `hasEverFocusedRef` 归零，于是没人再把焦点送回棋盘。那是环境造成的，
+     * 不是回归。见 `FINDINGS.md` 的 F-30：当初就是这条断言只留下一句
+     * `Received: null`，机制查了很久。
+     *
+     * `vite.config.ts` 已经把文档 / 用例 / 基准排除在 watcher 之外；
+     * 这一句兜住剩下的情况（改源码）。
+     */
+    const pageId = await page.evaluate(() => performance.timeOrigin)
+    await page.getByRole('radio', { name: '人机对战' }).click()
+    await page.getByRole('radio', { name: '专家' }).click()
+
+    // 棋盘必须先**拿到过**焦点，否则「把焦点接回来」这件事无从谈起
+    await expect(page.getByRole('gridcell', { name: 'H8 空位' })).toHaveCount(1)
+    let tabs = 0
+    while (tabs < 12) {
+      await page.keyboard.press('Tab')
+      tabs += 1
+      const onCell = await page.evaluate(
+        () => document.activeElement?.getAttribute('role') === 'gridcell',
+      )
+      if (onCell) break
+    }
+    expect(tabs, '按 Tab 应该能在 12 步之内进到棋盘里').toBeLessThan(12)
+
+    await page.keyboard.press('Enter')
+    await expect(page.getByTestId('stone-7-7')).toBeVisible()
+
+    // 硬同步点：状态条翻回「轮到你落子」＝ AI 那一手真的落下了。
+    // 断言在这之后，所以与窗口长度无关。
     await expect(page.getByTestId('status-pill')).toHaveText('轮到你落子', { timeout: 10_000 })
 
     // 先确认这一页还是原来那一页：被整页刷新过的话，下面那条断言测的就不是本用例的意图
@@ -160,6 +220,8 @@ test.describe('键盘操作', () => {
       '页面在这条用例跑到一半时被整页重载了（跑测期间改了源码？刷新后焦点不会自己回到棋盘，见 F-30）',
     ).toBe(pageId)
 
+    // 落子那一刻整盘不可聚焦、焦点掉到 body；没人接回来的话，键盘玩家
+    // 得从页面最开头重新 Tab 一遍
     await expect
       .poll(() => page.evaluate(() => document.activeElement?.getAttribute('role') ?? null))
       .toBe('gridcell')
