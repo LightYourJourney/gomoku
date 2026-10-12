@@ -183,9 +183,12 @@ test.describe('结果弹窗的焦点', () => {
       expect(insideDialog, `第 ${i + 1} 次 Shift+Tab 之后焦点跑到弹窗外面了`).toBe(true)
     }
 
-    // Escape 能关掉（关闭后焦点落在 body —— 这是既有行为，不是本次改动引入的；
-    // 「该落到哪」属产品决策，见 FINDINGS.md F-28，本轮不动）
+    // Escape 关掉之后，焦点必须落到「重新开始」——对局结束后它是棋盘上唯一
+    // 还有意义的操作。在此之前焦点会掉到 <body>，键盘用户得从页面最开头重新 Tab。
     await page.keyboard.press('Escape')
     await expect(dialog).toBeHidden()
+    await expect
+      .poll(() => page.evaluate(() => document.activeElement?.textContent?.trim() ?? null))
+      .toBe('重新开始')
   })
 })

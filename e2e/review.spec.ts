@@ -1,4 +1,15 @@
 import { expect, test, type Page } from '@playwright/test'
+import { REPLAY_STEP_MS } from '../src/store/replayStore'
+
+/**
+ * 等一段时间，用来证明「某件事没有发生」（没有遗留定时器在后台推进游标）。
+ *
+ * 这类等待**没有可轮询的事件**，固定驻留是正确构造；但时长必须由源码里的
+ * 步进间隔推导——写死的话，将来把 `REPLAY_STEP_MS` 调大，等待就静默地不再
+ * 覆盖一个周期，用例会变得什么都不证明却依然全绿。
+ * 取三个周期：够让一个仍然活着的定时器推进三格，游标不可能还停在 0。
+ */
+const REPLAY_DWELL_MS = REPLAY_STEP_MS * 3
 
 /**
  * 复盘流程的端到端验收。
@@ -76,13 +87,13 @@ test('回放：落子编号、走一步退一步、自动播放', async ({ page 
   await expect(page.getByRole('button', { name: '暂停' })).toBeVisible()
 
   await page.getByRole('button', { name: '对战', exact: true }).click()
-  await page.waitForTimeout(2500)
+  await page.waitForTimeout(REPLAY_DWELL_MS)
   await gotoReview(page)
   await page.getByTestId(/^record-/).first().click()
 
   const counter = page.getByTestId('move-counter')
   await expect(counter).toHaveText('0 / 9')
-  await page.waitForTimeout(2000)
+  await page.waitForTimeout(REPLAY_DWELL_MS)
   await expect(counter).toHaveText('0 / 9')
 })
 

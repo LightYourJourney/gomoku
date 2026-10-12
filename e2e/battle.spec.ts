@@ -1,4 +1,16 @@
 import { expect, test } from '@playwright/test'
+import { DIFFICULTY_PARAMS } from '../src/ai/difficulty'
+
+/**
+ * 等一次在飞的异步工作彻底跑完所需的**驻留时间**。
+ *
+ * 这里等的是「某件事**没有**发生」（迟到的响应不会把棋子补回来）——
+ * 没有可轮询的事件，固定等待在这个场合是正确构造，不是同步点缺失。
+ *
+ * 但**必须由源码里的预算推导**，不能写死：写死的话，将来把某一档的预算调大，
+ * 这个等待会静默地变得不够长，用例不再证明任何东西、却依然全绿。
+ */
+const EXPERT_DWELL_MS = DIFFICULTY_PARAMS.expert.budgetMs + 1_000
 
 /**
  * 每个用例都从干净的存档开始。
@@ -156,7 +168,15 @@ test('请求提示后棋盘上出现候选标记，且棋局一手未变', async
   await page.goto('/')
 
   await page.getByTestId('intersection-7-7').click()
+
+  // **不能拿「轮到你落子」当同步点**：开局空盘时它也是这句话，于是在
+  // 「点击已派发、React 还没把状态条翻成『AI 思考中』」的那个窗口里，
+  // 断言会立刻通过，而盘上还是 0 子。全量并发跑里就是这么失败的。
+  // 要等的是「这一手真的落下去了」，所以先锚棋子。
+  await expect(page.getByTestId('stone-7-7')).toBeVisible()
+  await expect(page.getByTestId(/^stone-/)).toHaveCount(2)
   await expect(page.getByTestId('status-pill')).toHaveText('轮到你落子')
+
   const before = await stones(page)
   expect(before).toBeGreaterThan(0)
 
@@ -209,7 +229,7 @@ test('专家档深算期间悔棋，迟到的 AI 响应不会把棋子补回来'
   await expect(page.getByTestId(/^stone-/)).toHaveCount(0)
 
   // 等过专家档的时间预算，确认那一手确实作废了，而不是只是慢了一步
-  await page.waitForTimeout(3500)
+  await page.waitForTimeout(EXPERT_DWELL_MS)
 
   await expect(page.getByTestId(/^stone-/)).toHaveCount(0)
   await expect(page.getByTestId('status-pill')).toHaveText('轮到你落子')
