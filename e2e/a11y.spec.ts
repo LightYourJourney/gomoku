@@ -142,3 +142,50 @@ test.describe('键盘操作', () => {
       .toBe('gridcell')
   })
 })
+
+/**
+ * 结果弹窗的焦点管理。
+ *
+ * `Modal` 声明了 `role="dialog" aria-modal="true"`，等于向读屏软件承诺
+ * 「弹窗外的东西是惰性的」。这条承诺只有在**真实的 Tab 顺序**下才验得了——
+ * jsdom 不做 Tab 顺序，所以组件测试只能验「循环处理器算得对」，
+ * 「浏览器真的不把焦点交出去」必须在这里跑。
+ */
+test.describe('结果弹窗的焦点', () => {
+  test('弹窗打开期间 Tab / Shift+Tab 都出不去（aria-modal 的实际含义）', async ({ page }) => {
+    await page.goto('/')
+    await page.getByRole('radio', { name: '本地双人' }).click()
+
+    // 先用认输触发终局弹窗（比对局走完快，且与另一条 e2e 的终局路径互补）
+    await page.getByTestId('intersection-7-7').click()
+    await page.getByRole('button', { name: '认输' }).click()
+    const dialog = page.getByRole('dialog')
+    await expect(dialog).toBeVisible()
+
+    // 打开时焦点必须已经进弹窗
+    await expect.poll(() => page.evaluate(() => document.activeElement?.closest('[role="dialog"]') !== null)).toBe(true)
+
+    // 连按 8 次 Tab：每一步焦点都必须在弹窗里——这是 aria-modal 的实际含义
+    for (let i = 0; i < 8; i++) {
+      await page.keyboard.press('Tab')
+      const insideDialog = await page.evaluate(
+        () => document.activeElement?.closest('[role="dialog"]') !== null,
+      )
+      expect(insideDialog, `第 ${i + 1} 次 Tab 之后焦点跑到弹窗外面了`).toBe(true)
+    }
+
+    // Shift+Tab 同样出不去
+    for (let i = 0; i < 4; i++) {
+      await page.keyboard.press('Shift+Tab')
+      const insideDialog = await page.evaluate(
+        () => document.activeElement?.closest('[role="dialog"]') !== null,
+      )
+      expect(insideDialog, `第 ${i + 1} 次 Shift+Tab 之后焦点跑到弹窗外面了`).toBe(true)
+    }
+
+    // Escape 能关掉（关闭后焦点落在 body —— 这是既有行为，不是本次改动引入的；
+    // 「该落到哪」属产品决策，见 FINDINGS.md F-28，本轮不动）
+    await page.keyboard.press('Escape')
+    await expect(dialog).toBeHidden()
+  })
+})
