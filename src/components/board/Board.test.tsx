@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import type { ReactElement } from 'react'
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { createBoard } from '../../core/board'
 import { BLACK, WHITE } from '../../core/types'
 import { boardFromLines } from '../../test/board-fixtures'
@@ -545,6 +545,15 @@ function renderBoard(rerender: (ui: ReactElement) => void, interactive: boolean)
 }
 
 describe('Board —— 不可交互期间与之后', () => {
+  /**
+   * 下面有用例给 `document.body` 临时加了 `tabIndex`（模拟「焦点掉到 body」）。
+   * 用完必须还回去：body 是全局的，留着会让这个文件里后面所有用例都跑在
+   * 「body 可聚焦」这个假前提上——与 `Worker` / `matchMedia` 那两个桩同一类问题。
+   */
+  afterEach(() => {
+    document.body.removeAttribute('tabindex')
+  })
+
   /**
    * 这条路径此前**没有单测覆盖**：已有的「落子后焦点不丢」在重渲染时
    * `interactive` 一直是 true，走不到「整盘不可聚焦 → 再变回可聚焦」这一段。

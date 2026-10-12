@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 /**
  * `bootstrapStore()` 里装配的是**真实**的浏览器引擎，`useGameStore` 模块
@@ -10,7 +10,18 @@ vi.hoisted(() => {
     addEventListener(): void {}
     postMessage(): void {}
   }
+  // 记下原本的 Worker（jsdom 里通常是 undefined），用完在 afterAll 里还回去——
+  // 与 `BattleScreen.test.tsx` 同一手法，那边也补了还原。
+  ;(globalThis as { __originalWorker?: unknown }).__originalWorker = (
+    globalThis as { Worker?: unknown }
+  ).Worker
   Object.assign(globalThis, { Worker: FakeWorker })
+})
+
+afterAll(() => {
+  const original = (globalThis as { __originalWorker?: unknown }).__originalWorker
+  if (original === undefined) Reflect.deleteProperty(globalThis, 'Worker')
+  else Object.assign(globalThis, { Worker: original })
 })
 
 import { STORAGE_KEY, encodeSession } from '../persist/storage'
