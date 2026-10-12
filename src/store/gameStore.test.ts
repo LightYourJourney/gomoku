@@ -1137,6 +1137,19 @@ describe('终局入库的状态（供界面显示）', () => {
     expect(s.getState().recordSaveState).toBe('idle')
   })
 
+  /**
+   * **同步**返回 undefined 的回调＝它什么也没入库，界面停在 idle。
+   *
+   * 这一条原先没有测试钉着，改写 `notifyGameEnd` 时很容易顺手丢掉。
+   * 注意与上一条区分：`() => Promise.resolve()` 是「存过了、只是没拿到 seq」，
+   * 那种仍然算 saved——两者都是 `undefined`，差别在有没有返回 promise。
+   */
+  it('回调同步返回 undefined 时保持 idle，不谎报「已存入」', () => {
+    const s = createGameStore(engine, { onGameEnd: () => {} })
+    playToWin(s)
+    expect(s.getState().recordSaveState).toBe('idle')
+  })
+
   it('新的一局把状态清回 idle', async () => {
     const s = createGameStore(engine, { onGameEnd: () => Promise.resolve() })
     playToWin(s)
@@ -1229,6 +1242,66 @@ describe('终局后悔棋再终局：同一局只留一条棋谱', () => {
     // 关键：第二次拿到的是第一次存下的 seq，而不是 null
     expect(inputs[1]?.replacesSeq).toBe(1)
     expect(s.getState().recordedSeq).toBe(2)
+  })
+})
+
+/**
+ * `reset()` 的用意是「上一局的入库与本局无关」，`newGame` / `restore` 也确实调了它。
+ * 但**调用本身不构成保证**：在飞的那次写入还要能认出「我已经是上一局的事了」，
+ * 否则它兑现时会把自己的结果写进新局。
+ *
+ * 后果比「棋谱库里多一条」更重。新局会拿到上一局的 seq 当 `recordedSeq`，
+ * 等这局下完再把它当 `replacesSeq` 交出去——而存储层拿到它就**无条件删掉那一条**
+ * （`gameRecords.ts:187`），于是上一局的棋谱**没了**。
+ */
+describe('换局要作废在飞的入库', () => {
+  it('重开一局后，上一局迟到的入库结果不许写回新局', async () => {
+    const inputs: Array<{ replacesSeq: number | null }> = []
+    const gate: { release?: () => void } = {}
+    let seq = 0
+
+    const s = createGameStore(engine, {
+      onGameEnd: (input) => {
+        inputs.push({ replacesSeq: input.replacesSeq })
+        if (inputs.length === 1) {
+          // 第一次故意挂住，模拟「这次写入还没回来」
+          return new Promise<number>((resolve) => {
+            gate.release = () => resolve(++seq)
+          })
+        }
+        return Promise.resolve(++seq)
+      },
+    })
+
+    /** 在 y 行摆出黑棋五连（白棋摆在 y+2 行，不挡路）。 */
+    const winAt = (y: number): void => {
+      for (const x of [3, 4, 5, 6, 7]) {
+        s.getState().playHuman({ x, y })
+        if (x !== 7) s.getState().playHuman({ x, y: y + 2 })
+      }
+    }
+
+    s.getState().setMode('pvp')
+    winAt(7)
+    expect(s.getState().recordSaveState).toBe('saving')
+
+    // **不等它兑现**就重开一局
+    s.getState().newGame({ mode: 'pvp' })
+    expect(s.getState().recordSaveState).toBe('idle')
+    expect(s.getState().recordedSeq).toBeNull()
+
+    gate.release?.()
+    await flush()
+    await flush()
+
+    // ① 迟到的结果不许把新局标成「已存入」
+    expect(s.getState().recordSaveState).toBe('idle')
+    expect(s.getState().recordedSeq).toBeNull()
+
+    // ② 新局终局时不许带上上一局的 seq——带了就会删掉上一局的棋谱
+    winAt(11)
+    expect(inputs).toHaveLength(2)
+    expect(inputs[1]?.replacesSeq).toBeNull()
   })
 })
 

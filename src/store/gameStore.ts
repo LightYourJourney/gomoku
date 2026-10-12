@@ -232,15 +232,43 @@ export function createGameStore(
     let pending = 0
     /** 入库链的尾巴。 */
     let tail: Promise<void> = Promise.resolve()
+    /**
+     * 现在是第几局。`reset()` 时自增——这就是上面说的那道闸门。
+     *
+     * 少了它，`reset()` 只是把 `lastSeq` 置空，**在飞的那次写入并不知情**：
+     * 「终局 → 立刻重开」时它兑现后照样写回，新局于是被标成「已存入」、
+     * `recordedSeq` 拿到上一局的 seq；新局下完再把它当 `replacesSeq` 交出去，
+     * 而存储层拿到它就**无条件删掉那一条**（`gameRecords.ts:187`）——
+     * 上一局的棋谱直接没了，比原本要修的「多一条」更重。
+     */
+    let generation = 0
 
-    async function runSave(build: () => GameEndInput): Promise<void> {
+    async function runSave(build: () => GameEndInput, gen: number): Promise<void> {
       try {
         // `build()` 在**轮到它执行时**才求值——那时 `lastSeq` 已经是上一次的结果了。
         // 排队时就求值等于回到原来那个 bug（第二次终局拿到 null）。
-        const seq = await options.onGameEnd?.(build())
+        const result = options.onGameEnd?.(build())
+
+        // **同步**返回 undefined（连 promise 都没返回）＝这个回调什么也没做。
+        // 原版在这个分支直接 return，`recordSaveState` 保持 idle；这里把上面那句
+        // `saving` 退回去，等效。注意与「promise 兑现为 undefined」区分开——
+        // 后者是「存过了、只是没拿到 seq」，仍然算 saved（有测试钉着）。
+        if (result === undefined) {
+          if (gen !== generation) return
+          set({ recordSaveState: 'idle' })
+          return
+        }
+
+        const seq = await result
+
+        // 这一局已经翻篇了（开了新局 / 恢复了存档）：**什么状态都不许写**。
+        // `lastSeq` 尤其不能写——它现在属于新局。
+        if (gen !== generation) return
+
         if (typeof seq === 'number') lastSeq = seq
         set({ recordSaveState: 'saved', recordedSeq: lastSeq })
       } catch {
+        if (gen !== generation) return
         // 失败要如实说，而且**不动 `lastSeq`**——这一局还是没进库
         set({ recordSaveState: 'failed' })
       }
@@ -265,8 +293,11 @@ export function createGameStore(
         set({ recordSaveState: 'saving' })
 
         pending++
+        // 局号在**发起时**记下，不在执行时读：排队期间可能已经开了新局，
+        // 那时读到的会是新局号，这次写入就认不出自己已经过期了。
+        const gen = generation
         const step = (): Promise<void> =>
-          runSave(() => ({ ...base, replacesSeq: lastSeq })).then(() => {
+          runSave(() => ({ ...base, replacesSeq: lastSeq }), gen).then(() => {
             pending--
           })
 
@@ -281,8 +312,15 @@ export function createGameStore(
         tail = tail.then(step)
       },
 
-      /** 开新局 / 恢复存档时调用：上一局的入库链接与这一局无关。 */
+      /**
+       * 开新局 / 恢复存档时调用：上一局的入库链接与这一局无关。
+       *
+       * 自增局号，让在飞的那次写入兑现时认得出「我已经不是当前这一局了」。
+       * `pending` 与 `tail` **不动**：那几次写入本身还是要落库的（玩家确实把那一局
+       * 下完了），只是不许再写回状态。
+       */
       reset(): void {
+        generation++
         lastSeq = null
       },
     }
