@@ -1,6 +1,6 @@
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
-import { defineConfig } from 'vitest/config'
+import { configDefaults, defineConfig } from 'vitest/config'
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -61,5 +61,21 @@ export default defineConfig({
      * 断言**：真正卡死的用例照样会红，只是晚 10 秒。
      */
     testTimeout: 15_000,
+    /*
+     * **让每一次跑测都落一份完整报告到磁盘。**
+     *
+     * 起因是一次真实损失：某次全量跑红了一条用例，而我当时把输出管进了 `grep`，
+     * 那条用例的名字就此丢掉——事后连跑八次都没再复现，只能记成「一次未定位的
+     * 偶发」，追不下去了。**红灯的可追溯性不该依赖我当次有没有把输出看全。**
+     *
+     * 必须展开 `configDefaults.reporters`：自己配 `reporters` 会**替换**掉默认
+     * 列表，而不是追加（那样终端就没有输出了）。
+     *
+     * 报告路径 `vitest-report.json`（已在 `.gitignore` 里）。要看失败清单：
+     *   `python3 -c "import json;d=json.load(open('vitest-report.json'))
+     *    print([t['fullName'] for r in d['testResults'] for a in r['assertionResults']
+     *           if a['status']=='failed'])"`
+     */
+    reporters: [...configDefaults.reporters, ['json', { outputFile: 'vitest-report.json' }]],
   },
 })

@@ -18,6 +18,8 @@ dist-ssr
 bench/last-run.json
 
 # 测试与调试产物
+# vitest 每次跑测都会覆盖它。**不入库**，但请别删——某次红灯的用例名就靠它留证。
+vitest-report.json
 test-results
 playwright-report
 .playwright-mcp
