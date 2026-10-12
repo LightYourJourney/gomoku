@@ -1,5 +1,5 @@
 import { act, render } from '@testing-library/react'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { applyMove, createGame, resign } from '../../core/game'
 import type { GameState } from '../../core/game'
 import { BLACK } from '../../core/types'
@@ -16,7 +16,19 @@ vi.hoisted(() => {
     addEventListener(): void {}
     postMessage(): void {}
   }
+  // 记下原本的 Worker（jsdom 里通常是 undefined），用完在 afterAll 里还回去。
+  // 不还原的话，同一文件里将来新增的用例会在「Worker 永远存在」的假前提下写，
+  // 而那是这个文件自己造的假象。
+  ;(globalThis as { __originalWorker?: unknown }).__originalWorker = (
+    globalThis as { Worker?: unknown }
+  ).Worker
   Object.assign(globalThis, { Worker: FakeWorker })
+})
+
+afterAll(() => {
+  const original = (globalThis as { __originalWorker?: unknown }).__originalWorker
+  if (original === undefined) Reflect.deleteProperty(globalThis, 'Worker')
+  else Object.assign(globalThis, { Worker: original })
 })
 
 function fakeSound(): StoneSound {

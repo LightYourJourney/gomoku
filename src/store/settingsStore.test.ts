@@ -1,6 +1,15 @@
 import { act, renderHook } from '@testing-library/react'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { afterAll, beforeEach, describe, expect, it } from 'vitest'
 import { useSettingsStore, useThemeEffect } from './settingsStore'
+
+// jsdom 没有 matchMedia，本文件用一个桩顶上。**用完必须还回去**——
+// 不还原的话，同文件里将来新增的用例会以为 matchMedia 一定存在。
+const originalMatchMedia = window.matchMedia
+
+afterAll(() => {
+  if (originalMatchMedia === undefined) Reflect.deleteProperty(window, 'matchMedia')
+  else window.matchMedia = originalMatchMedia
+})
 
 function stubMatchMedia(initialMatches: boolean) {
   const listeners = new Set<(event: MediaQueryListEvent) => void>()
