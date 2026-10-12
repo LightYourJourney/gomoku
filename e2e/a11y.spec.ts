@@ -94,9 +94,25 @@ test.describe('键盘操作', () => {
 
   test('AI 思考期间整盘不再是 grid：键盘进不去，播报说出原因', async ({ page }) => {
     await page.goto('/')
+    /**
+     * 这一页的实例身份。
+     *
+     * 跑测期间若有人改了 `src/`，dev server 会广播**整页刷新**——刷新之后会话
+     * 虽然能从 localStorage 恢复、AI 那一手也会被补完，但棋盘是**新挂载**的，
+     * `hasEverFocusedRef` 归零，于是没人再把焦点送回棋盘。那是环境造成的，
+     * 不是回归。见 `FINDINGS.md` 的 F-30：当初就是这条断言只留下一句
+     * `Received: null`，机制查了很久。
+     *
+     * `vite.config.ts` 已经把文档 / 用例 / 基准排除在 watcher 之外；
+     * 这一句兜住剩下的情况（改源码）。
+     */
+    const pageId = await page.evaluate(() => performance.timeOrigin)
     await page.getByRole('radio', { name: '人机对战' }).click()
-    // 专家档的时间预算是 2600ms（见 ai/difficulty.ts）——下面这几步 CDP 往返
-    // 是毫秒级的，所以断言期间 AI 不会插进来。真插进来了断言也会失败，不会假绿。
+    // 专家档的时间预算是 2600ms（见 ai/difficulty.ts）。原先这里写着「下面这几步
+    // CDP 往返是毫秒级的，所以断言期间 AI 不会插进来」——**那句话是错的**：
+    // 实测（8 个实例 / 6 个 worker 并发）下面这一串断言要 ~2.5s，余量只有 1.04 倍，
+    // 高负载下 AI 的应手会落在断言中间，红在 `expect(gridcell).toHaveCount(0)` 上。
+    // 那是 F-18 那一族（`waitForTimeout` / 竞态窗口）的同一个病根，记在案上。
     await page.getByRole('radio', { name: '专家' }).click()
 
     // 真按 Tab 进棋盘，而不是程序化 `.focus()`——这是使用说明里写给玩家的入口，
@@ -137,6 +153,13 @@ test.describe('键盘操作', () => {
     // AI 走完，焦点要回到棋盘上。落子那一刻整盘不可聚焦、焦点会掉到 body，
     // 如果没人把它接回来，键盘玩家得从页面最开头重新 Tab 一遍。
     await expect(page.getByTestId('status-pill')).toHaveText('轮到你落子', { timeout: 10_000 })
+
+    // 先确认这一页还是原来那一页：被整页刷新过的话，下面那条断言测的就不是本用例的意图
+    expect(
+      await page.evaluate(() => performance.timeOrigin),
+      '页面在这条用例跑到一半时被整页重载了（跑测期间改了源码？刷新后焦点不会自己回到棋盘，见 F-30）',
+    ).toBe(pageId)
+
     await expect
       .poll(() => page.evaluate(() => document.activeElement?.getAttribute('role') ?? null))
       .toBe('gridcell')
