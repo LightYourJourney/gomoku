@@ -79,3 +79,59 @@ describe('useThemeEffect', () => {
     expect(media.listenerCount).toBe(0)
   })
 })
+
+/**
+ * 设置是**唯一**没有 schema 版本与校验的持久化模块（另外三个：对局存档 /
+ * 学习进度 / 棋谱库，都有版本闸门 + 逐字段严格校验），而它是唯一用
+ * zustand `persist` 的。localStorage 里被改坏的值过去会**直接进 store**：
+ * `THEME_LABELS[theme]` 变 undefined，主题按钮的 title 显示「主题：undefined」。
+ */
+describe('useSettingsStore —— 持久化的坏数据', () => {
+  const KEY = 'gomoku-lab:settings'
+
+  beforeEach(() => {
+    localStorage.clear()
+  })
+
+  it('版本相同但字段值非法时，逐字段回落到默认值', async () => {
+    // version 必须与当前一致（0），否则走的是「版本不匹配」那条路——
+    // 那样即使不加校验，断言也会因为 zustand 丢弃整份状态而变绿，
+    // 等于什么都没测。
+    localStorage.setItem(
+      KEY,
+      JSON.stringify({ state: { theme: 'foo', showCoords: 'yes', soundEnabled: 'nope' }, version: 0 }),
+    )
+
+    await useSettingsStore.persist.rehydrate()
+
+    const state = useSettingsStore.getState()
+    expect(state.theme).toBe('system')
+    expect(state.showCoords).toBe(true)
+    expect(state.soundEnabled).toBe(true)
+  })
+
+  it('合法字段照常读回，不做无差别重置', async () => {
+    localStorage.setItem(
+      KEY,
+      JSON.stringify({ state: { theme: 'dark', showCoords: false, soundEnabled: false }, version: 0 }),
+    )
+
+    await useSettingsStore.persist.rehydrate()
+
+    const state = useSettingsStore.getState()
+    expect(state.theme).toBe('dark')
+    expect(state.showCoords).toBe(false)
+    expect(state.soundEnabled).toBe(false)
+  })
+
+  it('整个 state 不是对象时也回落到默认值，不抛错', async () => {
+    localStorage.setItem(KEY, JSON.stringify({ state: 'garbage', version: 0 }))
+
+    await expect(useSettingsStore.persist.rehydrate()).resolves.not.toThrow()
+
+    const state = useSettingsStore.getState()
+    expect(state.theme).toBe('system')
+    expect(state.showCoords).toBe(true)
+    expect(state.soundEnabled).toBe(true)
+  })
+})
