@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode } from 'react'
+import { useEffect, useRef, type ReactNode, type RefObject } from 'react'
 import { cx } from '../../lib/cx'
 import { motionClass } from '../../lib/motion'
 import { createPortal } from 'react-dom'
@@ -9,13 +9,24 @@ export interface ModalProps {
   onClose?: () => void
   children: ReactNode
   footer?: ReactNode
+  /**
+   * 关闭之后把焦点送到这个元素上。
+   *
+   * **不传就不动焦点**（落到 `<body>`，也就是本项目此前的行为）。
+   * 为什么不做成「自动还给打开它的那个元素」：本应用唯一的弹窗是终局结果弹窗，
+   * 它**不是被某个控件打开的**（对局结束就自动弹），而且打开前持有焦点的元素
+   * 在对局结束时必然变得不可聚焦——五连终局时整盘 `interactive` 变假、格子
+   * 失去 `tabindex`；认输终局时那个按钮已 `disabled`。实测两条路径还原都不生效。
+   * 所以这里把「关掉之后焦点该去哪」交给调用方明确指定。
+   */
+  focusAfterClose?: RefObject<HTMLElement | null>
 }
 
 /** 弹窗内可聚焦的元素。`[tabindex]` 那一支排除了 -1（不可 Tab 到的）。 */
 const FOCUSABLE =
   'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
 
-export function Modal({ open, title, onClose, children, footer }: ModalProps) {
+export function Modal({ open, title, onClose, children, footer, focusAfterClose }: ModalProps) {
   const dialogRef = useRef<HTMLDivElement>(null)
 
   /**
@@ -92,10 +103,18 @@ export function Modal({ open, title, onClose, children, footer }: ModalProps) {
 
     document.addEventListener('keydown', handleKeyDown)
 
+    // 在 effect 里取一次 DOM 节点，cleanup 用这个局部变量。
+    // 不要在 cleanup 里读 `focusAfterClose.current`（exhaustive-deps 会告警，
+    // 而且那条告警有道理：清理时 ref 指向的节点可能已经换过了）。
+    // 这里「重新开始」按钮在对局结束前后是同一个 DOM 节点，取一次就够了。
+    const focusTarget = focusAfterClose?.current ?? null
+
     return () => {
       document.removeEventListener('keydown', handleKeyDown)
+      // 关闭后把焦点送到调用方指定的地方。没指定就什么都不做。
+      focusTarget?.focus()
     }
-  }, [open])
+  }, [open, focusAfterClose])
 
   if (!open) return null
 

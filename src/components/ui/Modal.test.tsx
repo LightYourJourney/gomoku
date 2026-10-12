@@ -1,5 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { describe, expect, it, vi } from 'vitest'
 import { Modal } from './Modal'
 
@@ -123,5 +123,64 @@ describe('Modal 的焦点管理', () => {
 
     expect(() => fireEvent.keyDown(document, { key: 'Tab' })).not.toThrow()
     expect(screen.getByRole('dialog')).toHaveFocus()
+  })
+})
+
+
+/**
+ * `focusAfterClose`：关闭弹窗之后焦点送到哪里。
+ *
+ * 本应用里这个目标由 `BattleScreen` 明确指定为「重新开始」按钮。
+ * 之所以不做成「自动还给打开弹窗的元素」：终局弹窗不是被某个控件打开的
+ * （对局结束就自动弹），而且打开前持有焦点的元素在对局结束时必然不可聚焦
+ * ——实测两条路径（五连 / 认输）还原都不生效，见 `Modal` 里的注释。
+ */
+describe('Modal 的 focusAfterClose', () => {
+  function WithTarget() {
+    const [open, setOpen] = useState(true)
+    const target = useRef<HTMLButtonElement>(null)
+
+    return (
+      <>
+        <button ref={target} type="button">
+          重新开始
+        </button>
+        <Modal open={open} title="本局结束" onClose={() => setOpen(false)} focusAfterClose={target}>
+          内容
+        </Modal>
+      </>
+    )
+  }
+
+  it('关闭后焦点落到指定元素上', () => {
+    render(<WithTarget />)
+
+    expect(screen.getByRole('dialog')).toHaveFocus()
+
+    fireEvent.keyDown(document, { key: 'Escape' })
+
+    expect(screen.getByRole('button', { name: '重新开始' })).toHaveFocus()
+  })
+
+  it('不传这个 prop 时不动焦点（既有行为）', () => {
+    function Plain() {
+      const [open, setOpen] = useState(true)
+      return (
+        <>
+          <button type="button">别处的按钮</button>
+          <Modal open={open} title="本局结束" onClose={() => setOpen(false)}>
+            内容
+          </Modal>
+        </>
+      )
+    }
+    render(<Plain />)
+    const other = screen.getByRole('button', { name: '别处的按钮' })
+    other.focus()
+
+    fireEvent.keyDown(document, { key: 'Escape' })
+
+    // 焦点留在原处不动——弹窗卸载不会把它「送」去任何地方
+    expect(other).toHaveFocus()
   })
 })

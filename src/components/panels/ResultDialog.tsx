@@ -1,3 +1,4 @@
+import type { RefObject } from 'react'
 import type { GameStatusDescriptor } from '../../features/battle/status'
 import type { RecordSaveState } from '../../store/gameStore'
 import { Button } from '../ui/Button'
@@ -12,6 +13,8 @@ export interface ResultDialogProps {
   saveState: RecordSaveState
   onRestart: () => void
   onClose: () => void
+  /** 关闭后焦点去哪里。见 `Modal` 的同名 prop。 */
+  focusAfterClose?: RefObject<HTMLElement | null>
 }
 
 const SAVE_LABELS: Record<Exclude<RecordSaveState, 'idle'>, string> = {
@@ -27,12 +30,14 @@ export function ResultDialog({
   saveState,
   onRestart,
   onClose,
+  focusAfterClose,
 }: ResultDialogProps) {
   return (
     <Modal
       open={open}
       title="本局结束"
       onClose={onClose}
+      focusAfterClose={focusAfterClose}
       footer={
         <>
           <Button variant="primary" block onClick={onRestart}>

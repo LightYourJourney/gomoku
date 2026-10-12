@@ -64,6 +64,13 @@ export function BattleScreen({ sound: injectedSound }: BattleScreenProps = {}) {
   const requestHint = useGameStore((state) => state.requestHint)
   const clearHint = useGameStore((state) => state.clearHint)
 
+  /**
+   * 「重新开始」按钮。终局弹窗关闭时把焦点送到它——对局结束后它是唯一还有意义的
+   * 操作，而在此之前焦点会掉到 `<body>`，键盘用户得从页面最开头重新 Tab。
+   * 为什么不能「还给打开弹窗的那个元素」：见 `Modal` 的 `focusAfterClose` 注释。
+   */
+  const restartRef = useRef<HTMLButtonElement>(null)
+
   const ownSound = useMemo(() => createStoneSound(), [])
   const sound = injectedSound ?? ownSound
   useEffect(() => () => sound.dispose(), [sound])
@@ -178,6 +185,7 @@ export function BattleScreen({ sound: injectedSound }: BattleScreenProps = {}) {
                 onUndo={undoMove}
                 onRestart={() => newGame()}
                 onResign={resign}
+                restartButtonRef={restartRef}
               />
             </div>
           </Panel>
@@ -217,6 +225,7 @@ export function BattleScreen({ sound: injectedSound }: BattleScreenProps = {}) {
         saveState={recordSaveState}
         onRestart={() => newGame()}
         onClose={() => setResultDismissed(true)}
+        focusAfterClose={restartRef}
       />
     </div>
   )

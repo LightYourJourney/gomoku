@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes } from 'react'
+import type { ButtonHTMLAttributes, Ref } from 'react'
 import { cx } from '../../lib/cx'
 
 export type ButtonVariant = 'primary' | 'default' | 'danger'
@@ -12,6 +12,8 @@ const VARIANT_CLASS: Record<ButtonVariant, string> = {
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant
   block?: boolean
+  /** React 19 里 `ref` 是普通 prop，会随 `...rest` 落到 `<button>` 上。 */
+  ref?: Ref<HTMLButtonElement>
 }
 
 export function Button({
