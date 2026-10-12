@@ -226,7 +226,19 @@ export function createAnalysisStore(): UseBoundStore<StoreApi<AnalysisStore>> {
             // 上一局的迟到响应没有资格改写它。
             if (run !== runId) return
             if (get().target === null || inflightIndex !== index) return
-            if (response.moveIndex !== index || response.gameVersion !== 0) return
+
+            // 第三道闸门：响应自带的手序号/局面版本对不上。真实引擎下不可达
+            // （`search.ts` 原样回显 request 的 moveIndex），但**不能像前两道
+            // 那样直接 return**：前两道是「这一轮已经不是我的了」，什么都不该动；
+            // 这一道是「这一轮是我的，但这条响应是坏的」——直接 return 会让
+            // `inflightIndex` 永远占着、队列再也不 pump，面板停在「分析中 N-1 / N」。
+            // 以错误收尾是唯一如实的选择：既不能拿坏数据凑结论，也不能假装还在跑。
+            if (response.moveIndex !== index || response.gameVersion !== 0) {
+              inflightIndex = null
+              set({ running: false, error: '分析响应与请求对不上，这一轮已中止' })
+              reset()
+              return
+            }
 
             inflightIndex = null
             fillReply(index, response)

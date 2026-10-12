@@ -36,7 +36,13 @@ interface EngineSpy {
   engine: AiEngine
   requests: SearchRequest[]
   /** settle 第 i 个发出的请求（按发出顺序）。move 为 null 表示无棋可走。 */
-  settle: (order: number, move: Point | null, score: number, depth?: number) => void
+  settle: (
+    order: number,
+    move: Point | null,
+    score: number,
+    depth?: number,
+    overrides?: Partial<SearchResponse>,
+  ) => void
   reject: (order: number, message: string) => void
 }
 
@@ -62,7 +68,7 @@ function fakeEngine(): EngineSpy {
   return {
     engine,
     requests,
-    settle(order, move, score = 100, depth = 4) {
+    settle(order, move, score = 100, depth = 4, overrides: Partial<SearchResponse> = {}) {
       const request = requests[order]
       const resolve = resolvers.get(order)
       if (request === undefined || resolve === undefined) throw new Error(`请求 #${order} 不存在`)
@@ -80,6 +86,8 @@ function fakeEngine(): EngineSpy {
         reason: 'search',
         candidates: [],
         urgency: 'normal',
+        // overrides 放在最后：它的用途正是覆盖上面这些字段，构造「对不上」的响应
+        ...overrides,
       })
     },
     reject(order, message) {
@@ -347,5 +355,33 @@ describe('分析管线 —— 满盘和棋（无可走点）', () => {
     expect(store.getState().total).toBe(8)
     expect(store.getState().verdicts.has(7)).toBe(false)
     expect(store.getState().verdicts.has(8)).toBe(false)
+  })
+})
+
+
+describe('分析管线 —— 响应与请求对不上', () => {
+  /**
+   * 第三道闸门（手序号 / 局面版本）与前两道**性质不同**：
+   * 前两道是「这一轮已经不是我的了」，什么都不该动；
+   * 这一道是「这一轮是我的，但这条响应是坏的」——直接 return 会让
+   * `inflightIndex` 永远占着、队列再也不 pump，面板停在「分析中 N-1 / N」。
+   *
+   * 真实引擎下不可达（`search.ts:569` 原样回显 request 的 moveIndex），
+   * 所以这里用假引擎直接造一条对不上的响应。
+   */
+  it('手序号对不上时以错误收尾，不留在「分析中」', async () => {
+    store.getState().start({
+      record: threeWinRecord(1),
+      engine: spy.engine,
+      difficulty: 'easy',
+      budgetMs: 10,
+    })
+    expect(store.getState().running).toBe(true)
+
+    spy.settle(0, { x: 0, y: 0 }, 100, 4, { moveIndex: 99 })
+    await Promise.resolve()
+
+    expect(store.getState().running).toBe(false)
+    expect(store.getState().error).toBe('分析响应与请求对不上，这一轮已中止')
   })
 })
