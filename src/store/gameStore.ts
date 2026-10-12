@@ -346,7 +346,16 @@ export function createGameStore(
         const current = get()
         if (current.game.status !== 'playing') return
 
-        const resigned = resignGame(current.game, current.humanColor)
+        /*
+         * 人机模式下「认输」是**玩家**认输——即使此刻轮到 AI 走，认的也是玩家自己。
+         *
+         * 本地双人没有「玩家」这一方：按钮是轮到谁走时谁点的，所以认的是
+         * `game.current`。这里曾经一律用 `humanColor`，而它在双人模式下
+         * 既不可见也不可改，是上一次人机模式留下的残留值——结果是「点认输，
+         * 屏幕上刚在下棋的那个人被判赢了」。
+         */
+        const resigning = current.mode === 'pve' ? current.humanColor : current.game.current
+        const resigned = resignGame(current.game, resigning)
         set({
           game: resigned,
           aiThinking: false,

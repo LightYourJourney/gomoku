@@ -1021,15 +1021,51 @@ describe('终局入库回调 onGameEnd', () => {
     })
   })
 
-  it('认输终局也触发，resignedBy 是认输方', () => {
+  it('认输终局也触发，resignedBy 是认输的那一方', () => {
     const ended: Array<{ resignedBy: unknown }> = []
     const s = createGameStore(engine, { onGameEnd: (input) => void ended.push(input) })
     s.getState().setMode('pvp')
-    s.getState().playHuman({ x: 7, y: 7 })
+    s.getState().playHuman({ x: 7, y: 7 }) // 黑落子，轮到白
     s.getState().resign()
 
     expect(ended).toHaveLength(1)
+    // 本地双人：按钮是**轮到谁走时谁点的**，所以认输的是当前该走的一方（白）。
+    // 这条原先断言的是 BLACK——那是在钉「认 humanColor」这个错误的语义。
+    expect(ended[0]?.resignedBy).toBe(WHITE)
+  })
+
+  it('本地双人的认输不看 humanColor——那是上一次人机模式的残留值', () => {
+    const ended: Array<{ resignedBy: unknown }> = []
+    const s = createGameStore(engine, { onGameEnd: (input) => void ended.push(input) })
+
+    // 先在**人机**模式里选执白（humanColor = 白），再切到本地双人。
+    // 双人模式下执子选择器是隐藏的，humanColor 因此是个看不见也改不了的残留值。
+    s.getState().setHumanColor(WHITE)
+    s.getState().setMode('pvp')
+
+    // 黑、白各落一手，又回到黑走
+    s.getState().playHuman({ x: 3, y: 7 })
+    s.getState().playHuman({ x: 3, y: 9 })
+    expect(s.getState().humanColor).toBe(WHITE) // 残留值确实还在
+    expect(s.getState().game.current).toBe(BLACK)
+
+    s.getState().resign()
+
+    // 该走的是黑，所以认输的是黑。若拿残留的 humanColor（白）当判据，这里会是白。
     expect(ended[0]?.resignedBy).toBe(BLACK)
+  })
+
+  it('人机模式的认输仍然认玩家自己，即使此刻轮到 AI 走', () => {
+    const ended: Array<{ resignedBy: unknown }> = []
+    const s = createGameStore(engine, { onGameEnd: (input) => void ended.push(input) })
+
+    s.getState().setHumanColor(WHITE) // 玩家执白 → 开局轮到 AI（黑）走
+    expect(s.getState().game.current).toBe(BLACK)
+
+    s.getState().resign()
+
+    // 认的是**玩家**，不是当前该走的一方
+    expect(ended[0]?.resignedBy).toBe(WHITE)
   })
 
   it('进行中不触发——只有状态从 playing 变成终局才调一次', () => {
