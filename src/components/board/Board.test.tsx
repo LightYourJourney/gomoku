@@ -543,3 +543,107 @@ function renderBoard(rerender: (ui: ReactElement) => void, interactive: boolean)
     />,
   )
 }
+
+describe('Board —— 不可交互期间与之后', () => {
+  /**
+   * 这条路径此前**没有单测覆盖**：已有的「落子后焦点不丢」在重渲染时
+   * `interactive` 一直是 true，走不到「整盘不可聚焦 → 再变回可聚焦」这一段。
+   *
+   * 真实场景就是 AI 思考：落子那一刻整盘变假、格子的 `tabIndex` 被摘掉，
+   * 焦点掉到 body；AI 走完必须把它接回来，否则键盘玩家得从页面最开头重新 Tab。
+   */
+  const boardAfterAi = boardFromLines([
+    '...............',
+    '...............',
+    '...............',
+    '...............',
+    '...............',
+    '...............',
+    '...............',
+    '.......B.......',
+    '.......W.......',
+  ])
+
+  it('AI 思考期间整盘不再是 grid，思考结束后把焦点接回来', () => {
+    const { rerender } = setup({ interactive: true })
+
+    const cell = screen.getByRole('gridcell', { name: 'H8 空位' })
+    cell.focus()
+    expect(document.activeElement).toBe(cell)
+
+    // 轮次交给 AI：整盘不再可聚焦（gridcell 全没了，tabIndex 也摘了）
+    rerender(
+      <Board
+        board={boardFromLines(['.......B.......'])}
+        lastMove={{ x: 7, y: 7 }}
+        winLine={null}
+        nextPlayer={WHITE}
+        showCoords={false}
+        interactive={false}
+        onPlay={vi.fn()}
+      />,
+    )
+    expect(screen.queryAllByRole('gridcell')).toHaveLength(0)
+
+    // 真浏览器里摘掉 tabindex 会让焦点掉到 body。jsdom 的 `blur()` 对 SVG 元素
+    // 不改变 `activeElement`，所以给 body 临时一个 tabIndex 再聚焦它来模拟同一状态。
+    document.body.tabIndex = -1
+    document.body.focus()
+    expect(document.activeElement).toBe(document.body)
+
+    // AI 走完，轮次交还玩家
+    rerender(
+      <Board
+        board={boardAfterAi}
+        lastMove={{ x: 7, y: 8 }}
+        winLine={null}
+        nextPlayer={BLACK}
+        showCoords={false}
+        interactive
+        onPlay={vi.fn()}
+      />,
+    )
+
+    expect(document.activeElement?.getAttribute('role')).toBe('gridcell')
+  })
+
+  it('玩家趁 AI 思考把焦点 Tab 到别处时，思考结束不把焦点抢回来', () => {
+    const outside = document.createElement('button')
+    document.body.append(outside)
+
+    try {
+      const { rerender } = setup({ interactive: true })
+      screen.getByRole('gridcell', { name: 'H8 空位' }).focus()
+
+      rerender(
+        <Board
+          board={boardFromLines(['.......B.......'])}
+          lastMove={{ x: 7, y: 7 }}
+          winLine={null}
+          nextPlayer={WHITE}
+          showCoords={false}
+          interactive={false}
+          onPlay={vi.fn()}
+        />,
+      )
+
+      outside.focus() // 玩家 Tab 到了「悔棋」之类的按钮上
+
+      rerender(
+        <Board
+          board={boardAfterAi}
+          lastMove={{ x: 7, y: 8 }}
+          winLine={null}
+          nextPlayer={BLACK}
+          showCoords={false}
+          interactive
+          onPlay={vi.fn()}
+        />,
+      )
+
+      expect(document.activeElement).toBe(outside)
+    } finally {
+      outside.remove()
+    }
+  })
+})
