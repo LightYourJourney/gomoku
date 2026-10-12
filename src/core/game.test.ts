@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { idx } from './board'
-import { applyMove, createGame, replay, resign, undo, type GameState } from './game'
+import { applyMove, createGame, replay, resign, resignerOf, undo, type GameState } from './game'
 import { BOARD_SIZE, type Point } from './types'
 
 /** 连续落子，任一手非法就直接失败（用于铺局面）。 */
@@ -379,6 +379,39 @@ describe('resign', () => {
   it('认输后不能落子', () => {
     const state = resign(createGame(), 1)
     expect(applyMove(state, { x: 7, y: 7 })).toEqual({ ok: false, error: 'game_over' })
+  })
+})
+
+describe('resignerOf', () => {
+  /**
+   * 存档与棋谱两条通道都要带上「谁认输的」——它们必须用同一个判据推导，
+   * 所以推导只写在这里一处。
+   */
+  it('认输的对局反推出认输方', () => {
+    expect(resignerOf(resign(createGame(), 1))).toBe(1)
+    expect(resignerOf(resign(createGame(), 2))).toBe(2)
+  })
+
+  it('五连结束的对局没有认输方', () => {
+    const won = mustMove(
+      createGame(),
+      { x: 3, y: 7 },
+      { x: 3, y: 8 },
+      { x: 4, y: 7 },
+      { x: 4, y: 8 },
+      { x: 5, y: 7 },
+      { x: 5, y: 8 },
+      { x: 6, y: 7 },
+      { x: 6, y: 8 },
+      { x: 7, y: 7 },
+    )
+
+    expect(won.status).toBe('won')
+    expect(resignerOf(won)).toBeNull()
+  })
+
+  it('进行中的对局没有认输方', () => {
+    expect(resignerOf(createGame())).toBeNull()
   })
 })
 

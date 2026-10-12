@@ -5,6 +5,7 @@ import {
   createGame,
   replay,
   resign as resignGame,
+  resignerOf,
   undo,
   type GameState,
 } from '../core/game'
@@ -257,8 +258,7 @@ export function createGameStore(
           mode: before.mode,
           humanColor: before.humanColor,
           difficulty: before.difficulty,
-          resignedBy:
-            after.status === 'resigned' && after.winner !== null ? opponentOf(after.winner) : null,
+          resignedBy: resignerOf(after),
         }
 
         // 存储是异步的，界面需要知道最终成没成

@@ -111,3 +111,14 @@ export function resign(state: GameState, player: Player): GameState {
   }
   return next
 }
+
+/**
+ * 认输的一方。`null` 表示这局不是认输结束的。
+ *
+ * 手顺能还原出胜负与和棋，唯独还原不出**谁认输**（`resign` 只存了赢家）——
+ * 所以凡是要把一局交出去的地方（本地存档、棋谱库）都得单独带这个字段。
+ * 两处必须用同一个判据推导：各写一遍的话，同一局在两条通道里会记出不同的认输方。
+ */
+export function resignerOf(game: GameState): Player | null {
+  return game.status === 'resigned' && game.winner !== null ? opponentOf(game.winner) : null
+}

@@ -1,6 +1,5 @@
 import { createBrowserAiEngine } from '../ai/browserEngine'
-import { opponentOf } from '../core/board'
-import type { GameState } from '../core/game'
+import { resignerOf, type GameState } from '../core/game'
 import type { Difficulty } from '../ai/types'
 import type { Player } from '../core/types'
 import { saveGameReplacing } from '../persist/gameRecords'
@@ -71,9 +70,7 @@ function persistSession(state: {
     mode,
     humanColor,
     difficulty,
-    // 手顺能还原出胜负与和棋，唯独还原不出认输，所以由 winner 反推认输方。
-    resignedBy:
-      game.status === 'resigned' && game.winner !== null ? opponentOf(game.winner) : null,
+    resignedBy: resignerOf(game),
   })
 }
 
