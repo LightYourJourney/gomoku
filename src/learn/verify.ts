@@ -1,7 +1,7 @@
 import { candidateMoves } from '../ai/candidates'
 import { analyzePoint, dominantThreat, hasDoubleThreat, isWinningPoint } from '../ai/patterns'
 import { isForcedWinStart } from '../ai/threat'
-import { idx, opponentOf } from '../core/board'
+import { idx, opponentOf, pointFromIdx } from '../core/board'
 import { findWinLine, validateMove } from '../core/rules'
 import type { Board, Player, Point } from '../core/types'
 import { formatPoint } from '../lib/coords'
@@ -35,7 +35,7 @@ export function boardHasFive(board: Board): boolean {
   for (let i = 0; i < board.length; i++) {
     if (board[i] === 0) continue
 
-    const point = { x: i % 15, y: Math.floor(i / 15) }
+    const point = pointFromIdx(i)
     if (findWinLine(board, point) !== null) return true
   }
   return false

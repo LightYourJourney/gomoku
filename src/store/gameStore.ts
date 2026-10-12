@@ -215,30 +215,30 @@ export function createGameStore(
    * 都汇到这里判定，避免各处各写一遍「是不是刚结束」。
    */
   function makeNotifier(set: (partial: Partial<GameStore>) => void) {
-  return function notifyGameEnd(before: GameStore, after: GameState): void {
-    if (before.game.status !== 'playing' || after.status === 'playing') return
+    return function notifyGameEnd(before: GameStore, after: GameState): void {
+      if (before.game.status !== 'playing' || after.status === 'playing') return
 
-    const input: GameEndInput = {
-      moves: after.moves,
-      firstPlayer: after.firstPlayer,
-      mode: before.mode,
-      humanColor: before.humanColor,
-      difficulty: before.difficulty,
-      resignedBy:
-        after.status === 'resigned' && after.winner !== null ? opponentOf(after.winner) : null,
-      replacesSeq: before.recordedSeq,
+      const input: GameEndInput = {
+        moves: after.moves,
+        firstPlayer: after.firstPlayer,
+        mode: before.mode,
+        humanColor: before.humanColor,
+        difficulty: before.difficulty,
+        resignedBy:
+          after.status === 'resigned' && after.winner !== null ? opponentOf(after.winner) : null,
+        replacesSeq: before.recordedSeq,
+      }
+
+      const result = options.onGameEnd?.(input)
+      if (result === undefined) return
+
+      // 存储是异步的，界面需要知道最终成没成
+      set({ recordSaveState: 'saving' })
+      void Promise.resolve(result).then(
+        (seq) => set({ recordSaveState: 'saved', recordedSeq: typeof seq === 'number' ? seq : null }),
+        () => set({ recordSaveState: 'failed' }),
+      )
     }
-
-    const result = options.onGameEnd?.(input)
-    if (result === undefined) return
-
-    // 存储是异步的，界面需要知道最终成没成
-    set({ recordSaveState: 'saving' })
-    void Promise.resolve(result).then(
-      (seq) => set({ recordSaveState: 'saved', recordedSeq: typeof seq === 'number' ? seq : null }),
-      () => set({ recordSaveState: 'failed' }),
-    )
-  }
   }
 
   return create<GameStore>()((set, get) => {

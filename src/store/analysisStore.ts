@@ -5,6 +5,7 @@ import type { AiEngine } from '../ai/engine'
 import type { Difficulty, SearchResponse } from '../ai/types'
 import { ENGINE_VERSION } from '../ai/version'
 import type { GameRecord } from '../persist/gameRecords'
+import { replay } from '../core/game'
 import { buildVerdict, cacheKey, type MoveVerdict } from '../analysis/analyze'
 import { nextRequestId } from './requestCounter'
 
@@ -47,8 +48,6 @@ interface PendingVerdict {
   /** 局面 i+1 的响应（对手视角评分；终局手不需要）。 */
   reply?: { score: number; depth: number; nodes: number; confidence: 'exact' | 'heuristic' }
 }
-
-import { replay } from '../core/game'
 
 export function createAnalysisStore(): UseBoundStore<StoreApi<AnalysisStore>> {
   return create<AnalysisStore>()((set, get) => {
@@ -176,12 +175,9 @@ export function createAnalysisStore(): UseBoundStore<StoreApi<AnalysisStore>> {
       const verdicts = new Map(get().verdicts)
       verdicts.set(index, verdict)
 
-      const nextPending = new Map(pending)
-      nextPending.delete(index)
-      pending.clear()
-      for (const [key, value] of nextPending) pending.set(key, value)
+      pending.delete(index)
 
-      patch({ verdicts })
+      set({ verdicts })
 
       finishIfDone()
     }
@@ -198,10 +194,6 @@ export function createAnalysisStore(): UseBoundStore<StoreApi<AnalysisStore>> {
         [...get().verdicts.values()].sort((a, b) => a.moveIndex - b.moveIndex),
       )
       set({ running: false })
-    }
-
-    function patch(patchData: Partial<AnalysisStore>) {
-      set(patchData)
     }
 
     function pump() {
@@ -244,7 +236,7 @@ export function createAnalysisStore(): UseBoundStore<StoreApi<AnalysisStore>> {
             if (run !== runId) return
             inflightIndex = null
             if (get().target === null) return
-            patch({
+            set({
               running: false,
               error: error instanceof Error ? error.message : String(error),
             })
@@ -335,7 +327,7 @@ export function createAnalysisStore(): UseBoundStore<StoreApi<AnalysisStore>> {
 
       stop() {
         reset()
-        patch({ running: false, target: null })
+        set({ running: false, target: null })
       },
     }
   })

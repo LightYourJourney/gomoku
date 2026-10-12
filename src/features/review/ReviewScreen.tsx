@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useStore } from 'zustand'
 import { createReplayStore } from '../../store/replayStore'
-import { createAnalysisStore } from '../../store/analysisStore'
+import { ANALYSIS_BUDGET_MS, createAnalysisStore } from '../../store/analysisStore'
 import type { GameRecord, GameRecordsStorage } from '../../persist/gameRecords'
 import { DIFFICULTY_LABELS } from '../../ai/difficulty'
 import { ENGINE_VERSION } from '../../ai/version'
@@ -109,8 +109,10 @@ function AnalysisPanel({ store, engine, replay }: AnalysisPanelProps) {
 
   if (record === null) return null
 
+  // 分析固定用初级档：换档位结论就会变，界面必须把档位与预算一起标出来。
+  // 预算不写死 400，读 ANALYSIS_BUDGET_MS——标注与实际用的必须是同一个数。
   const difficulty = 'easy' as const
-  const budgetMs = 400
+  const budgetMs = ANALYSIS_BUDGET_MS
 
   function start() {
     const current = replay.getState().record
