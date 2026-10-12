@@ -238,7 +238,7 @@ export function createGameStore(
      * 少了它，`reset()` 只是把 `lastSeq` 置空，**在飞的那次写入并不知情**：
      * 「终局 → 立刻重开」时它兑现后照样写回，新局于是被标成「已存入」、
      * `recordedSeq` 拿到上一局的 seq；新局下完再把它当 `replacesSeq` 交出去，
-     * 而存储层拿到它就**无条件删掉那一条**（`gameRecords.ts:187`）——
+     * 而存储层拿到它就**无条件删掉那一条**（`gameRecords.ts:188`）——
      * 上一局的棋谱直接没了，比原本要修的「多一条」更重。
      */
     let generation = 0
@@ -250,9 +250,9 @@ export function createGameStore(
         const result = options.onGameEnd?.(build())
 
         // **同步**返回 undefined（连 promise 都没返回）＝这个回调什么也没做。
-        // 原版在这个分支直接 return，`recordSaveState` 保持 idle；这里把上面那句
-        // `saving` 退回去，等效。注意与「promise 兑现为 undefined」区分开——
-        // 后者是「存过了、只是没拿到 seq」，仍然算 saved（有测试钉着）。
+        // `f9d8061` 之前的那版在这里直接 return、`recordSaveState` 保持 idle；
+        // 这里把上面那句 `saving` 退回去，等效。注意与「promise 兑现为 undefined」
+        // 区分开——后者是「存过了、只是没拿到 seq」，仍然算 saved（有测试钉着）。
         if (result === undefined) {
           if (gen !== generation) return
           set({ recordSaveState: 'idle' })

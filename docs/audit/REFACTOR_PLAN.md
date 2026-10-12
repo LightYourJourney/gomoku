@@ -773,7 +773,7 @@ react-hooks(exhaustive-deps): React Hook useEffect has a missing dependency: 'b'
 `F-25` 的第一版修复写了「配一道只增不减的闸门」，**而那道闸门根本没写**——
 `reset()` 只把 `lastSeq` 置空，在飞的那次写入并不知情。于是「终局 → 立刻重开」这条路径上，
 迟到的结果会写进**新局**：新局被标成「已存入」、`recordedSeq` 拿到上一局的 seq，
-新局下完再把它当 `replacesSeq` 交出去，而 `gameRecords.ts:187` 的 `delete` 是无条件的
+新局下完再把它当 `replacesSeq` 交出去，而 `gameRecords.ts:188` 的 `delete` 是无条件的
 ——**上一局的棋谱被删掉**。比它本来要修的「多一条」更重。
 
 **两轴各自独立地发现了它**：标准轴的说法是「这条注释声称的东西代码支持不了」，

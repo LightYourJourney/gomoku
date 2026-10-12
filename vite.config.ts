@@ -15,9 +15,12 @@ export default defineConfig({
      *
      * dev server 的 watcher 盯着整个项目根目录。改 `src/` 下的源码走 HMR
      * （`src/lib/cx.ts` 这类会热更新、`src/main.tsx` 这类会整页刷新，都正常）；
-     * 但改**根本不在模块图里**的文件——文档、e2e 用例、基准脚本——它无从热更新，
-     * 于是向所有连着的前端广播一次**整页重载**。实测：碰一下 `docs/ROADMAP.md`
-     * 就会把打开着的页面刷掉。
+     * 但改 `.md` 会让打开着的页面**整页重载**——发这条消息的是
+     * `@tailwindcss/vite` 的 `hotUpdate`：Tailwind v4 把 `.md` 也当内容源扫描，
+     * 于是对这类改动直接 `full-reload`（它的扩展名白名单只放行
+     * `.js/.ts/.jsx/.tsx/.mjs/.cjs/.mts/.cts` 与 CSS）。
+     * 实测（内容改动，逐个单独跑）：`docs/ROADMAP.md` 会刷掉页面，而 `e2e/*.ts`、
+     * `bench/*.mjs` **不会**。
      *
      * 为什么必须挡住：`yarn e2e` 复用的就是这个 dev server
      * （`playwright.config.ts` 的 `reuseExistingServer`）。于是「跑着 e2e、
@@ -26,8 +29,10 @@ export default defineConfig({
      * 恢复、AI 那一手被补完、状态条也变回「轮到你落子」，但棋盘是**新挂载**的，
      * `hasEverFocusedRef` 归零，没人再把焦点送回棋盘。
      *
-     * 两个方向都实测过（`e2e` 里临时探针，用完已删）：加上这行之后，
-     * 文档 / 用例 / 基准改动不再触发刷新，而改 `src/main.tsx` 仍然会整页刷新。
+     * 两个方向都实测过（`e2e` 里临时探针，用完已删）：加上这行之后 `.md` 改动不再
+     * 触发刷新，而改 `src/main.tsx` 仍然会整页刷新。`e2e/` 与 `bench/` 留在清单里不是
+     * 因为它们今天会触发（实测不会），而是为了让这条规则读起来就是它想做的那件事：
+     * **应用源码之外的东西，一律不该驱动 dev server 刷新。**
      */
     watch: {
       ignored: ['**/*.md', '**/docs/**', '**/e2e/**', '**/bench/**'],
