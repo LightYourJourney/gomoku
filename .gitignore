@@ -12,6 +12,11 @@ dist
 dist-ssr
 *.local
 
+# 基准的**暂存**产物：每次 yarn bench 都会覆盖它。
+# 要写进文档的数字必须另存一份到 bench/runs/<出处提交>.json（不可变），
+# 文档引用那一份——否则重跑一次基准就会让文档里的数字失去出处，而且工作区变脏。
+bench/last-run.json
+
 # 测试与调试产物
 test-results
 playwright-report

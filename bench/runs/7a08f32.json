@@ -86,7 +86,7 @@
       "position": "开局",
       "depth": 4,
       "nodes": 746,
-      "elapsedMs": 82,
+      "elapsedMs": 78,
       "reason": "search"
     },
     {
@@ -94,7 +94,7 @@
       "position": "中盘",
       "depth": 4,
       "nodes": 596,
-      "elapsedMs": 75,
+      "elapsedMs": 68,
       "reason": "search"
     },
     {
@@ -110,7 +110,7 @@
       "position": "双三",
       "depth": 4,
       "nodes": 864,
-      "elapsedMs": 131,
+      "elapsedMs": 123,
       "reason": "search"
     },
     {
@@ -118,7 +118,7 @@
       "position": "接近满盘",
       "depth": 4,
       "nodes": 265,
-      "elapsedMs": 29,
+      "elapsedMs": 26,
       "reason": "search"
     },
     {
@@ -126,16 +126,16 @@
       "position": "开局",
       "depth": 6,
       "nodes": 10076,
-      "elapsedMs": 1567,
+      "elapsedMs": 1101,
       "reason": "search"
     },
     {
       "difficulty": "hard",
       "position": "中盘",
-      "depth": 5,
-      "nodes": 6885,
-      "elapsedMs": 1600,
-      "reason": "timeout"
+      "depth": 6,
+      "nodes": 7202,
+      "elapsedMs": 921,
+      "reason": "search"
     },
     {
       "difficulty": "hard",
@@ -149,8 +149,8 @@
       "difficulty": "hard",
       "position": "双三",
       "depth": 5,
-      "nodes": 7497,
-      "elapsedMs": 1602,
+      "nodes": 11568,
+      "elapsedMs": 1601,
       "reason": "timeout"
     },
     {
@@ -158,23 +158,23 @@
       "position": "接近满盘",
       "depth": 6,
       "nodes": 808,
-      "elapsedMs": 174,
+      "elapsedMs": 90,
       "reason": "search"
     },
     {
       "difficulty": "expert",
       "position": "开局",
       "depth": 6,
-      "nodes": 17014,
-      "elapsedMs": 2604,
+      "nodes": 23939,
+      "elapsedMs": 2602,
       "reason": "timeout"
     },
     {
       "difficulty": "expert",
       "position": "中盘",
       "depth": 6,
-      "nodes": 13516,
-      "elapsedMs": 2605,
+      "nodes": 18308,
+      "elapsedMs": 2601,
       "reason": "timeout"
     },
     {
@@ -189,7 +189,7 @@
       "difficulty": "expert",
       "position": "双三",
       "depth": 5,
-      "nodes": 11978,
+      "nodes": 18802,
       "elapsedMs": 2601,
       "reason": "timeout"
     },
@@ -198,12 +198,12 @@
       "position": "接近满盘",
       "depth": 8,
       "nodes": 1738,
-      "elapsedMs": 378,
+      "elapsedMs": 212,
       "reason": "search"
     }
   ],
   "evaluate": {
-    "perCallUs": 116.76199104500003,
+    "perCallUs": 76.33796687499998,
     "calls": 200000
   },
   "threat": [
@@ -249,41 +249,41 @@
       "name": "孤立活三",
       "vcfFound": true,
       "vcfPlies": 3,
-      "vcfMs": 0.9684160000033444,
+      "vcfMs": 0.6520839999866439,
       "vctFound": true,
       "vctPlies": 3,
-      "vctMs": 37.13762500000303,
-      "ratio": 38.34883459161639,
+      "vctMs": 24.508874999999534,
+      "ratio": 37.585456782410745,
       "gains": false
     },
     {
       "name": "两条活三",
       "vcfFound": true,
       "vcfPlies": 7,
-      "vcfMs": 2.57012499999837,
+      "vcfMs": 1.744250000003376,
       "vctFound": true,
       "vctPlies": 11,
-      "vctMs": 122.4526249999908,
-      "ratio": 47.64461845243654,
+      "vctMs": 81.65524999999616,
+      "ratio": 46.81396015470151,
       "gains": false
     },
     {
       "name": "活三 + 远处活二",
       "vcfFound": true,
       "vcfPlies": 3,
-      "vcfMs": 1.4363749999902211,
+      "vcfMs": 1.0122080000001006,
       "vctFound": true,
       "vctPlies": 3,
-      "vctMs": 728.7817910000012,
-      "ratio": 507.37571386647835,
+      "vctMs": 526.3923329999961,
+      "ratio": 520.0436402398952,
       "gains": false
     }
   ],
   "analysis": {
-    "fastUs": 2.459649636363875,
-    "pointUs": 9.313725409091354,
-    "ratio": 3.7866065440360557,
-    "suggestionsMs": 0.8198824999999488,
+    "fastUs": 1.7821875000002119,
+    "pointUs": 5.975244318182046,
+    "ratio": 3.352758516251144,
+    "suggestionsMs": 0.5338897900000302,
     "points": 44
   }
 }
