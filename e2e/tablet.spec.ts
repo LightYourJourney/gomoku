@@ -44,11 +44,14 @@ async function touchStarts(page: Page): Promise<number> {
  * （F-18：余量只有 1.04 倍，全量跑里红过 `toHaveCount(1)`）。
  * 桩掉 Worker 之后窗口根本不关，断言做多久都无所谓。
  *
- * 被测的性质（触摸落不到盘上）完全由 `aiThinking` 驱动，与引擎回得多快无关；
+ * 被测的性质（触摸落不到盘上）由棋盘的 `interactive` 驱动，与引擎回得多快无关。
+ * 注意那个判据是 `canHumanPlay` **整体**：AI 回合时 `game.current` 本来就不是人，
+ * 所以别把这条断言说成「`aiThinking` 那一项在把关」——实测把它删掉并不会红
+ * （`e2e/a11y.spec.ts` 里有一条同样措辞的更正）。
  * 真实 Worker 的往返由 `e2e/battle.spec.ts` 端到端覆盖。必须在 `page.goto`
  * **之前**调用——`appEngine` 是在模块导入时创建 Worker 的。
  */
-async function holdAiThinking(page: Page): Promise<void> {
+async function holdAiInThinking(page: Page): Promise<void> {
   await page.addInitScript(() => {
     class StubWorker {
       postMessage(): void {}
@@ -252,7 +255,7 @@ test.describe('触屏命中与误触', () => {
   })
 
   test('AI 思考期间触摸棋盘不落子，盘面不变', async ({ page }) => {
-    await holdAiThinking(page)
+    await holdAiInThinking(page)
     await page.goto('/')
     await page.getByRole('radio', { name: '人机对战' }).click()
     // 选最慢的一档不是为了让窗口更长（桩掉 Worker 之后它根本不关），而是万一

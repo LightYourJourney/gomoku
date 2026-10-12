@@ -51,7 +51,8 @@ export default defineConfig({
      * 有 6 条用例超时，全部是「真跑搜索」或「交互密集」的那类：
      * `difficulty.test.ts` 的两条深度接线（5.1s / 9.9s）、`Board.test.tsx` 的
      * grid 语义（10.4s）、`BattleScreen.test.tsx` 的胜音（6.1s）、
-     * `LearnScreen` 的两条翻页（5.9s / 6.8s）。同一份代码在空载机器上连跑多次
+     * `review.test.tsx` 的上一步/下一步禁用（5.9s）、`learn/screens.test.tsx` 的翻页（6.8s）。
+     * 同一份代码在空载机器上连跑多次
      * 805 条全绿。
      *
      * 假红的代价不只是那一次失败：**它会让人开始不把红灯当回事**，

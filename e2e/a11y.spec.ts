@@ -75,7 +75,7 @@ test.describe('播报区', () => {
  * （`tablet.spec.ts` 里有一份同样的桩，两处各自独立——见 FINDINGS 的 F-19：
  * 这一层的小重复不值得抽一个跨 spec 的共享文件。）
  */
-async function holdAiThinking(page: import('@playwright/test').Page): Promise<void> {
+async function holdAiInThinking(page: import('@playwright/test').Page): Promise<void> {
   await page.addInitScript(() => {
     class StubWorker {
       postMessage(): void {}
@@ -84,6 +84,31 @@ async function holdAiThinking(page: import('@playwright/test').Page): Promise<vo
     }
     Object.assign(globalThis, { Worker: StubWorker })
   })
+}
+
+/**
+ * 按 Tab 走进棋盘，直到焦点落在某一格上。
+ *
+ * 用**真键盘**而不是程序化 `.focus()`——这是使用说明里写给玩家的入口，也是 SVG
+ * 元素 Tab 可达性唯一会被验到的地方。
+ *
+ * 抽出来是因为它在本文件里出现了两次（思考期间那条、思考结束后那条），连魔数 `12`
+ * 和那句失败提示都是逐字重复的。`FINDINGS.md` §10.3 裁定过「e2e 之间的小重复不值得
+ * 抽跨 spec 的共享文件」——那是**跨文件**的取舍，同一个文件内部没有这个成本。
+ */
+async function tabIntoBoard(page: import('@playwright/test').Page): Promise<void> {
+  await expect(page.getByRole('gridcell', { name: 'H8 空位' })).toHaveCount(1)
+
+  let tabs = 0
+  while (tabs < 12) {
+    await page.keyboard.press('Tab')
+    tabs += 1
+    const onCell = await page.evaluate(
+      () => document.activeElement?.getAttribute('role') === 'gridcell',
+    )
+    if (onCell) break
+  }
+  expect(tabs, '按 Tab 应该能在 12 步之内进到棋盘里').toBeLessThan(12)
 }
 
 test.describe('键盘操作', () => {
@@ -121,26 +146,14 @@ test.describe('键盘操作', () => {
   })
 
   test('AI 思考期间整盘不再是 grid：键盘进不去，播报说出原因', async ({ page }) => {
-    await holdAiThinking(page)
+    await holdAiInThinking(page)
     await page.goto('/')
     await page.getByRole('radio', { name: '人机对战' }).click()
     // 选最慢的一档不是为了让窗口更长（桩掉 Worker 之后它根本不关），而是万一将来
     // 这个桩失效了（引擎换成别的机制创建 Worker），剩下的余量仍是最宽的那一档。
     await page.getByRole('radio', { name: '专家' }).click()
 
-    // 真按 Tab 进棋盘，而不是程序化 `.focus()`——这是使用说明里写给玩家的入口，
-    // 也是 SVG 元素 Tab 可达性唯一会被验到的地方。
-    await expect(page.getByRole('gridcell', { name: 'H8 空位' })).toHaveCount(1)
-    let tabs = 0
-    while (tabs < 12) {
-      await page.keyboard.press('Tab')
-      tabs += 1
-      const onCell = await page.evaluate(
-        () => document.activeElement?.getAttribute('role') === 'gridcell',
-      )
-      if (onCell) break
-    }
-    expect(tabs, '按 Tab 应该能在 12 步之内进到棋盘里').toBeLessThan(12)
+    await tabIntoBoard(page)
     expect(await page.evaluate(() => document.activeElement?.getAttribute('aria-label'))).toBe(
       'H8 空位',
     )
@@ -187,7 +200,7 @@ test.describe('键盘操作', () => {
      * 不是回归。见 `FINDINGS.md` 的 F-30：当初就是这条断言只留下一句
      * `Received: null`，机制查了很久。
      *
-     * `vite.config.ts` 已经把文档 / 用例 / 基准排除在 watcher 之外；
+     * `vite.config.ts` 已经把 `.md` 那一类排除在 watcher 之外（实测只有它会触发刷新）；
      * 这一句兜住剩下的情况（改源码）。
      */
     const pageId = await page.evaluate(() => performance.timeOrigin)
@@ -195,17 +208,7 @@ test.describe('键盘操作', () => {
     await page.getByRole('radio', { name: '专家' }).click()
 
     // 棋盘必须先**拿到过**焦点，否则「把焦点接回来」这件事无从谈起
-    await expect(page.getByRole('gridcell', { name: 'H8 空位' })).toHaveCount(1)
-    let tabs = 0
-    while (tabs < 12) {
-      await page.keyboard.press('Tab')
-      tabs += 1
-      const onCell = await page.evaluate(
-        () => document.activeElement?.getAttribute('role') === 'gridcell',
-      )
-      if (onCell) break
-    }
-    expect(tabs, '按 Tab 应该能在 12 步之内进到棋盘里').toBeLessThan(12)
+    await tabIntoBoard(page)
 
     await page.keyboard.press('Enter')
     await expect(page.getByTestId('stone-7-7')).toBeVisible()
