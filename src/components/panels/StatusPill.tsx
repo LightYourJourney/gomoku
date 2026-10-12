@@ -21,7 +21,7 @@ export function StatusPill({ status }: StatusPillProps) {
     <div
       data-testid="status-pill"
       className={cx(
-        'inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm font-medium transition-colors',
+        'inline-flex items-center gap-2 rounded-full border px-3 py-2 text-sm font-medium transition-colors',
         TONE_CLASS[status.tone],
       )}
     >

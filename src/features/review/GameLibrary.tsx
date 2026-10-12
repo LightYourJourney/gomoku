@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { BLACK } from '../../core/types'
 import type { GameRecord, GameRecordsStorage } from '../../persist/gameRecords'
+import { PageHeader } from '../../components/ui/PageHeader'
 import { Panel } from '../../components/ui/Panel'
 
 export interface GameLibraryProps {
@@ -42,16 +43,16 @@ export function GameLibrary({ storage, onOpen }: GameLibraryProps) {
   }, [storage])
 
   return (
-    <div className="mx-auto w-full max-w-3xl px-3 py-5 lg:px-6">
-      <header className="mb-4 flex items-baseline gap-3">
-        <h1 className="text-lg font-semibold text-fg">复盘</h1>
-        <p className="text-xs text-faint">保存下来的对局可以逐手回放，也可以让引擎帮你找亏损的手</p>
-      </header>
+    <>
+      <PageHeader
+        title="复盘"
+        description="保存下来的对局可以逐手回放，也可以让引擎帮你找亏损的手"
+      />
 
       {records === null ? (
         <p className="py-8 text-center text-sm text-faint">正在读取棋谱…</p>
       ) : records.length === 0 ? (
-        <Panel bodyClassName="p-8 text-center">
+        <Panel padding="roomy" bodyClassName="text-center">
           <p className="text-sm text-muted">还没有保存的对局</p>
           <p className="mt-2 text-xs text-faint">去下一局吧——对局结束后会自动存进这里</p>
         </Panel>
@@ -76,6 +77,6 @@ export function GameLibrary({ storage, onOpen }: GameLibraryProps) {
           ))}
         </ul>
       )}
-    </div>
+    </>
   )
 }

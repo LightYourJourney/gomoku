@@ -51,6 +51,22 @@
   --c-stone-white-b: #d5cfc4;
 
   --shadow-panel: 0 1px 2px rgb(28 25 23 / 0.06), 0 8px 24px -12px rgb(28 25 23 / 0.14);
+  /* 浮层比面板高一档：它压在整页之上，需要把下面的内容推开 */
+  --shadow-overlay: 0 2px 4px rgb(28 25 23 / 0.08), 0 24px 48px -16px rgb(28 25 23 / 0.28);
+
+  /*
+   * 动效令牌。
+   *
+   * 时长**按用途命名，不是按大小排的刻度**——全站一共四个动效，
+   * 造一套 100/200/300 的刻度只会得到三个没人用的值。
+   * 缓动值就是原先写死的 `ease-out`：本阶段**没有任何证据支持改手感**，
+   * 所以只把它收进令牌，一个数值都没动。
+   */
+  --dur-banner: 140ms;
+  --dur-panel: 160ms;
+  --dur-stone: 180ms;
+  --dur-pulse: 260ms;
+  --ease-entrance: cubic-bezier(0, 0, 0.2, 1);
 }
 
 .dark {
@@ -89,9 +105,27 @@
   --c-stone-white-b: #bdb7ad;
 
   --shadow-panel: 0 1px 2px rgb(0 0 0 / 0.4), 0 10px 28px -14px rgb(0 0 0 / 0.7);
+  /* 深色下阴影本来就看不出来，靠描边与更深的底色分层；这里只把范围放大一点 */
+  --shadow-overlay: 0 2px 6px rgb(0 0 0 / 0.5), 0 24px 56px -16px rgb(0 0 0 / 0.8);
 }
 
 @theme inline {
+  /*
+   * 字号等级。
+   *
+   * **只定义 Tailwind 默认值里没有的那两档**：20 / 18 / 16 / 14·20 / 12 这五级
+   * 与 `text-xl` / `text-lg` / `text-base` / `text-sm` / `text-xs` 逐位相同，
+   * 再起一套 `--text-page` 之类的别名只是把同一组数字写两遍。
+   * 缺的是「正文行高」与「微字」：
+   *   - `text-sm` 的行高是 1.25（20px），中文段落偏挤，正文要 22px；
+   *   - 11px 在 Tailwind 里没有对应档位，而品牌副标题需要它。
+   * 完整等级表见 docs/ui-redesign/DESIGN_SYSTEM.md §3.2。
+   */
+  --text-body: 0.875rem;
+  --text-body--line-height: 1.375rem;
+  --text-micro: 0.6875rem;
+  --text-micro--line-height: 1rem;
+
   --font-sans:
     -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB',
     'Microsoft YaHei', 'Noto Sans SC', sans-serif;
@@ -126,6 +160,7 @@
   --color-stone-white-b: var(--c-stone-white-b);
 
   --shadow-panel: var(--shadow-panel);
+  --shadow-overlay: var(--shadow-overlay);
 }
 
 @layer base {
@@ -218,21 +253,21 @@
 
 /* SVG 元素上的 transform 以自身为中心，scale 才是「从中心长出来」 */
 .motion-stone-drop {
-  animation: motion-stone-drop 180ms ease-out;
+  animation: motion-stone-drop var(--dur-stone) var(--ease-entrance);
   transform-box: fill-box;
   transform-origin: center;
 }
 
 .motion-last-move-pulse {
-  animation: motion-last-move-pulse 260ms ease-out;
+  animation: motion-last-move-pulse var(--dur-pulse) var(--ease-entrance);
 }
 
 .motion-panel-in {
-  animation: motion-panel-in 160ms ease-out;
+  animation: motion-panel-in var(--dur-panel) var(--ease-entrance);
 }
 
 .motion-banner-in {
-  animation: motion-banner-in 140ms ease-out;
+  animation: motion-banner-in var(--dur-banner) var(--ease-entrance);
 }
 
 /*

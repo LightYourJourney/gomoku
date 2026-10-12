@@ -3,6 +3,7 @@ import { formatPoint } from '../../lib/coords'
 import { cx } from '../../lib/cx'
 import { threatLabel } from '../../lib/shape-labels'
 import { HINT_BUDGET_MS } from '../../store/gameStore'
+import { Button } from '../ui/Button'
 import { Panel } from '../ui/Panel'
 
 const URGENCY_LABELS: Record<Urgency, { label: string; tone: string }> = {
@@ -40,27 +41,27 @@ function Candidate({ suggestion, rank }: { suggestion: MoveSuggestion; rank: num
   return (
     <li
       data-testid={`hint-candidate-${move.x}-${move.y}`}
-      className="flex items-center gap-2 rounded-lg bg-surface-2 px-2.5 py-2"
+      className="flex items-center gap-2 rounded-lg bg-surface-2 px-3 py-2"
     >
-      <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-accent text-[11px] font-bold text-accent-fg">
+      <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-accent text-xs font-bold text-accent-fg">
         {rank}
       </span>
       <span className="font-mono text-xs font-semibold tabular-nums text-fg">
         {formatPoint(move)}
       </span>
-      <span className="flex flex-wrap gap-1 text-[11px]">
+      <span className="flex flex-wrap gap-1 text-xs">
         {attack !== 'none' && (
-          <span className="rounded bg-accent-soft px-1.5 py-0.5 text-accent">
+          <span className="rounded bg-accent-soft px-2 py-0.5 text-accent">
             进攻 {threatLabel(attack)}
           </span>
         )}
         {defense !== 'none' && (
-          <span className="rounded bg-warn-soft px-1.5 py-0.5 text-warn">
+          <span className="rounded bg-warn-soft px-2 py-0.5 text-warn">
             防守 {threatLabel(defense)}
           </span>
         )}
       </span>
-      <span className="ml-auto font-mono text-[11px] tabular-nums text-faint">{score}</span>
+      <span className="ml-auto font-mono text-xs tabular-nums text-faint">{score}</span>
     </li>
   )
 }
@@ -86,26 +87,21 @@ export function HintPanel({
           type="button"
           onClick={onAsk}
           disabled={!canAsk || thinking}
-          className="rounded-lg bg-accent px-3 py-1.5 text-xs font-medium text-accent-fg transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-45"
+          className="rounded-lg bg-accent px-3 py-2 text-xs font-medium text-accent-fg transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-45"
         >
           求提示
         </button>
 
         {shown.length > 0 && (
-          <button
-            type="button"
-            onClick={onClear}
-            aria-label="收起提示"
-            className="text-xs font-medium text-muted underline underline-offset-2 transition hover:text-fg"
-          >
+          <Button variant="ghost" size="sm" onClick={onClear} aria-label="收起提示">
             收起
-          </button>
+          </Button>
         )}
 
         {badge !== null && shown.length > 0 && (
           <span
             data-testid="hint-urgency"
-            className={cx('ml-auto rounded-full px-2.5 py-1 text-[11px] font-medium', badge.tone)}
+            className={cx('ml-auto rounded-full px-3 py-1 text-xs font-medium', badge.tone)}
           >
             {badge.label}
           </span>
@@ -127,7 +123,7 @@ export function HintPanel({
           </p>
         )
       ) : (
-        <ul className="space-y-1.5">
+        <ul className="space-y-2">
           {shown.map((suggestion, index) => (
             <Candidate
               key={`${suggestion.move.x},${suggestion.move.y}`}
@@ -142,7 +138,7 @@ export function HintPanel({
         <p
           data-testid="hint-confidence"
           className={cx(
-            'rounded-lg px-3 py-2 text-[11px]',
+            'rounded-lg px-3 py-2 text-xs',
             confidence === 'heuristic' ? 'bg-warn-soft text-warn' : 'bg-surface-2 text-muted',
           )}
         >
@@ -150,7 +146,7 @@ export function HintPanel({
         </p>
       )}
 
-      <p className="border-t border-border pt-3 text-[11px] leading-relaxed text-faint">
+      <p className="border-t border-border pt-3 text-xs leading-relaxed text-faint">
         提示用 {HINT_BUDGET_MS} ms 的短预算单独算一遍，与 AI 正式走子的搜索互不占用。
         它只是建议，不保证最优；局面一变（落子、悔棋、重开）标记就会自动清空。
       </p>

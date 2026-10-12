@@ -84,7 +84,7 @@ export function StepView({ step, index, total }: StepViewProps) {
                 {frame} / {frameCount}
               </span>
             </div>
-            <p className="mt-2 text-[11px] text-faint">
+            <p className="mt-2 text-xs text-faint">
               一步一步看这盘棋怎么走完——手数顺序就是获胜的过程。
             </p>
           </Panel>

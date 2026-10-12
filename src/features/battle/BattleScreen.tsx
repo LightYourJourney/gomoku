@@ -163,12 +163,12 @@ export function BattleScreen({ sound: injectedSound }: BattleScreenProps = {}) {
         <BoardAnnouncer game={game} aiThinking={aiThinking} mode={mode} humanColor={humanColor} />
 
         <aside className="order-2 space-y-3 px-3 pb-4 lg:order-3 lg:overflow-y-auto lg:border-l lg:border-border lg:px-4 lg:py-4">
-          <Panel title="对局" bodyClassName="space-y-1 p-3.5">
+          <Panel title="对局" bodyClassName="space-y-1">
             <InfoRow label="模式">{mode === 'pve' ? '人机对战' : '本地双人'}</InfoRow>
             {mode === 'pve' && (
               <>
                 <InfoRow label="执子">
-                  <span className="inline-flex items-center gap-1.5">
+                  <span className="inline-flex items-center gap-2">
                     <StoneDot player={humanColor} size={11} />
                     {humanColor === BLACK ? '黑棋（先行）' : '白棋（后行）'}
                   </span>
@@ -212,7 +212,7 @@ export function BattleScreen({ sound: injectedSound }: BattleScreenProps = {}) {
             onClear={clearHint}
           />
 
-          <Panel title="棋谱" bodyClassName="p-2.5">
+          <Panel title="棋谱" padding="tight">
             <MoveList moves={game.moves} firstPlayer={game.firstPlayer} lastMove={game.lastMove} />
           </Panel>
         </aside>

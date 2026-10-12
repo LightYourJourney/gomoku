@@ -127,12 +127,18 @@ export function Modal({ open, title, onClose, children, footer, focusAfterClose 
         aria-label={title}
         tabIndex={-1}
         className={cx(
-          'w-full max-w-sm rounded-2xl border border-border bg-surface p-5 shadow-panel outline-none',
+          // 浮层用 shadow-overlay：它压在整页之上，比面板高一档
+          'w-full max-w-sm rounded-2xl border border-border bg-surface p-5 shadow-overlay outline-none',
           motionClass('panelIn'),
         )}
       >
-        <h2 className="text-base font-semibold text-fg">{title}</h2>
-        <div className="mt-3 text-sm text-muted">{children}</div>
+        <h2 className="text-lg font-semibold text-fg">{title}</h2>
+        <div className="mt-3 text-body text-muted">{children}</div>
+        {/*
+          按钮顺序：**次要操作在左、主操作在右**。
+          用 DOM 顺序表达，不用 `flex-row-reverse`——反排会让 Tab 顺序与视觉顺序相反，
+          键盘用户从右往左跳，看起来像界面错了。
+        */}
         {footer !== undefined && <div className="mt-5 flex gap-2">{footer}</div>}
       </div>
     </div>,

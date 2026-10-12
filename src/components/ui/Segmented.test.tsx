@@ -1,0 +1,169 @@
+import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { useState } from 'react'
+import { describe, expect, it, vi } from 'vitest'
+import { Segmented } from './Segmented'
+
+const OPTIONS = [
+  { value: 'system', label: '跟随系统' },
+  { value: 'light', label: '浅色' },
+  { value: 'dark', label: '深色' },
+] as const
+
+/** 受控组件：不接状态就没有可测的语义。 */
+function Harness({ onChange }: { onChange?: (value: string) => void } = {}) {
+  const [value, setValue] = useState<string>('light')
+  return (
+    <Segmented
+      label="主题"
+      value={value}
+      options={OPTIONS}
+      onChange={(next) => {
+        setValue(next)
+        onChange?.(next)
+      }}
+    />
+  )
+}
+
+function radios() {
+  return screen.getAllByRole('radio')
+}
+
+describe('Segmented 的键盘可达性', () => {
+  /*
+   * radiogroup 的既定模式：**整组只有一个 Tab 停靠点**，组内用方向键移动。
+   * 现状是每个选项各自 `tabIndex=0`——Tab 要按四次才能穿过去，而且方向键完全没反应。
+   * 这两条都是用户能直接感觉到的：读屏软件会念「单选按钮 1 / 3」，
+   * 然后按方向键什么都不会发生。
+   */
+
+  it('整组只有当前选中项是可 Tab 到的（roving tabindex）', () => {
+    render(<Harness />)
+
+    const stops = radios().filter((item) => item.getAttribute('tabindex') === '0')
+    expect(stops).toHaveLength(1)
+    expect(stops[0]).toHaveAccessibleName('浅色')
+  })
+
+  it('方向键把选中项移到相邻选项，并把焦点真的搬过去', async () => {
+    const user = userEvent.setup()
+    const onChange = vi.fn()
+    render(<Harness onChange={onChange} />)
+
+    await user.tab()
+    expect(radios()[1]).toHaveFocus()
+
+    await user.keyboard('{ArrowRight}')
+    expect(onChange).toHaveBeenLastCalledWith('dark')
+    // 只改选中而不搬焦点，键盘用户会在原地打转——读屏跟的是真实焦点
+    expect(radios()[2]).toHaveFocus()
+
+    await user.keyboard('{ArrowLeft}')
+    expect(onChange).toHaveBeenLastCalledWith('light')
+    expect(radios()[1]).toHaveFocus()
+  })
+
+  it('到两端即停，不绕回另一头', async () => {
+    const user = userEvent.setup()
+    const onChange = vi.fn()
+    render(<Harness onChange={onChange} />)
+
+    await user.tab()
+    // 已经在中间，先走到最右
+    await user.keyboard('{ArrowRight}')
+    expect(radios()[2]).toHaveFocus()
+
+    onChange.mockClear()
+    await user.keyboard('{ArrowRight}')
+    expect(onChange).not.toHaveBeenCalled()
+    expect(radios()[2]).toHaveFocus()
+  })
+
+  it('上下键与左右键等效（radiogroup 的两种惯例都要支持）', async () => {
+    const user = userEvent.setup()
+    const onChange = vi.fn()
+    render(<Harness onChange={onChange} />)
+
+    await user.tab()
+    await user.keyboard('{ArrowDown}')
+    expect(onChange).toHaveBeenLastCalledWith('dark')
+    await user.keyboard('{ArrowUp}')
+    expect(onChange).toHaveBeenLastCalledWith('light')
+  })
+
+  it('Home / End 跳到两端', async () => {
+    const user = userEvent.setup()
+    const onChange = vi.fn()
+    render(<Harness onChange={onChange} />)
+
+    await user.tab()
+    await user.keyboard('{Home}')
+    expect(onChange).toHaveBeenLastCalledWith('system')
+    expect(radios()[0]).toHaveFocus()
+
+    await user.keyboard('{End}')
+    expect(onChange).toHaveBeenLastCalledWith('dark')
+    expect(radios()[2]).toHaveFocus()
+  })
+})
+
+describe('Segmented 的语义', () => {
+  it('是一个带名字的 radiogroup，选项带 aria-checked', () => {
+    render(<Harness />)
+
+    expect(screen.getByRole('radiogroup', { name: '主题' })).toBeInTheDocument()
+    const items = radios()
+    expect(items.map((item) => item.getAttribute('aria-checked'))).toEqual(['false', 'true', 'false'])
+  })
+
+  it('点击仍然能换选项（键盘改动不影响既有路径）', async () => {
+    const user = userEvent.setup()
+    const onChange = vi.fn()
+    render(<Harness onChange={onChange} />)
+
+    await user.click(screen.getByRole('radio', { name: '深色' }))
+    expect(onChange).toHaveBeenLastCalledWith('dark')
+  })
+
+  it('禁用的选项会被跳过，方向键不停在它上面', async () => {
+    const user = userEvent.setup()
+    const onChange = vi.fn()
+
+    // 必须是**受控**的：选中不跟着变的话，下一次方向键还是从旧的选中项出发，
+    // 测的就不是「跳过禁用项」，而是「组件没被重新渲染」。
+    function KeyHarness() {
+      const [value, setValue] = useState('medium')
+      return (
+        <Segmented
+          label="难度"
+          value={value}
+          onChange={(next) => {
+            setValue(next)
+            onChange(next)
+          }}
+          options={[
+            { value: 'easy', label: '初级' },
+            { value: 'medium', label: '中级' },
+            { value: 'expert', label: '专家', disabled: true },
+          ]}
+        />
+      )
+    }
+
+    render(<KeyHarness />)
+
+    await user.click(screen.getByRole('radio', { name: '初级' }))
+    expect(onChange).toHaveBeenLastCalledWith('easy')
+
+    await user.keyboard('{ArrowRight}')
+    expect(onChange).toHaveBeenLastCalledWith('medium')
+    expect(screen.getByRole('radio', { name: '中级' })).toHaveFocus()
+
+    onChange.mockClear()
+    await user.keyboard('{ArrowRight}')
+    // 右边那个是禁用的，不能停上去
+    expect(onChange).not.toHaveBeenCalled()
+    expect(screen.getByRole('radio', { name: '中级' })).toHaveFocus()
+  })
+})

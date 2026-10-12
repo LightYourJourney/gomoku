@@ -56,7 +56,20 @@ components / features   ← 展示层，只做渲染与事件转发
 **`components/`** —— 展示。
 `ui/` 是与业务无关的原子组件；`board/` 是棋盘（`Board` + `BoardStage` 容器）；`panels/` 是业务面板；`AppErrorBoundary` 是顶层错误边界。面板全部通过 props 接收数据与回调，不直接读 store。
 
-**`features/`** —— 容器。`shell/` 是三个页面共用的顶栏（品牌 + 导航 + 主题）；`battle/` 是对战页，并承载 `status.ts` 这类纯推导逻辑；`learn/` 是课程列表与课程运行器；`puzzles/` 是残局挑战。
+**`features/`** —— 容器。`shell/` 是六个页面位置共用的外壳：`AppHeader`（品牌 + 导航 + 主题）与 `PageShell`（外壳、滚动策略、两种正文模式）；`battle/` 是对战页，并承载 `status.ts` 这类纯推导逻辑；`learn/` 是课程列表与课程运行器；`puzzles/` 是残局挑战。
+
+**`PageShell` 为什么住在 `features/shell/` 而不是 `components/ui/`**：它要渲染 `AppHeader`，而 `AppHeader` 读 store。放进 `components/` 就成了 `components → features`，与「依赖方向单向 `components → features → store`」相反。同层之间互相引用没有这个问题。
+
+**`PageShell` 的两个模式**（`reading` / `flush`）与**滚动策略**：
+
+| 模式 | 正文 | 谁在滚 | 用在 |
+| --- | --- | --- | --- |
+| `reading` | 居中限宽列 `max-w-3xl` | `<main>`（顶栏在它**外面**） | 教学 / 残局 / 复盘的列表页 |
+| `flush` | 自己管栅格（`lg` 起两栏：棋盘 + 344px 侧栏） | 页面自己 | 课程讲解、练习、残局详情、复盘回放 |
+
+**顶栏必须在滚动容器外面**，而不是靠 `position: sticky` 兜底：sticky 只在「最近的可滚动祖先」里生效，而列表页在 ≥1024 时滚的是内层 `main`、<1024 时滚的是文档——把顶栏放进滚动容器，这两种情况下它的行为就不一样了。放进外壳、与正文平级，两种宽度下都不用 sticky 也永远在。
+
+**对战页不用 `PageShell`**：它是棋盘优先布局，三栏的宽高自成一套，硬套一个「阅读列」的壳只会两边都不像。
 
 ## 关键数据流
 

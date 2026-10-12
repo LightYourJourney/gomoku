@@ -9,7 +9,7 @@ import { formatPoint } from '../../lib/coords'
 import { buildSummary, verdictLabel } from '../../analysis/analyze'
 import { Button } from '../../components/ui/Button'
 import { Panel } from '../../components/ui/Panel'
-import { AppHeader } from '../shell/AppHeader'
+import { PageShell } from '../shell/PageShell'
 import type { AiEngine } from '../../ai/engine'
 import { GameLibrary } from './GameLibrary'
 import { ReplayBoard } from './ReplayBoard'
@@ -65,28 +65,29 @@ export function ReviewScreen({ storage, engine, stores }: ReviewScreenProps) {
     setOpen(false)
   }
 
-  return (
-    <div className="flex min-h-0 flex-1 flex-col">
-      <AppHeader />
-      {open ? (
-        <>
+  if (open) {
+    return (
+      <PageShell
+        variant="flush"
+        toolbar={
           <div className="flex shrink-0 items-center gap-2 border-b border-border px-3 py-2">
             <Button onClick={closeRecord}>← 棋谱列表</Button>
           </div>
-          <main className="flex min-h-0 flex-1 flex-col">
-            <ReplayBoard
-              store={replay}
-              onExit={closeRecord}
-              extraPanel={<AnalysisPanel store={analysis} engine={engine} replay={replay} />}
-            />
-          </main>
-        </>
-      ) : (
-        <main className="min-h-0 flex-1 overflow-y-auto">
-          <GameLibrary storage={storage} onOpen={openRecord} />
-        </main>
-      )}
-    </div>
+        }
+      >
+        <ReplayBoard
+          store={replay}
+          onExit={closeRecord}
+          extraPanel={<AnalysisPanel store={analysis} engine={engine} replay={replay} />}
+        />
+      </PageShell>
+    )
+  }
+
+  return (
+    <PageShell>
+      <GameLibrary storage={storage} onOpen={openRecord} />
+    </PageShell>
   )
 }
 
@@ -127,9 +128,9 @@ function AnalysisPanel({ store, engine, replay }: AnalysisPanelProps) {
   const topLosses = buildSummary(verdicts).topLosses
 
   return (
-    <Panel title="引擎分析" bodyClassName="space-y-3 p-3.5">
+    <Panel title="引擎分析" bodyClassName="space-y-3">
       {/* 结论的出处必须写在最前面：换档位或预算，同一手的结论就可能不同 */}
-      <p data-testid="analysis-source" className="text-[11px] text-faint">
+      <p data-testid="analysis-source" className="text-xs text-faint">
         {DIFFICULTY_LABELS[difficulty]} · {budgetMs}ms · 引擎 {ENGINE_VERSION}
       </p>
       {!state.running && verdicts.length === 0 ? (
@@ -156,10 +157,10 @@ function AnalysisPanel({ store, engine, replay }: AnalysisPanelProps) {
                 <span className="text-muted">第 {verdict.moveIndex + 1} 手</span>
                 <span className="text-fg">{verdictLabel(verdict)}</span>
               </div>
-              <div className="mt-1 font-mono text-[11px] text-faint">
+              <div className="mt-1 font-mono text-xs text-faint">
                 实际 {formatPoint(verdict.move)} · 引擎推荐 {formatPoint(verdict.engineMove)}
               </div>
-              <div className="mt-0.5 text-[11px] text-faint">
+              <div className="mt-1 text-xs text-faint">
                 深度 {verdict.engineDepth} · 节点 {verdict.engineNodes} ·{' '}
                 {verdict.confidence === 'exact' ? '搜索完成' : '预算内未搜完（启发式）'}
               </div>

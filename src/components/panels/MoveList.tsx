@@ -53,7 +53,7 @@ export function MoveList({ moves, firstPlayer, lastMove }: MoveListProps) {
         {rows.map((row) => (
           <li
             key={row.turn}
-            className="grid grid-cols-[2rem_1fr_1fr] items-center gap-1.5 rounded-md px-1.5 py-1 odd:bg-surface-2/60"
+            className="grid grid-cols-[2rem_1fr_1fr] items-center gap-2 rounded-md px-2 py-1 odd:bg-surface-2/60"
           >
             <span className="text-right text-faint">{row.turn}</span>
             <MoveCell point={row.black} player={BLACK} highlighted={isSamePoint(row.black, lastMove)} />
@@ -80,7 +80,7 @@ function MoveCell({ point, player, highlighted }: MoveCellProps) {
     <span
       data-testid={`move-${point.x}-${point.y}`}
       className={cx(
-        'inline-flex items-center gap-1.5 rounded px-1 py-0.5 tabular-nums',
+        'inline-flex items-center gap-2 rounded px-1 py-0.5 tabular-nums',
         highlighted ? 'bg-danger-soft text-danger' : 'text-muted',
       )}
     >

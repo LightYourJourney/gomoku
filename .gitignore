@@ -25,6 +25,12 @@ playwright-report
 .playwright-mcp
 coverage
 
+# UI 探针的截图（312 张 PNG / 65MB）。
+# **量测 `measurements.json` 不在此列**——文档里引用的数字出自它，必须入库。
+# `before/` 那 156 张是不可再生的基线（只在旧代码上拍得出来），目前留在工作区；
+# 真要入库，显式 `git add -f` 即可。
+docs/ui-redesign/screenshots/**/*.png
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

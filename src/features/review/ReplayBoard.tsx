@@ -41,7 +41,8 @@ export function ReplayBoard({ store, onExit, extraPanel }: ReplayBoardProps) {
   const marks = position.moves.map((point) => ({ point, radius: 0.26 }))
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col lg:grid lg:grid-cols-[minmax(0,1fr)_344px] lg:grid-rows-[auto_minmax(0,1fr)]">
+    <>
+      {/* 两栏栅格由 `PageShell` 的 flush 正文提供，这里只出棋盘与侧栏两块 */}
       <BoardStage>
         <Board
           board={position.board}
@@ -58,7 +59,7 @@ export function ReplayBoard({ store, onExit, extraPanel }: ReplayBoardProps) {
       </BoardStage>
 
       <aside className="order-2 space-y-3 px-3 pb-4 lg:order-2 lg:overflow-y-auto lg:border-l lg:border-border lg:px-4 lg:py-4">
-        <Panel title="回放" bodyClassName="space-y-3 p-3.5">
+        <Panel title="回放" bodyClassName="space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-sm text-muted">
               <span data-testid="move-counter" className="font-mono tabular-nums">
@@ -90,14 +91,19 @@ export function ReplayBoard({ store, onExit, extraPanel }: ReplayBoardProps) {
           >
             {playing ? '暂停' : '自动播放'}
           </Button>
-          <Button block variant="primary" onClick={onExit}>
+          {/*
+            这一颗是**导航**，不是本页的主操作——同屏的主操作是右边分析面板的
+            「开始分析」。两个实心强调色按钮并排时，用户不知道该按哪个，
+            规范里那条「一屏最多一个 primary」说的就是这件事。
+          */}
+          <Button block onClick={onExit}>
             ← 回到棋谱列表
           </Button>
         </Panel>
 
         {extraPanel}
       </aside>
-    </div>
+    </>
   )
 }
 

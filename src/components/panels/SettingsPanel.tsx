@@ -25,10 +25,10 @@ export interface SettingsPanelProps {
 
 function Field({ label, hint, children }: { label: string; hint?: string; children: ReactNode }) {
   return (
-    <div className="space-y-1.5">
+    <div className="space-y-2">
       <div className="flex items-baseline justify-between gap-2">
         <span className="text-xs font-medium text-muted">{label}</span>
-        {hint !== undefined && <span className="text-[11px] text-faint">{hint}</span>}
+        {hint !== undefined && <span className="text-xs text-faint">{hint}</span>}
       </div>
       {children}
     </div>
@@ -53,7 +53,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
 
   return (
     <div className="space-y-3">
-      <Panel title="对战" bodyClassName="space-y-4 p-3.5">
+      <Panel title="对战" bodyClassName="space-y-4">
         <Field label="模式">
           <Segmented
             label="对战模式"
@@ -96,7 +96,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
         )}
       </Panel>
 
-      <Panel title="显示与声音" bodyClassName="space-y-1 p-2.5">
+      <Panel title="显示与声音" padding="tight" bodyClassName="space-y-1">
         <Field label="主题">
           <Segmented
             label="主题"

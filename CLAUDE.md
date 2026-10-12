@@ -15,6 +15,7 @@
 | 改搜索或评估 | [docs/AI_ENGINE.md](docs/AI_ENGINE.md) |
 | 改分层、接口、棋盘渲染 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) |
 | 看测试怎么跑、验证过什么 | [docs/TEST_REPORT.md](docs/TEST_REPORT.md) |
+| 改界面、视觉、响应式或交互反馈 | [docs/ui-redesign/DESIGN_SYSTEM.md](docs/ui-redesign/DESIGN_SYSTEM.md)（规范）＋ [FINDINGS.md](docs/ui-redesign/FINDINGS.md)（已知问题）＋ [PLAN.md](docs/ui-redesign/PLAN.md)（分阶段计划） |
 
 ## 最容易被忽略的三条
 

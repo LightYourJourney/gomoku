@@ -1,6 +1,7 @@
 import type { SearchReason } from '../../ai/types'
 import { cx } from '../../lib/cx'
 import type { AiInfo } from '../../store/gameStore'
+import { Button } from '../ui/Button'
 import { Panel } from '../ui/Panel'
 
 const REASON_LABELS: Record<SearchReason, string> = {
@@ -29,9 +30,9 @@ export interface AiPanelProps {
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg bg-surface-2 px-2.5 py-2">
-      <div className="text-[11px] text-faint">{label}</div>
-      <div className="mt-0.5 font-mono text-xs tabular-nums text-fg">{value}</div>
+    <div className="rounded-lg bg-surface-2 px-3 py-2">
+      <div className="text-xs text-faint">{label}</div>
+      <div className="mt-1 font-mono text-xs tabular-nums text-fg">{value}</div>
     </div>
   )
 }
@@ -53,24 +54,22 @@ export function AiPanel({ thinking, info, error, canRetry, onRetry, onDismissErr
           )}
         >
           <p className="break-words">{error ?? 'AI 还没落子，这一手需要重试。'}</p>
-          <div className="mt-1.5 flex items-center gap-3">
+          {/*
+            这两个是低权重操作，用 `ghost` 档。此前是裸 `<button>`＋下划线，
+            命中区只有 24×16——**低于 WCAG 2.5.8 的 24px 下限**，
+            而它们恰恰长在「出错了要恢复」这条路径上。
+            `ghost` 档自带内边距，命中区撑到 32×24 以上，外观几乎不变。
+          */}
+          <div className="mt-2 flex items-center gap-2">
             {canRetry && (
-              <button
-                type="button"
-                onClick={onRetry}
-                className="font-medium underline underline-offset-2"
-              >
+              <Button variant="ghost" size="sm" onClick={onRetry}>
                 重试
-              </button>
+              </Button>
             )}
             {error !== null && (
-              <button
-                type="button"
-                onClick={onDismissError}
-                className="font-medium underline underline-offset-2"
-              >
+              <Button variant="ghost" size="sm" onClick={onDismissError}>
                 知道了
-              </button>
+              </Button>
             )}
           </div>
         </div>
@@ -92,14 +91,14 @@ export function AiPanel({ thinking, info, error, canRetry, onRetry, onDismissErr
           </div>
 
           {info.confidence === 'heuristic' && (
-            <p className="rounded-lg bg-warn-soft px-3 py-2 text-[11px] text-warn">
+            <p className="rounded-lg bg-warn-soft px-3 py-2 text-xs text-warn">
               时间预算内未搜完，这一手是启发式建议，不保证最优。
             </p>
           )}
         </div>
       )}
 
-      <p className="mt-3 border-t border-border pt-3 text-[11px] leading-relaxed text-faint">
+      <p className="mt-3 border-t border-border pt-3 text-xs leading-relaxed text-faint">
         引擎跑在 Web Worker 里，用 Negamax + Alpha-Beta 迭代加深，配 Zobrist 置换表与
         杀手着法；中级以上还会先跑一遍算杀（连续冲四）。「搜索深度」是已经完整搜完的层数——
         时间预算不够时会退回上一层的结果，所以它不是固定的。

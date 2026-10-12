@@ -1,9 +1,9 @@
 import { useState } from 'react'
-import { Panel } from '../../components/ui/Panel'
-import { AppHeader } from '../shell/AppHeader'
+import { PageHeader } from '../../components/ui/PageHeader'
 import { cx } from '../../lib/cx'
 import { LESSONS } from '../../learn/lessons'
 import { useLearnStore } from '../../store/learnStore'
+import { PageShell } from '../shell/PageShell'
 import { LessonView } from './LessonView'
 
 /**
@@ -46,9 +46,6 @@ export function LearnScreen() {
 
     return (
       <LessonView
-        // 顶栏是应用外壳，进到课程里也要在——否则从练习页想去对战页，
-        // 得先退回列表，导航等于在详情页里消失了。
-        header={<AppHeader />}
         // 换课时必须重建：`step` 是组件内部状态，复用实例会让新一课直接
         // 停在上一课翻到的页码（从练习页切过去就是直接跳到练习）。
         key={lesson.id}
@@ -67,26 +64,21 @@ export function LearnScreen() {
   const done = LESSONS.filter((entry) => isLessonDone(entry.id)).length
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
-      <AppHeader />
-
-      <main className="mx-auto w-full max-w-3xl px-3 py-5 lg:px-6">
-        <header className="mb-4 flex items-baseline gap-3">
-          <h1 className="text-lg font-semibold text-fg">互动教学</h1>
-          {/* 进度还没读出来时不要断言「已完成 0 节」——那是在说一件还不知道的事 */}
-          {loaded && (
-            <span data-testid="learn-progress" className="text-xs text-faint">
+    <PageShell>
+      <PageHeader
+        title="互动教学"
+        /* 进度还没读出来时不要断言「已完成 0 节」——那是在说一件还不知道的事 */
+        meta={
+          loaded ? (
+            <span data-testid="learn-progress">
               已完成 {done} / {LESSONS.length} 节
             </span>
-          )}
-        </header>
+          ) : undefined
+        }
+        description="八节课从规则讲到做杀，每节都有一页页的棋盘图解和一道练习。练习的判定看的是棋型而不是固定答案——同一个目标，往往不止一种走法。"
+      />
 
-        <p className="mb-4 text-sm leading-relaxed text-muted">
-          八节课从规则讲到做杀，每节都有一页页的棋盘图解和一道练习。
-          练习的判定看的是棋型而不是固定答案——同一个目标，往往不止一种走法。
-        </p>
-
-        <ol className="space-y-2">
+      <ol className="space-y-2">
           {LESSONS.map((entry, index) => {
             const finished = isLessonDone(entry.id)
 
@@ -98,7 +90,7 @@ export function LearnScreen() {
                   data-testid={`lesson-${entry.id}`}
                   data-done={finished}
                   className={cx(
-                    'flex w-full items-center gap-3 rounded-xl border px-3.5 py-3 text-left transition',
+                    'flex w-full items-center gap-3 rounded-xl border px-3 py-3 text-left transition',
                     finished
                       ? 'border-good/40 bg-good-soft'
                       : 'border-border bg-surface hover:border-border-strong',
@@ -107,7 +99,7 @@ export function LearnScreen() {
                   <span
                     aria-hidden="true"
                     className={cx(
-                      'grid h-6 w-6 shrink-0 place-items-center rounded-full text-[11px] font-bold',
+                      'grid h-6 w-6 shrink-0 place-items-center rounded-full text-xs font-bold',
                       finished ? 'bg-good text-accent-fg' : 'bg-surface-2 text-muted',
                     )}
                   >
@@ -124,13 +116,15 @@ export function LearnScreen() {
           })}
         </ol>
 
-        <Panel title="学完之后" className="mt-4" bodyClassName="p-3.5">
-          <p className="text-xs leading-relaxed text-muted">
-            课程里的每一个概念，在「残局挑战」里都有对应的题目可以练。做题时判定同样
-            看棋型，所以想出别的走法一样算对。
-          </p>
-        </Panel>
-      </main>
-    </div>
+        {/*
+          这一段原先裹在一整块带标题的 Panel 里。一句话套一层卡片＋标题＋边框，
+          正是任务书 §四 说的「无意义的面板套面板」——它既不是独立区块，
+          也不需要标题，直接落成正文的一段更干净。
+        */}
+      <p className="mt-5 px-1 text-body text-muted">
+        课程里的每一个概念，在「残局挑战」里都有对应的题目可以练。做题时判定同样
+        看棋型，所以想出别的走法一样算对。
+      </p>
+    </PageShell>
   )
 }

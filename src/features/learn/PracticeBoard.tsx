@@ -131,7 +131,7 @@ export function PracticeBoard({ practice, onSolved, footer }: PracticeBoardProps
       <aside className="order-2 space-y-3 px-3 pb-4 lg:order-3 lg:overflow-y-auto lg:border-l lg:border-border lg:px-4 lg:py-4">
         <Panel title="练习">
           <p className="text-sm leading-relaxed text-fg">{practice.prompt}</p>
-          <p className="mt-2 flex items-center gap-1.5 text-xs text-faint">
+          <p className="mt-2 flex items-center gap-2 text-xs text-faint">
             <span
               aria-hidden="true"
               className="inline-block h-2.5 w-2.5 rounded-full"
@@ -175,7 +175,7 @@ export function PracticeBoard({ practice, onSolved, footer }: PracticeBoardProps
               {hintText}
             </p>
             {hintLevel >= HINT_LEVELS && (
-              <p className="mt-2 text-[11px] text-faint">
+              <p className="mt-2 text-xs text-faint">
                 棋盘上标出了其中一种解法。走上去试试——判定看的是棋型，别的走法同样算对。
               </p>
             )}

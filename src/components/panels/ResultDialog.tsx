@@ -40,16 +40,17 @@ export function ResultDialog({
       focusAfterClose={focusAfterClose}
       footer={
         <>
-          <Button variant="primary" block onClick={onRestart}>
-            再来一局
-          </Button>
+          {/* 次要在前、主操作在后：视觉上是「左次右主」，Tab 顺序也是从左到右 */}
           <Button block onClick={onClose}>
             看看棋盘
+          </Button>
+          <Button variant="primary" block onClick={onRestart}>
+            再来一局
           </Button>
         </>
       }
     >
-      <div className="flex items-center gap-2.5">
+      <div className="flex items-center gap-3">
         {status.player !== null && <StoneDot player={status.player} size={20} />}
         <span className="text-base font-semibold text-fg">{status.label}</span>
       </div>
