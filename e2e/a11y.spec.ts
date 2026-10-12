@@ -133,5 +133,12 @@ test.describe('键盘操作', () => {
     const before = await page.getByTestId(/^stone-/).count()
     await page.keyboard.press('Enter')
     await expect(page.getByTestId(/^stone-/)).toHaveCount(before)
+
+    // AI 走完，焦点要回到棋盘上。落子那一刻整盘不可聚焦、焦点会掉到 body，
+    // 如果没人把它接回来，键盘玩家得从页面最开头重新 Tab 一遍。
+    await expect(page.getByTestId('status-pill')).toHaveText('轮到你落子', { timeout: 10_000 })
+    await expect
+      .poll(() => page.evaluate(() => document.activeElement?.getAttribute('role') ?? null))
+      .toBe('gridcell')
   })
 })

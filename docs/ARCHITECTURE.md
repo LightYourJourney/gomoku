@@ -182,7 +182,10 @@ type PuzzleGoal =
 **焦点环是画出来的 SVG 元素，不是 CSS 的 `outline`**：SVG 里 `outline-width` 与 `outline-offset`
 按**用户坐标**解释（1 单位 = 一整格），`outline: 2px` 于是成了两个格子宽的边框，焦点框能横跨半个棋盘。
 `index.css` 里把 `svg [role='gridcell']:focus` 的 outline 关掉，改由 `Board` 画一枚 `focus-ring`
-（半径 0.56 格）。它只在棋盘**真的握着 DOM 焦点**时显示（`focus` / `blur` 监听挂在 `<svg>` 上一对，
+（半径 0.56 格）。这枚环是**双色**的——主色环 `--c-focus-ring` 套一圈反色晕 `--c-focus-halo`：
+它可能压在木纹两端或黑白棋子上，单色环总有一种底色会糊掉（浅色主题的深绿压在黑子上 2.25:1，
+暗色主题的浅绿压在白子上 2.4:1），判据是两者之中至少有一个达到 WCAG 1.4.11 的 3:1，
+由 `lib/contrast.test.tsx` 对四种底色逐一守住。它只在棋盘**真的握着 DOM 焦点**时显示（`focus` / `blur` 监听挂在 `<svg>` 上一对，
 不是每格一个——225 个处理器会把每次焦点变化都变成整盘重建）。
 
 **配色有对比度守卫**：`lib/contrast.test.ts` 直接读 `index.css` 的原文，按两套主题逐对核算

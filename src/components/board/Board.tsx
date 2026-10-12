@@ -133,22 +133,31 @@ export function Board({
    * 不搬它就等于键盘用户在原地打转。真正的 `focus()` 放在 effect 里：
    * 那时 React 已经把新的 tabIndex 落到 DOM 上了（组件测试里也是同步的，
    * 用 rAF 会和断言抢时间）。
-   *
-   * **挂载时不抢焦点**：页面加载就把焦点拽到棋盘上，对屏幕阅读器用户是
-   * 一种绑架——只有键盘真的移动过焦点（`movedByKeyboard`）才搬。
    */
-  const movedByKeyboardRef = useRef(false)
-
   const moveFocus = (point: Point): void => {
-    movedByKeyboardRef.current = true
     setFocused(point)
   }
 
+  /**
+   * 棋盘**曾经**拿到过 DOM 焦点。
+   *
+   * 它只用来挡住「挂载时抢焦点」——页面一加载就把焦点拽到棋盘上，对读屏用户
+   * 是一种绑架。除此之外不该拿它当条件：早先记的是「键盘动过焦点」（只在方向键
+   * 路径置位），于是**只用 Tab 进盘、按回车落子**这条路在落子后焦点掉到 body
+   * 就再没回来（真浏览器里复现过），键盘玩家要再落一手得从页面最开头重新 Tab。
+   * 记「棋盘拿到过焦点」就没有这个缺口：Tab 进盘同样算。
+   */
+  const hasEverFocusedRef = useRef(false)
+
   useEffect(() => {
-    if (!interactive || !movedByKeyboardRef.current) return
+    if (hasFocus) hasEverFocusedRef.current = true
+  }, [hasFocus])
+
+  useEffect(() => {
+    if (!interactive || !hasEverFocusedRef.current) return
     // 只在焦点还留在棋盘上、或已经掉到 body 时才接管。轮到 AI 时整盘不可聚焦，
-    // 焦点会掉到 body；但玩家也可能趁这段时间 Tab 到「悔棋」上——
-    // 那时把焦点抢回棋盘是帮倒忙。
+    // 焦点会掉到 body，这时必须把它接回来；但玩家也可能趁这段时间 Tab 到
+    // 「悔棋」上——那时把焦点抢回棋盘是帮倒忙。
     const active = document.activeElement
     const unclaimed =
       active === null ||
@@ -200,16 +209,29 @@ export function Board({
    * 只有截图看得见）。自己画一枚环，单位就是棋盘自己的坐标系，多大就是多大。
    */
   const focusRing = interactive && hasFocus ? (
-    <circle
-      data-testid="focus-ring"
-      cx={focused.x}
-      cy={focused.y}
-      r={0.56}
-      fill="none"
-      stroke="var(--c-accent)"
-      strokeWidth={0.07}
-      pointerEvents="none"
-    />
+    // 主色环 + 反色晕：它可能压在木纹两端或黑白棋子上，单色环总有一种底色
+    // 会糊掉（浅色主题的深绿压在黑子上 2.25，暗色主题的浅绿压在白子上 2.4）。
+    // 判据是两者之中至少有一个对当前底色有 3:1，见 lib/contrast.test.tsx。
+    <g pointerEvents="none">
+      <circle
+        // testid 挂最外圈的晕上：它是环的最外沿，量尺寸量的就是它
+        data-testid="focus-ring"
+        cx={focused.x}
+        cy={focused.y}
+        r={0.56}
+        fill="none"
+        stroke="var(--c-focus-halo)"
+        strokeWidth={0.16}
+      />
+      <circle
+        cx={focused.x}
+        cy={focused.y}
+        r={0.56}
+        fill="none"
+        stroke="var(--c-focus-ring)"
+        strokeWidth={0.08}
+      />
+    </g>
   ) : null
 
   /** 一格的可读名：坐标 + 状态。键盘用户靠它知道自己在哪、这一格有什么。 */

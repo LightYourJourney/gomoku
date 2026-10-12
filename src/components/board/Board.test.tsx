@@ -375,6 +375,22 @@ describe('Board —— 键盘与 grid 语义', () => {
     expect(document.activeElement).toHaveAccessibleName('I8 空位')
   })
 
+  it('Home 与 End 跳到本行两端', () => {
+    // 这两个键是实现里就有、使用说明也写了，但一直没人测——终审点出来的。
+    setup({ interactive: true })
+
+    const cell = screen.getByRole('gridcell', { name: 'H8 空位' })
+    cell.focus()
+
+    fireEvent.keyDown(cell, { key: 'End' })
+    expect(document.activeElement).toHaveAccessibleName('O8 空位')
+    expect(screen.getByTestId('focus-ring')).toHaveAttribute('cx', '14')
+
+    fireEvent.keyDown(document.activeElement!, { key: 'Home' })
+    expect(document.activeElement).toHaveAccessibleName('A8 空位')
+    expect(screen.getByTestId('focus-ring')).toHaveAttribute('cx', '0')
+  })
+
   it('边界处停住，不绕回另一头', () => {
     setup({ interactive: true, board: boardFromLines(['B..............']) })
 
@@ -470,6 +486,23 @@ describe('Board —— 键盘与 grid 语义', () => {
     renderBoard(rerender, true)
 
     expect(document.activeElement).toHaveAccessibleName('I8 空位')
+  })
+
+  it('只用 Tab 进盘、按回车落子，AI 走完焦点要回到棋盘上', () => {
+    // 真浏览器里复现过的失效：Tab 进盘不会置位「键盘动过焦点」那个标记，
+    // 于是落子后整盘不可聚焦、焦点掉到 body，AI 走完也不还回来——
+    // 键盘玩家要再落一手得从页面最开头重新 Tab。
+    const { rerender } = setup({ interactive: true })
+
+    const cell = screen.getByRole('gridcell', { name: 'H8 空位' })
+    fireEvent.focusIn(cell) // Tab 进来：有焦点，但没有走 moveFocus
+    fireEvent.keyDown(cell, { key: 'Enter' })
+
+    renderBoard(rerender, false) // 轮到 AI，整盘不可聚焦
+    ;(document.activeElement as HTMLElement | null)?.blur() // 焦点掉到 body
+    renderBoard(rerender, true) // AI 走完
+
+    expect(document.activeElement).toHaveAccessibleName('H8 空位')
   })
 
   it('思考期间用户把焦点挪走，结束后不抢回来', () => {

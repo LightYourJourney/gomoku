@@ -38,6 +38,13 @@
   --c-grid: rgb(72 47 18 / 0.55);
   --c-star: rgb(58 36 12 / 0.85);
 
+  /*
+   * 焦点环（棋盘上自绘的那枚）。它可能压在木纹两端或黑白棋子上，单色做不到
+   * 通吃，所以是「主色环 + 反色晕」两圈：判据是两者之中至少一个有 3:1。
+   */
+  --c-focus-ring: #215349;
+  --c-focus-halo: #ffffff;
+
   --c-stone-black-a: #5c5c63;
   --c-stone-black-b: #0b0b0d;
   --c-stone-white-a: #ffffff;
@@ -72,6 +79,9 @@
   --c-board-edge: #4d4034;
   --c-grid: rgb(255 226 178 / 0.3);
   --c-star: rgb(255 226 178 / 0.6);
+
+  --c-focus-ring: #52b39c;
+  --c-focus-halo: #0b0b0d;
 
   --c-stone-black-a: #4a4a52;
   --c-stone-black-b: #050506;

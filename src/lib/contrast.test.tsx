@@ -44,6 +44,8 @@ const PAIRS: ReadonlyArray<readonly [string, string]> = [
   ['--c-accent', '--c-accent-soft'],
   ['--c-accent', '--c-bg'],
   ['--c-accent-fg', '--c-accent'],
+  ['--c-accent-fg', '--c-good'],
+  ['--c-bg', '--c-fg'],
   ['--c-danger', '--c-danger-soft'],
   ['--c-danger', '--c-surface'],
   ['--c-good', '--c-good-soft'],
@@ -101,6 +103,25 @@ describe.each(Object.entries(TOKENS))('%s 主题的对比度', (_name, selector)
   })
 })
 
+/**
+ * 非文字组件的对比度（WCAG 1.4.11，阈值 3:1）。
+ *
+ * 焦点环是**唯一的**焦点指示——同一个提交把 gridcell 的 `outline` 关掉了
+ * （SVG 里 outline 按用户坐标算，会画出半个棋盘大的框），所以它必须自己达标。
+ *
+ * 它可能压在四种底色上：木纹的亮端与暗端、黑子、白子。单色环做不到通吃
+ * （浅色主题的深色环压在黑子上只有 2.25，暗色主题的浅色环压在白子上只有 2.4），
+ * 所以画成一圈主色 + 一圈反色晕；判据是**两者之中至少有一个** ≥3:1。
+ */
+const RING_BACKGROUNDS = [
+  '--c-board-a',
+  '--c-board-b',
+  '--c-stone-black-b',
+  '--c-stone-white-a',
+] as const
+
+const MIN_NON_TEXT_RATIO = 3
+
 /** 类名 → CSS 令牌。用法层靠它把「元素上写了什么」翻译成「实际是什么颜色」。 */
 const SURFACE_CLASSES: Readonly<Record<string, string>> = {
   'bg-bg': '--c-bg',
@@ -110,9 +131,15 @@ const SURFACE_CLASSES: Readonly<Record<string, string>> = {
   'bg-danger-soft': '--c-danger-soft',
   'bg-accent-soft': '--c-accent-soft',
   'bg-warn-soft': '--c-warn-soft',
+  // 实心底（主按钮、完成徽标、结果药丸）
+  'bg-accent': '--c-accent',
+  'bg-good': '--c-good',
+  'bg-fg': '--c-fg',
 }
 
 const TEXT_CLASSES: Readonly<Record<string, string>> = {
+  'text-accent-fg': '--c-accent-fg',
+  'text-bg': '--c-bg',
   'text-fg': '--c-fg',
   'text-muted': '--c-muted',
   'text-faint': '--c-faint',
@@ -126,9 +153,15 @@ function classesOf(element: Element): string[] {
   return (element.getAttribute('class') ?? '').split(/\s+/)
 }
 
-/** 这个元素压在哪块底色上：最近的一个带背景类名的祖先，都没有就是页面底色。 */
+/**
+ * 这个元素压在哪块底色上：**先看自己**，再往上找最近的带背景类名的祖先，
+ * 都没有就是页面底色。
+ *
+ * 「先看自己」不能省：`bg-good text-accent-fg` 这种自带底色的元素，
+ * 只看祖先会把父卡的浅底算成它的底色，判出一个根本不存在的问题。
+ */
 function backgroundToken(element: Element): string {
-  let node: Element | null = element.parentElement
+  let node: Element | null = element
   while (node !== null) {
     const found = classesOf(node).find((name) => name in SURFACE_CLASSES)
     if (found !== undefined) return SURFACE_CLASSES[found]!
@@ -159,6 +192,50 @@ function contrastProblems(container: HTMLElement, theme: keyof typeof TOKENS): s
   }
   return problems
 }
+
+describe.each(Object.entries(TOKENS))('非文字：%s 主题的焦点环', (_name, selector) => {
+  const tokens = readTokens(selector)
+
+  it.each(RING_BACKGROUNDS)('压在 %s 上时，环或它的晕至少有 3:1', (bg) => {
+    const ring = tokens.get('--c-focus-ring')!
+    const halo = tokens.get('--c-focus-halo')!
+    const background = tokens.get(bg)!
+
+    const best = Math.max(contrast(ring, background), contrast(halo, background))
+    expect(Number(best.toFixed(2))).toBeGreaterThanOrEqual(MIN_NON_TEXT_RATIO)
+  })
+})
+
+describe('用法层：源码里的组合都要登记在案', () => {
+  it('没有未登记的「文字令牌 + 背景令牌」组合', () => {
+    // 用法层的 DOM 走查只覆盖它渲染到的那几页；这条扫全部 tsx 源码，
+    // 保证**任何新加的组合**都必须先写进 PAIRS（写进去就得核算对比度），
+    // 不会因为「那页没被渲染到」而漏过去。
+    const sources = import.meta.glob('../**/*.tsx', {
+      query: '?raw',
+      import: 'default',
+      eager: true,
+    }) as Record<string, string>
+
+    const registered = new Set(PAIRS.map(([fg, bg]) => `${fg}|${bg}`))
+    const unregistered = new Set<string>()
+
+    for (const [file, source] of Object.entries(sources)) {
+      if (file.includes('.test.')) continue
+      for (const match of source.matchAll(/'([^']*)'/g)) {
+        const classes = match[1]!.split(/\s+/)
+        const fg = classes.find((name) => name in TEXT_CLASSES)
+        const bg = classes.find((name) => name in SURFACE_CLASSES)
+        if (fg === undefined || bg === undefined) continue
+
+        const key = `${TEXT_CLASSES[fg]!}|${SURFACE_CLASSES[bg]!}`
+        if (!registered.has(key)) unregistered.add(`${key}（${file.split('/').pop()} 的 ${fg} + ${bg}）`)
+      }
+    }
+
+    expect([...unregistered]).toEqual([])
+  })
+})
 
 describe.each(['light', 'dark'] as const)('用法层：%s 主题下渲染出来的文字', (theme) => {
   // 组件读的是 CSS 变量在 <html> 上的类，这里对应地切换
