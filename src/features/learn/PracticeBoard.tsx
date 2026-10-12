@@ -60,18 +60,49 @@ export function PracticeBoard({ practice, onSolved, footer }: PracticeBoardProps
     setHintLevel((level) => Math.min(level + 1, HINT_LEVELS))
   }
 
+  /**
+   * 已经为**哪一道题**回调过 `onSolved`。
+   *
+   * 这道闸门不能少：`onSolved` 由父组件传入，父组件每次渲染都可能给出新的函数
+   * 引用，effect 于是反复执行；就算 store 那边幂等，每次 setState 都会让父组件
+   * 再渲染一次，两边合起来就是一个无限循环。
+   *
+   * 存的是 `practice` 而不是布尔值：换题时它自然对不上，**不需要显式复位**，
+   * 也就不会出现在渲染期写 ref 这种违反 React 约定的写法。
+   */
+  const notifiedFor = useRef<unknown>(null)
+
   // 判定通过时通知外面。放 effect 而不是渲染期间直接调：渲染中触发父组件
   // setState 会让 React 报警。
-  //
-  // `reported` 这道闸门不能少：`onSolved` 由父组件传入，父组件每次渲染都可能
-  // 给出一个新的函数引用，effect 于是反复执行。就算 store 那边是幂等的，
-  // 每次 setState 都会让父组件再渲染一次，两边合起来就是一个无限循环。
-  const reported = useRef(false)
   useEffect(() => {
-    if (!solved || reported.current) return
-    reported.current = true
+    if (!solved || notifiedFor.current === practice) return
+    notifiedFor.current = practice
     onSolved()
-  }, [solved, onSolved])
+  }, [solved, practice, onSolved])
+
+  /**
+   * 换题（`practice` 换了）时把这一题的状态清干净。
+   *
+   * `attempt` / `hintLevel` 都是**上一题的**状态：不复位的话，上一题的判定结果
+   * 会继续挂在反馈条上。（`notifiedFor` 不用管——它存的是题目本身，换题后
+   * 天然对不上。）
+   *
+   * **渲染期间调整，不放进 effect**：effect 里 setState 会多跑一轮渲染，
+   * 而那一帧看到的还是上一题的结果。React 给「props 变了要调 state」这个场景
+   * 的写法就是渲染期调整，本仓另有两处同样写法（`BattleScreen.tsx` 的
+   * seenStatus、`LearnScreen.tsx` 的 restored）。
+   *
+   * 两个调用点目前都靠外层换 `key` 强制重建组件，所以这段在生产路径上不会走到
+   * （`LessonView.tsx` 用 `key={lesson.id}`、`PuzzleScreen.tsx` 用
+   * `key={puzzle.id}:{round}`）。但那是**调用方的写法**，不该是组件正确性的前提——
+   * 组件测试里直接用新 `practice` 重渲染就走到这里，见 `PracticeBoard.test.tsx`。
+   */
+  const [seenPractice, setSeenPractice] = useState(practice)
+  if (practice !== seenPractice) {
+    setSeenPractice(practice)
+    setAttempt(null)
+    setHintLevel(0)
+  }
 
   const hintText =
     hintLevel === 0

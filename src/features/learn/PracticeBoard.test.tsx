@@ -165,3 +165,83 @@ describe('PracticeBoard —— 三级提示', () => {
     expect(screen.queryByTestId('feedback')).not.toBeInTheDocument()
   })
 })
+
+/**
+ * 另一道题：黑棋在**竖线**上四连（x=7、y=3..6），成五点是 (7,2) 与 (7,7)。
+ * 与 `WIN_IN_ONE` 的成五点完全不重合，而且 (7,7) 在 `WIN_IN_ONE` 的盘面上
+ * 是一颗**已有的黑子**——两道题互换时不会互相蒙对。
+ */
+const VERTICAL_FOUR: Practice = {
+  prompt: '竖线上补满五子。',
+  board: {
+    lines: [
+      '...............',
+      '...............',
+      '...............',
+      '.......B.......',
+      '.......B.......',
+      '.......B.......',
+      '.......B.......',
+      '...............',
+      '...............',
+      '...............',
+      '...............',
+      '...............',
+      '...............',
+      '...............',
+      '...............',
+    ],
+  },
+  player: 1,
+  goal: { kind: 'win' },
+  hints: ['看这一列。', '上方那一格。'],
+  solution: '在四子的任意一端补子。',
+}
+
+/**
+ * 换题时**组件自己**必须复位，不能把正确性寄托在调用方换 `key` 上。
+ *
+ * 两个生产调用点（`LessonView` / `PuzzleScreen`）目前都靠 `key` 强制重建，
+ * 所以这条路径在生产里走不到——但那是调用方的写法，不是组件的保证。
+ * 这里直接用新 `practice` 重渲染（**不换 key**）来走通它。
+ */
+describe('PracticeBoard —— 换题时复位', () => {
+  it('换题清掉上一题的判定结果', () => {
+    const onSolved = vi.fn()
+    const { rerender } = render(<PracticeBoard practice={WIN_IN_ONE} onSolved={onSolved} />)
+
+    play(0, 0) // 在上一题上做错一次，制造一条反馈
+    expect(screen.getByTestId('feedback')).toHaveAttribute('data-ok', 'false')
+
+    rerender(<PracticeBoard practice={VERTICAL_FOUR} onSolved={onSolved} />)
+
+    expect(screen.queryByTestId('feedback')).not.toBeInTheDocument()
+  })
+
+  it('换题清掉上一题的提示级数', () => {
+    const onSolved = vi.fn()
+    const { rerender } = render(<PracticeBoard practice={WIN_IN_ONE} onSolved={onSolved} />)
+
+    fireEvent.click(screen.getByRole('button', { name: /要提示/ }))
+    expect(screen.getByTestId('hint')).toBeInTheDocument()
+
+    rerender(<PracticeBoard practice={VERTICAL_FOUR} onSolved={onSolved} />)
+
+    expect(screen.queryByTestId('hint')).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /要提示/ })).toBeInTheDocument()
+  })
+
+  it('上一题做对之后换题，新题做对仍然会回调 onSolved', () => {
+    const onSolved = vi.fn()
+    const { rerender } = render(<PracticeBoard practice={WIN_IN_ONE} onSolved={onSolved} />)
+
+    play(4, 7) // 上一题的成五点之一
+    expect(onSolved).toHaveBeenCalledTimes(1)
+
+    rerender(<PracticeBoard practice={VERTICAL_FOUR} onSolved={onSolved} />)
+    play(7, 7) // 新题的成五点之一
+
+    // `reported` 这道闸门如果没被复位，这里会停在 1——新题做对了却不上报
+    expect(onSolved).toHaveBeenCalledTimes(2)
+  })
+})
