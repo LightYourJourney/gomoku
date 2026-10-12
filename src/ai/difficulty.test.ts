@@ -179,3 +179,19 @@ describe('深度参数真的接到了搜索上', () => {
     }
   })
 })
+
+describe('难度参数的取值不变量', () => {
+  /**
+   * 取胜链的最后一手必定是攻方，所以可达的手数只能是奇数——
+   * `maxPlies = 6` 与 `5` 能搜到的杀完全相同（实测：60 个随机局面 × 双方 × 三组对照，
+   * 逐组 `plies` 相等，见 `docs/AI_ENGINE.md`）。
+   * 这三个值原先取的是 6 / 10 / 14，名字读起来像「六手 / 十手 / 十四手」，
+   * 实际最多只能搜到五手 / 九手 / 十三手。
+   */
+  it('threatPlies 只能是 0（关闭）或奇数', () => {
+    for (const difficulty of DIFFICULTIES) {
+      const plies = DIFFICULTY_PARAMS[difficulty].threatPlies
+      expect(plies === 0 || plies % 2 === 1, `${difficulty}.threatPlies = ${plies}`).toBe(true)
+    }
+  })
+})

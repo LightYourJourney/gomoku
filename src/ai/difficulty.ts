@@ -28,6 +28,11 @@ export interface DifficultyParams {
  *
  * 置换表不进这张表——它只影响速度不影响棋力，对低档关掉属于人为削弱。
  *
+ * **`threatPlies` 一律取奇数。** 取胜链的最后一手必定是攻方，所以可达的手数只能是奇数——
+ * `maxPlies = 6` 与 `5` 能搜到的杀完全相同。这三个值原先取的是 6 / 10 / 14，名字读起来
+ * 像是「六手 / 十手 / 十四手」，实际最多只能搜到五手 / 九手 / 十三手。改成奇数只是让
+ * 名字与事实一致，**行为逐位不变**（`difficulty.test.ts` 有一条测试钉住这个不变量）。
+ *
  * `threatThrees` 五档全是 false，也就是只用 VCF、不用 VCT。VCT 的实现与测试
  * 都在（见 threat.ts），但实测代价是 VCF 的 38–520 倍，而 VCF 在测过的每个
  * 局面上都给出了同样的结论，所以默认关闭。这是一处**有意的漏杀**，不是没做。
@@ -57,7 +62,7 @@ export const DIFFICULTY_PARAMS: Record<Difficulty, DifficultyParams> = {
     budgetMs: 1000,
     attack: 1,
     defense: 1,
-    threatPlies: 6,
+    threatPlies: 5,
     threatThrees: false,
   },
   hard: {
@@ -66,7 +71,7 @@ export const DIFFICULTY_PARAMS: Record<Difficulty, DifficultyParams> = {
     budgetMs: 1600,
     attack: 1,
     defense: 1,
-    threatPlies: 10,
+    threatPlies: 9,
     threatThrees: false,
   },
   expert: {
@@ -75,7 +80,7 @@ export const DIFFICULTY_PARAMS: Record<Difficulty, DifficultyParams> = {
     budgetMs: 2600,
     attack: 1,
     defense: 1,
-    threatPlies: 14,
+    threatPlies: 13,
     threatThrees: false,
   },
 }
