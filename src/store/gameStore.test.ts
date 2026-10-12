@@ -1142,3 +1142,44 @@ describe('终局后悔棋再终局：同一局只留一条棋谱', () => {
     expect(inputs[1]?.replacesSeq).toBe(1)
   })
 })
+
+describe('AI 返回非法着法', () => {
+  /**
+   * 这条路径的唯一价值就在出错时：引擎（或将来接的第二个着法来源）给出一个
+   * 落不下的点。store 必须**不动棋局**、复位思考态、并把话说明白——
+   * 尤其是**不能**留下一个 aiThinking=true 的卡死局面。
+   */
+  it('落在已占用的点上：棋局不变、思考态复位、错误如实写出来', async () => {
+    state().playHuman({ x: 7, y: 7 })
+    expect(engine.requests).toHaveLength(1)
+
+    engine.reply({ x: 7, y: 7 }) // AI 回了一个已经被玩家占住的点
+    await flush()
+
+    expect(state().game.moves).toEqual([{ x: 7, y: 7 }])
+    expect(state().game.status).toBe('playing')
+    expect(state().aiThinking).toBe(false)
+    expect(state().pendingRequestId).toBeNull()
+    expect(state().aiError).toBe('AI 返回了不合法的着法，已忽略')
+    // 没有着法就没有分析结果——不许留下上一次的
+    expect(state().aiInfo).toBeNull()
+  })
+
+  it('越界坐标同样被拒绝，且之后玩家可以重试', async () => {
+    state().playHuman({ x: 7, y: 7 })
+    engine.reply({ x: -1, y: 0 })
+    await flush()
+
+    expect(state().game.moves).toHaveLength(1)
+    expect(state().aiError).toBe('AI 返回了不合法的着法，已忽略')
+
+    // 卡住之后必须还能救回来：retryAiMove 重新发起一次，这次给个合法的
+    state().retryAiMove()
+    expect(engine.requests).toHaveLength(2)
+    engine.reply({ x: 0, y: 0 })
+    await flush()
+
+    expect(state().game.moves).toHaveLength(2)
+    expect(state().aiError).toBeNull()
+  })
+})

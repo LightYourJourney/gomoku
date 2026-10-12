@@ -134,3 +134,19 @@ describe('createAiEngine', () => {
     expect(() => engine.handleResponse(response(1))).not.toThrow()
   })
 })
+
+describe('createAiEngine —— Worker 报错的消息为空', () => {
+  /**
+   * `browserEngine.ts:21` 把 `event.message` 原样传进来，而 Worker **加载失败**
+   * （跨源脚本、MIME 不对、网络断）时 `ErrorEvent.message` 常常是空串。
+   * 空串不能当成「没有错误」——那会让界面显示一个空的错误框。
+   */
+  it('handleError 收到空串时兜底成一句能读的话', async () => {
+    const engine = createAiEngine(() => {})
+    const pending = engine.search(request(1))
+
+    engine.handleError('')
+
+    await expect(pending).rejects.toThrow('AI 引擎异常')
+  })
+})

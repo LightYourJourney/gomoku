@@ -4,7 +4,7 @@ import type { UseBoundStore, StoreApi } from 'zustand'
 import { BLACK, type Point } from '../../core/types'
 import { createReplayStore, REPLAY_STEP_MS, type ReplayStore } from '../../store/replayStore'
 import { createAnalysisStore } from '../../store/analysisStore'
-import { memoryGameRecords, type GameRecord } from '../../persist/gameRecords'
+import { memoryGameRecords, type GameRecord, type GameRecordsStorage } from '../../persist/gameRecords'
 import type { AiEngine } from '../../ai/engine'
 import { GameLibrary } from './GameLibrary'
 import { ReplayBoard } from './ReplayBoard'
@@ -310,3 +310,24 @@ function scriptedEngine(): AiEngine {
     dispose() {},
   }
 }
+
+describe('GameLibrary —— 读取失败', () => {
+  /**
+   * `GameLibrary.tsx:35-37` 在 `list()` reject 时退成空列表。
+   * 这里注入一个**一定会失败**的存储来钉住它——不能用 `memoryGameRecords()`，
+   * 它的 `list()` 恒 resolve，永远走不到这条分支。
+   */
+  const failingStorage: GameRecordsStorage = {
+    list: () => Promise.reject(new Error('棋谱库坏了')),
+    get: () => Promise.resolve(null),
+    put: () => Promise.reject(new Error('棋谱库坏了')),
+    delete: () => Promise.resolve(),
+  }
+
+  it('list() 失败时退成空库文案，不白屏也不一直转圈', async () => {
+    render(<GameLibrary storage={failingStorage} onOpen={vi.fn()} />)
+
+    expect(await screen.findByText('还没有保存的对局')).toBeInTheDocument()
+    expect(screen.queryByText('正在读取棋谱…')).not.toBeInTheDocument()
+  })
+})
