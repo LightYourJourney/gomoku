@@ -28,14 +28,22 @@ Phase D 只做**设计级影响分析**，不开发任何新功能。
 
 ### 1.2 未声明的债（本次新发现）
 
-| 债 | 位置 | 复利速度 | 详见 |
+> **本节是审计当时的快照，八条已全部了结**，保留它是为了看清「当时判断哪些值得记」：
+> F-03 / F-02 / F-12 / F-14 / F-15 / F-17 已偿还；F-16 **经复核是误报、已撤回**
+> （实测 oxlint 1.87 默认就开着 `react-hooks/exhaustive-deps`，见 `FINDINGS.md` §2）；
+> 文档矛盾那条也已消解（`ROADMAP.md:68` 已同步 `AI_ENGINE.md` 的更正）。
+>
+> **「位置」一列的行号是审计当时的**，代码改过之后不再指向原处——核对时以符号名为准，
+> 不要按数字找。下一节 §1.3 与 §2 是仍在案上的，那部分才会随代码更新。
+
+| 债 | 位置（审计当时） | 复利速度 | 详见 |
 | --- | --- | --- | --- |
 | **`gameRecords` 用 `request.onsuccess` 判定「已落库」** | `persist/gameRecords.ts:252-274,298-307` | **中**（一旦触发就是「界面说存了、刷新就没了」，属欺骗性失败） | F-03 |
 | **`Modal` 声明 `aria-modal` 却无焦点陷阱、无焦点还原** | `components/ui/Modal.tsx:14-27` | 慢 | F-02 |
-| **lint 未启用 `react-hooks/exhaustive-deps`** | `.oxlintrc.json` | **快**（每新增一个带 effect 的组件，人工维护依赖数组的机会就多一次） | F-16 |
+| ~~lint 未启用 `react-hooks/exhaustive-deps`~~ | ~~`.oxlintrc.json`~~ | — | ~~F-16~~ **已撤回（误报）** |
 | **`settingsStore` 的 `persist` 无版本、无校验** | `store/settingsStore.ts:15-27` | 慢 | F-12 |
 | **`ROADMAP.md:67` 与 `AI_ENGINE.md:281` 在同一个事实上互相矛盾** | 两份文档 | **中**（文档矛盾会让人不知道该信哪份，进而两份都不信） | FINDINGS §4 末 |
-| `threatPlies` 偶数档 ≡ 下面那个奇数档 | `ai/difficulty.ts:60,69,78` | 慢 | F-14 |
+| `threatPlies` 偶数档 ≡ 下面那个奇数档 | `ai/difficulty.ts:60,69,78`（现为 65/74/83） | 慢 | F-14 |
 | `isWinningPoint` / `analyzeFast` 对已占用点的隐式前置条件无文档无断言 | `ai/patterns.ts:91` | 慢 | F-15 |
 | `useGameStore.subscribe` 无 selector，任何 state 变化都写 localStorage | `store/useGameStore.ts:38-51` | **中**（手顺越长写得越多，且 `subscribe` 的触发频率只增不减） | F-17 |
 
