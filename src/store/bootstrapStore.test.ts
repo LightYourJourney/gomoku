@@ -99,3 +99,50 @@ describe('bootstrapStore', () => {
     expect(useGameStore.getState().game.moves).toHaveLength(0)
   })
 })
+
+
+describe('自动存档的写入频率', () => {
+  // 这个 describe 在 `describe('bootstrapStore')` 之外，拿不到它的 beforeEach
+  beforeEach(() => {
+    localStorage.clear()
+  })
+
+  /**
+   * `subscribe` 没有 selector，任何 state 变化都会把回调跑一遍——落子一手会连着
+   * 触发好几次（`aiThinking`、`aiInfo`、`recordSaveState`…），每次都
+   * `JSON.stringify` 整条手顺并**同步**写 localStorage。
+   *
+   * 存档里只有 game / mode / humanColor / difficulty 四项，所以这四项没变时
+   * 不该落盘。`game` 是不可变的，引用比较就够。
+   */
+  it('与存档无关的状态变化不重复写 localStorage', () => {
+    bootstrapStore() // 建立订阅（重复调用只是多挂一个，写入会被过滤掉）
+
+    // 先落一手，让存档真的变一次
+    useGameStore.getState().playHuman({ x: 0, y: 0 })
+
+    const spy = vi.spyOn(Storage.prototype, 'setItem')
+    try {
+      // 这些字段都不在存档里
+      useGameStore.setState({ aiThinking: true, aiInfo: null, recordSaveState: 'idle' })
+      expect(spy).not.toHaveBeenCalled()
+    } finally {
+      spy.mockRestore()
+    }
+  })
+
+  it('存档里的字段真的变了则照常落盘', () => {
+    bootstrapStore()
+
+    // 先把难度归到一个已知值（这一步本身会写一次，所以要放在 spy 之前）
+    useGameStore.getState().setDifficulty('easy')
+
+    const spy = vi.spyOn(Storage.prototype, 'setItem')
+    try {
+      useGameStore.getState().setDifficulty('expert')
+      expect(spy).toHaveBeenCalledTimes(1)
+    } finally {
+      spy.mockRestore()
+    }
+  })
+})

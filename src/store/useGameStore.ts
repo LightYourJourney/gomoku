@@ -1,8 +1,11 @@
 import { createBrowserAiEngine } from '../ai/browserEngine'
 import { opponentOf } from '../core/board'
+import type { GameState } from '../core/game'
+import type { Difficulty } from '../ai/types'
+import type { Player } from '../core/types'
 import { saveGameReplacing } from '../persist/gameRecords'
 import { loadSession, saveSession } from '../persist/storage'
-import { createGameStore } from './gameStore'
+import { createGameStore, type GameMode } from './gameStore'
 
 /**
  * 应用唯一的 AI 引擎实例。
@@ -27,6 +30,54 @@ export const useGameStore = createGameStore(appEngine, {
 })
 
 /**
+ * 上一次真正落盘的存档载荷。
+ *
+ * `subscribe` 没有 selector，任何 state 变化（`aiThinking`、`aiHint`、
+ * `recordSaveState`、`aiInfo`…）都会把回调跑一遍。落子一手会连着触发好几次，
+ * 每次都 `JSON.stringify` 整条手顺并**同步**写 localStorage。
+ *
+ * 存档里只有这四项，所以只在它们**真的**变了的时候才写——`game` 是不可变的，
+ * 引用比较就够。这既省掉了多余序列化，也省掉了 localStorage 的同步写。
+ */
+let lastSaved: {
+  game: GameState
+  mode: GameMode
+  humanColor: Player
+  difficulty: Difficulty
+} | null = null
+
+function persistSession(state: {
+  game: GameState
+  mode: GameMode
+  humanColor: Player
+  difficulty: Difficulty
+}): void {
+  const { game, mode, humanColor, difficulty } = state
+
+  if (
+    lastSaved !== null &&
+    lastSaved.game === game &&
+    lastSaved.mode === mode &&
+    lastSaved.humanColor === humanColor &&
+    lastSaved.difficulty === difficulty
+  ) {
+    return
+  }
+  lastSaved = { game, mode, humanColor, difficulty }
+
+  saveSession({
+    moves: game.moves,
+    firstPlayer: game.firstPlayer,
+    mode,
+    humanColor,
+    difficulty,
+    // 手顺能还原出胜负与和棋，唯独还原不出认输，所以由 winner 反推认输方。
+    resignedBy:
+      game.status === 'resigned' && game.winner !== null ? opponentOf(game.winner) : null,
+  })
+}
+
+/**
  * 应用启动时调用一次。
  *
  * 恢复上次对局要赶在 React 挂载之前：刷新时如果正轮到 AI，恢复动作会立刻发起新的
@@ -35,18 +86,5 @@ export const useGameStore = createGameStore(appEngine, {
 export function bootstrapStore(): void {
   useGameStore.getState().restore(loadSession())
 
-  useGameStore.subscribe((state) => {
-    const { game } = state
-
-    saveSession({
-      moves: game.moves,
-      firstPlayer: game.firstPlayer,
-      mode: state.mode,
-      humanColor: state.humanColor,
-      difficulty: state.difficulty,
-      // 手顺能还原出胜负与和棋，唯独还原不出认输，所以由 winner 反推认输方。
-      resignedBy:
-        game.status === 'resigned' && game.winner !== null ? opponentOf(game.winner) : null,
-    })
-  })
+  useGameStore.subscribe(persistSession)
 }
