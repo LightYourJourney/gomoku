@@ -221,9 +221,11 @@ export function createAnalysisStore(): UseBoundStore<StoreApi<AnalysisStore>> {
         .then(
           (response) => {
             // 三道闸门：属于当前这一次分析（run）、是当前在飞的那一个、
-            // 响应自带的手序号与局面版本对得上。任何一条不过就整体丢弃——
-            // **不许动 inflightIndex**：那是当前 run 的状态，
-            // 上一局的迟到响应没有资格改写它。
+            // 响应自带的手序号与局面版本对得上。
+            //
+            // **前两道**不过就整体丢弃，而且**不许动 `inflightIndex`**——那是当前
+            // run 的状态，上一局的迟到响应没有资格改写它。第三道**不在此列**，
+            // 理由见下：那一道判的不是「这一轮是不是我的」。
             if (run !== runId) return
             if (get().target === null || inflightIndex !== index) return
 
