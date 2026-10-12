@@ -1177,6 +1177,59 @@ describe('终局后悔棋再终局：同一局只留一条棋谱', () => {
     expect(inputs).toHaveLength(2)
     expect(inputs[1]?.replacesSeq).toBe(1)
   })
+
+  /**
+   * 上一条用例在两次终局之间 `await flush()` 了一次，也就是第一次入库**已经兑现**。
+   * 真正会出错的是「上一次写入还没回来，就又终局了一次」——那时 `recordedSeq`
+   * 还是 `null`（它只在 promise 兑现时才写），第二次就会拿到 `replacesSeq: null`，
+   * 而存储层的内容匹配又对不上（手顺不同），同一局留下两条。
+   */
+  it('上一次写入还没兑现就再次终局：第二次仍然替换同一条，不新增', async () => {
+    const inputs: Array<{ replacesSeq: number | null }> = []
+    // 用对象属性持有：直接写 `let releaseFirst: (() => void) | null = null` 再在闭包里赋值，
+    // TS 的控制流分析会把它窄化成 never（它看不见闭包被执行过）。
+    const gate: { release?: () => void } = {}
+    let seq = 0
+
+    const s = createGameStore(engine, {
+      onGameEnd: (input) => {
+        inputs.push({ replacesSeq: input.replacesSeq })
+        if (inputs.length === 1) {
+          // 第一次故意挂住，模拟「IndexedDB 的写入还没回来」
+          return new Promise<number>((resolve) => {
+            gate.release = () => resolve(++seq)
+          })
+        }
+        return Promise.resolve(++seq)
+      },
+    })
+
+    s.getState().setMode('pvp')
+    for (const x of [3, 4, 5, 6, 7]) {
+      s.getState().playHuman({ x, y: 7 })
+      if (x !== 7) s.getState().playHuman({ x, y: 9 })
+    }
+    expect(inputs).toHaveLength(1)
+    expect(inputs[0]?.replacesSeq).toBeNull()
+
+    // **不等第一次兑现**，直接悔棋再换个走法终局
+    s.getState().undoMove()
+    s.getState().playHuman({ x: 2, y: 7 })
+    s.getState().playHuman({ x: 2, y: 9 })
+    s.getState().playHuman({ x: 7, y: 9 })
+
+    // 第二次终局会**排在第一次后面**等它兑现，所以现在还没发生
+    expect(inputs).toHaveLength(1)
+
+    gate.release?.()
+    await flush()
+    await flush()
+
+    expect(inputs).toHaveLength(2)
+    // 关键：第二次拿到的是第一次存下的 seq，而不是 null
+    expect(inputs[1]?.replacesSeq).toBe(1)
+    expect(s.getState().recordedSeq).toBe(2)
+  })
 })
 
 describe('AI 返回非法着法', () => {

@@ -213,36 +213,84 @@ export function createGameStore(
   /**
    * 只在「进行中 → 终局」这一跃迁上回调。落子路径有三条（玩家、AI、认输），
    * 都汇到这里判定，避免各处各写一遍「是不是刚结束」。
+   *
+   * **入库是串行的，而且要带着配对链接。** 原来的写法从 `before.recordedSeq`
+   * 取「这一局上次存成的 seq」，而那个字段要等 promise 兑现才写——于是
+   * 「终局 → 悔棋 → 再终局」如果发生在上一次写入还没回来的时候，第二次拿到的
+   * `replacesSeq` 是 `null`，存储层的内容匹配又对不上（手顺不同），
+   * 同一局在棋谱库里留下两条。
+   *
+   * 现在改成：把写入排成一条链，`replacesSeq` 在**轮到它执行时**才读
+   * （`lastSeq` 那时已经是上一次的结果），并且配一道只增不减的闸门，
+   * 保证迟到的结果不会把新的状态覆盖回去。这与 `analysisStore` 的 `runId` 同一手法。
    */
   function makeNotifier(set: (partial: Partial<GameStore>) => void) {
-    return function notifyGameEnd(before: GameStore, after: GameState): void {
-      if (before.game.status !== 'playing' || after.status === 'playing') return
+    /** 上一次成功入库的 seq。`null` 表示这一局还没存过。 */
+    let lastSeq: number | null = null
+    /** 还没跑完的入库次数。0 表示队列空闲。 */
+    let pending = 0
+    /** 入库链的尾巴。 */
+    let tail: Promise<void> = Promise.resolve()
 
-      const input: GameEndInput = {
-        moves: after.moves,
-        firstPlayer: after.firstPlayer,
-        mode: before.mode,
-        humanColor: before.humanColor,
-        difficulty: before.difficulty,
-        resignedBy:
-          after.status === 'resigned' && after.winner !== null ? opponentOf(after.winner) : null,
-        replacesSeq: before.recordedSeq,
+    async function runSave(build: () => GameEndInput): Promise<void> {
+      try {
+        // `build()` 在**轮到它执行时**才求值——那时 `lastSeq` 已经是上一次的结果了。
+        // 排队时就求值等于回到原来那个 bug（第二次终局拿到 null）。
+        const seq = await options.onGameEnd?.(build())
+        if (typeof seq === 'number') lastSeq = seq
+        set({ recordSaveState: 'saved', recordedSeq: lastSeq })
+      } catch {
+        // 失败要如实说，而且**不动 `lastSeq`**——这一局还是没进库
+        set({ recordSaveState: 'failed' })
       }
+    }
 
-      const result = options.onGameEnd?.(input)
-      if (result === undefined) return
+    return {
+      notifyGameEnd(before: GameStore, after: GameState): void {
+        if (before.game.status !== 'playing' || after.status === 'playing') return
+        // 没装配回调时什么状态都不该动（`recordSaveState` 保持 idle）
+        if (options.onGameEnd === undefined) return
 
-      // 存储是异步的，界面需要知道最终成没成
-      set({ recordSaveState: 'saving' })
-      void Promise.resolve(result).then(
-        (seq) => set({ recordSaveState: 'saved', recordedSeq: typeof seq === 'number' ? seq : null }),
-        () => set({ recordSaveState: 'failed' }),
-      )
+        const base = {
+          moves: after.moves,
+          firstPlayer: after.firstPlayer,
+          mode: before.mode,
+          humanColor: before.humanColor,
+          difficulty: before.difficulty,
+          resignedBy:
+            after.status === 'resigned' && after.winner !== null ? opponentOf(after.winner) : null,
+        }
+
+        // 存储是异步的，界面需要知道最终成没成
+        set({ recordSaveState: 'saving' })
+
+        pending++
+        const step = (): Promise<void> =>
+          runSave(() => ({ ...base, replacesSeq: lastSeq })).then(() => {
+            pending--
+          })
+
+        if (pending === 1) {
+          // 队列本来空着：**立刻跑**。`runSave` 是 async 函数，函数体会同步执行到
+          // 第一个 await，所以 `onGameEnd` 仍然是同步被调用的——这是既有行为，
+          // 有测试钉着，不该因为要排队就顺手改掉。
+          tail = step()
+          return
+        }
+
+        tail = tail.then(step)
+      },
+
+      /** 开新局 / 恢复存档时调用：上一局的入库链接与这一局无关。 */
+      reset(): void {
+        lastSeq = null
+      },
     }
   }
 
   return create<GameStore>()((set, get) => {
-    const notifyGameEnd = makeNotifier(set)
+    const notifier = makeNotifier(set)
+    const notifyGameEnd = notifier.notifyGameEnd
 
     return {
       game: createGame(),
@@ -259,6 +307,7 @@ export function createGameStore(
 
       newGame(options = {}) {
         const current = get()
+        notifier.reset()
         set({
           game: createGame(),
           mode: options.mode ?? current.mode,
@@ -283,6 +332,12 @@ export function createGameStore(
         // 胜负与和棋都能从手顺还原，认输不能——所以它单独存、单独补。
         const replayed = replay(session.moves, session.firstPlayer)
 
+        // 存档里没有「这一局入库了没有」的信息，所以恢复之后当作没存过。
+        // 后果：终局 → 刷新 → 悔棋 → 换个走法再终局，棋谱库里会多一条
+        // （老的那条手顺不同，内容匹配对不上）。**这是有意的**——要修就得把
+        // seq 也持久化进存档（`PersistedSession`）并升 schema 版本，
+        // 那会让所有存档作废，代价比一条重复棋谱大。见 FINDINGS 的 F-25。
+        notifier.reset()
         set({
           game:
             session.resignedBy === null ? replayed : resignGame(replayed, session.resignedBy),
