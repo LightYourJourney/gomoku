@@ -21,6 +21,15 @@ export interface SettingsPanelProps {
   onThemeChange: (theme: ThemePreference) => void
   onShowCoordsChange: (value: boolean) => void
   onSoundEnabledChange: (value: boolean) => void
+  /**
+   * 变更前的拦截钩子（防误触确认）。返回 `false` = 这次不算数：不换选中、
+   * 也不搬焦点；**打开确认弹窗的副作用由它自己完成**（`onChange` 不会被调用）。
+   *
+   * **只给模式与执子**——`setMode` / `setHumanColor` 会重建棋局（`newGame`），
+   * 而 `setDifficulty` 只改一个字段、不重开（仓库既定语义，任务书点名不许改）。
+   */
+  beforeModeChange?: (mode: GameMode) => boolean
+  beforeHumanColorChange?: (color: Player) => boolean
 }
 
 function Field({ label, hint, children }: { label: string; hint?: string; children: ReactNode }) {
@@ -49,16 +58,24 @@ export function SettingsPanel(props: SettingsPanelProps) {
     onThemeChange,
     onShowCoordsChange,
     onSoundEnabledChange,
+    beforeModeChange,
+    beforeHumanColorChange,
   } = props
 
   return (
     <div className="space-y-3">
-      <Panel title="对战" bodyClassName="space-y-4">
+      {/*
+        这一组**默认展开**：模式 / 执子 / 难度是「需要经常调整的基础对战设置」
+        （任务书 §六 对左栏的定位），把它们折起来等于给高频操作加一次点击。
+        要折的是下面那组显示偏好。
+      */}
+      <Panel title="对局设置" collapsible defaultOpen bodyClassName="space-y-4">
         <Field label="模式">
           <Segmented
             label="对战模式"
             value={mode}
             onChange={onModeChange}
+            beforeChange={beforeModeChange}
             options={[
               { value: 'pve', label: '人机对战' },
               { value: 'pvp', label: '本地双人' },
@@ -73,6 +90,9 @@ export function SettingsPanel(props: SettingsPanelProps) {
                 label="玩家执子"
                 value={humanColor === BLACK ? '1' : '2'}
                 onChange={(value) => onHumanColorChange(value === '1' ? BLACK : WHITE)}
+                beforeChange={(value) =>
+                  beforeHumanColorChange?.(value === '1' ? BLACK : WHITE) ?? true
+                }
                 options={[
                   { value: '1', label: '执黑先行' },
                   { value: '2', label: '执白后行' },
@@ -96,7 +116,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
         )}
       </Panel>
 
-      <Panel title="显示与声音" padding="tight" bodyClassName="space-y-1">
+      <Panel title="显示与声音" collapsible padding="tight" bodyClassName="space-y-1">
         <Field label="主题">
           <Segmented
             label="主题"

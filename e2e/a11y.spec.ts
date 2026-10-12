@@ -244,9 +244,11 @@ test.describe('结果弹窗的焦点', () => {
     await page.goto('/')
     await page.getByRole('radio', { name: '本地双人' }).click()
 
-    // 先用认输触发终局弹窗（比对局走完快，且与另一条 e2e 的终局路径互补）
+    // 先用认输触发终局弹窗（比对局走完快，且与另一条 e2e 的终局路径互补）。
+    // 认输要先过一道防误触确认（Phase 02）。
     await page.getByTestId('intersection-7-7').click()
     await page.getByRole('button', { name: '认输' }).click()
+    await page.getByRole('button', { name: '确认认输' }).click()
     const dialog = page.getByRole('dialog')
     await expect(dialog).toBeVisible()
 

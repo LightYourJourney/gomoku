@@ -221,6 +221,28 @@ const STATES = [
     },
   },
   {
+    id: 'battle-confirm-restart',
+    group: 'battle',
+    /**
+     * 防误触确认弹窗（Phase 02）。任务书 §十 点名要这张截图。
+     *
+     * 用**进行中且有落子**的存档：只有这种局面才会拦一道，
+     * 空盘与终局都不拦——所以这张图同时是「什么时候会拦」的证据。
+     */
+    async boot(page) {
+      await seedSession(page, session({ moves: MIDGAME }))
+      await page.waitForSelector('[data-testid="stone-7-10"]')
+      await page.getByRole('button', { name: '重新开始' }).click()
+      await page.waitForSelector('[role="dialog"]')
+    },
+    async postAssert(page) {
+      const text = await page.locator('[role="dialog"]').textContent()
+      if (!(text ?? '').includes('会被清空')) {
+        throw new Error(`确认弹窗没有说清后果（实际文案：${text}）——这张图不是确认态`)
+      }
+    },
+  },
+  {
     id: 'battle-finished',
     group: 'battle',
     async boot(page) {

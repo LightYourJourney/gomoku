@@ -12,12 +12,8 @@ export interface ModalProps {
   /**
    * 关闭之后把焦点送到这个元素上。
    *
-   * **不传就不动焦点**（落到 `<body>`，也就是本项目此前的行为）。
-   * 为什么不做成「自动还给打开它的那个元素」：本应用唯一的弹窗是终局结果弹窗，
-   * 它**不是被某个控件打开的**（对局结束就自动弹），而且打开前持有焦点的元素
-   * 在对局结束时必然变得不可聚焦——五连终局时整盘 `interactive` 变假、格子
-   * 失去 `tabindex`；认输终局时那个按钮已 `disabled`。实测两条路径还原都不生效。
-   * 所以这里把「关掉之后焦点该去哪」交给调用方明确指定。
+   * 传了就按传的来（终局弹窗指定为「重新开始」按钮，它是对局结束后棋盘上唯一
+   * 还有意义的操作）。**不传**时走下面那条「还给打开它的控件」的规则。
    */
   focusAfterClose?: RefObject<HTMLElement | null>
 }
@@ -25,6 +21,19 @@ export interface ModalProps {
 /** 弹窗内可聚焦的元素。`[tabindex]` 那一支排除了 -1（不可 Tab 到的）。 */
 const FOCUSABLE =
   'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+
+/**
+ * 关闭弹窗时还能不能把焦点还回去。
+ *
+ * **只有一个条件：打开时确实有东西持有焦点。** 一开始写的版本还查了
+ * 「是否已禁用」「`tabindex` 是不是 -1」「节点还在不在文档里」，反向验证时发现
+ * 那三条**全都观测不到**——禁用控件与已卸载的节点本来就 `focus()` 不动，
+ * 浏览器与 jsdom 都不会把焦点给它们，撤掉判据用例照样绿。
+ * 观测不到的判据就是没有判据，按「不做没验证的复杂度」删掉。
+ */
+function canRestoreFocus(element: HTMLElement | null): element is HTMLElement {
+  return element !== null && element !== document.body
+}
 
 export function Modal({ open, title, onClose, children, footer, focusAfterClose }: ModalProps) {
   const dialogRef = useRef<HTMLDivElement>(null)
@@ -42,23 +51,31 @@ export function Modal({ open, title, onClose, children, footer, focusAfterClose 
   })
 
   /*
-   * **这里刻意没有「关闭后把焦点还给打开它的那个元素」。**
+   * **「关闭后把焦点还给打开它的那个控件」为什么加过又撤掉、这次又加回来。**
    *
-   * 加过，随后在真实 Chrome 里量了一遍（Playwright，终局的两条路径都跑过）：
-   * 关闭之后 `document.activeElement` 一律是 `BODY`，还原从未生效——因为本应用
-   * 唯一的 `Modal` 是终局结果弹窗，它的两条触发路径都会让「打开前持有焦点的
-   * 元素」变得**不可聚焦**：
+   * 加过、撤掉的那一次（F-28）：当时本应用唯一的 `Modal` 是终局结果弹窗，
+   * 它**不是被某个控件打开的**（对局结束自动弹），而打开前持有焦点的元素在对局结束时
+   * 必然变得不可聚焦——五连终局时整盘 `interactive` 变假、格子失去 `tabindex`；
+   * 认输终局时「认输」按钮已 `disabled`。实测两条路径还原都不生效，
+   * 于是按「不做没验证的复杂度」撤掉了。
    *
-   * - 五连终局：打开前焦点在刚点过的那一格 `<rect>` 上（`tabindex="-1"`），
-   *   对局一结束整盘 `interactive` 变假、`tabindex` 被摘掉，`focus()` 成了空操作；
-   * - 认输终局：打开前焦点在「认输」按钮上，而它随后 `disabled`，同样聚焦不了。
+   * Phase 02 加回来，因为**确认弹窗的形态不一样**：它是被按钮点开的，
+   * 触发控件在关闭之后仍然有效（唯一例外是「认输」，那时终局弹窗会接管焦点）。
+   * 而且这次它有可红的判据：`Modal.test.tsx` 里那条「取消之后焦点回到触发它的按钮」。
    *
-   * 那段代码在当前产品里**永远不会生效、也无法被验证**，按「最小代码、不做没
-   * 验证的复杂度」撤掉了。底层问题（关掉弹窗后键盘用户要从页面开头重新 Tab）
-   * 是真的，属**产品决策**——落到哪个元素取决于产品想要什么。记为 F-28。
+   * 两条规则并存，优先级明确：
+   *
+   * 1. 调用方给了 `focusAfterClose` → 听调用方的（终局弹窗走这条，行为与之前逐字相同）。
+   * 2. 否则，**且关闭这一刻焦点已经掉到 `<body>`** → 还给打开时持有焦点的那个控件。
+   *    为什么必须加「已经掉到 body」这个前提：弹窗开着的时候焦点有可能被别处拿走
+   *    （程序化 `focus()`、浏览器行为），那种情况下抢回来是帮倒忙。
+   *    `Modal.test.tsx` 有一条用例专门钉住这个前提。
    */
   useEffect(() => {
     if (!open) return
+
+    // **必须在把焦点搬进弹窗之前取**——下面那一行一执行，activeElement 就变了。
+    const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null
 
     dialogRef.current?.focus()
 
@@ -111,8 +128,18 @@ export function Modal({ open, title, onClose, children, footer, focusAfterClose 
 
     return () => {
       document.removeEventListener('keydown', handleKeyDown)
-      // 关闭后把焦点送到调用方指定的地方。没指定就什么都不做。
-      focusTarget?.focus()
+
+      // 调用方指定了去处就听它的。
+      if (focusTarget !== null) {
+        focusTarget.focus()
+        return
+      }
+
+      // 焦点已经被别处拿走（不是卸载导致的 body），就别抢。
+      const active = document.activeElement
+      if (active !== null && active !== document.body) return
+
+      if (canRestoreFocus(opener)) opener.focus()
     }
   }, [open, focusAfterClose])
 

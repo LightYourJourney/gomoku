@@ -11,7 +11,6 @@ const SUGGESTIONS: readonly MoveSuggestion[] = [
 ]
 
 function setup(overrides: Partial<HintPanelProps> = {}) {
-  const onAsk = vi.fn()
   const onClear = vi.fn()
   const props: HintPanelProps = {
     candidates: null,
@@ -19,47 +18,37 @@ function setup(overrides: Partial<HintPanelProps> = {}) {
     confidence: null,
     thinking: false,
     error: null,
-    canAsk: true,
-    onAsk,
     onClear,
     ...overrides,
   }
 
-  return { onAsk, onClear, ...render(<HintPanel {...props} />) }
+  return { onClear, ...render(<HintPanel {...props} />) }
 }
 
-function ask(): void {
-  fireEvent.click(screen.getByRole('button', { name: '求提示' }))
-}
-
-describe('HintPanel —— 请求', () => {
-  it('未求过提示时显示引导文案', () => {
+/**
+ * **「求提示」不在这个面板里。** 它是棋盘下方工具栏那一颗——同一个请求有两个入口
+ * 迟早会各触发一次。面板只负责展示结果与「收起」。
+ * 按钮本身的禁用条件（轮不到自己、正在算）在 `ControlBar.test.tsx` 里。
+ */
+describe('HintPanel —— 空态与引导', () => {
+  it('未求过提示时显示引导文案，并指向工具栏那个入口', () => {
     setup()
 
-    expect(screen.getByRole('button', { name: '求提示' })).toBeEnabled()
     expect(screen.getByText(/不会替你落子/)).toBeInTheDocument()
+    expect(screen.getByText(/求提示/)).toBeInTheDocument()
     expect(screen.queryAllByTestId(/^hint-candidate-/)).toHaveLength(0)
   })
 
-  it('点击按钮发起提示请求', () => {
-    const { onAsk } = setup()
+  it('面板里没有第二个「求提示」入口', () => {
+    setup()
 
-    ask()
-
-    expect(onAsk).toHaveBeenCalledTimes(1)
+    expect(screen.queryByRole('button', { name: '求提示' })).not.toBeInTheDocument()
   })
 
-  it('计算中禁用按钮并给出提示', () => {
+  it('计算中给出提示', () => {
     setup({ thinking: true })
 
-    expect(screen.getByRole('button', { name: '求提示' })).toBeDisabled()
     expect(screen.getByText(/正在计算/)).toBeInTheDocument()
-  })
-
-  it('轮不到自己时禁用按钮', () => {
-    setup({ canAsk: false })
-
-    expect(screen.getByRole('button', { name: '求提示' })).toBeDisabled()
   })
 
   it('提示请求失败时显示错误且不显示候选', () => {
@@ -122,6 +111,29 @@ describe('HintPanel —— 候选', () => {
     setup({ candidates: SUGGESTIONS, urgency: 'normal', confidence: 'exact' })
 
     expect(screen.getByText(/不保证最优/)).toBeInTheDocument()
+  })
+
+  /**
+   * **常驻技术说明是发现 F-UI-03 的一半**：那段脚注原来无条件渲染，
+   * 里面直接印着内部预算 `800 ms`，而 `DESIGN_SYSTEM.md` §7 明令默认界面不出现
+   * 这类内部参数。任务书 §六 也要求「没有分析结果时不显示大段常驻技术介绍」。
+   */
+  it('没有候选时不显示技术脚注', () => {
+    setup()
+
+    expect(screen.queryByText(/短预算/)).not.toBeInTheDocument()
+  })
+
+  it('只出错、没有候选时也不显示技术脚注', () => {
+    setup({ error: '提示超时' })
+
+    expect(screen.queryByText(/短预算/)).not.toBeInTheDocument()
+  })
+
+  it('有候选时才说明这份提示是怎么算出来的', () => {
+    setup({ candidates: SUGGESTIONS, urgency: 'normal', confidence: 'exact' })
+
+    expect(screen.getByText(/短预算/)).toBeInTheDocument()
   })
 
   it('给出精确结论时标明是精确的', () => {

@@ -3,7 +3,7 @@ import { expect, test, type Page } from '@playwright/test'
 /**
  * 平板视口与触屏专项。
  *
- * 跑在 `tablet` 项目里（iPad 横屏 1080×810，开了触摸）——`lg` 断点之上是三栏、
+ * 跑在 `tablet` 项目里（iPad 横屏 1080×810，开了触摸）——`lg` 断点之上是**两栏**、
  * 之下是纵向堆叠，两条布局分界都得在真浏览器里过一遍；命中区在视口变化时
  * 最容易偏半格，jsdom 不做命中测试，看不出这类问题。
  */
@@ -106,34 +106,61 @@ test.describe('平板横屏（1080×810）', () => {
     expect(board.y + board.height).toBeLessThanOrEqual(viewport.height)
   })
 
-  test('三栏并列：左设置 / 中棋盘 / 右面板互不压盖', async ({ page }) => {
+  /**
+   * **1080 落在 Phase 02 定的两栏档（1024–1439）里**，不再是三栏。
+   * 这条因此从「三栏并列」改成「两栏并列：棋盘 + 右栏」——
+   * 它仍然是真实浏览器里「互不压盖」的守卫，只是断点换了边。
+   * 三栏那一档由 `e2e/layout.spec.ts` 在 1440 上守。
+   */
+  test('两栏并列：棋盘与右栏互不压盖', async ({ page }) => {
     await page.goto('/')
 
     const asides = page.locator('main > aside')
-    await expect(asides).toHaveCount(2)
+    await expect(asides).toHaveCount(1)
 
-    const left = await asides.nth(0).boundingBox()
-    const right = await asides.nth(1).boundingBox()
+    const right = await asides.nth(0).boundingBox()
     const board = await page.getByTestId('board').boundingBox()
-    expect(left).not.toBeNull()
     expect(right).not.toBeNull()
     expect(board).not.toBeNull()
-    if (left === null || right === null || board === null) return
+    if (right === null || board === null) return
 
-    // 三块横向首尾相接、不重叠——「压盖」在几何上就是这个意思。
-    // 注意 DOM 顺序是 左 / 中 / 右，靠 `order` 类还原成视觉顺序；这里按 x 排序取实际位置。
-    const columns = [left, right, board].sort((a, b) => a.x - b.x)
-    for (let i = 1; i < columns.length; i++) {
-      const previous = columns[i - 1]!
-      const current = columns[i]!
-      expect(previous.x + previous.width).toBeLessThanOrEqual(current.x + 1)
-    }
+    // 两块横向首尾相接、不重叠——「压盖」在几何上就是这个意思
+    const columns = [right, board].sort((a, b) => a.x - b.x)
+    expect(columns[0]!.x + columns[0]!.width).toBeLessThanOrEqual(columns[1]!.x + 1)
 
-    // 并排而不是摞起来：三者的垂直区间必须真的重叠
-    const [a, b, c] = columns
-    expect(Math.min(a!.y + a!.height, b!.y + b!.height, c!.y + c!.height)).toBeGreaterThan(
-      Math.max(a!.y, b!.y, c!.y),
+    // 并排而不是摞起来：两者的垂直区间必须真的重叠
+    expect(Math.min(right.y + right.height, board.y + board.height)).toBeGreaterThan(
+      Math.max(right.y, board.y),
     )
+  })
+
+  /**
+   * 触摸下的核心操作。Phase 02 把「悔棋 / 求提示 / 重新开始 / 认输」搬进了
+   * 棋盘下方的新工具栏，又新增了确认弹窗——**这两样在触摸上下文里此前一条都没验过**。
+   * 触摸与鼠标的差别不是「能不能点」，而是命中区与换行：`flex-wrap` 之后按钮会换行，
+   * 换行后若被别的元素盖住，鼠标不一定看得出来、手指一定点不中。
+   */
+  test('触摸：工具栏四颗按钮都点得中，且确认弹窗能确认', async ({ page }) => {
+    await page.goto('/')
+
+    // 先落一手，做出「进行中且已有落子」的局面
+    await page.getByTestId('intersection-7-7').click()
+    await expect(page.getByTestId(/^stone-/)).toHaveCount(2)
+
+    // 悔棋：点得到、生效
+    await page.getByRole('button', { name: '悔棋' }).tap()
+    await expect(page.getByTestId(/^stone-/)).toHaveCount(0)
+
+    // 重新开始：盘上已无子，直接开新局（不弹确认）
+    await page.getByRole('button', { name: '重新开始' }).tap()
+    await expect(page.getByTestId('status-pill')).toHaveText('轮到你落子')
+
+    // 认输：空盘也拦（任务书对认输没有豁免），确认后终局
+    await page.getByRole('button', { name: '认输' }).tap()
+    const dialog = page.getByRole('dialog')
+    await expect(dialog).toBeVisible()
+    await page.getByRole('button', { name: '确认认输' }).tap()
+    await expect(dialog).toContainText('你认输了')
   })
 })
 

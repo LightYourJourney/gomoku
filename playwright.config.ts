@@ -29,7 +29,8 @@ export default defineConfig({
     },
     {
       name: 'tablet',
-      // 平板横屏 1080×810：`lg` 断点（1024px）之上，走三栏布局。
+      // 平板横屏 1080×810：`lg` 断点（1024px）之上，走**两栏**布局（Phase 02 起
+      // 三栏的起点是 1440，1080 落在 1024–1439 的两栏档；三栏那一档见 layout.spec.ts）。
       // iPad 的设备描述符自带 browserName: 'webkit'，得显式改回 chromium——
       // 本仓库统一用本机 Chrome，且 webkit 不认 channel: 'chrome'。
       use: { ...devices['iPad (gen 7) landscape'], browserName: 'chromium', channel: 'chrome' },

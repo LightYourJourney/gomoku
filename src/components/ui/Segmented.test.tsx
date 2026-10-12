@@ -167,3 +167,60 @@ describe('Segmented 的语义', () => {
     expect(screen.getByRole('radio', { name: '中级' })).toHaveFocus()
   })
 })
+
+/**
+ * `beforeChange`：让调用方**否决**一次变更。
+ *
+ * 对战页要用它做防误触确认——「切换模式会重开一局，先问一句」。
+ * 没有这个口子的话，键盘路径会留下一个坏状态：`moveTo` 是「先 `onChange` 再搬焦点」，
+ * 而拦截挂在 `onChange` 上，于是方向键 → 弹确认 → 取消之后，
+ * **焦点落在那个 `aria-checked=false` 且 `tabIndex=-1` 的选项上**：
+ * 整组的 Tab 停靠点说选中的是 A，焦点却在 B。
+ */
+describe('Segmented 的 beforeChange 拦截钩子', () => {
+  function VetoHarness({ beforeChange }: { beforeChange: (next: string) => boolean }) {
+    const [value, setValue] = useState<string>('light')
+    return (
+      <Segmented
+        label="对战模式"
+        value={value}
+        options={OPTIONS}
+        beforeChange={beforeChange}
+        onChange={setValue}
+      />
+    )
+  }
+
+  it('否决时键盘不换选中，也不把焦点搬过去', async () => {
+    const user = userEvent.setup()
+    render(<VetoHarness beforeChange={() => false} />)
+
+    const current = screen.getByRole('radio', { name: '浅色' })
+    current.focus()
+    await user.keyboard('{ArrowRight}')
+
+    expect(screen.getByRole('radio', { name: '浅色' })).toHaveAttribute('aria-checked', 'true')
+    // 焦点必须还在**选中项**上——这是 roving tabindex 的既定含义
+    expect(current).toHaveFocus()
+  })
+
+  it('否决时点击也不换选中，并把焦点收回选中项', async () => {
+    const user = userEvent.setup()
+    render(<VetoHarness beforeChange={() => false} />)
+
+    await user.click(screen.getByRole('radio', { name: '深色' }))
+
+    const current = screen.getByRole('radio', { name: '浅色' })
+    expect(current).toHaveAttribute('aria-checked', 'true')
+    expect(current).toHaveFocus()
+  })
+
+  it('放行时一切照旧', async () => {
+    const user = userEvent.setup()
+    render(<VetoHarness beforeChange={() => true} />)
+
+    await user.click(screen.getByRole('radio', { name: '深色' }))
+
+    expect(screen.getByRole('radio', { name: '深色' })).toHaveAttribute('aria-checked', 'true')
+  })
+})

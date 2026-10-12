@@ -242,3 +242,144 @@ test.describe('浏览器文字缩放', () => {
     })
   }
 })
+
+/**
+ * Phase 02 的三档结构。**断点值是 1024 / 1440 两个**：
+ * - <1024：单列堆叠（文档滚动）
+ * - 1024–1439：两栏 —— 棋盘 + 右栏，设置并进右栏底部且**默认折叠**
+ * - ≥1440：三栏 —— 左设置 / 中棋盘 / 右面板
+ *
+ * 这里同时是「设置面板只有一份」那条决策的守卫：两份 DOM 意味着两组
+ * `role="radiogroup"`，读屏软件与 `getByRole` 都会撞上歧义。
+ */
+test.describe('对战页的三档结构', () => {
+  test('1024–1439：两栏，设置并进右栏（对战设置常驻、显示偏好折叠）', async ({ page }) => {
+    await page.setViewportSize({ width: 1439, height: 900 })
+    await page.goto('/')
+    await expect(page.getByTestId('board')).toBeVisible()
+
+    await expect(page.locator('main > aside')).toHaveCount(1)
+    await expect(page.getByTestId('battle-settings-column')).toHaveCount(0)
+
+    /*
+     * **模式 / 执子 / 难度常驻**：任务书 §六 把它们定义为「需要经常调整的基础对战
+     * 设置」，折起来等于给高频操作加一次点击——这一条是被既有 e2e 逼出来的
+     * （全仓十几处 `getByRole('radio', { name: '本地双人' })` 在折叠版下全部失效）。
+     * 折叠的是显示偏好那一组。
+     */
+    await expect(page.getByLabel('对战模式')).toHaveCount(1)
+    // 用这一组独有的控件判折叠：顶栏那颗主题按钮的 aria-label 也含「主题」二字
+    await expect(page.getByRole('switch', { name: '显示坐标' })).toHaveCount(0)
+
+    await page.getByRole('button', { name: '显示与声音' }).click()
+    await expect(page.getByRole('switch', { name: '显示坐标' })).toHaveCount(1)
+
+    // 关键不变量：设置面板**恰好一份**。两份 DOM 意味着两组 radiogroup，
+    // 读屏软件与 getByRole 都会撞上歧义。
+    await expect(page.getByLabel('对战模式')).toHaveCount(1)
+  })
+
+  test('≥1440：三栏，设置回到左栏', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 })
+    await page.goto('/')
+    await expect(page.getByTestId('board')).toBeVisible()
+
+    await expect(page.locator('main > aside')).toHaveCount(2)
+    await expect(page.getByTestId('battle-settings-column')).toBeVisible()
+    await expect(page.getByLabel('对战模式')).toHaveCount(1)
+
+    // 左栏在棋盘的左边
+    const column = (await page.getByTestId('battle-settings-column').boundingBox())!
+    const board = (await page.getByTestId('board').boundingBox())!
+    expect(column.x + column.width).toBeLessThanOrEqual(board.x + 1)
+  })
+
+  test('1440 与 1439 之间只差 1px，结构却真的换了', async ({ page }) => {
+    // 「只把 lg 换成 xl 不等于做了响应式」——这一条要的就是断点两侧行为不同
+    await page.setViewportSize({ width: 1440, height: 900 })
+    await page.goto('/')
+    const wide = await page.locator('main > aside').count()
+
+    await page.setViewportSize({ width: 1439, height: 900 })
+    // 改视口不重新加载：靠的是订阅 matchMedia，不是「刷新才算数」
+    await expect(page.locator('main > aside')).toHaveCount(1)
+    expect(wide).toBe(2)
+  })
+})
+
+test.describe('对战页：棋盘与操作区不互相遮挡', () => {
+  const WIDTHS = [390, 768, 1024, 1440, 1920] as const
+
+  for (const width of WIDTHS) {
+    test(`@${width}：状态条、棋盘、工具栏、侧栏四块互不相交`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 })
+      await page.goto('/')
+      await expect(page.getByTestId('board')).toBeVisible()
+
+      const regions = {
+        棋盘: (await page.getByTestId('board').boundingBox())!,
+        状态条: (await page.getByLabel('对局状态').boundingBox())!,
+        工具栏: (await page.getByRole('group', { name: '对局操作' }).boundingBox())!,
+      }
+
+      const pairs = Object.entries(regions)
+      for (let i = 0; i < pairs.length; i++) {
+        for (let j = i + 1; j < pairs.length; j++) {
+          const [nameA, a] = pairs[i]!
+          const [nameB, b] = pairs[j]!
+          const overlaps =
+            a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height
+          expect(overlaps, `${nameA} 与 ${nameB} 压在一起了`).toBe(false)
+        }
+      }
+
+      // 顺序：状态条在棋盘上方，工具栏在棋盘下方
+      expect(regions.状态条.y + regions.状态条.height).toBeLessThanOrEqual(regions.棋盘.y + 1)
+      expect(regions.工具栏.y).toBeGreaterThanOrEqual(regions.棋盘.y + regions.棋盘.height - 1)
+    })
+  }
+})
+
+test.describe('对战页：折叠侧栏不动棋盘', () => {
+  /*
+   * 任务书 §七 要的「不因某个侧栏展开造成明显的跳动」。
+   * 机制上成立（列宽是 `clamp()` 定值，折叠只改高度），但**没有判据的机制就是一句声明**
+   * ——这条把它变成可判真假的。
+   */
+  test('@1440：折叠再展开，棋盘尺寸与位置纹丝不动', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 })
+    await page.goto('/')
+    await expect(page.getByTestId('board')).toBeVisible()
+
+    const before = (await page.getByTestId('board').boundingBox())!
+
+    const toggle = page.getByRole('button', { name: '对局设置' })
+    await toggle.click()
+    await expect(page.getByLabel('对战模式')).toHaveCount(0)
+    const collapsed = (await page.getByTestId('board').boundingBox())!
+
+    await toggle.click()
+    await expect(page.getByLabel('对战模式')).toHaveCount(1)
+    const expanded = (await page.getByTestId('board').boundingBox())!
+
+    for (const [tag, box] of [['折叠后', collapsed], ['展开后', expanded]] as const) {
+      expect(Math.abs(box.x - before.x), `${tag}棋盘横向移动了`).toBeLessThan(1)
+      expect(Math.abs(box.y - before.y), `${tag}棋盘纵向移动了`).toBeLessThan(1)
+      expect(Math.abs(box.width - before.width), `${tag}棋盘尺寸变了`).toBeLessThan(1)
+    }
+  })
+})
+
+test.describe('对战页：棋盘尺寸预算', () => {
+  for (const width of [1024, 1280, 1440, 1920] as const) {
+    test(`@${width}：棋盘长到 ${DESKTOP_BOARD}px 以上`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 })
+      await page.goto('/')
+
+      const box = await boardBox(page)
+      expect(box.width, `棋盘只有 ${box.width}px —— 侧栏又把它挤扁了`).toBeGreaterThanOrEqual(
+        DESKTOP_BOARD,
+      )
+    })
+  }
+})

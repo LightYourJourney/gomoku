@@ -134,6 +134,10 @@ describe('Modal 的焦点管理', () => {
  * 之所以不做成「自动还给打开弹窗的元素」：终局弹窗不是被某个控件打开的
  * （对局结束就自动弹），而且打开前持有焦点的元素在对局结束时必然不可聚焦
  * ——实测两条路径（五连 / 认输）还原都不生效，见 `Modal` 里的注释。
+ *
+ * **Phase 02 补上了另一半**：确认弹窗**是**被按钮点开的，触发控件关掉之后仍然有效，
+ * 所以「不传 `focusAfterClose` 时把焦点还给打开它的那个控件」对它是成立的、
+ * 也是可验证的。下面那组用例证明它。
  */
 describe('Modal 的 focusAfterClose', () => {
   function WithTarget() {
@@ -181,6 +185,87 @@ describe('Modal 的 focusAfterClose', () => {
     fireEvent.keyDown(document, { key: 'Escape' })
 
     // 焦点留在原处不动——弹窗卸载不会把它「送」去任何地方
+    expect(other).toHaveFocus()
+  })
+})
+
+/**
+ * 确认弹窗要的那一条：**取消之后焦点回到打开它的那个控件**。
+ *
+ * 与上面最后一条并不矛盾，两者管的是不同的事：
+ * 那条测的是「弹窗开着的时候焦点被别人拿走了」——关闭时不该抢回来；
+ * 这条测的是「焦点还在弹窗里」——弹窗一卸载它就没地方可去了，得还回操作位置。
+ * 判据就是「关闭那一刻焦点是不是已经掉到 `<body>`」，见 `Modal` 里的注释。
+ */
+describe('Modal 关闭时把焦点还给打开它的控件', () => {
+  /** 用一个真实可点的按钮打开弹窗——这正是确认弹窗的形态。 */
+  function Opened() {
+    const [open, setOpen] = useState(false)
+
+    return (
+      <>
+        <button type="button" onClick={() => setOpen(true)}>
+          认输
+        </button>
+        <Modal open={open} title="认输？" onClose={() => setOpen(false)}>
+          这一局会记为对方获胜。
+        </Modal>
+      </>
+    )
+  }
+
+  it('取消之后焦点回到触发它的按钮', () => {
+    render(<Opened />)
+
+    // jsdom 派发 click **不会**像真浏览器那样把焦点给按钮，所以这里显式补上这一步
+    // ——不补的话下面测的就成了「焦点本来就在 body，还回 body」，等于没测。
+    const trigger = screen.getByRole('button', { name: '认输' })
+    trigger.focus()
+    fireEvent.click(trigger)
+    expect(screen.getByRole('dialog')).toHaveFocus()
+
+    fireEvent.keyDown(document, { key: 'Escape' })
+
+    expect(screen.getByRole('button', { name: '认输' })).toHaveFocus()
+  })
+
+  it('弹窗开着时焦点被别处拿走，关闭时就不抢回来', () => {
+    /**
+     * 这条与上面那条管的是两件不同的事，**判据是「关闭那一刻焦点在哪」**：
+     *
+     * - 焦点还在弹窗里 → 弹窗一卸载它就没地方可去了，还回操作位置；
+     * - 焦点已经被别处拿走 → 抢回来是帮倒忙。
+     *
+     * 这条**有鉴别力**：把 `Modal` 里那句「焦点不是 body 就不动」删掉，它立刻变红
+     * （反向验证过）。而先前那条「触发控件已禁用」的写法没有鉴别力——
+     * 禁用控件本来就 `focus()` 不动，撤掉判据它照样绿，所以删了。
+     */
+    function TwoButtons() {
+      const [open, setOpen] = useState(false)
+
+      return (
+        <>
+          <button type="button" onClick={() => setOpen(true)}>
+            打开
+          </button>
+          <button type="button">别处的按钮</button>
+          <Modal open={open} title="确认" onClose={() => setOpen(false)}>
+            内容
+          </Modal>
+        </>
+      )
+    }
+    render(<TwoButtons />)
+
+    const opener = screen.getByRole('button', { name: '打开' })
+    opener.focus()
+    fireEvent.click(opener)
+    expect(screen.getByRole('dialog')).toHaveFocus()
+
+    const other = screen.getByRole('button', { name: '别处的按钮' })
+    other.focus()
+    fireEvent.keyDown(document, { key: 'Escape' })
+
     expect(other).toHaveFocus()
   })
 })

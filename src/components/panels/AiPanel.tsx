@@ -98,11 +98,19 @@ export function AiPanel({ thinking, info, error, canRetry, onRetry, onDismissErr
         </div>
       )}
 
-      <p className="mt-3 border-t border-border pt-3 text-xs leading-relaxed text-faint">
-        引擎跑在 Web Worker 里，用 Negamax + Alpha-Beta 迭代加深，配 Zobrist 置换表与
-        杀手着法；中级以上还会先跑一遍算杀（连续冲四）。「搜索深度」是已经完整搜完的层数——
-        时间预算不够时会退回上一层的结果，所以它不是固定的。
-      </p>
+      {/*
+        这段说明**只在真有分析结果时出现**（F-UI-03 的一半）。
+        原先它无条件挂在面板底部：开局第一眼看到的就是一段 Negamax / Zobrist /
+        杀手着法的介绍，而任务书 §六 明确要求「避免在当前棋局没有分析结果时
+        显示大段常驻技术介绍」。完整的渐进披露（收进「?」）留 Phase 03。
+      */}
+      {info !== null && (
+        <p className="mt-3 border-t border-border pt-3 text-xs leading-relaxed text-faint">
+          引擎跑在 Web Worker 里，用 Negamax + Alpha-Beta 迭代加深，配 Zobrist 置换表与
+          杀手着法；中级以上还会先跑一遍算杀（连续冲四）。「搜索深度」是已经完整搜完的层数——
+          时间预算不够时会退回上一层的结果，所以它不是固定的。
+        </p>
+      )}
     </Panel>
   )
 }

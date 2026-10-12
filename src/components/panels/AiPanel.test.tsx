@@ -41,6 +41,29 @@ describe('AiPanel —— 思考与结果', () => {
     expect(screen.getByText('尚未产生分析结果。')).toBeInTheDocument()
   })
 
+  /**
+   * **常驻技术介绍是发现 F-UI-03 的一半。** 那段讲 Negamax / Zobrist 的说明原先
+   * 无条件挂在面板底部——开局第一眼看到的就是它，而任务书 §六 要求
+   * 「避免在当前棋局没有分析结果时显示大段常驻技术介绍」。
+   */
+  it('没有结果时不显示那段算法说明', () => {
+    setup()
+
+    expect(screen.queryByText(/Negamax/)).not.toBeInTheDocument()
+  })
+
+  it('思考中也不显示算法说明——那时同样没有结果', () => {
+    setup({ thinking: true })
+
+    expect(screen.queryByText(/Negamax/)).not.toBeInTheDocument()
+  })
+
+  it('有结果时才说明引擎是怎么跑的', () => {
+    setup({ info: INFO })
+
+    expect(screen.getByText(/Negamax/)).toBeInTheDocument()
+  })
+
   it('有结果时展示深度、节点、耗时与结论可靠度', () => {
     setup({ info: INFO })
 

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { applyMove, createGame, resign, type GameState } from '../../core/game'
 import { BLACK, WHITE, type Point } from '../../core/types'
-import { describeStatus, type StatusInput } from './status'
+import { describeStatus, playerName, type StatusInput } from './status'
 
 function play(state: GameState, ...points: readonly Point[]): GameState {
   let next = state
@@ -116,5 +116,21 @@ describe('describeStatus —— 终局', () => {
       label: '和棋',
       player: null,
     })
+  })
+})
+
+describe('playerName', () => {
+  it('本地双人只按颜色称呼——「你」在两个人面前没有意义', () => {
+    expect(playerName(BLACK, 'pvp', BLACK)).toBe('黑方')
+    expect(playerName(WHITE, 'pvp', BLACK)).toBe('白方')
+    // 就算玩家执黑，白方也不能被叫成「对手」或「你」
+    expect(playerName(WHITE, 'pvp', WHITE)).toBe('白方')
+  })
+
+  it('人机模式分「你」与「AI」，与执哪一方无关', () => {
+    expect(playerName(BLACK, 'pve', BLACK)).toBe('你')
+    expect(playerName(WHITE, 'pve', BLACK)).toBe('AI')
+    expect(playerName(WHITE, 'pve', WHITE)).toBe('你')
+    expect(playerName(BLACK, 'pve', WHITE)).toBe('AI')
   })
 })

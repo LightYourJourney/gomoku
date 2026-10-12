@@ -206,6 +206,23 @@ WCAG AA 的 4.5:1。`faint` / `good` / `warn` / `accent` 的值就是按它反�
 
 **动效降级不判 `matchMedia`**：`motion.ts` 只返回类名，是否播动画交给 `index.css` 的 `@media (prefers-reduced-motion: reduce)`。用 JS 判有两个坑——用户中途改系统设置时分支不会更新；jsdom 里 `matchMedia` 缺失，靠它判定会让测试与真实行为脱节。
 
+**布局可以判——但只在一处、且必须订阅。** 对战页 1440 这个断点由 `lib/useMediaQuery.ts` 判，
+因为它决定的不是样式而是**设置面板渲染在哪一栏**：用 CSS 各写一份、靠 `display:none` 切换的话，
+同一组表单控件在 DOM 里会有两份，而组件测试不加载样式表，`hidden` 在 jsdom 里根本不生效
+（读屏软件与 Playwright 的 `getByRole` 都会正确地跳过 `display:none` 的子树，**受害的只有单测**）。
+
+上面那两条理由在这里逐条对应：
+
+1. **「中途改设置不更新」不成立**——那个 hook 用 `useSyncExternalStore` 订阅 `change` 事件，
+   拖动窗口跨过断点、换外接显示器都会跟着更新。这是它与 `motion.ts` 那处的关键区别：
+   动效无论如何都得由 CSS 决定，而布局这件事 CSS 做不到。
+2. **「jsdom 缺失 → 测试与真实行为脱节」是真代价，由 e2e 付**——宽档分支永远不被单测覆盖，
+   它由 `e2e/layout.spec.ts` 在真浏览器里守（1440 有左栏 / 1439 没有 / 四个宽度下设置面板
+   恰好一份），另加一条反向验证（把常量从 1440 改成 1280，断言必须红）。
+
+**约束：断点值全仓只允许出现在 `BattleScreen` 的 `WIDE_QUERY` 一处**，CSS 里不得再写
+一个 1440 的媒体查询。
+
 ## 错误边界
 
 `AppErrorBoundary` 包在 `App` 外层（`main.tsx`），用 class 组件实现——这是框架约束不是风格选择，React 只有 `componentDidCatch` / `getDerivedStateFromError` 两个 class 生命周期。

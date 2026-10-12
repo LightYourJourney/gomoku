@@ -83,7 +83,9 @@ test('重新开始会清空棋盘', async ({ page }) => {
   await page.getByTestId('intersection-7-7').click()
   await expect(page.getByTestId(/^stone-/)).toHaveCount(2)
 
+  // 盘上已经有子，所以会先拦一道确认（Phase 02）
   await page.getByRole('button', { name: '重新开始' }).click()
+  await page.getByRole('button', { name: '确认重新开始' }).click()
 
   await expect(page.getByTestId(/^stone-/)).toHaveCount(0)
   await expect(page.getByTestId('status-pill')).toHaveText('轮到你落子')
@@ -123,6 +125,7 @@ test('认输后刷新页面，对局不会复活成进行中', async ({ page }) 
   await expect(page.getByTestId(/^stone-/)).toHaveCount(2)
 
   await page.getByRole('button', { name: '认输' }).click()
+  await page.getByRole('button', { name: '确认认输' }).click()
   await expect(page.getByRole('dialog')).toContainText('你认输了')
 
   await page.reload()
@@ -137,7 +140,9 @@ test('认输后刷新页面，对局不会复活成进行中', async ({ page }) 
 test('认输弹出结果弹窗，且此后再点棋盘无效', async ({ page }) => {
   await page.goto('/')
 
+  // 空盘也拦——任务书对认输没有「空棋盘免确认」的豁免（只有重新开始有）
   await page.getByRole('button', { name: '认输' }).click()
+  await page.getByRole('button', { name: '确认认输' }).click()
 
   const dialog = page.getByRole('dialog')
   await expect(dialog).toBeVisible()
@@ -233,4 +238,178 @@ test('专家档深算期间悔棋，迟到的 AI 响应不会把棋子补回来'
 
   await expect(page.getByTestId(/^stone-/)).toHaveCount(0)
   await expect(page.getByTestId('status-pill')).toHaveText('轮到你落子')
+})
+
+/**
+ * 防误触确认（Phase 02）。任务书 §五。
+ *
+ * 这一组守的是**两条容易做反的边**：取消必须什么都不改（连 store 都不许碰），
+ * 而空盘与终局不能打扰。
+ */
+test.describe('防误触确认', () => {
+  test('取消重新开始，棋局一手不动', async ({ page }) => {
+    await page.goto('/')
+    await page.getByRole('radio', { name: '本地双人' }).click()
+    await page.getByTestId('intersection-7-7').click()
+    await page.getByTestId('intersection-3-3').click()
+    await expect(page.getByTestId(/^stone-/)).toHaveCount(2)
+
+    await page.getByRole('button', { name: '重新开始' }).click()
+    await expect(page.getByRole('dialog')).toContainText('已经下的 2 手会被清空')
+    await page.getByRole('button', { name: '取消' }).click()
+
+    // 棋局完整保留：两颗子还在、没有弹窗、轮次也没变
+    await expect(page.getByRole('dialog')).toBeHidden()
+    await expect(page.getByTestId(/^stone-/)).toHaveCount(2)
+    await expect(page.getByTestId('stone-7-7')).toBeVisible()
+    // 两手之后轮到黑棋（黑先）
+    await expect(page.getByTestId('status-pill')).toHaveText('轮到黑棋')
+  })
+
+  test('空棋盘重新开始不弹确认', async ({ page }) => {
+    await page.goto('/')
+
+    await page.getByRole('button', { name: '重新开始' }).click()
+
+    await expect(page.getByRole('dialog')).toBeHidden()
+    await expect(page.getByTestId('status-pill')).toHaveText('轮到你落子')
+  })
+
+  test('切换模式：取消则原样，确认才重建棋局', async ({ page }) => {
+    await page.goto('/')
+    await page.getByRole('radio', { name: '本地双人' }).click()
+    await page.getByTestId('intersection-7-7').click()
+    await expect(page.getByTestId(/^stone-/)).toHaveCount(1)
+
+    // —— 取消：模式不变、选中项不变、棋盘不变
+    await page.getByRole('radio', { name: '人机对战' }).click()
+    await expect(page.getByRole('dialog')).toBeVisible()
+    await page.getByRole('button', { name: '取消' }).click()
+    await expect(page.getByRole('dialog')).toBeHidden()
+    await expect(page.getByRole('radio', { name: '本地双人' })).toHaveAttribute(
+      'aria-checked',
+      'true',
+    )
+    await expect(page.getByTestId(/^stone-/)).toHaveCount(1)
+
+    // —— 确认：模式真的换了，棋盘重建
+    await page.getByRole('radio', { name: '人机对战' }).click()
+    await page.getByRole('button', { name: '确认切换' }).click()
+    await expect(page.getByRole('radio', { name: '人机对战' })).toHaveAttribute(
+      'aria-checked',
+      'true',
+    )
+    await expect(page.getByTestId(/^stone-/)).toHaveCount(0)
+  })
+
+  /**
+   * 「AI 正在思考时，取消不应意外中断原来的 AI 请求」（任务书 §五 点名）。
+   * 取消路径一次都不碰 store，所以这一手必须照样落下来。
+   */
+  test('AI 思考期间取消重新开始，AI 那一手照样落下', async ({ page }) => {
+    await page.goto('/')
+    // 专家档 2600ms 的预算把窗口撑开（同 `专家档深算期间悔棋` 的做法）。
+    // 简易档 250ms：点两下就过去了，这条会变成在赌手速。
+    await page.getByRole('radio', { name: '专家' }).click()
+
+    await page.getByTestId('intersection-7-7').click()
+    await expect(page.getByTestId('status-pill')).toHaveText('AI 思考中…')
+
+    await page.getByRole('button', { name: '重新开始' }).click()
+    await page.getByRole('button', { name: '取消' }).click()
+
+    // 不靠时长当同步点：等的是结果本身（专家档那一手最长 2.6s，给足超时）
+    await expect(page.getByTestId(/^stone-/)).toHaveCount(2, { timeout: 15_000 })
+    await expect(page.getByTestId('status-pill')).toHaveText('轮到你落子')
+    await expect(page.getByTestId('stone-7-7')).toBeVisible()
+  })
+
+  test('终局之后的「重新开始」与「再来一局」都不弹确认', async ({ page }) => {
+    await page.goto('/')
+
+    await page.getByRole('button', { name: '认输' }).click()
+    await page.getByRole('button', { name: '确认认输' }).click()
+    const result = page.getByRole('dialog')
+    await expect(result).toContainText('你认输了')
+
+    // 终局弹窗里的「再来一局」直接开新局
+    await page.getByRole('button', { name: '再来一局' }).click()
+    await expect(result).toBeHidden()
+    await expect(page.getByTestId('status-pill')).toHaveText('轮到你落子')
+
+    // 终局之后再点工具栏的「重新开始」也不问
+    await page.getByTestId('intersection-3-3').click()
+    await page.getByRole('button', { name: '认输' }).click()
+    await page.getByRole('button', { name: '确认认输' }).click()
+    await page.getByRole('button', { name: '看看棋盘' }).click()
+
+    await page.getByRole('button', { name: '重新开始' }).click()
+    await expect(page.getByRole('dialog')).toBeHidden()
+    await expect(page.getByTestId(/^stone-/)).toHaveCount(0)
+  })
+})
+
+test.describe('键盘操作工具栏', () => {
+  /**
+   * 用**真键盘**走到「求提示」，而不是程序化 `.focus()`。
+   *
+   * 循环里有界 + 失败断言是刻意的：目标够不着时用例必须**响亮地红**，
+   * 而不是走满次数之后若无其事地通过（F-18/F-30 那类「断言在空转」）。
+   */
+  async function tabTo(page: import('@playwright/test').Page, name: string): Promise<void> {
+    let tabs = 0
+    while (tabs < 20) {
+      await page.keyboard.press('Tab')
+      tabs += 1
+      const focused = await page.evaluate(() => document.activeElement?.textContent?.trim() ?? '')
+      if (focused === name) break
+    }
+    expect(tabs, `按 Tab 应该在 20 步之内到「${name}」`).toBeLessThan(20)
+  }
+
+  test('Tab 走到求提示，回车能触发', async ({ page }) => {
+    await page.goto('/')
+    await page.getByRole('radio', { name: '本地双人' }).click()
+    // 得先有一手：空盘上引擎没有威胁可算，候选本来就是空的（这不是工具栏的问题）
+    await page.getByTestId('intersection-7-7').click()
+    await expect(page.getByTestId('stone-7-7')).toBeVisible()
+
+    await tabTo(page, '求提示')
+    await page.keyboard.press('Enter')
+
+    await expect(page.getByTestId(/^board-mark-/)).toHaveCount(3)
+  })
+
+  test('键盘打开确认、Escape 取消，焦点回到触发它的按钮', async ({ page }) => {
+    await page.goto('/')
+    await page.getByRole('radio', { name: '本地双人' }).click()
+    await page.getByTestId('intersection-7-7').click()
+
+    await tabTo(page, '重新开始')
+    await page.keyboard.press('Enter')
+    await expect(page.getByRole('dialog')).toBeVisible()
+
+    await page.keyboard.press('Escape')
+    await expect(page.getByRole('dialog')).toBeHidden()
+
+    // 「取消后焦点回到原操作位置」——真实浏览器里才验得了
+    const focused = await page.evaluate(() => document.activeElement?.textContent?.trim() ?? '')
+    expect(focused).toBe('重新开始')
+    await expect(page.getByTestId(/^stone-/)).toHaveCount(1)
+  })
+
+  test('确认弹窗打开期间 Tab 出不去', async ({ page }) => {
+    await page.goto('/')
+    await page.getByTestId('intersection-7-7').click()
+    await page.getByRole('button', { name: '重新开始' }).click()
+    await expect(page.getByRole('dialog')).toBeVisible()
+
+    for (let i = 0; i < 6; i++) {
+      await page.keyboard.press('Tab')
+      const inside = await page.evaluate(
+        () => document.activeElement?.closest('[role="dialog"]') !== null,
+      )
+      expect(inside, `第 ${i + 1} 次 Tab 之后焦点跑到确认弹窗外面了`).toBe(true)
+    }
+  })
 })

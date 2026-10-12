@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import { Panel } from './Panel'
 
@@ -74,5 +74,68 @@ describe('Panel 的内边距档位', () => {
     expect(classes).toContain('space-y-2')
     expect(classes).toContain('text-center')
     expect(classes).toContain('p-2')
+  })
+})
+
+/**
+ * 可折叠。给对战页左栏那两组设置用（`SettingsPanel`），**默认关闭**——
+ * 未传 `collapsible` 的调用点行为必须逐字不变。
+ */
+describe('Panel 的折叠', () => {
+  it('默认不折叠：标题是纯文本，不是按钮', () => {
+    render(
+      <Panel title="对局">
+        <p>内容</p>
+      </Panel>,
+    )
+
+    expect(screen.getByRole('heading', { level: 2, name: '对局' })).toBeInTheDocument()
+    expect(screen.queryByRole('button')).toBeNull()
+  })
+
+  it('可折叠时标题变成带 aria-expanded 的按钮，且仍在 h2 里', () => {
+    render(
+      <Panel title="对局设置" collapsible defaultOpen>
+        <p>内容</p>
+      </Panel>,
+    )
+
+    const toggle = screen.getByRole('button', { name: /对局设置/ })
+    expect(toggle).toHaveAttribute('aria-expanded', 'true')
+    // `<button><h2>` 不合法（button 只接受短语内容），层级必须是 `<h2><button>`
+    expect(screen.getByRole('heading', { level: 2 }).contains(toggle)).toBe(true)
+  })
+
+  it('点击把内容收起来，且 aria-expanded 跟着翻', () => {
+    render(
+      <Panel title="对局设置" collapsible defaultOpen>
+        <p>内容</p>
+      </Panel>,
+    )
+
+    const toggle = screen.getByRole('button', { name: /对局设置/ })
+    fireEvent.click(toggle)
+
+    expect(toggle).toHaveAttribute('aria-expanded', 'false')
+    expect(screen.queryByText('内容')).not.toBeInTheDocument()
+
+    fireEvent.click(toggle)
+
+    expect(toggle).toHaveAttribute('aria-expanded', 'true')
+    expect(screen.getByText('内容')).toBeInTheDocument()
+  })
+
+  it('defaultOpen=false 时一开始就是收起的', () => {
+    render(
+      <Panel title="显示与声音" collapsible>
+        <p>内容</p>
+      </Panel>,
+    )
+
+    expect(screen.getByRole('button', { name: /显示与声音/ })).toHaveAttribute(
+      'aria-expanded',
+      'false',
+    )
+    expect(screen.queryByText('内容')).not.toBeInTheDocument()
   })
 })

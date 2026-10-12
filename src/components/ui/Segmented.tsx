@@ -15,6 +15,22 @@ export interface SegmentedProps<T extends string> {
   onChange: (value: T) => void
   label: string
   columns?: number
+  /**
+   * 变更**前**的拦截钩子。返回 `false` 表示这次不算数：**不换选中、也不搬焦点**。
+   *
+   * 对战页用它做防误触确认（切换模式 / 执子会重开一局）——那时它会顺手把确认弹窗
+   * 打开，所以**它允许有副作用，别当成纯谓词**：名字取 `beforeChange` 而不是
+   * `canChange` 就是这个意思。
+   *
+   * 为什么不直接在 `onChange` 里拦（拦截点放回调里就够了）：键盘路径是
+   * 「先 `onChange`、再 `focus()` 到新选项」，拦在 `onChange` 里的话焦点已经走了
+   * ——取消之后焦点落在那个 `aria-checked=false` 且 `tabIndex=-1` 的选项上，
+   * 整组的 Tab 停靠点说选中的是 A、焦点却在 B。
+   *
+   * **它被调用时 `onChange` 就不会被调用**，所以「拦截」这件事必须整个写在这里，
+   * 不能一半在钩子里一半在回调里——那样返回 `false` 时两边都不动，什么也不会发生。
+   */
+  beforeChange?: (next: T) => boolean
 }
 
 /** 方向键的两种惯例都要支持：radiogroup 里左右与上下是等价的。 */
@@ -42,6 +58,7 @@ export function Segmented<T extends string>({
   onChange,
   label,
   columns,
+  beforeChange,
 }: SegmentedProps<T>) {
   const buttons = useRef(new Map<T, HTMLButtonElement>())
 
@@ -50,8 +67,14 @@ export function Segmented<T extends string>({
   // 选中的那一项是停靠点；万一它被禁用了（不该发生，但不能让它锁死键盘），退回第一项
   const stopValue = enabled[selectedIndex === -1 ? 0 : selectedIndex]?.value
 
+  /** 被否决时把焦点收回选中项——不让它停在 `aria-checked=false` 的选项上。 */
+  function snapBackToSelection(): void {
+    buttons.current.get(value)?.focus()
+  }
+
   function moveTo(next: T | undefined): void {
     if (next === undefined || next === value) return
+    if (beforeChange?.(next) === false) return
     onChange(next)
     buttons.current.get(next)?.focus()
   }
@@ -75,6 +98,15 @@ export function Segmented<T extends string>({
       const target = event.key === 'Home' ? enabled[0] : enabled[enabled.length - 1]
       moveTo(target?.value)
     }
+  }
+
+  function handleClick(next: T): void {
+    if (beforeChange?.(next) === false) {
+      // 浏览器已经先把焦点给了被点的这一颗，收回来
+      snapBackToSelection()
+      return
+    }
+    onChange(next)
   }
 
   return (
@@ -102,7 +134,7 @@ export function Segmented<T extends string>({
             // 整组只有一个 Tab 停靠点；组内靠方向键走
             tabIndex={!disabled && option.value === stopValue ? 0 : -1}
             title={option.hint ?? option.label}
-            onClick={() => onChange(option.value)}
+            onClick={() => handleClick(option.value)}
             onKeyDown={(event) => handleKeyDown(event, option.value)}
             className={cx(
               'min-w-0 truncate rounded-md px-2 py-2 text-xs font-medium transition',
