@@ -194,6 +194,18 @@ export function analyzeDirection(
   return { kind: 'none', winningPoints: [] }
 }
 
+/**
+ * **只对空点调用。**
+ *
+ * 内部按「`player` 已经落在 `point` 上」来算（见 `buildLine`），所以对一颗
+ * **已有棋子**的点调用，得到的是「假如这里是空的、落了会怎样」——
+ * 一个看起来合理但毫无意义的答案，不会抛错也不会返回空。
+ *
+ * 当前全部生产调用点都满足这个前提：取点来源只有 `candidateMoves`
+ * （它只收 `board[index] === 0` 的空位）与 `threat.ts:284` 那个显式的
+ * `!== 0` 守卫。`patterns.test.ts` 里有一条用例把这个行为钉住——
+ * 将来若真要改语义，会因为那条用例变红而变成一次刻意决定。
+ */
 export function analyzeFast(board: Board, point: Point, player: Player): FastThreat {
   const winningPoints: Point[] = []
   let five = false
@@ -279,6 +291,8 @@ function analyzeRuns(board: Board, point: Point, player: Player): ShapeCount {
  *
  * **只用于提示与威胁展示**，不要在搜索的每节点路径上调用它——
  * 判三要对每个方向逐空位试放，单点比 `analyzeFast` 贵数倍。
+ *
+ * **同样只对空点调用**，理由见 `analyzeFast`。
  */
 export function analyzePoint(board: Board, point: Point, player: Player): ShapeCount {
   const counts = createShapeCount()
@@ -403,7 +417,7 @@ export function threatAt(board: Board, point: Point, player: Player): number {
   return threatScoreWith(board, point, player, analyzeFast(board, point, player))
 }
 
-/** 这一手是否让 `player` 立刻连成五子。 */
+/** 这一手是否让 `player` 立刻连成五子。**只对空点调用**，理由同 `analyzeFast`。 */
 export function isWinningPoint(board: Board, point: Point, player: Player): boolean {
   return analyzeFast(board, point, player).five
 }

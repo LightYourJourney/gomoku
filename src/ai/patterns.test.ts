@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { createBoard, DIRECTIONS } from '../core/board'
+import { findWinLine } from '../core/rules'
 import { BLACK, WHITE, type Board, type Point } from '../core/types'
 import { boardFromLines } from '../test/board-fixtures'
 import {
@@ -482,5 +483,41 @@ describe('doubleThreat —— 双重威胁谓词', () => {
 
   it('空盘上什么都不算', () => {
     expect(hasDoubleThreat(analyzePoint(createBoard(), AT, BLACK))).toBe(false)
+  })
+})
+
+
+describe('前置条件：只对空点调用', () => {
+
+  /**
+   * `buildLine` 无条件把落点那一格当成「己方已落下」（`line[CENTER] = player`）——
+   * 那正是 `analyzeFast` 的用途（问「我下这里会怎样」）。代价是：**对一颗已有棋子
+   * 的点调用，它会给出一个看起来合理、实际上毫无意义的答案**，不抛错也不返回空。
+   *
+   * 这一条把那个行为钉住，不是为了保护它，而是为了让将来任何改动都变成**刻意决定**。
+   * 当前全部生产调用点都只传空点（取点来源只有 `candidateMoves` 与 `threat.ts` 的显式守卫）。
+   */
+  it('对一颗**对方**的棋子调用时，会假装它是空的并据此作答', () => {
+    // 第 7 行：x=4 是白子，x=5..8 是黑子。黑棋在这条线上已经有五连了吗？没有——
+    // 白子把左边堵死了，黑棋只有四颗。
+    const board = rowBoard('....WBBBB......')
+
+    expect(findWinLine(board, { x: 8, y: 7 })).toBeNull() // 黑棋并没有赢
+
+    // 但若问「黑棋下在 (4,7) 会怎样」——那里明明是白子——它会回答「成五」，
+    // 因为落点被强行当成了黑子，于是 x=4..8 凑成五连。
+    const threat = analyzeFast(board, { x: 4, y: 7 }, BLACK)
+    expect(threat.five).toBe(true)
+
+    // 同一件事换个写法也成立：isWinningPoint 同样只回答「假如这里是空的」。
+    expect(isWinningPoint(board, { x: 4, y: 7 }, BLACK)).toBe(true)
+
+    // 对**空点**问同样的问题，答案才是真话：
+    // x=5..8 是四颗黑子，左端被白子堵死，所以唯一的成五点是 (9,7)。
+    expect(isWinningPoint(board, { x: 9, y: 7 }, BLACK)).toBe(true)
+    expect(isWinningPoint(board, { x: 10, y: 7 }, BLACK)).toBe(false)
+
+    // 三个点里只有 (4,7) 那一格是**对方**的棋子，而只有它被答成了「成五」。
+    expect(board[7 * 15 + 4]).toBe(WHITE)
   })
 })
