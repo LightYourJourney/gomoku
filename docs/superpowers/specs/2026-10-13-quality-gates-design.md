@@ -135,7 +135,7 @@ hard 那两行会翻成 `timeout` → 节点数变化 → **代码没改却红**
 | 闸门 | 工具 | 判据 |
 | --- | --- | --- |
 | 循环依赖 | `madge --circular` | 有环即红（今天零环，无历史包袱，不设容忍） |
-| 死代码 | `knip` | 用 `ignoreExportsUsedInFile` 按**符号种类**放行整类 + `@public` 逐个标记，不塞 blanket ignore |
+| 死代码 | `knip` | 用 `ignoreExportsUsedInFile` 按**符号种类**放行「只被签名引用」那一类；剩下那对同义常量用 `ignoreIssues`（**不是** `@public`——knip 报的是 `duplicates`，`@public` 管的是「未被使用的导出」，对它无效）。不塞 blanket ignore |
 | 重复代码 | `jscpd --min-tokens 50` | 范围＝`src/` **且排除测试文件**；**阈值 0**，接受的同形逐个文件显式豁免。**只认逐字相同的克隆** |
 
 **jscpd 的范围与阈值是刻意的**：

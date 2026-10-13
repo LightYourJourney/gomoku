@@ -14,7 +14,7 @@
  * 用法：`yarn check:tests`。前提是刚跑过 `yarn test`（它落盘 vitest-report.json）。
  */
 
-import { readFile } from 'node:fs/promises'
+import { readdir, readFile } from 'node:fs/promises'
 import { execFileSync } from 'node:child_process'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -73,11 +73,39 @@ try {
     (stderr === '' ? '' : `：\n${stderr.split('\n').slice(-6).join('\n')}`)
 }
 
+/*
+ * e2e 的**静态** skip 检查。
+ *
+ * 为什么不能靠 `playwright --list` 的数：给一条用例加 `test.skip` 之后它仍然是
+ * `Total: 103 tests`（实测过），行首也不打任何标记——**跳过的用例在总数里照样算一个**。
+ * 单测那边有 `numPendingTests` 兜着，e2e 这边没有等价的字段。
+ * 所以这里直接扫 spec 文件里的 skip/fixme 标记，把「跳过」变成一个只许涨不许跌的数。
+ */
+const SKIP_MARKER = /\b(test|describe|it)\.(skip|fixme)\b/
+const e2eSpecs = (await readdir(resolve(REPO, 'e2e'))).filter((f) => f.endsWith('.spec.ts'))
+const skipHits = []
+for (const f of e2eSpecs) {
+  const lines = (await readFile(resolve(REPO, 'e2e', f), 'utf8')).split('\n')
+  lines.forEach((line, i) => {
+    const t = line.trim()
+    // 注释里提到 `test.skip` 不算
+    if (t.startsWith('//') || t.startsWith('*')) return
+    if (SKIP_MARKER.test(line)) skipHits.push(`e2e/${f}:${i + 1}`)
+  })
+}
+
 const checks = [
   ['单测总数', report.numTotalTests, baseline.unitTotal, 'below', 'vitest-report.json 里没有这个字段'],
   ['单测被跳过的（.skip）', report.numPendingTests, baseline.unitPending, 'above', 'vitest-report.json 里没有这个字段'],
   ['单测待办的（.todo）', report.numTodoTests, baseline.unitTodo, 'above', 'vitest-report.json 里没有这个字段'],
   ['e2e 总数', e2eTotal, baseline.e2eTotal, 'below', e2eError ?? 'playwright --list 的输出里没找到总数'],
+  [
+    'e2e 被跳过的（.skip/.fixme）',
+    skipHits.length,
+    baseline.e2eSkipped,
+    'above',
+    skipHits.length > 0 ? `扫到这些标记：${skipHits.join('、')}` : '',
+  ],
 ]
 
 const failures = []
@@ -93,6 +121,11 @@ for (const [name, actual, expected, dir, why] of checks) {
 if (failures.length > 0) {
   console.error(`✗ 测试条数棘轮：安全网变小了（${failures.length} 项）`)
   for (const f of failures) console.error(`  - ${f}`)
+  // 光说「多了 1 个」没用，得点到是哪一行——报错读不懂，人就会去绕开闸门。
+  if (skipHits.length > baseline.e2eSkipped) {
+    console.error('  被跳过的用例在这些地方：')
+    for (const h of skipHits) console.error(`    ${h}`)
+  }
   console.error(
     '\n  这是有意的：删用例与跳用例都是把安全网改小。' +
       '\n  真要减，就显式改 quality/tests.baseline.json，并在提交信息里写明为什么。',
@@ -100,6 +133,7 @@ if (failures.length > 0) {
   process.exitCode = 1
 } else {
   console.log(
-    `✓ 测试条数棘轮通过：单测 ${report.numTotalTests}（跳过 ${report.numPendingTests} / 待办 ${report.numTodoTests}）、e2e ${e2eTotal}`,
+    `✓ 测试条数棘轮通过：单测 ${report.numTotalTests}（跳过 ${report.numPendingTests} / 待办 ${report.numTodoTests}）、` +
+      `e2e ${e2eTotal}（扫了 ${e2eSpecs.length} 个 spec 文件，skip/fixme 标记 ${skipHits.length} 个）`,
   )
 }
