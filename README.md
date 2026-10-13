@@ -34,6 +34,7 @@ yarn dev          # 开发服务器
 | `yarn bench` | 引擎基准（约一两分钟），数字见 [docs/AI_ENGINE.md](docs/AI_ENGINE.md) 的「实测」 |
 | `yarn bench:render` | 首屏与落子成本的浏览器实测，数字见 [docs/TEST_REPORT.md](docs/TEST_REPORT.md) |
 | `yarn check:cycles` | 循环依赖闸门（madge）。**范围只到 `src/`**——`bench/`、`e2e/` 是脚本，循环风险低，但别以为全仓都查过。有环即红并点名环路 |
+| `yarn check:dupes` | 重复代码闸门（jscpd）。范围 `src/`、排除测试、**阈值 0**（零容忍），已接受的 6 个文件显式豁免并在 `TECH_DEBT.md` 写明理由。**它只认逐字相同的克隆**：复制粘贴会红，**改掉标识符的复制不会**——别把它当成「重复实现」检测器 |
 | `yarn check:deadcode` | 死代码闸门（knip）。基线写在 `knip.jsonc` 里，**理由也在里面**——放行的是「只被签名引用的类型导出」整类（见 `TECH_DEBT.md` §1.3 的裁定），真·多余导出照样会红 |
 
 提交前的完整清单见 [AGENTS.md](AGENTS.md)。

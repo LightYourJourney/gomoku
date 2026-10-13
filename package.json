@@ -17,7 +17,8 @@
     "bench:render": "yarn build && node bench/render.probe.mjs",
     "ui:probe": "node bench/ui.probe.mjs",
     "check:cycles": "madge --circular --extensions ts,tsx src",
-    "check:deadcode": "knip --reporter compact"
+    "check:deadcode": "knip --reporter compact",
+    "check:dupes": "jscpd --config .jscpd.json"
   },
   "dependencies": {
     "react": "^19.2.8",
@@ -36,6 +37,7 @@
     "@types/react-dom": "^19.2.7",
     "@vitejs/plugin-react": "^6.1.1",
     "fake-indexeddb": "^6.2.5",
+    "jscpd": "5.4.1",
     "jsdom": "^30.1.2",
     "knip": "6.41.0",
     "madge": "8.0.0",

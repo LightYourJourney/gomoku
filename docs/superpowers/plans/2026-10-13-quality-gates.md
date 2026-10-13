@@ -175,8 +175,10 @@ Expected: **4 处克隆 / 重复行 0.84%**（含 `gameRecords`↔`progress`、`
   （**排除测试是政策决定**：测试里重复夹具是合理的，为过闸门去写更差的测试是本末倒置）
 - `threshold: 0` —— **不容忍**，任何没被显式接受的新克隆都红
 - 把 Step 1 里那 4 处涉及的 6 个文件放进 `ignore`，并在 `docs/audit/TECH_DEBT.md` 写明理由：
-  `gameRecords`↔`progress` 是两个存储层各自的 `withStore`（事务边界不同，合并会把它们搅在一起）、
-  `lessons`↔`puzzles` 是两批内容数据的同形写法。
+  **理由要照着克隆片段写，别照着印象写**——计划最初这里写过一版错的：
+  说 `gameRecords`↔`progress` 是「两个存储层各自的 `withStore`（事务边界不同）」，
+  实施时打开片段一看，那 33 行其实是**两个存储层共用的 IndexedDB 工厂解析与内存回退样板**。
+  真实理由见 `TECH_DEBT.md` §1.3（那里同时写明**这个数字只减不增**）。
   **代价写在文档里**：这 6 个文件不受这道闸门保护。
 
 加脚本 `"check:dupes": "jscpd --config .jscpd.json"`。

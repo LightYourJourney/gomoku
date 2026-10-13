@@ -1473,6 +1473,60 @@ js-tokens@^4.0.0:
   resolved "https://registry.npmmirror.com/js-tokens/-/js-tokens-4.0.0.tgz#19203fb59991df98e3a287050d4647cdeaf32499"
   integrity sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==
 
+jscpd-darwin-arm64@5.4.1:
+  version "5.4.1"
+  resolved "https://registry.npmmirror.com/jscpd-darwin-arm64/-/jscpd-darwin-arm64-5.4.1.tgz#2bf9b84285c60382a54fbf12cd0242ba27c4da63"
+  integrity sha512-LXHVeH60C9BsozcVIMPmXWvj97KqFKbCJYmYG4hDwfwIwS1kz+uF7yiObckP6h2xo12pD88nI4XjWTB5frjZUw==
+
+jscpd-darwin-x64@5.4.1:
+  version "5.4.1"
+  resolved "https://registry.npmmirror.com/jscpd-darwin-x64/-/jscpd-darwin-x64-5.4.1.tgz#eeda203eaa0c63e884a35f7147378588bef3fa50"
+  integrity sha512-Gqck4tcMZjv4IvYHU2Vcikb885zTADo5T/YfEqeu1i5W5tfFpLdViiTYrh5wbrW+uxBqC33gHpG1hy0xbGYknQ==
+
+jscpd-linux-arm64-gnu@5.4.1:
+  version "5.4.1"
+  resolved "https://registry.npmmirror.com/jscpd-linux-arm64-gnu/-/jscpd-linux-arm64-gnu-5.4.1.tgz#d337035aa61096995c5efac9bfe02944e3eefeae"
+  integrity sha512-XUYZJZVxSY7JIBEoyOOMTgvJwmymkns4wG55tu6I/vRKXnS5QtaTESQfRLt6xj1+62aflAvr01FAhPAy+du6tA==
+
+jscpd-linux-arm64-musl@5.4.1:
+  version "5.4.1"
+  resolved "https://registry.npmmirror.com/jscpd-linux-arm64-musl/-/jscpd-linux-arm64-musl-5.4.1.tgz#67bad741e0c91f009666cfd83cc066a069489f2d"
+  integrity sha512-h2sH8Bk++yBxWqq2QAy4fvPzXkw1vecDSyOmzLwPfnRQoQ2Q/EWxCNOrgJSb+SNMLWoHLLzfqx8m9wt2GG6a8w==
+
+jscpd-linux-x64-gnu@5.4.1:
+  version "5.4.1"
+  resolved "https://registry.npmmirror.com/jscpd-linux-x64-gnu/-/jscpd-linux-x64-gnu-5.4.1.tgz#73fac2c8238d8183ef06fe277ec005768b261b1a"
+  integrity sha512-UiC4YoGAVVLy6hPVz8A6cndo7W5br4FAO2hADnFeinhBPnXPu0QFh1q/s/8B3ldeQHQkpYd/l5cjqNBMrbm78w==
+
+jscpd-linux-x64-musl@5.4.1:
+  version "5.4.1"
+  resolved "https://registry.npmmirror.com/jscpd-linux-x64-musl/-/jscpd-linux-x64-musl-5.4.1.tgz#20773786df4216819f041d4ab4d1047277109725"
+  integrity sha512-toAafl5roqfFotPrDJNMY9noNVZ9dReBqcO/nT5pJ8+7aq+opbscaLUcV4+8jxTq5btUD6CiO72+Fu+TyUZv3Q==
+
+jscpd-windows-arm64-msvc@5.4.1:
+  version "5.4.1"
+  resolved "https://registry.npmmirror.com/jscpd-windows-arm64-msvc/-/jscpd-windows-arm64-msvc-5.4.1.tgz#d42bde86379c47e1da1ce7947da18c59e28acf8e"
+  integrity sha512-JLMga/NIwv/OPurPsXA2/d5OdWfdwrsBk2D4NhyKnrV/uNjo1BIi2zXztzDyTQVKMK/TEK6GPgLD143GG1fZ0A==
+
+jscpd-windows-x64-msvc@5.4.1:
+  version "5.4.1"
+  resolved "https://registry.npmmirror.com/jscpd-windows-x64-msvc/-/jscpd-windows-x64-msvc-5.4.1.tgz#88b506c49456a3a1f7f16595d0f504dbd3b3b180"
+  integrity sha512-sN57Y9YP3ijrqc1IsWDceOFHUwbukg9/mU2NSDHTryKKc5CUvWz+o9GId8uKTiJIhkKfR/Ce5GKkCepTwB6kaw==
+
+jscpd@5.4.1:
+  version "5.4.1"
+  resolved "https://registry.npmmirror.com/jscpd/-/jscpd-5.4.1.tgz#1240c61008a8a9aee8148a7d281780a280383674"
+  integrity sha512-afUt+LSQMmzSPYrWZlNGTwj8X4tmwVJbMNmr92qxPf4uUF/naLwG7SQyMPEZtrHqGgzGxmAzNjiwlVdjls2MyQ==
+  optionalDependencies:
+    jscpd-darwin-arm64 "5.4.1"
+    jscpd-darwin-x64 "5.4.1"
+    jscpd-linux-arm64-gnu "5.4.1"
+    jscpd-linux-arm64-musl "5.4.1"
+    jscpd-linux-x64-gnu "5.4.1"
+    jscpd-linux-x64-musl "5.4.1"
+    jscpd-windows-arm64-msvc "5.4.1"
+    jscpd-windows-x64-msvc "5.4.1"
+
 jsdom@^30.1.2:
   version "30.1.2"
   resolved "https://registry.npmmirror.com/jsdom/-/jsdom-30.1.2.tgz#28ef0482cab9724692c9dffcec3a6a6ae8a8f91e"

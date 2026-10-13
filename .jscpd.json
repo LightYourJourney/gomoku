@@ -1,0 +1,15 @@
+{
+  "path": ["src"],
+  "minTokens": 50,
+  "minLines": 5,
+  "threshold": 0,
+  "ignore": [
+    "**/*.test.*",
+    "**/LearnScreen.tsx",
+    "**/PuzzleScreen.tsx",
+    "**/lessons.ts",
+    "**/puzzles.ts",
+    "**/gameRecords.ts",
+    "**/progress.ts"
+  ]
+}

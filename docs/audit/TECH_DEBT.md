@@ -56,6 +56,16 @@ Phase D 只做**设计级影响分析**，不开发任何新功能。
   这是一条**裁定**，不是遗漏：再有人问「为什么 knip 不报这些」，答案是这份 §1.3。
   （同文件里 `verify.ts` 那个 `export const OK` 是**真**多余的导出，已修——`variable` 种类不在放行之列。）
 - `Board.tsx` 的 565 行；225 个命中 `<rect>` 与每格一个 `onKeyDown`
+- **`.jscpd.json` 里那 6 个被豁免的文件**（`LearnScreen`/`PuzzleScreen`、`lessons`/`puzzles`、
+  `gameRecords`/`progress`）—— 2026-10-13 建立重复代码闸门时逐个看过，不是图省事：
+  - `lessons.ts` ↔ `puzzles.ts`（两处各 21 行）：克隆的是**内容数据字面量的形状**
+    （`prompt:` + `board(BLANK, BLANK, …)`），不是逻辑。要消除它就得为数据造一层 DSL。
+  - `gameRecords.ts` ↔ `progress.ts`（33 行）：两个存储层共用的 **IndexedDB 工厂解析与内存回退样板**
+    （优先真 IDB，环境不支持时退到内存）。合并它等于把两个语义不同的存储层搅在一起。
+  - `LearnScreen.tsx` ↔ `PuzzleScreen.tsx`（13 行）：两个列表页共用的 store 取用与「渲染期恢复上次项」写法。
+
+  **这个数字只减不增**：再加豁免必须同时给出「为什么这两处不能合并」的一句判断，
+  并且**加进这份清单**。加到覆盖了大半个 `features/` 时，这道闸门就只剩装饰作用了。
 - 教学/题库不拆出主包
 - `noUncheckedIndexedAccess` 未开
 - 两套棋型分值表、两种「三」的口径、`threatScoreWith` 里那次看似多余的 `analyzeRuns`
