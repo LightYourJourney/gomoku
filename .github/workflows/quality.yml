@@ -1,0 +1,28 @@
+# 质量门禁 · 全档。
+#
+# 分两步开（见 docs/superpowers/specs/2026-10-13-quality-gates-design.md 的反目标）：
+# 先只跑快档，绿了再打开全档——否则首跑一红，分不清是环境还是代码。
+#
+# 快档与本地 pre-push 钩子跑的是**同一批脚本**，所以「本地绿、CI 红」只可能是环境差异。
+name: quality
+
+on: [push, pull_request]
+
+jobs:
+  # 与 .githooks/pre-push 同口径。热跑约 45 秒（本地），CI 上更久但远低于超时。
+  fast:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          # 与本地一致（本机 v26.11.1）。仓库没有版本固定文件，这里就是唯一的钉子。
+          node-version: '26'
+          cache: yarn
+      - run: yarn install --frozen-lockfile
+      - run: yarn lint
+      - run: yarn typecheck
+      - run: yarn test
+      - run: yarn build
+      - run: yarn gates
