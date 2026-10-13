@@ -135,13 +135,22 @@ test('学习页在窄屏上不横向溢出，棋盘是正方形', async ({ page 
   expect(box.width).toBeLessThanOrEqual(page.viewportSize()!.width)
 })
 
-test('学习页的棋盘：手指拖动不滚页面，点按命中正确', async ({ page }) => {
+/**
+ * 走到「规则」那节课的练习盘。
+ *
+ * 练习页的棋盘是**另一个实例**，`touch-action` 与命中区都得在它自己身上验一遍。
+ */
+async function gotoPracticeBoard(page: import('@playwright/test').Page): Promise<void> {
   await page.goto('/')
   await page.getByRole('button', { name: '教学', exact: true }).click()
   await page.getByTestId('lesson-rules').click()
   for (let i = 0; i < 3; i++) {
     await page.getByRole('button', { name: '下一步' }).click()
   }
+}
+
+test('学习页的棋盘：手指拖动不滚页面，也不误落子', async ({ page }) => {
+  await gotoPracticeBoard(page)
 
   // 练习页的棋盘是另一个实例，`touch-action` 得在它自己身上验一遍。
   await expect(page.getByTestId('board')).toHaveCSS('touch-action', 'none')
@@ -177,6 +186,27 @@ test('学习页的棋盘：手指拖动不滚页面，点按命中正确', async
 
   // 拖动不该被当成落子：手指划过去就落一颗，是误触而不是交互。
   await expect(stones).toHaveCount(stonesBefore)
+})
+
+/**
+ * 点按那条**单独一个测试**，不与上面的拖动合在一起。
+ *
+ * 为什么不能合：合起来就是「同一个测试里先用 CDP 注入拖动、再用 `touchscreen.tap` 点按」，
+ * 而这两种输入通道混在同一段手势序列里，在 CI runner 的 Chrome 上**第二次不产生 click**
+ * ——`touchscreen.tap` 静默不生效，`feedback` 于是根本不存在（本机 macOS 上则通过）。
+ * 真实手指不会这样：它两次都走同一条系统通道。所以这是脚手架的产物，不是产品缺陷。
+ * （排查过程见 docs/TEST_REPORT.md「〇之十一」：诊断打印过该处元素，
+ *  确认落点就是 `rect#intersection-4-7`、那一格也是空的。）
+ */
+test('学习页的棋盘：点按命中正确，判定结果对得上', async ({ page }) => {
+  await gotoPracticeBoard(page)
+
+  const target = await page.getByTestId('intersection-4-7').boundingBox()
+  expect(target).not.toBeNull()
+  if (target === null) return
+
+  const x = target.x + target.width / 2
+  const y = target.y + target.height / 2
 
   // 点之前先把**前提**写死并验掉。`Board.tsx` 的 handleClick 对已占的格子直接 return
   // （`if (board[idx(x, y)] !== 0) return`），那样点上去不会产生任何反馈，
@@ -187,16 +217,7 @@ test('学习页的棋盘：手指拖动不滚页面，点按命中正确', async
   ).toBe(0)
   expect(await page.getByTestId('feedback').count(), '还没点就已经有判定结果了？').toBe(0)
 
-  const atPoint = await page.evaluate(
-    ([x, y]) => {
-      const el = document.elementFromPoint(x, y)
-      return el === null ? '（那里什么都没有）' : `${el.tagName}#${el.getAttribute('data-testid') ?? '-'}`
-    },
-    [startX, startY],
-  )
-  console.log(`[诊断] 轻点 (${Math.round(startX)},${Math.round(startY)})，该处元素：${atPoint}`)
-
-  await page.touchscreen.tap(startX, startY)
+  await page.touchscreen.tap(x, y)
 
   // 点到哪就落在哪：落点必须是这一手本身，判定结果也得对上
   await expect(page.getByTestId('feedback')).toHaveAttribute('data-ok', 'true')
