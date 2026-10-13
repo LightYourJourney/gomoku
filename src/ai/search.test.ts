@@ -614,6 +614,26 @@ describe('局面评分的视角', () => {
   })
 
   /**
+   * **`reason: 'win'` 不等于「棋盘上出现了五连」。**
+   *
+   * 它有两个来源（`search.ts`）：`:463` 这一步直接成五；`:490` 的 `findForcedWin`
+   * （算杀 / VCT）——`allowThrees` 打开时**首手可以只是活三**。
+   *
+   * 这条断言是给界面看的：对战页的 AI 面板把 `win` 写成一句人话，
+   * 初稿写的是「AI 补成了五子，直接取胜」——对下面这个局面（黑活三、全场没有四）
+   * 是**假话**。界面改文案前先看这里。
+   */
+  it('活三也返回 win——那时棋盘上一颗五连都没有', () => {
+    const board = boardFromLines(['...............', '...............', '...BBB.........'])
+
+    const result = ask(board, BLACK, 'medium')
+
+    expect(result.reason).toBe('win')
+    // 盘面上黑子最多连了 3 颗，一个五连都没有
+    expect(board.filter((cell) => cell === BLACK)).toHaveLength(3)
+  })
+
+  /**
    * **但 `block` 那一档不是同一把尺子。**
    *
    * 它走捷径，`score` 来自 `bestBlock` 的启发式量级——正负号表达的是

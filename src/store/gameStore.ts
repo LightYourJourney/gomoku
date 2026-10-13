@@ -31,6 +31,14 @@ export interface AiInfo {
   readonly score: number
   readonly confidence: Confidence
   readonly reason: SearchReason
+  /**
+   * AI 最后落在哪。默认层要把它写成「AI 落在 H8」——
+   * 任务书 §七 给玩家视图举的例就是「推荐落点：H8」。
+   *
+   * 用 `Point | null` 而不是 `Point`：`no_move`（棋盘已满）时引擎返回 `move: null`，
+   * 那时没有落点可报。硬塞一个假坐标是在编。
+   */
+  readonly move: Point | null
 }
 
 export interface GameStore {
@@ -544,6 +552,7 @@ export function createGameStore(
             score: response.score,
             confidence: response.confidence,
             reason: response.reason,
+            move: response.move,
           },
         })
         notifyGameEnd(current, outcome.state)

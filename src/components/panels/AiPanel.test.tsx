@@ -10,6 +10,7 @@ const INFO: AiInfo = {
   score: -700,
   confidence: 'exact',
   reason: 'search',
+  move: { x: 7, y: 7 },
 }
 
 function setup(overrides: Partial<AiPanelProps> = {}) {
@@ -85,6 +86,7 @@ describe('AiPanel —— 两级信息', () => {
     setup({ info: INFO })
 
     expect(screen.getByTestId('ai-player-view')).toHaveTextContent('AI 完整搜索后选了这一手。')
+    expect(screen.getByTestId('ai-move')).toHaveTextContent('H8')
     // 指标全都进了展开层
     expect(screen.queryByText('2 层')).not.toBeInTheDocument()
     expect(screen.queryByText('42')).not.toBeInTheDocument()
@@ -93,7 +95,7 @@ describe('AiPanel —— 两级信息', () => {
   })
 
   it.each([
-    ['win', 'AI 补成了五子，直接取胜。'],
+    ['win', 'AI 看到一条连成五子的必胜路线，走了它的第一步。'],
     ['block', 'AI 在防守：你下一手能连成五子，它先堵住。'],
     ['opening', '开局第一手，AI 占了天元。'],
     ['search', 'AI 完整搜索后选了这一手。'],

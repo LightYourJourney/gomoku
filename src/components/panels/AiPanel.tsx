@@ -1,5 +1,6 @@
 import { useId, useState } from 'react'
 import type { SearchReason } from '../../ai/types'
+import { formatPoint } from '../../lib/coords'
 import { cx } from '../../lib/cx'
 import type { AiInfo } from '../../store/gameStore'
 import { Button } from '../ui/Button'
@@ -21,7 +22,17 @@ import { Panel } from '../ui/Panel'
  * 所以这里没有「因为对手有活三」这类话，引擎没这么说，我们就不许这么写。
  */
 const REASON_TEXT: Record<SearchReason, { label: string; player: string }> = {
-  win: { label: '直接取胜', player: 'AI 补成了五子，直接取胜。' },
+  /*
+   * `win` **不等于**「刚补成五子」。它有两个来源（`src/ai/search.ts`）：
+   *   1. `:463` 这一步直接成五——那种情况下「补成五子」是实话；
+   *   2. `:490` 的 `findForcedWin`（算杀 / VCT）——**首手可以只是活三**，
+   *      棋盘上一颗五连都不会出现。
+   * 实测过：盘面 `...BBB.........`（黑活三、无四）也返回 `reason: 'win'`。
+   * 初稿写的「AI 补成了五子」对第 2 种是**假话**，违反任务书 §七
+   * 「禁止伪造……AI 的自然语言推理过程」。改成对两种都成立的说法：
+   * 说的是**引擎算出了什么**，不是「棋盘上出现了什么」。
+   */
+  win: { label: '直接取胜', player: 'AI 看到一条连成五子的必胜路线，走了它的第一步。' },
   block: { label: '必须防守', player: 'AI 在防守：你下一手能连成五子，它先堵住。' },
   search: { label: '搜索结果', player: 'AI 完整搜索后选了这一手。' },
   opening: { label: '开局天元', player: '开局第一手，AI 占了天元。' },
@@ -125,8 +136,21 @@ export function AiPanel({ thinking, info, error, canRetry, onRetry, onDismissErr
         <p className="py-2 text-xs text-faint">尚未产生分析结果。</p>
       ) : (
         <div className="space-y-2">
-          <p data-testid="ai-player-view" className="text-xs leading-relaxed text-fg">
-            {REASON_TEXT[info.reason].player}
+          {/*
+            落点单独成一句：任务书 §七 给玩家视图举的两个例子里就有一个是
+            「推荐落点：H8」。`no_move`（棋盘已满）时没有落点，那时不编一个出来。
+          */}
+          <p className="text-xs leading-relaxed text-fg">
+            <span data-testid="ai-player-view">{REASON_TEXT[info.reason].player}</span>
+            {info.move !== null && (
+              <>
+                {' '}落点{' '}
+                <span data-testid="ai-move" className="font-mono font-semibold tabular-nums">
+                  {formatPoint(info.move)}
+                </span>
+                。
+              </>
+            )}
           </p>
 
           {/*
