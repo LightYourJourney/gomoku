@@ -107,8 +107,13 @@ describe('HintPanel —— 候选', () => {
     expect(screen.getByTestId('hint-urgency')).toHaveTextContent('一般')
   })
 
-  it('标注提示不保证最优', () => {
-    setup({ candidates: SUGGESTIONS, urgency: 'normal', confidence: 'exact' })
+  /**
+   * 这条此前传的是 `confidence: 'exact'`，却断言出现「不保证最优」——
+   * 它**靠脚注里那句「它只是建议，不保证最优」蒙对的**，而不是靠可信度标注。
+   * 脚注收进「?」之后它立刻露馅。修成它真正想测的那一档。
+   */
+  it('启发式的提示明确标注不保证最优', () => {
+    setup({ candidates: SUGGESTIONS, urgency: 'normal', confidence: 'heuristic' })
 
     expect(screen.getByText(/不保证最优/)).toBeInTheDocument()
   })
@@ -130,10 +135,35 @@ describe('HintPanel —— 候选', () => {
     expect(screen.queryByText(/短预算/)).not.toBeInTheDocument()
   })
 
-  it('有候选时才说明这份提示是怎么算出来的', () => {
+  /**
+   * Phase 03：脚注从「有候选就出现」再收一层，进标题右侧的「?」。
+   * 判据是 `DESIGN_SYSTEM.md` §7——「内部参数（预算毫秒数、候选宽度）」属于
+   * 默认界面不出现的东西，`800 ms` 正是预算毫秒数。
+   */
+  it('有候选时不直接把预算毫秒数印在默认界面，而是给一个「?」', () => {
     setup({ candidates: SUGGESTIONS, urgency: 'normal', confidence: 'exact' })
 
+    expect(screen.queryByText(/短预算/)).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '提示是怎么算出来的' })).toBeInTheDocument()
+  })
+
+  it('点开「?」之后读得到那份说明，再点一次收回去', () => {
+    setup({ candidates: SUGGESTIONS, urgency: 'normal', confidence: 'exact' })
+    const button = screen.getByRole('button', { name: '提示是怎么算出来的' })
+
+    expect(button).toHaveAttribute('aria-expanded', 'false')
+    fireEvent.click(button)
+    expect(button).toHaveAttribute('aria-expanded', 'true')
     expect(screen.getByText(/短预算/)).toBeInTheDocument()
+
+    fireEvent.click(button)
+    expect(screen.queryByText(/短预算/)).not.toBeInTheDocument()
+  })
+
+  it('没有候选时连「?」都不摆——没有可展开的东西', () => {
+    setup()
+
+    expect(screen.queryByRole('button', { name: '提示是怎么算出来的' })).not.toBeInTheDocument()
   })
 
   it('给出精确结论时标明是精确的', () => {

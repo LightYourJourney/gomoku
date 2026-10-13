@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test'
+import { expect, test, type Page } from '@playwright/test'
 import { DIFFICULTY_PARAMS } from '../src/ai/difficulty'
 
 /**
@@ -561,5 +561,77 @@ test.describe('键盘操作工具栏', () => {
       )
       expect(inside, `第 ${i + 1} 次 Tab 之后焦点跑到确认弹窗外面了`).toBe(true)
     }
+  })
+})
+
+/**
+ * AI 面板的两级信息（Phase 03，任务书 §七）。
+ *
+ * **为什么这条判据必须在真实文本上做，而不是靠探针的 `typeSamples`**：
+ * `typeSamples` 按「字号|行高|颜色|字重」去重，每个样式只留**第一个**元素的文本，
+ * 同一样式的另一个元素会被折进 `count` 里、字符串根本不出现在样本中。
+ * 实测过一次：`battle-midgame` 的截图里明明印着「尚未产生分析结果。」，
+ * 而 `typeSamples` 里查不到它。拿这种字段当门禁，判据会**悄悄停止生效**。
+ */
+test.describe('AI 面板的两级信息', () => {
+  /** 走一手人棋，等 AI 应手并给出分析结果。 */
+  async function playUntilAiAnalysed(page: Page): Promise<void> {
+    await page.goto('/')
+    await page.getByTestId('intersection-7-7').click()
+    await expect(page.getByTestId('ai-player-view')).toBeVisible({ timeout: 20_000 })
+  }
+
+  test('默认层说人话，不出现算法名词与实现细节', async ({ page }) => {
+    await playUntilAiAnalysed(page)
+
+    await expect(page.getByTestId('ai-player-view')).toBeVisible()
+    // 这三段此前分别出现在默认界面 / 默认界面上
+    await expect(page.getByText(/引擎跑在/)).toHaveCount(0)
+    await expect(page.getByText(/Web Worker/)).toHaveCount(0)
+    await expect(page.getByText(/Negamax/)).toHaveCount(0)
+    // 搜索指标也不在默认层
+    await expect(page.getByText('搜索深度')).toHaveCount(0)
+    await expect(page.getByText('局面评分')).toHaveCount(0)
+  })
+
+  test('「?」能用键盘打开，展开后读得到技术详情', async ({ page }) => {
+    await playUntilAiAnalysed(page)
+
+    const button = page.getByRole('button', { name: 'AI 引擎的技术详情' })
+    await expect(button).toHaveAttribute('aria-expanded', 'false')
+    await expect(button).not.toHaveAttribute('aria-controls')
+
+    await button.focus()
+    await page.keyboard.press('Enter')
+
+    await expect(button).toHaveAttribute('aria-expanded', 'true')
+    const controls = await button.getAttribute('aria-controls')
+    expect(controls).toBeTruthy()
+    await expect(page.locator(`#${controls}`)).toBeVisible()
+    // `exact` 不能少：算法说明那段散文里也出现了「搜索深度」四个字，
+    // 不加精确匹配会撞上 strict mode（一条用例拦到两个元素）。
+    await expect(page.getByText('搜索深度', { exact: true })).toBeVisible()
+    await expect(page.getByText('局面评分', { exact: true })).toBeVisible()
+    await expect(page.getByText(/Negamax/)).toBeVisible()
+  })
+
+  test('展开状态刷新后不保留', async ({ page }) => {
+    await playUntilAiAnalysed(page)
+
+    await page.getByRole('button', { name: 'AI 引擎的技术详情' }).click()
+    await expect(page.getByText(/Negamax/)).toBeVisible()
+
+    await page.reload()
+
+    /*
+     * 只断言「技术详情没有跟着回来」。
+     *
+     * **不要顺带去断言那颗「?」还在**：刷新后 `aiInfo` 不持久化
+     * （它是这一局运行时才产生的分析结果），面板回到「尚未产生分析结果。」，
+     * 于是按钮**本来就不该在**——初稿断言了它，红得毫无道理。
+     * 展开状态不持久化的判据是**详情有没有回来**，不是按钮在不在。
+     */
+    await expect(page.getByText(/Negamax/)).toHaveCount(0)
+    await expect(page.getByTestId('ai-player-view')).toHaveCount(0)
   })
 })

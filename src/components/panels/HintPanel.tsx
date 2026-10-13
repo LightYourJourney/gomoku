@@ -1,9 +1,11 @@
+import { useId, useState } from 'react'
 import type { Confidence, MoveSuggestion, Urgency } from '../../ai/types'
 import { formatPoint } from '../../lib/coords'
 import { cx } from '../../lib/cx'
 import { threatLabel } from '../../lib/shape-labels'
 import { HINT_BUDGET_MS } from '../../store/gameStore'
 import { Button } from '../ui/Button'
+import { InfoButton } from '../ui/InfoDisclosure'
 import { Panel } from '../ui/Panel'
 
 const URGENCY_LABELS: Record<Urgency, { label: string; tone: string }> = {
@@ -71,12 +73,28 @@ function Candidate({ suggestion, rank }: { suggestion: MoveSuggestion; rank: num
  * 所以本面板只展示候选、紧急度、置信度，以及一个「收起」。
  */
 export function HintPanel({ candidates, urgency, confidence, thinking, error, onClear }: HintPanelProps) {
+  const [showInfo, setShowInfo] = useState(false)
+  const infoId = useId()
   const shown = (candidates ?? []).slice(0, MAX_SHOWN)
   const badge = urgency === null ? null : URGENCY_LABELS[urgency]
   const showConfidence = confidence !== null && shown.length > 0
 
   return (
-    <Panel title="AI 提示" bodyClassName="space-y-3">
+    <Panel
+      title="AI 提示"
+      bodyClassName="space-y-3"
+      actions={
+        // 与 AI 引擎面板同一条规矩：没有候选就没有可展开的东西，不摆空壳
+        showConfidence ? (
+          <InfoButton
+            open={showInfo}
+            onToggle={() => setShowInfo((value) => !value)}
+            label="提示是怎么算出来的"
+            controls={showInfo ? infoId : undefined}
+          />
+        ) : undefined
+      }
+    >
       {shown.length > 0 && (
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="sm" onClick={onClear} aria-label="收起提示">
@@ -134,14 +152,12 @@ export function HintPanel({ candidates, urgency, confidence, thinking, error, on
       )}
 
       {/*
-        这段说明**只在真有候选时出现**（F-UI-03 的一半）。
-        原先它无条件挂在面板底部：没求过提示的人一进对战页就先读到一段关于
-        「800 ms 短预算」的技术介绍，而 `DESIGN_SYSTEM.md` §7 写明默认界面不出现
-        内部参数这类东西。任务书 §六 也点了同一件事。
-        完整的渐进披露（收进「?」）留 Phase 03。
+        这段说明讲的是**预算毫秒数**——`DESIGN_SYSTEM.md` §7 的禁用清单点名了
+        「内部参数（预算毫秒数、候选宽度）」。原先它无条件挂在面板底部；
+        Phase 02 把它收成「只在真有候选时出现」，Phase 03 收进「?」。
       */}
-      {shown.length > 0 && (
-        <p className="border-t border-border pt-3 text-xs leading-relaxed text-faint">
+      {showConfidence && showInfo && (
+        <p id={infoId} className="border-t border-border pt-3 text-xs leading-relaxed text-faint">
           提示用 {HINT_BUDGET_MS} ms 的短预算单独算一遍，与 AI 正式走子的搜索互不占用。
           它只是建议，不保证最优；局面一变（落子、悔棋、重开）标记就会自动清空。
         </p>

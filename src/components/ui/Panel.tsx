@@ -38,6 +38,14 @@ export interface PanelProps {
   collapsible?: boolean
   /** 初始展开与否。只读一次，之后由用户操作决定。 */
   defaultOpen?: boolean
+  /**
+   * 标题行右端的动作位。目前只放 `InfoButton`（渐进披露的「?」）。
+   *
+   * 不传时**渲染出的结构不变**——`{undefined}` 什么都不产出，
+   * 面板仍是「header 里只有一个 h2」。传了才会在 h2 右边多一个控件，
+   * 那时 h2 靠 `flex-1 min-w-0` 让位，不会被挤扁。
+   */
+  actions?: ReactNode
 }
 
 export function Panel({
@@ -48,6 +56,7 @@ export function Panel({
   padding = 'normal',
   collapsible = false,
   defaultOpen = false,
+  actions,
 }: PanelProps) {
   const [open, setOpen] = useState(defaultOpen)
   const bodyId = useId()
@@ -62,13 +71,15 @@ export function Panel({
       )}
     >
       {title !== undefined && (
-        <header className="border-b border-border px-3 py-2">
+        <header className="flex items-center gap-2 border-b border-border px-3 py-2">
           {/*
             标题是 14px 而不是更小：它比面板**里面**的正文还小的话，容器的标签
             弱于内容，层级就是反的。字号提上来、颜色压到 muted，
             与正文（14px / text-fg）靠字重与颜色区分，不靠字号。
+
+            `flex-1 min-w-0`：有动作位时让标题让位、但不被压到溢出。
           */}
-          <h2 className="text-sm font-semibold text-muted">
+          <h2 className="min-w-0 flex-1 text-sm font-semibold text-muted">
             {collapsible ? (
               <button
                 type="button"
@@ -90,6 +101,7 @@ export function Panel({
               title
             )}
           </h2>
+          {actions}
         </header>
       )}
       {expanded && (
