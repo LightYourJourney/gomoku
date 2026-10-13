@@ -322,6 +322,36 @@ test.describe('对战页的三档结构', () => {
     await expect(page.getByLabel('对战模式')).toHaveCount(1)
   })
 
+  /**
+   * F-UI-13：五个难度档要**纵向排**，不是挤进三列或五列。
+   *
+   * 算过：左栏内宽 206px，五列每列只剩 36.4px，而一个两字标签加内边距正好 36px——
+   * 卡在临界值上，字号或文案一变就压盖。三列则是「第一行三项、第二行两项后面空一格」，
+   * 五个同级选项看起来不像一组。所以判据是**几何**的：一个一行，左边缘对齐。
+   */
+  test('五个难度档纵向排列，一个一行', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 })
+    await page.goto('/')
+    await expect(page.getByLabel('AI 难度')).toBeVisible()
+
+    const boxes = await page
+      .getByLabel('AI 难度')
+      .getByRole('radio')
+      .evaluateAll((nodes) => nodes.map((n) => n.getBoundingClientRect()))
+
+    expect(boxes).toHaveLength(5)
+    // 左边缘全对齐（同一列）
+    const left = boxes[0]!.left
+    for (const box of boxes) expect(Math.abs(box.left - left)).toBeLessThan(1)
+    // 纵向依次排开，互不重叠
+    for (let i = 1; i < boxes.length; i++) {
+      expect(boxes[i]!.top).toBeGreaterThanOrEqual(boxes[i - 1]!.bottom - 1)
+    }
+    // 每个都是一整行宽，而不是五分之一
+    const row = boxes[0]!
+    expect(row.width).toBeGreaterThan(row.height * 3)
+  })
+
   test('≥1440：三栏，设置回到左栏', async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 })
     await page.goto('/')

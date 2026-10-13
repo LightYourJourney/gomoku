@@ -278,6 +278,18 @@ describe('Segmented 点已选中的那一项', () => {
     expect(screen.getByRole('radio', { name: '浅色' })).toHaveFocus()
   })
 
+  /**
+   * F-UI-27：`SegmentedOption` 上原有一个 `hint` 覆盖字段，**没有任何调用方用过**。
+   * 删掉之后悬停提示仍然在（取的就是标签本身）——窄栏里标签会被 `truncate`
+   * 截断，得留一条看全文的路。
+   */
+  it('悬停提示是标签本身', () => {
+    render(<Harness />)
+
+    expect(screen.getByRole('radio', { name: '跟随系统' })).toHaveAttribute('title', '跟随系统')
+    expect(screen.getByRole('radio', { name: '深色' })).toHaveAttribute('title', '深色')
+  })
+
   it('点别的项照旧：问一次、改一次', async () => {
     const user = userEvent.setup()
     render(<Counting />)

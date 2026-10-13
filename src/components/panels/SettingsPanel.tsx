@@ -101,9 +101,15 @@ export function SettingsPanel(props: SettingsPanelProps) {
             </Field>
 
             <Field label="AI 难度" hint="越高越强，也越慢">
+              {/*
+                纵向单选列表，不是 5 列（F-UI-13）。算过：左栏内宽 206px，
+                五列每列只剩 36.4px，而一个两字标签加内边距正好 36px——
+                卡在临界值上，字号或文案一变就压盖。三列则是「第一行三项、
+                第二行两项后面空一格」，五个同级选项看起来不像一组。
+              */}
               <Segmented
                 label="AI 难度"
-                columns={3}
+                columns={1}
                 value={difficulty}
                 onChange={onDifficultyChange}
                 options={AVAILABLE_DIFFICULTIES.map((value) => ({

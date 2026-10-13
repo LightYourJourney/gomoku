@@ -45,7 +45,10 @@ export function PracticeBoard({ practice, onSolved, footer }: PracticeBoardProps
 
   const marks: BoardMark[] = []
   if (attempt !== null) {
-    marks.push({ point: attempt.move, tone: solved ? 'good' : 'bad' })
+    // 判题标记带明确符号（F-UI-12）：只给 tone 不给 label 时，`Board` 会走
+    // `String(index + 1)` 的兜底，棋盘上于是出现一个**写着「1」、含义不明**的圆。
+    // 回放编号靠那个兜底，判题反馈不该也靠它。
+    marks.push({ point: attempt.move, tone: solved ? 'good' : 'bad', label: solved ? '对' : '错' })
   } else if (solution !== null) {
     marks.push({ point: solution, label: '解' })
   }

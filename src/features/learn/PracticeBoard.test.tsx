@@ -245,3 +245,34 @@ describe('PracticeBoard —— 换题时复位', () => {
     expect(onSolved).toHaveBeenCalledTimes(2)
   })
 })
+
+/**
+ * F-UI-12：判题标记必须带**含义明确的符号**。
+ *
+ * 此前它只给 `tone` 不给 `label`，`Board` 于是走 `String(index + 1)` 的兜底——
+ * 棋盘上出现一个写着「**1**」、含义不明的红/绿圆。
+ * 那个兜底是给回放编号用的（那里的序号就是含义），判题反馈不该搭便车。
+ */
+describe('PracticeBoard —— 判题标记（F-UI-12）', () => {
+  it('走对了写「对」，不是一个含义不明的序号', () => {
+    setup()
+
+    play(4, 7) // 四连的左端，成五
+
+    const mark = screen.getByTestId('board-mark-4-7')
+    expect(mark).toHaveTextContent('对')
+    expect(mark).toHaveAttribute('data-tone', 'good')
+    expect(mark).not.toHaveTextContent('1')
+  })
+
+  it('走错了写「错」', () => {
+    setup()
+
+    play(0, 0) // 离四连十万八千里
+
+    const marks = screen.getAllByTestId(/^board-mark-/)
+    expect(marks).toHaveLength(1)
+    expect(marks[0]).toHaveTextContent('错')
+    expect(marks[0]).toHaveAttribute('data-tone', 'bad')
+  })
+})

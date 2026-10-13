@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { BLACK } from '../../core/types'
+import { DIFFICULTY_LABELS } from '../../ai/difficulty'
 import type { GameRecord, GameRecordsStorage } from '../../persist/gameRecords'
 import { PageHeader } from '../../components/ui/PageHeader'
 import { Panel } from '../../components/ui/Panel'
@@ -16,8 +17,21 @@ function resultLabel(record: GameRecord): string {
   return record.resignedBy !== null ? `${winnerName}方胜（对手认输）` : `${winnerName}方胜`
 }
 
-function modeLabel(record: GameRecord): string {
-  return record.mode === 'pve' ? '人机' : '双人'
+/**
+ * 一行说明：怎么打的、多少手。
+ *
+ * **人机局补上难度档**（F-UI-22）：棋谱里最能解释「这局为什么长这样」的就是它，
+ * 而它本来就在 `record.difficulty` 里躺着。双人局不标——那里没有 AI 难度，
+ * 硬写一个「入门」是在编。
+ *
+ * **不加时间戳**：`AGENTS.md` 规定 `Date.now()` 只能出现在 `ai/search.ts`，
+ * 而 `GameRecord` 是刻意不存时间的（先后由自增主键表达）；
+ * 补上去会让所有存量棋谱作废。先后看列表顺序就够了。
+ */
+function metaLabel(record: GameRecord): string {
+  const mode = record.mode === 'pve' ? '人机' : '双人'
+  const difficulty = record.mode === 'pve' ? ` · ${DIFFICULTY_LABELS[record.difficulty]}` : ''
+  return `${mode}${difficulty} · ${record.moves.length} 手`
 }
 
 /**
@@ -68,9 +82,7 @@ export function GameLibrary({ storage, onOpen }: GameLibraryProps) {
               >
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium text-fg">{resultLabel(record)}</span>
-                  <span className="text-xs text-faint">
-                    {modeLabel(record)} · {record.moves.length} 手
-                  </span>
+                  <span className="text-xs text-faint">{metaLabel(record)}</span>
                 </div>
               </button>
             </li>

@@ -5,8 +5,6 @@ export interface SegmentedOption<T extends string> {
   readonly value: T
   readonly label: string
   readonly disabled?: boolean
-  /** 悬停提示。省略时用 `label` 兜底——窄栏里标签会被截断，得留一条看全文的路。 */
-  readonly hint?: string
 }
 
 export interface SegmentedProps<T extends string> {
@@ -151,7 +149,10 @@ export function Segmented<T extends string>({
             disabled={disabled}
             // 整组只有一个 Tab 停靠点；组内靠方向键走
             tabIndex={!disabled && option.value === stopValue ? 0 : -1}
-            title={option.hint ?? option.label}
+            // 悬停给全文：窄栏里标签会被 `truncate` 截断，得留一条看全文的路。
+            // 这里原有一个没人传过的 `hint` 覆盖字段（F-UI-27），删掉了——
+            // 留一个所有调用方都不用、只靠兜底生效的参数，只会让人以为有人用它。
+            title={option.label}
             onClick={() => handleClick(option.value)}
             onKeyDown={(event) => handleKeyDown(event, option.value)}
             className={cx(

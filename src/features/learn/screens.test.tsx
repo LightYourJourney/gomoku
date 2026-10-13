@@ -35,6 +35,19 @@ describe('LearnScreen —— 课程列表', () => {
     }
   })
 
+  /**
+   * F-UI-26：摘要**不截断**。390 下它原本被截成一行半，而它正是玩家挑课的唯一依据；
+   * 卡片高度由内容决定，列表本来就在滚。
+   */
+  it('课程摘要不截断', () => {
+    render(<LearnScreen />)
+
+    for (const lesson of LESSONS) {
+      const summary = screen.getByText(lesson.summary)
+      expect(summary.className, `${lesson.id} 的摘要又被截断了`).not.toContain('truncate')
+    }
+  })
+
   it('显示完成进度，已完成的打勾', () => {
     useLearnStore.setState({
       progress: { ...EMPTY_PROGRESS, completedLessons: ['rules'] },

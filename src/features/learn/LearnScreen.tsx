@@ -107,7 +107,12 @@ export function LearnScreen() {
                   </span>
                   <span className="min-w-0">
                     <span className="block text-sm font-medium text-fg">{entry.title}</span>
-                    <span className="block truncate text-xs text-muted">{entry.summary}</span>
+                    {/*
+                      不再 `truncate`（F-UI-26）：390 下摘要被截成一行半，
+                      而它正是玩家挑课的唯一依据。换行比截断好——
+                      卡片高度由内容决定，列表本来就在滚。
+                    */}
+                    <span className="block text-xs text-muted">{entry.summary}</span>
                   </span>
                   <span className="ml-auto text-xs text-muted">›</span>
                 </button>

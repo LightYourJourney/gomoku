@@ -76,6 +76,32 @@ describe('GameLibrary', () => {
     expect(within(item).getByText(/人机|双人/)).toBeInTheDocument()
     expect(within(item).getByText(/9 手/)).toBeInTheDocument()
   })
+
+  /**
+   * F-UI-22：人机局要标出**难度档**——棋谱里最能解释「这局为什么长这样」的就是它，
+   * 而它本来就在 `record.difficulty` 里躺着。
+   */
+  it('人机局标出难度档', async () => {
+    const storage = memoryGameRecords()
+    await storage.put(nineMoveRecord()) // difficulty: 'easy'
+    render(<GameLibrary storage={storage} onOpen={vi.fn()} />)
+
+    const item = (await screen.findAllByTestId(/^record-/))[0]!
+    expect(within(item).getByText(/人机 · 初级 · 9 手/)).toBeInTheDocument()
+  })
+
+  /**
+   * 双人局**不标**难度：那里根本没有 AI，硬写一个「入门」是在编。
+   */
+  it('双人局不标难度——那时没有 AI 难度可标', async () => {
+    const storage = memoryGameRecords()
+    await storage.put({ ...nineMoveRecord(), seq: 2, mode: 'pvp' } as GameRecord)
+    render(<GameLibrary storage={storage} onOpen={vi.fn()} />)
+
+    const item = (await screen.findAllByTestId(/^record-/))[0]!
+    expect(within(item).getByText(/双人 · 9 手/)).toBeInTheDocument()
+    expect(within(item).queryByText(/初级|入门|中级|高级|专家/)).not.toBeInTheDocument()
+  })
 })
 
 
