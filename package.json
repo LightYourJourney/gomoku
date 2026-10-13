@@ -16,7 +16,8 @@
     "bench": "vitest run --config vitest.bench.config.ts",
     "bench:render": "yarn build && node bench/render.probe.mjs",
     "ui:probe": "node bench/ui.probe.mjs",
-    "check:cycles": "madge --circular --extensions ts,tsx src"
+    "check:cycles": "madge --circular --extensions ts,tsx src",
+    "check:deadcode": "knip --reporter compact"
   },
   "dependencies": {
     "react": "^19.2.8",
@@ -36,6 +37,7 @@
     "@vitejs/plugin-react": "^6.1.1",
     "fake-indexeddb": "^6.2.5",
     "jsdom": "^30.1.2",
+    "knip": "6.41.0",
     "madge": "8.0.0",
     "oxlint": "^1.81.0",
     "tailwindcss": "^4.3.3",

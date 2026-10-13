@@ -1,0 +1,15 @@
+{
+  // 「只被签名引用」的类型导出，整类放行。
+  //
+  // docs/audit/TECH_DEBT.md §1.3 已裁定这一类明确不偿还；逐个列名只会让新冒出来的
+  // 同类条目变成没人处理的红灯——那就成了「训练人忽略红灯」。
+  //
+  // 注意这里放掉的是**符号种类**，不是文件：`src/learn/verify.ts` 那个
+  // `export const OK`（种类 variable）不在这一类里，照样会被抓——它已经修掉了。
+  "ignoreExportsUsedInFile": { "type": true, "interface": true },
+
+  // DIFFICULTIES 与 AVAILABLE_DIFFICULTIES 是同值别名，knip 报成 duplicate exports。
+  // 但这是有意的分界点：前者「定义了哪些档」，后者「界面开放哪些档」
+  // （src/ai/difficulty.ts 的注释写着「Phase 2 起五档全开」）。今天两者恰好相等。
+  "ignoreIssues": { "src/ai/difficulty.ts": ["duplicates"] }
+}

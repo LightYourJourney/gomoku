@@ -52,6 +52,9 @@ Phase D 只做**设计级影响分析**，不开发任何新功能。
 以下项常被工具或直觉判成债，经审读后判定**不应处理**（理由见 `FINDINGS.md` §6）：
 
 - 49 个只被签名引用的类型导出、36 个只被测试引用的导出
+  —— **2026-10-13：前者已由 `knip.jsonc` 的 `ignoreExportsUsedInFile: { type, interface }` 整类放行**。
+  这是一条**裁定**，不是遗漏：再有人问「为什么 knip 不报这些」，答案是这份 §1.3。
+  （同文件里 `verify.ts` 那个 `export const OK` 是**真**多余的导出，已修——`variable` 种类不在放行之列。）
 - `Board.tsx` 的 565 行；225 个命中 `<rect>` 与每格一个 `onKeyDown`
 - 教学/题库不拆出主包
 - `noUncheckedIndexedAccess` 未开

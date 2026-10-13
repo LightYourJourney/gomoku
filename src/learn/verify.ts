@@ -10,7 +10,7 @@ import type { PuzzleGoal } from './types'
 
 export type Verdict = { readonly ok: true } | { readonly ok: false; readonly reason: string }
 
-export const OK: Verdict = { ok: true }
+const OK: Verdict = { ok: true }
 
 function fail(reason: string): Verdict {
   return { ok: false, reason }
