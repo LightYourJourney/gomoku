@@ -345,8 +345,10 @@ yarn lint && yarn typecheck && yarn test && yarn build && yarn gates
 - [ ] **Step 4: 验证钩子真的会拦（Review Focus #1、#2）**
 
 1. `git config --get core.hooksPath` → Expected: 输出 `.githooks`
-2. 临时在某个源文件里制造一个 lint 错误 → `git push --dry-run` →
-   Expected: **推送被拒**，输出能看出是 lint 失败。还原那个错误。
+2. 临时在某个源文件里制造一个未使用变量 → `git push --dry-run` →
+   Expected: **推送被拒**。实测拦住它的是 **typecheck**（TS6133）而不是 lint——
+   oxlint 的 `no-unused-vars` 只是 **warning**，`yarn lint` 照样退 0。
+   要验 lint 那条得挑一个 oxlint 判成 **error** 的写法。还原那个错误。
 3. `env PATH=/usr/bin:/bin sh .githooks/pre-push`（PATH 里没有 yarn）→
    Expected: **非零退出**且打印「找不到 yarn」，**不是静默通过**
 

@@ -1,0 +1,29 @@
+#!/bin/sh
+#
+# 快档门禁：红了的代码不该推出去。
+#
+# 设计见 docs/superpowers/specs/2026-10-13-quality-gates-design.md。
+#
+# 两点要知道：
+#   1. **它不含 e2e 与 ui:probe**。所以「本地绿了、推得出去」不等于「安全网没缩水」——
+#      改了界面结构、布局或扫描范围的人，必须等 CI 全档绿。
+#   2. 绕过它用 `git push --no-verify`。那是**明确接受**的逃生门，代价自负。
+#
+# 这个钩子由 package.json 的 `prepare` 挂上（`git config core.hooksPath .githooks`），
+# 所以新克隆跑一次 `yarn install` 就生效。
+set -e
+
+# 门禁**失败关闭**：跑不起来时拒绝推送，不许静默放行。
+command -v yarn >/dev/null 2>&1 || {
+  echo "✗ pre-push: 找不到 yarn —— 门禁无法运行，拒绝推送。" >&2
+  echo "  这是有意的失败关闭：闸门跑不起来时不许静默放行。" >&2
+  exit 1
+}
+
+[ -d node_modules ] || {
+  echo "✗ pre-push: 这个工作区没有 node_modules —— 先跑 yarn install。" >&2
+  echo "  （新克隆 / 新 worktree 第一次推送都会撞上这条，属正常。）" >&2
+  exit 1
+}
+
+yarn lint && yarn typecheck && yarn test && yarn build && yarn gates

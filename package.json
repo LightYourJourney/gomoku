@@ -19,7 +19,9 @@
     "check:cycles": "madge --circular --extensions ts,tsx src",
     "check:deadcode": "knip --reporter compact",
     "check:dupes": "jscpd --config .jscpd.json",
-    "bench:check": "yarn bench && node bench/gate.mjs"
+    "bench:check": "yarn bench && node bench/gate.mjs",
+    "gates": "yarn check:cycles && yarn check:deadcode && yarn check:dupes",
+    "prepare": "git config core.hooksPath .githooks"
   },
   "dependencies": {
     "react": "^19.2.8",
