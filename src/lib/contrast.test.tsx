@@ -282,16 +282,18 @@ describe.each(['light', 'dark'] as const)('用法层：%s 主题下渲染出来�
 /**
  * 棋盘标记的三档色调必须**互相分得开**（任务书 §六「不同标记类型的颜色差异」）。
  *
- * 判据只用色相距离，且**只对 `bad` 设阈值**——实测三档的 ΔH 是
- * accent↔good **33.5°**、good↔bad 125.5°、accent↔bad 159°。
- * `accent` 与 `good` 是弱区分（同亮度、色相只差 33.5°），
- * 所以**不给它们定一条当场就会红的假阈值**：两者从不出现在同一屏
- * （accent 是对战/教学页的提示标记，good/bad 是残局页的判题标记），
- * 各自还有文案与位置兜底。这里把数字如实钉住，弱区分这件事记录在案。
+ * **判据是 CIE76 的 ΔE，不是色相距离。** 初稿用的是色相距离，于是得出
+ * 「accent 与 good 只差 33.5°，是弱区分」——那个结论是**判据选错导致的**：
+ * 色相只是颜色三轴里的一轴，把它单独拎出来会漏掉明度与饱和度。
+ * 换成 ΔE 之后实测 accent↔good 是 **28.6（浅）/ 27.4（深）**，
+ * 远在「明显可分」的线（ΔE > 10）之上。
+ *
+ * **不改令牌**也正因为如此：两个颜色本来就分得开，改的是尺子不是颜色。
+ * （`DESIGN_SYSTEM.md` §2.1 的「令牌一个都不改」在这里不必破例。）
  */
 describe('棋盘标记的三档色调', () => {
-  /** 取 HSL 里的色相（度）。 */
-  function hue(hex: string): number {
+  /** sRGB → CIE Lab（D65）。 */
+  function lab(hex: string): [number, number, number] {
     const h = hex.replace('#', '')
     const full = h.length === 3 ? [...h].map((c) => c + c).join('') : h
     const [r, g, b] = [0, 2, 4].map((i) => Number.parseInt(full.slice(i, i + 2), 16) / 255) as [
@@ -299,38 +301,40 @@ describe('棋盘标记的三档色调', () => {
       number,
       number,
     ]
-    const max = Math.max(r, g, b)
-    const min = Math.min(r, g, b)
-    const d = max - min
-    if (d === 0) return 0
-    const raw = max === r ? ((g - b) / d) % 6 : max === g ? (b - r) / d + 2 : (r - g) / d + 4
-    return ((raw * 60) % 360 + 360) % 360
+    const lin = (c: number): number => (c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4)
+    const [R, G, B] = [lin(r), lin(g), lin(b)]
+    const x = (R * 0.4124 + G * 0.3576 + B * 0.1805) / 0.95047
+    const y = R * 0.2126 + G * 0.7152 + B * 0.0722
+    const z = (R * 0.0193 + G * 0.1192 + B * 0.9505) / 1.08883
+    const f = (t: number): number => (t > 0.008856 ? Math.cbrt(t) : 7.787 * t + 16 / 116)
+    const [fx, fy, fz] = [f(x), f(y), f(z)]
+    return [116 * fy - 16, 500 * (fx - fy), 200 * (fy - fz)]
   }
 
-  function hueGap(a: string, b: string): number {
-    const d = Math.abs(hue(a) - hue(b))
-    return Math.min(d, 360 - d)
+  /** CIE76 色差。经验线：> 10 一眼可分，2.3–10 要并排才看得出。 */
+  function deltaE(a: string, b: string): number {
+    const [l1, a1, b1] = lab(a)
+    const [l2, a2, b2] = lab(b)
+    return Math.hypot(l1 - l2, a1 - a2, b1 - b2)
   }
 
-  it.each(Object.entries(TOKENS))('%s 主题下，bad 与另外两档的色相距离 ≥ 60°', (_n, selector) => {
+  it.each(Object.entries(TOKENS))('%s 主题下，三档标记两两都分得开', (_n, selector) => {
     const tokens = readTokens(selector)
-    const accent = tokens.get('--c-accent')!
-    const good = tokens.get('--c-good')!
-    const bad = tokens.get('--c-danger')!
+    const tones = {
+      accent: tokens.get('--c-accent')!,
+      good: tokens.get('--c-good')!,
+      bad: tokens.get('--c-danger')!,
+    }
+    const names = Object.keys(tones) as Array<keyof typeof tones>
 
-    expect(hueGap(bad, accent)).toBeGreaterThanOrEqual(60)
-    expect(hueGap(bad, good)).toBeGreaterThanOrEqual(60)
+    for (let i = 0; i < names.length; i++) {
+      for (let j = i + 1; j < names.length; j++) {
+        const [x, y] = [names[i]!, names[j]!]
+        expect(
+          deltaE(tones[x], tones[y]),
+          `${selector} 下 ${x} 与 ${y} 只差 ${deltaE(tones[x], tones[y]).toFixed(1)}（<10 需并排才看得出）`,
+        ).toBeGreaterThanOrEqual(10)
+      }
+    }
   })
-
-  it.each(Object.entries(TOKENS))(
-    '%s 主题下，accent 与 good 的弱区分被如实钉住（低于 60° 仍是已知事实）',
-    (_n, selector) => {
-      const tokens = readTokens(selector)
-      const gap = hueGap(tokens.get('--c-accent')!, tokens.get('--c-good')!)
-
-      // 这条断言的方向是**反的**：它记录「它们确实很近」。
-      // 哪天有人把两者拉开了，这里会红，那时把这条改成 ≥60 才是对的。
-      expect(gap).toBeLessThan(60)
-    },
-  )
 })
