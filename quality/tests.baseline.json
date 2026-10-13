@@ -1,0 +1,9 @@
+{
+  "note": "测试条数棘轮：只许涨。删用例、跳用例都是把安全网改小——要改就显式改这里，并在提交信息里写明理由。",
+  "unitTotal": 912,
+  "unitPending": 0,
+  "unitTodo": 0,
+  "e2eTotal": 102,
+  "measuredAt": "2026-10-13",
+  "measuredFrom": "yarn test 的 vitest-report.json 与 yarn playwright test --list"
+}

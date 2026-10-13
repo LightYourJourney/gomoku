@@ -20,8 +20,10 @@
     "check:deadcode": "knip --reporter compact",
     "check:dupes": "jscpd --config .jscpd.json",
     "bench:check": "yarn bench && node bench/gate.mjs",
-    "gates": "yarn check:cycles && yarn check:deadcode && yarn check:dupes",
-    "prepare": "git config core.hooksPath .githooks"
+    "gates": "yarn check:cycles && yarn check:deadcode && yarn check:dupes && yarn check:tests",
+    "prepare": "git config core.hooksPath .githooks",
+    "check:coverage": "node quality/coverage.ratchet.mjs",
+    "check:tests": "node quality/tests.ratchet.mjs"
   },
   "dependencies": {
     "react": "^19.2.8",
