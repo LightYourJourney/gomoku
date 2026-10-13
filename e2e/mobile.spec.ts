@@ -178,6 +178,24 @@ test('学习页的棋盘：手指拖动不滚页面，点按命中正确', async
   // 拖动不该被当成落子：手指划过去就落一颗，是误触而不是交互。
   await expect(stones).toHaveCount(stonesBefore)
 
+  // 点之前先把**前提**写死并验掉。`Board.tsx` 的 handleClick 对已占的格子直接 return
+  // （`if (board[idx(x, y)] !== 0) return`），那样点上去不会产生任何反馈，
+  // 失败信息只会是「feedback 不存在」——看不出是前提不成立还是点按失灵。
+  expect(
+    await page.getByTestId('stone-4-7').count(),
+    '4-7 已经有子了：handleClick 会对它直接 return，点不出反馈。多半是没走到预期的那一步',
+  ).toBe(0)
+  expect(await page.getByTestId('feedback').count(), '还没点就已经有判定结果了？').toBe(0)
+
+  const atPoint = await page.evaluate(
+    ([x, y]) => {
+      const el = document.elementFromPoint(x, y)
+      return el === null ? '（那里什么都没有）' : `${el.tagName}#${el.getAttribute('data-testid') ?? '-'}`
+    },
+    [startX, startY],
+  )
+  console.log(`[诊断] 轻点 (${Math.round(startX)},${Math.round(startY)})，该处元素：${atPoint}`)
+
   await page.touchscreen.tap(startX, startY)
 
   // 点到哪就落在哪：落点必须是这一手本身，判定结果也得对上
