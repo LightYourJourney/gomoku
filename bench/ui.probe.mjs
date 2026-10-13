@@ -243,6 +243,24 @@ const STATES = [
     },
   },
   {
+    id: 'battle-display-settings',
+    group: 'battle',
+    /**
+     * 「显示与声音」**展开**的状态。
+     *
+     * Phase 02 把它改成默认折叠之后，主题 / 坐标 / 音效这三颗控件
+     * 在其余每一个状态里都不在 DOM 里——于是它们从**所有**对比度与命中区扫描里
+     * 消失了（基线里它们是扫得到的，那会儿它默认展开）。
+     * 判据 1 与判据 5 因此对这三颗控件失明，这条把那个洞补上。
+     */
+    async boot(page) {
+      await seedSession(page, session({ moves: MIDGAME }))
+      await page.waitForSelector('[data-testid="stone-7-10"]')
+      await page.getByRole('button', { name: '显示与声音' }).click()
+      await page.waitForSelector('[aria-label="主题"]')
+    },
+  },
+  {
     id: 'battle-finished',
     group: 'battle',
     async boot(page) {

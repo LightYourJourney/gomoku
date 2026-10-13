@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode, type RefObject } from 'react'
+import { useEffect, useId, useRef, type ReactNode, type RefObject } from 'react'
 import { cx } from '../../lib/cx'
 import { motionClass } from '../../lib/motion'
 import { createPortal } from 'react-dom'
@@ -37,6 +37,14 @@ function canRestoreFocus(element: HTMLElement | null): element is HTMLElement {
 
 export function Modal({ open, title, onClose, children, footer, focusAfterClose }: ModalProps) {
   const dialogRef = useRef<HTMLDivElement>(null)
+  /**
+   * 正文的 id：对话框用 `aria-describedby` 指向它。
+   *
+   * 只有 `aria-label` 的话，读屏软件念出标题就停了——**后果描述读不到**，
+   * 而「清楚的标题与后果描述」是任务书对确认弹窗的硬要求。
+   * 顺带把 `ConfirmDialog` 头顶那句承诺变成真的。
+   */
+  const bodyId = useId()
 
   /**
    * 把最新的 `onClose` 放进 ref，好让下面的 effect 只依赖 `open`。
@@ -152,6 +160,7 @@ export function Modal({ open, title, onClose, children, footer, focusAfterClose 
         role="dialog"
         aria-modal="true"
         aria-label={title}
+        aria-describedby={bodyId}
         tabIndex={-1}
         className={cx(
           // 浮层用 shadow-overlay：它压在整页之上，比面板高一档
@@ -160,7 +169,9 @@ export function Modal({ open, title, onClose, children, footer, focusAfterClose 
         )}
       >
         <h2 className="text-lg font-semibold text-fg">{title}</h2>
-        <div className="mt-3 text-body text-muted">{children}</div>
+        <div id={bodyId} className="mt-3 text-body text-muted">
+          {children}
+        </div>
         {/*
           按钮顺序：**次要操作在左、主操作在右**。
           用 DOM 顺序表达，不用 `flex-row-reverse`——反排会让 Tab 顺序与视觉顺序相反，

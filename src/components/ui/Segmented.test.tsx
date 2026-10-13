@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useState } from 'react'
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { Segmented } from './Segmented'
 
 const OPTIONS = [
@@ -221,6 +221,71 @@ describe('Segmented 的 beforeChange 拦截钩子', () => {
 
     await user.click(screen.getByRole('radio', { name: '深色' }))
 
+    expect(screen.getByRole('radio', { name: '深色' })).toHaveAttribute('aria-checked', 'true')
+  })
+})
+
+/**
+ * 点「已经选中的那一项」。
+ *
+ * radiogroup 的既定语义：再次激活选中项**不产生变更事件**。少了这条判断，
+ * 会重建棋局的调用方（`setMode` / `setHumanColor` 都走 `newGame`）就会被
+ * 「点一下当前高亮的选项」把进行中的棋局清掉——而且本阶段加了确认之后，
+ * 还会先弹一句「切换对战模式？」，用户根本没切换什么。
+ *
+ * 键盘路径（`moveTo`）一直是判的，这条补的是点击路径的对称性。
+ */
+describe('Segmented 点已选中的那一项', () => {
+  /*
+   * 计数器放在**组件外面**：建在组件里的话，`setValue` 触发的那次重渲染
+   * 会造出两个全新的 mock，读到的永远是 0——这正是本用例第一版的样子。
+   */
+  const onChange = vi.fn()
+  const beforeChange = vi.fn(() => true)
+
+  function Counting() {
+    const [value, setValue] = useState('light')
+
+    return (
+      <Segmented
+        label="主题"
+        value={value}
+        options={OPTIONS}
+        beforeChange={beforeChange}
+        onChange={(next) => {
+          onChange(next)
+          setValue(next)
+        }}
+      />
+    )
+  }
+
+  beforeEach(() => {
+    onChange.mockClear()
+    beforeChange.mockClear()
+  })
+
+  it('再点一次已选中的项：既不问 beforeChange，也不调 onChange', async () => {
+    const user = userEvent.setup()
+    render(<Counting />)
+
+    await user.click(screen.getByRole('radio', { name: '浅色' }))
+
+    expect(onChange).not.toHaveBeenCalled()
+    expect(beforeChange).not.toHaveBeenCalled()
+    expect(screen.getByRole('radio', { name: '浅色' })).toHaveAttribute('aria-checked', 'true')
+    // 但焦点要落在它身上——用户刚点过它
+    expect(screen.getByRole('radio', { name: '浅色' })).toHaveFocus()
+  })
+
+  it('点别的项照旧：问一次、改一次', async () => {
+    const user = userEvent.setup()
+    render(<Counting />)
+
+    await user.click(screen.getByRole('radio', { name: '深色' }))
+
+    expect(beforeChange).toHaveBeenCalledTimes(1)
+    expect(onChange).toHaveBeenCalledWith('dark')
     expect(screen.getByRole('radio', { name: '深色' })).toHaveAttribute('aria-checked', 'true')
   })
 })

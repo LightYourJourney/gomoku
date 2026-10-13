@@ -20,6 +20,8 @@ export interface StatusPillProps {
    * 同一屏的引擎面板是红的）。玩家会继续等，而不是去点「重试」。
    */
   busy?: boolean
+  /** 追加的布局类（对战页用它把药丸在状态条里居中）。 */
+  className?: string
 }
 
 /**
@@ -28,17 +30,19 @@ export interface StatusPillProps {
  *
  * 位置由调用方决定——对战页把它放进棋盘上方的状态条（`MatchBar`）里。
  */
-export function StatusPill({ status, busy = false }: StatusPillProps) {
+export function StatusPill({ status, busy = false, className }: StatusPillProps) {
   const spinning = status.tone === 'thinking' && busy
 
   return (
     <div
       data-testid="status-pill"
       className={cx(
-        // `py-1.5` 而不是 `py-2`：这一条的高度直接压棋盘（对战页中列的纵向预算，见
-        // `BattleScreen` 的注释）。34px 对一枚状态标签足够，视觉上差不出半个字。
-        'inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm font-medium transition-colors',
+        // `py-1` 而不是 `py-2`：这一条的高度直接压棋盘（对战页中列的纵向预算，见
+        // `BattleScreen` 的注释）。30px 对一枚状态标签足够，视觉上差不出半个字。
+        // 也不写 `py-1.5`——它在 `DESIGN_SYSTEM.md` §4 的「明确禁止」名单里。
+        'inline-flex items-center gap-2 rounded-full border px-3 py-1 text-sm font-medium transition-colors',
         TONE_CLASS[status.tone],
+        className,
       )}
     >
       {spinning ? (

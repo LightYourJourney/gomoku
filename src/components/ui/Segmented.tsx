@@ -101,6 +101,25 @@ export function Segmented<T extends string>({
   }
 
   function handleClick(next: T): void {
+    /*
+     * **点已经选中的那一项什么都不做**——radiogroup 的既定语义就是如此
+     * （ARIA：选中项被再次激活不产生变更事件），键盘路径 `moveTo` 也是这么判的。
+     *
+     * 少了这一行会出真事，而且两头都不对：
+     * - 不拦的调用方（例如 `setDifficulty`）本来只是白白跑一遍；
+     * - **会重建棋局的调用方更糟**：`setMode('pve')` 在已经是人机模式时仍然 `newGame()`，
+     *   于是「点一下当前高亮的那个选项」把进行中的棋局清掉了；
+     * - 而本阶段加了确认之后，它还会先弹一句「切换对战模式？」——
+     *   用户根本没切换什么，却拿到一个破坏性确认。
+     *
+     * 已选中的那一项仍要处理焦点：触摸/点击之后焦点该在它身上，不该被
+     * `snapBackToSelection` 挪走（那一条是给**被否决**的情况用的）。
+     */
+    if (next === value) {
+      buttons.current.get(next)?.focus()
+      return
+    }
+
     if (beforeChange?.(next) === false) {
       // 浏览器已经先把焦点给了被点的这一颗，收回来
       snapBackToSelection()

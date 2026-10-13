@@ -175,6 +175,15 @@ describe('BattleScreen —— 终局音效', () => {
  *
  * §5.2 当初点名要的就是这一条：`pendingRequestId` 与 `aiThinking` 必须原样保留，
  * 否则取消会顺手把 AI 正在飞的那一手作废掉。
+ *
+ * **关于「组件测试不该断言内部 state」（`AGENTS.md` 的测试一节）**：
+ * 那条管的是断言**组件自己的**内部状态（渲染细节、私有字段）——这类断言会随实现
+ * 改动而碎，且不证明用户看到什么。这里断言的是 store 的公开状态，
+ * 而「取消不碰 store」本身就是一条**规格要求**（它没有可见的等价物：
+ * 「没发生的事」看不见）。仓库里已有同样的先例：`AppHeader.test.tsx` 断言
+ * `useLearnStore.getState().view`、`learn/screens.test.tsx` 断言
+ * `progress.completedLessons`。**可见后果那一半由 e2e 覆盖**
+ * （取消之后棋子还在、AI 那一手照样落下来），两条是互补的。
  */
 describe('BattleScreen —— 确认弹窗的取消不碰 store', () => {
   const WATCHED = [

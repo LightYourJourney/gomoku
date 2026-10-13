@@ -283,6 +283,26 @@ test.describe('防误触确认', () => {
     await expect(page.getByTestId('status-pill')).toHaveText('轮到黑棋')
   })
 
+  /**
+   * **点「已经选中的那一项」什么都不该发生。**
+   *
+   * 少了这条判断，会重建棋局的调用方就会出事：`setMode('pve')` 在已经是人机模式时
+   * 仍然走 `newGame()`，于是「点一下当前高亮的选项」把进行中的棋局清掉——
+   * 而本阶段加了确认之后，它还会先弹一句「切换对战模式？」，用户根本没切换什么。
+   * 键盘路径一直是判的（`moveTo`），漏的是点击路径。
+   */
+  test('点已选中的模式：不弹确认，棋局也不动', async ({ page }) => {
+    await page.goto('/')
+    await page.getByTestId('intersection-7-7').click()
+    await expect(page.getByTestId(/^stone-/)).toHaveCount(2)
+
+    await page.getByRole('radio', { name: '人机对战' }).click()
+
+    await expect(page.getByRole('dialog')).toBeHidden()
+    await expect(page.getByTestId(/^stone-/)).toHaveCount(2)
+    await expect(page.getByTestId('stone-7-7')).toBeVisible()
+  })
+
   test('空棋盘重新开始不弹确认', async ({ page }) => {
     await page.goto('/')
 

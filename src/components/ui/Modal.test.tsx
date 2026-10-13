@@ -269,3 +269,23 @@ describe('Modal 关闭时把焦点还给打开它的控件', () => {
     expect(other).toHaveFocus()
   })
 })
+
+/**
+ * 对话框的**后果描述**必须能被念出来。
+ *
+ * 只有 `aria-label` 的话，读屏软件念完标题就停了；确认弹窗的意义恰恰在那句
+ * 「会发生什么」上（任务书 §五 要求「清楚的标题与后果描述」）。
+ */
+describe('Modal 的对话框语义', () => {
+  it('正文用 aria-describedby 挂在对话框上', () => {
+    render(
+      <Modal open title="重新开始？" onClose={() => {}}>
+        当前这局还没结束，已经下的 12 手会被清空。
+      </Modal>,
+    )
+
+    const dialog = screen.getByRole('dialog')
+    expect(dialog).toHaveAccessibleName('重新开始？')
+    expect(dialog).toHaveAccessibleDescription('当前这局还没结束，已经下的 12 手会被清空。')
+  })
+})

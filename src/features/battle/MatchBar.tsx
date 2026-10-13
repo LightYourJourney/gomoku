@@ -40,25 +40,27 @@ export function MatchBar({ game, mode, humanColor, difficulty, aiThinking }: Mat
   return (
     <section
       aria-label="对局状态"
-      className="grid grid-cols-[1fr_auto_1fr] items-center gap-2"
+      /*
+       * 两侧按**内容**占宽、中间吃掉剩余并让药丸居中（`justify-self` 在 StatusPill 上）。
+       *
+       * 原先写的是 `1fr auto 1fr`：两侧各分到固定一半，390 下右侧要同时放下
+       * 「AI · 初级」与「12 手」，于是被 `truncate` 切成「A」和「初…」
+       * （探针的 `clipped` 量到过）。当时的处置是把窄屏的手数藏掉，但任务书 §三
+       * 要求状态区**默认展示当前手数**——改成按内容占宽之后两样都留得住。
+       */
+      className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2"
     >
       <Side player={BLACK} mode={mode} humanColor={humanColor} difficulty={difficulty}
         active={playing && status.player === BLACK} />
 
-      <StatusPill status={status} busy={aiThinking} />
+      <StatusPill status={status} busy={aiThinking} className="justify-self-center" />
 
       <div className="flex min-w-0 items-center justify-end gap-2">
         <Side player={WHITE} mode={mode} humanColor={humanColor} difficulty={difficulty}
           active={playing && status.player === WHITE} />
-        {/*
-          `hidden sm:inline`：390 下这一条要同时放下两侧、药丸与手数，
-          手数会把 AI 那一侧挤到 `truncate`——探针的 `clipped` 量到过
-          「AI」被切成「A」、「初级」被切成「初…」。手数在下面的「对局概要」里本来就有，
-          窄屏不必在这儿再抢一次位置。
-        */}
         <span
           data-testid="match-moves"
-          className="hidden shrink-0 font-mono text-xs tabular-nums text-faint sm:inline"
+          className="shrink-0 font-mono text-xs tabular-nums text-faint"
         >
           {game.moves.length} 手
         </span>

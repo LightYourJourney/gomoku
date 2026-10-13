@@ -232,6 +232,33 @@ export function BattleScreen({ sound: injectedSound }: BattleScreenProps = {}) {
     }
   }
 
+  /*
+   * 设置面板**只在这里拼一次**，渲染在左栏还是右栏由 `wide` 决定。
+   * 此前那 14 个 prop 在 JSX 里写了两遍：加一个 prop 就得改两处，
+   * 而漏掉其中一处**不会报错**（同一个组件的另一份照常渲染，只是行为不同）。
+   */
+  const settingsPanel = (
+    <SettingsPanel
+      mode={mode}
+      humanColor={humanColor}
+      difficulty={difficulty}
+      theme={settings.theme}
+      showCoords={settings.showCoords}
+      soundEnabled={settings.soundEnabled}
+      onModeChange={setMode}
+      onHumanColorChange={setHumanColor}
+      onDifficultyChange={setDifficulty}
+      onThemeChange={settings.setTheme}
+      onShowCoordsChange={settings.setShowCoords}
+      onSoundEnabledChange={settings.setSoundEnabled}
+      beforeModeChange={beforeModeChange}
+      beforeHumanColorChange={beforeHumanColorChange}
+    />
+  )
+
+  /** 当前这一档确认的全部文案。`null` 表示没有待确认的操作。 */
+  const dialog = confirm === null ? null : CONFIRM[confirm.kind]
+
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       {/*
@@ -256,38 +283,26 @@ export function BattleScreen({ sound: injectedSound }: BattleScreenProps = {}) {
             data-testid="battle-settings-column"
             className="overflow-y-auto border-r border-border px-4 py-4"
           >
-            <SettingsPanel
-              mode={mode}
-              humanColor={humanColor}
-              difficulty={difficulty}
-              theme={settings.theme}
-              showCoords={settings.showCoords}
-              soundEnabled={settings.soundEnabled}
-              onModeChange={setMode}
-              onHumanColorChange={setHumanColor}
-              onDifficultyChange={setDifficulty}
-              onThemeChange={settings.setTheme}
-              onShowCoordsChange={settings.setShowCoords}
-              onSoundEnabledChange={settings.setSoundEnabled}
-              beforeModeChange={beforeModeChange}
-              beforeHumanColorChange={beforeHumanColorChange}
-            />
+            {settingsPanel}
           </aside>
         )}
 
         {/*
           中列：状态 → 棋盘 → 操作。棋盘吃掉剩余高度。
 
-          **`gap-1.5` / `py-1.5` 不是随手定的**：中列的纵向开销直接压棋盘，
-          而棋盘在 ≥1440 是被高度卡住的。实测 1440×700 下每多 15px 开销，
-          棋盘就跌破判据要求的 35%（`DESIGN_SYSTEM.md` §12 第 3 条）。
-          当前五处分寸是量出来的——列上下的 6、间隙 6、状态条 34、
-          工具栏 38、棋盘容器自身的 8（在 `BoardStage` 里）——
-          **改任何一个都要重跑 `yarn ui:probe`**。
+          **这里的每一处分寸都直接压棋盘**：棋盘在 ≥1440 是被高度卡住的，
+          实测 1440×700 下每多 15px 开销就跌破判据要求的 35%
+          （`DESIGN_SYSTEM.md` §12 第 3 条）。当前值：列上下的 4、间隙 4、
+          状态条 30、工具栏 38、棋盘容器自身的 8（在 `BoardStage` 里）。
+          **改任何一个都要重跑 `yarn ui:probe`**（它会自己判那五条判据）。
+
+          `gap-1` / `py-1` 而不是 `gap-1.5` / `py-1.5`：后者在
+          `DESIGN_SYSTEM.md` §4 的「明确禁止」名单里（4px 栅格之外的值），
+          而且**在这里是双输**——6px 既不合规，又比 4px 多吃 8px 棋盘。
         */}
         <div
           data-testid="battle-center-column"
-          className="flex min-h-0 flex-col gap-1.5 px-3 py-1.5 lg:px-4"
+          className="flex min-h-0 flex-col gap-1 px-3 py-1 lg:px-4"
         >
           <MatchBar
             game={game}
@@ -362,39 +377,26 @@ export function BattleScreen({ sound: injectedSound }: BattleScreenProps = {}) {
             「移至可打开的侧边面板、折叠区域或类似控件」，而模式/执子/难度按 §六
             是「需要经常调整的基础对战设置」，折起来等于给高频操作加一次点击。
           */}
-          {!wide && (
-            <SettingsPanel
-              mode={mode}
-              humanColor={humanColor}
-              difficulty={difficulty}
-              theme={settings.theme}
-              showCoords={settings.showCoords}
-              soundEnabled={settings.soundEnabled}
-              onModeChange={setMode}
-              onHumanColorChange={setHumanColor}
-              onDifficultyChange={setDifficulty}
-              onThemeChange={settings.setTheme}
-              onShowCoordsChange={settings.setShowCoords}
-              onSoundEnabledChange={settings.setSoundEnabled}
-              beforeModeChange={beforeModeChange}
-              beforeHumanColorChange={beforeHumanColorChange}
-            />
-          )}
+          {!wide && settingsPanel}
         </aside>
       </main>
 
       <ConfirmDialog
         open={confirm !== null}
-        title={confirmTitle(confirm)}
-        description={confirmDescription(confirm, {
-          moves: moveCount,
-          mode,
-          humanColor,
-          // **与 store 同源**：认输的是谁由 `resignerFor` 判，这里不自己推一遍
-          resigner: resignerFor({ mode, humanColor, game }),
-        })}
-        confirmLabel={confirm ? CONFIRM_LABEL[confirm.kind] : ''}
-        tone={confirm?.kind === 'resign' ? 'danger' : 'default'}
+        title={dialog?.title ?? ''}
+        description={
+          dialog === null
+            ? ''
+            : dialog.describe({
+                moves: moveCount,
+                mode,
+                humanColor,
+                // **与 store 同源**：认输的是谁由 `resignerFor` 判，这里不自己推一遍
+                resigner: resignerFor({ mode, humanColor, game }),
+              })
+        }
+        confirmLabel={dialog?.label ?? ''}
+        tone={dialog?.tone ?? 'default'}
         onConfirm={runConfirm}
         onCancel={() => setConfirm(null)}
       />
@@ -413,29 +415,6 @@ export function BattleScreen({ sound: injectedSound }: BattleScreenProps = {}) {
   )
 }
 
-const CONFIRM_TITLE: Record<PendingConfirm['kind'], string> = {
-  restart: '重新开始？',
-  resign: '认输？',
-  mode: '切换对战模式？',
-  color: '切换执子？',
-}
-
-/**
- * 确认按钮的文案**必须与工具栏那颗不同名**：`Modal` 不设 `aria-hidden`，
- * 底下的工具栏按钮仍在无障碍树里，同名会让 `getByRole` 直接撞上两个。
- * 顺带也更清楚——按钮自己说出了后果。
- */
-const CONFIRM_LABEL: Record<PendingConfirm['kind'], string> = {
-  restart: '确认重新开始',
-  resign: '确认认输',
-  mode: '确认切换',
-  color: '确认切换',
-}
-
-function confirmTitle(pending: PendingConfirm | null): string {
-  return pending === null ? '' : CONFIRM_TITLE[pending.kind]
-}
-
 interface ConfirmFacts {
   readonly moves: number
   readonly mode: GameMode
@@ -443,20 +422,37 @@ interface ConfirmFacts {
   readonly resigner: Player
 }
 
-/** 后果描述：说清「会丢掉什么 / 会记成什么」，不是「你确定吗」。 */
-function confirmDescription(pending: PendingConfirm | null, facts: ConfirmFacts): string {
-  if (pending === null) return ''
-
-  if (pending.kind === 'resign') {
-    const winner = playerName(opponentOf(facts.resigner), facts.mode, facts.humanColor)
-    return `这一局会立刻结束，记为${winner}获胜。认输不能撤销。`
+/** 一处确认的全部文案与后果描述，按 `kind` 索引。 */
+const CONFIRM: Record<
+  PendingConfirm['kind'],
+  {
+    readonly title: string
+    readonly label: string
+    readonly tone?: 'danger'
+    readonly describe: (facts: ConfirmFacts) => string
   }
-
-  const what =
-    pending.kind === 'restart'
-      ? '重新开始会开一局新的'
-      : pending.kind === 'mode'
-        ? '切换对战模式会开一局新的'
-        : '切换执子会开一局新的'
-  return `当前这局还没结束，${what}，已经下的 ${facts.moves} 手会被清空。`
+> = {
+  restart: {
+    title: '重新开始？',
+    label: '确认重新开始',
+    describe: (facts) => `当前这局还没结束，重新开始会开一局新的，已经下的 ${facts.moves} 手会被清空。`,
+  },
+  resign: {
+    title: '认输？',
+    label: '确认认输',
+    tone: 'danger',
+    // 认输的是谁由 `resignerFor` 判（与 store 同源），赢家是它的对手
+    describe: (facts) =>
+      `这一局会立刻结束，记为${playerName(opponentOf(facts.resigner), facts.mode, facts.humanColor)}获胜。认输不能撤销。`,
+  },
+  mode: {
+    title: '切换对战模式？',
+    label: '确认切换',
+    describe: (facts) => `当前这局还没结束，切换对战模式会开一局新的，已经下的 ${facts.moves} 手会被清空。`,
+  },
+  color: {
+    title: '切换执子？',
+    label: '确认切换',
+    describe: (facts) => `当前这局还没结束，切换执子会开一局新的，已经下的 ${facts.moves} 手会被清空。`,
+  },
 }
