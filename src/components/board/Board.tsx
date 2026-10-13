@@ -500,19 +500,41 @@ export function Board({
         })}
       </g>
 
+      {/*
+        胜利环是**双色**的：反色晕（宽）+ 强调色环（窄）盖在上面。
+        与焦点环同一套 recipe，理由也是同一个——单色环总有一种棋子会糊掉。
+        实测：`--c-accent` 压在黑子上只有 **1.25:1**（亮色主题），
+        而它压在白子上有 5.32:1。反色晕正好补上黑子那一侧。
+        判据是**两者之中至少有一个**对所在棋子达到 3:1（探针判据 7 守）。
+      */}
       {winLine !== null && (
         <g data-testid="win-line" pointerEvents="none">
-          {winLine.map((point) => (
-            <circle
-              key={pointKey(point)}
-              cx={point.x}
-              cy={point.y}
-              r={0.49}
-              fill="none"
-              stroke="var(--c-accent)"
-              strokeWidth={0.075}
-            />
-          ))}
+          {winLine.map((point) => {
+            const isBlack = board[idx(point.x, point.y)] === 1
+
+            return (
+              <g key={pointKey(point)}>
+                <circle
+                  data-testid="win-ring-halo"
+                  cx={point.x}
+                  cy={point.y}
+                  r={0.49}
+                  fill="none"
+                  stroke={isBlack ? 'var(--c-stone-white-a)' : 'var(--c-stone-black-b)'}
+                  strokeWidth={0.15}
+                />
+                <circle
+                  data-testid="win-ring"
+                  cx={point.x}
+                  cy={point.y}
+                  r={0.49}
+                  fill="none"
+                  stroke="var(--c-accent)"
+                  strokeWidth={0.075}
+                />
+              </g>
+            )
+          })}
         </g>
       )}
 

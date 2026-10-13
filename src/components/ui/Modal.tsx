@@ -16,6 +16,14 @@ export interface ModalProps {
    * 还有意义的操作）。**不传**时走下面那条「还给打开它的控件」的规则。
    */
   focusAfterClose?: RefObject<HTMLElement | null>
+  /**
+   * 弹窗落点。默认居中——**不传时行为逐字不变**。
+   *
+   * `'bottom'` 是给终局弹窗用的：它压在棋盘正中的时候，
+   * 五颗获胜子里有两颗被盖住（H 列正好穿过棋盘中线，是几何必然）。
+   * 贴到下沿之后棋盘的上半部分整个露出来，玩家不用先点「看看棋盘」才看得到连线。
+   */
+  placement?: 'center' | 'bottom'
 }
 
 /** 弹窗内可聚焦的元素。`[tabindex]` 那一支排除了 -1（不可 Tab 到的）。 */
@@ -35,7 +43,15 @@ function canRestoreFocus(element: HTMLElement | null): element is HTMLElement {
   return element !== null && element !== document.body
 }
 
-export function Modal({ open, title, onClose, children, footer, focusAfterClose }: ModalProps) {
+export function Modal({
+  open,
+  title,
+  onClose,
+  children,
+  footer,
+  focusAfterClose,
+  placement = 'center',
+}: ModalProps) {
   const dialogRef = useRef<HTMLDivElement>(null)
   /**
    * 正文的 id：对话框用 `aria-describedby` 指向它。
@@ -154,7 +170,14 @@ export function Modal({ open, title, onClose, children, footer, focusAfterClose 
   if (!open) return null
 
   return createPortal(
-    <div className="fixed inset-0 z-50 grid place-items-center bg-black/45 p-4 backdrop-blur-[2px]">
+    <div
+      className={cx(
+        'fixed inset-0 z-50 grid bg-black/45 p-4 backdrop-blur-[2px]',
+        // 贴下沿**且水平居中**。只写 `place-items-end` 是两个轴都靠末端，
+        // 弹窗会跑到右下角去——那是我第一版写错的，截图当场看出来了。
+        placement === 'bottom' ? 'items-end justify-items-center' : 'place-items-center',
+      )}
+    >
       <div
         ref={dialogRef}
         role="dialog"

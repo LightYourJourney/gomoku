@@ -47,8 +47,13 @@ export function MoveList({ moves, firstPlayer, lastMove }: MoveListProps) {
     return <p className="px-1 py-6 text-center text-xs text-faint">尚未落子</p>
   }
 
+  /*
+    上限从 288px 收到 224px（可视手数 18 → 14）。
+    列表本来就自带滚动，这不是「少看几手」，而是**让最后一块面板不再掉到折线以下**
+    ——右栏溢出 67px 时，被切掉的正是这一块的底部。
+  */
   return (
-    <div ref={scrollRef} className="max-h-64 overflow-y-auto lg:max-h-72">
+    <div ref={scrollRef} className="max-h-64 overflow-y-auto lg:max-h-56">
       <ol className="space-y-0.5 font-mono text-xs">
         {rows.map((row) => (
           <li

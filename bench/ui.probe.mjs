@@ -871,19 +871,54 @@ const MEASURE = () => {
       }
     }
 
-    // 胜利环：画在棋子**上面**（r=0.49 的那一圈）
-    const winRing = document.querySelector('[data-testid="win-line"] circle')
-    if (winRing !== null) {
-      const stroke = paint(winRing, 'stroke')
-      if (stroke !== null && stone.blackA !== null && stone.whiteA !== null) {
+    /*
+     * 胜利环：画在棋子**上面**（r=0.49 的那一圈）。
+     *
+     * 它是**双色**的——反色晕（宽）+ 强调色环（窄）盖在上面，与焦点环同一套 recipe。
+     * 判据因此是「**两者之中至少有一个**对所在棋子达到 3:1」：
+     * 实测 `--c-accent` 压在黑子上只有 1.25:1，而反色晕正好补上那一侧。
+     * 拿单色去判会把它判成不合格，然后逼着人去改一个其实看得见的东西。
+     */
+    const winRing = document.querySelector('[data-testid="win-ring"]')
+    const winHalo = document.querySelector('[data-testid="win-ring-halo"]')
+    if (winRing !== null && winHalo !== null) {
+      const accent = paint(winRing, 'stroke')
+      const halo = paint(winHalo, 'stroke')
+      // 晕的填色直接说明它压在哪一色的棋子上（与最后一手点同一套约定）
+      const onBlack = winHalo.getAttribute('stroke') === 'var(--c-stone-white-a)'
+      const bg = onBlack ? [stone.blackA, stone.blackB] : [stone.whiteA, stone.whiteB]
+      if (accent !== null && halo !== null && bg[0] !== null && bg[1] !== null) {
+        const worst = (fg) => Math.min(contrast(fg, bg[0]), contrast(fg, bg[1]))
         out.winRing = {
-          stroke: winRing.getAttribute('stroke'),
-          strokeWidth: Number.parseFloat(winRing.getAttribute('stroke-width') ?? '0'),
-          onBlack: round2(contrast(stroke, stone.blackA)),
-          onWhite: round2(contrast(stroke, stone.whiteA)),
+          onBlack,
+          accent: round2(worst(accent)),
+          halo: round2(worst(halo)),
+          best: round2(Math.max(worst(accent), worst(halo))),
           threshold: 3,
         }
       }
+    }
+
+    /*
+     * 终局时**有几颗获胜子被弹窗盖住**。
+     *
+     * 这条此前是「记录不判」，触发线设在「遮 ≥3 颗才考虑动」——那等于把一条
+     * 能自动判的判据写成人工判断。弹窗贴下沿之后它就该是 0，于是它变成判据。
+     */
+    const winners = [...document.querySelectorAll('[data-testid="board"] [data-win]')]
+    if (winners.length > 0) {
+      const dialogRect = document.querySelector('[role="dialog"]')?.getBoundingClientRect() ?? null
+      const covered = winners.filter((element) => {
+        if (dialogRect === null) return false
+        const r = element.getBoundingClientRect()
+        return (
+          r.left < dialogRect.right &&
+          r.right > dialogRect.left &&
+          r.top < dialogRect.bottom &&
+          r.bottom > dialogRect.top
+        )
+      }).length
+      out.winStones = { total: winners.length, covered }
     }
 
     // 标记文字 vs 标记底色（字对底，阈值是 4.5 而不是 3）
@@ -1484,6 +1519,21 @@ function checkCriteria(rows) {
               `${bc.markText.ratio}:1，低于 ${bc.markText.threshold}`,
           )
         }
+      }
+      // 胜利环：双色，两者之中至少一个够亮（与焦点环同一条判据）
+      if (bc.winRing !== null && bc.winRing !== undefined) {
+        if (bc.winRing.best < bc.winRing.threshold) {
+          bad.push(
+            `[7 胜利环] ${where}：主环 ${bc.winRing.accent}:1、反色晕 ${bc.winRing.halo}:1，` +
+              `两个都低于 ${bc.winRing.threshold}`,
+          )
+        }
+      }
+      // 终局：一颗获胜子都不许被弹窗盖住
+      if (bc.winStones !== null && bc.winStones !== undefined && bc.winStones.covered > 0) {
+        bad.push(
+          `[7 终局遮挡] ${where}：五颗获胜子里有 ${bc.winStones.covered} 颗被弹窗盖住`,
+        )
       }
     }
   }

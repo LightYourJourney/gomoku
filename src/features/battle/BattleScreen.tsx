@@ -341,7 +341,16 @@ export function BattleScreen({ sound: injectedSound }: BattleScreenProps = {}) {
         <BoardAnnouncer game={game} mode={mode} humanColor={humanColor} aiThinking={aiThinking} />
 
         {/* 右栏：按信息优先级 —— 概要 → 提示 → 分析 → 棋谱 →（窄档的）设置 */}
-        <aside className="order-2 space-y-3 px-3 pb-4 lg:order-3 lg:overflow-y-auto lg:border-l lg:border-border lg:px-4 lg:py-4">
+        {/*
+          面板间距 8px 而不是 12px：右栏在 battle-hint 那个状态下会多出三颗候选，
+          12px 的间距正好把它顶出折线 67px（实测 scrollHeight 898 / clientHeight 831）。
+          收紧间距是这里最便宜的一档，不损失任何内容。
+
+          **注释必须用大括号包起来。** 裸的块注释写在 JSX 子元素位置是**字面文本**，
+          会变成 `main` 网格里的一个额外项——棋盘当场从 729px 塌到 358px（1024 下 42px），
+          探针的「棋盘 ≥320px」判据立刻红。类型检查抓不到这一类错误。
+        */}
+        <aside className="order-2 space-y-2 px-3 pb-4 lg:order-3 lg:overflow-y-auto lg:border-l lg:border-border lg:px-4 lg:py-4">
           <Panel title="对局概要" bodyClassName="space-y-1">
             <InfoRow label="模式">{mode === 'pve' ? '人机对战' : '本地双人'}</InfoRow>
             <InfoRow label="手数">{moveCount}</InfoRow>

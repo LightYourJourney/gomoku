@@ -38,6 +38,12 @@ export function ResultDialog({
       title="本局结束"
       onClose={onClose}
       focusAfterClose={focusAfterClose}
+      /*
+        * 贴下沿，不居中：居中时它正好压在棋盘中线上，
+        * 五颗获胜子里有两颗被盖住。贴下之后棋盘上半部分整个露出来，
+        * 「五连」这件事在终局那一刻就看得见了，不必先点「看看棋盘」。
+      */
+      placement="bottom"
       footer={
         <>
           {/* 次要在前、主操作在后：视觉上是「左次右主」，Tab 顺序也是从左到右 */}
