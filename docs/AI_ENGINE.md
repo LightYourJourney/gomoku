@@ -31,6 +31,25 @@ chooseMove({
 
 响应带回 `requestId`、`gameVersion`、`move`、`score`、`depth`、`nodes`、`elapsedMs`、`confidence`、`reason`，以及提示用的 `candidates` 与 `urgency`。`confidence` 区分「搜索得出的精确结论」与「预算不足时的启发式建议」，界面必须如实展示二者的差别。
 
+### `score` 的量纲**随 `reason` 而变**——界面不许拿它说局面
+
+这一点此前没有任何地方写着，是 Phase 03 补上的（`src/ai/search.test.ts` 的「局面评分的视角」）：
+
+| `reason` | `score` 是什么 | 谁占优从符号看得出来吗 |
+| --- | --- | --- |
+| `search` / `win` | negamax 根节点的返回值，**站在搜索方自己这一边** | 可以。实测：黑双活三的局面，黑搜 `+1000000`、白搜 `−999997` |
+| `block` | **捷径**，来自 `bestBlock` 的启发式量级 | **不能。** 实测：黑四连、白去堵，白处于必败局面却拿到 `+1000000` |
+| `opening` / `no_move` | 恒为 `0` | 不适用 |
+| `timeout` | 上一层迭代的兜底值 | 不可靠（本来就没搜完） |
+
+**所以界面不得用 `score` 说「AI 觉得自己占优 / 落后」**——同一把尺子在六种 `reason` 上量的不是同一个东西。
+对战页的 AI 面板因此只用 `reason` 与 `confidence` 生成玩家视图，`score` 作为原始数字留在技术详情里
+（`docs/ui-redesign/PHASE_03.md` §3.5.3）。
+
+顺带记一条容易看错的：「己方已有四」并不是 `win` 的全部条件——
+**活三也给 `win`**（活三 → 活四 → 成五，是引擎的必胜判断）。
+
+
 **保证**：除非棋盘已满（返回 `move: null`，`reason: 'no_move'`），否则一定返回一个落在空位上的合法着法。
 
 ## 决策流程

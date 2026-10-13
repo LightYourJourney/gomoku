@@ -576,3 +576,61 @@ describe('analyze 用途', () => {
     expect(result.confidence).toBe('exact')
   })
 })
+
+/**
+ * `score` 的**视角**。
+ *
+ * 这条不变量此前没有任何地方写着：`AiInfo.score` 是 negamax 根节点的返回值，
+ * 而 `src/ai/types.ts` 与 `docs/AI_ENGINE.md` 都没说它站在哪一方。
+ * 界面要拿它说话（「占优 / 落后」）就必须先把这件事钉死——
+ * 钉不死就不许说，猜错了会在界面上给出一个**错的**结论。
+ *
+ * 判据：同一个局面分别以黑、白去搜，符号必须相反。
+ */
+describe('局面评分的视角', () => {
+  /**
+   * 走真搜索的那几条路径（`win` / `search`），评分站在**搜索方自己**这一边。
+   *
+   * 实测（黑双活三这个局面）：黑搜 → `win` `+1000000`；白搜 → `search` `-999997`。
+   * 换个颜色也一样。这条约定此前**没有任何地方写着**——
+   * `src/ai/types.ts` 与 `docs/AI_ENGINE.md` 都没说 `score` 站在哪一方。
+   *
+   * 顺带说明 `win` 的判据比字面宽：黑只有**活三**，引擎也给 `win`——
+   * 那是「活三 → 活四 → 成五」的必胜判断，不是「已有四」。
+   */
+  it('同一局面黑白分别搜，分数的符号相反', () => {
+    const board = boardFromLines([
+      '...............',
+      '...BBB.........',
+      '...............',
+      '.....BBB.......',
+    ])
+
+    const asBlack = ask(board, BLACK, 'medium')
+    const asWhite = ask(board, WHITE, 'medium')
+
+    expect(asBlack.score).toBeGreaterThan(0)
+    expect(asWhite.score).toBeLessThan(0)
+  })
+
+  /**
+   * **但 `block` 那一档不是同一把尺子。**
+   *
+   * 它走捷径，`score` 来自 `bestBlock` 的启发式量级——正负号表达的是
+   * 「这个堵点多要紧」，**不是**「局面谁占优」。实测：黑四连、白去堵，
+   * 白明明处于必败局面，拿到的却是 `+1000000`。
+   *
+   * 所以界面**不许**拿 `score` 说「AI 觉得自己占优 / 落后」：
+   * 同一把尺子在六种 `reason` 上量的不是同一个东西。
+   * 这正是玩家视图只用 `reason` + `confidence`、把 `score` 留在技术详情的原因
+   * （见 `PHASE_03.md` §3.5.3）。
+   */
+  it('block 捷径给的是启发式量级，不是「谁占优」——所以它不能拿去说局面', () => {
+    const board = boardFromLines(['...............', '...............', '...BBBB........'])
+
+    const blocking = ask(board, WHITE, 'medium')
+
+    expect(blocking.reason).toBe('block')
+    expect(blocking.score).toBeGreaterThan(0)
+  })
+})

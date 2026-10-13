@@ -60,6 +60,47 @@ const SPARSE = [
   [2, 2], [5, 3], [8, 2], [11, 4], [3, 6], [6, 8], [9, 6], [12, 8], [4, 11], [7, 12], [10, 11],
 ].map(([x, y]) => ({ x, y }))
 
+/**
+ * 6 手的开局。任务书 §三 点名要「开局少量落子」——
+ * 空盘核不了棋子，初稿拿 `battle-empty` 顶替是错的。
+ */
+const OPENING = [
+  [7, 7], [8, 8], [7, 8], [8, 7], [6, 6], [9, 9],
+].map(([x, y]) => ({ x, y }))
+
+/**
+ * 两片**贴在一起**的棋子：中间一条压在棋盘最亮处（晕影最淡的地方），
+ * 边上一片贴着暗角。任务书 §三 要的「黑棋密集」「白棋密集」，
+ * 以及「白棋不能与高亮背景融为一体」都靠这两片看。
+ *
+ * 摆法：**4 连的跑动，行距 2**。于是同色棋子**两两相邻**（这正是要看阴影会不会互相干扰），
+ * 但任何方向上最多连成 4 颗——构造上就不可能提前成五。
+ * 随手摆一片子当「密集」是不行的：几乎必然在某条线上凑够五子，
+ * 那样照出来的不是密集局面，是一局已经结束的棋。
+ */
+const band = (x0, rows) => rows.flatMap((y) => [0, 1, 2, 3].map((i) => ({ x: x0 + i, y })))
+
+const CENTER_BAND = band(5, [2, 4, 6, 8, 10, 12])
+const SIDE_BAND = band(0, [1, 3, 5, 7, 9, 11])
+
+/**
+ * 黑白交替的一局：`centerIsBlack` 决定**中间那一片**归谁。
+ * 两种状态看的是同一件事的两面——黑子压在亮处，与白子压在亮处。
+ *
+ * 先后由数组下标决定（`firstPlayer: 1`，偶数下标是黑），所以这里按
+ * 「黑一手、白一手」交替着塞。
+ */
+function denseSession(centerIsBlack) {
+  const moves = []
+  for (let i = 0; i < CENTER_BAND.length; i++) {
+    const [blackPoint, whitePoint] = centerIsBlack
+      ? [CENTER_BAND[i], SIDE_BAND[i]]
+      : [SIDE_BAND[i], CENTER_BAND[i]]
+    moves.push(blackPoint, whitePoint)
+  }
+  return moves
+}
+
 /** 9 手，黑在 H 列连成五子——终局弹窗与胜利连线的夹具。 */
 const BLACK_WINS = [
   [7, 7], [8, 8], [7, 8], [8, 7], [7, 9], [8, 6], [7, 10], [9, 9], [7, 11],
@@ -69,6 +110,67 @@ const BLACK_WINS = [
 const WHITE_WINS = [
   [3, 3], [4, 4], [3, 4], [4, 5], [3, 5], [4, 6], [5, 5], [4, 7], [6, 6], [4, 8],
 ].map(([x, y]) => ({ x, y }))
+
+/**
+ * 夹具自校验：**没有它，一个违规的夹具会照出一张「棋盘本身就违规」的图，
+ * 而那张图看起来完全正常。**
+ *
+ * 原先这里（`:42`）的注释声称夹具「全部经 `bench/ui.fixtures.mjs` 的校验器验过」——
+ * **那个文件并不存在**，注释是过期的。本阶段新增夹具，于是把校验补成真的。
+ *
+ * 三条：坐标在盘内、没有重复落子、**任何一方都没有提前成五**（含每个中间局面）。
+ */
+function assertFixture(name, moves) {
+  const KEY = (p) => `${p.x},${p.y}`
+  const seen = new Set()
+  const black = new Set()
+  const white = new Set()
+
+  const five = (set) => {
+    for (const k of set) {
+      const [x, y] = k.split(',').map(Number)
+      for (const [dx, dy] of [
+        [1, 0],
+        [0, 1],
+        [1, 1],
+        [1, -1],
+      ]) {
+        let run = 1
+        for (let i = 1; i < 5; i++) {
+          if (set.has(`${x + dx * i},${y + dy * i}`)) run += 1
+          else break
+        }
+        if (run >= 5) return k
+      }
+    }
+    return null
+  }
+
+  moves.forEach((point, index) => {
+    if (point.x < 0 || point.x > 14 || point.y < 0 || point.y > 14) {
+      throw new Error(`夹具 ${name}：第 ${index + 1} 手 (${point.x},${point.y}) 出界`)
+    }
+    const key = KEY(point)
+    if (seen.has(key)) throw new Error(`夹具 ${name}：第 ${index + 1} 手 ${key} 重复落子`)
+    seen.add(key)
+
+    const own = index % 2 === 0 ? black : white
+    own.add(key)
+    const won = five(own)
+    if (won !== null) {
+      throw new Error(`夹具 ${name}：走到第 ${index + 1} 手时 ${index % 2 === 0 ? '黑' : '白'}在 ${won} 成五了`)
+    }
+  })
+}
+
+// 每个夹具在**探针开跑之前**就验一遍。违规就响亮地停，不照出一张骗人的图。
+assertFixture('MIDGAME', MIDGAME)
+assertFixture('SPARSE', SPARSE)
+assertFixture('OPENING', OPENING)
+assertFixture('BLACK_WINS（去掉成五的最后一手）', BLACK_WINS.slice(0, BLACK_WINS.length - 1))
+assertFixture('WHITE_WINS（去掉成五的最后一手）', WHITE_WINS.slice(0, WHITE_WINS.length - 1))
+assertFixture('dense-black', denseSession(true))
+assertFixture('dense-white', denseSession(false))
 
 const session = (patch) => ({
   schemaVersion: 2,
@@ -266,6 +368,84 @@ const STATES = [
     async boot(page) {
       await seedSession(page, session({ moves: BLACK_WINS }))
       await page.waitForSelector('[role="dialog"]')
+    },
+  },
+  {
+    /** 任务书 §三 点名的「开局少量落子」。空盘核不了棋子，这一档不能省。 */
+    id: 'battle-opening',
+    group: 'battle',
+    async boot(page) {
+      await seedSession(page, session({ moves: OPENING }))
+      await page.waitForSelector('[data-testid="stone-9-9"]')
+    },
+  },
+  {
+    /**
+     * 黑棋密集：中间那一片（棋盘最亮处）是黑子，边上贴暗角的是白子。
+     * 同色棋子两两相邻，正好用来核「棋子阴影会不会干扰相邻棋子」。
+     */
+    id: 'battle-dense-black',
+    group: 'battle',
+    async boot(page) {
+      await seedSession(page, session({ moves: denseSession(true) }))
+      await page.waitForSelector('[data-testid="stone-5-12"]')
+    },
+  },
+  {
+    /** 白棋密集：同上一局，两种颜色对调——白子压在棋盘最亮处。 */
+    id: 'battle-dense-white',
+    group: 'battle',
+    async boot(page) {
+      await seedSession(page, session({ moves: denseSession(false) }))
+      await page.waitForSelector('[data-testid="stone-5-12"]')
+    },
+  },
+  {
+    /**
+     * 终局但**关掉弹窗**——胜利连线唯一拍得到的那一帧。
+     *
+     * `battle-finished` 那张图里，五颗获胜子有两颗被居中弹窗压住
+     * （H 列正好穿过棋盘中线）。没有这一档，「胜利连线清晰」就没有证据。
+     */
+    id: 'battle-win-board',
+    group: 'battle',
+    async boot(page) {
+      await seedSession(page, session({ moves: BLACK_WINS }))
+      await page.waitForSelector('[role="dialog"]')
+      await page.getByRole('button', { name: '看看棋盘' }).click()
+      await page.waitForSelector('[data-testid="win-line"]')
+      await page.waitForSelector('[data-testid="last-move-dot"]')
+    },
+  },
+  {
+    /**
+     * AI 真的走完一手、面板上有分析结果。
+     *
+     * **这一档是补一个空断言**：在此之前，21 个状态里没有任何一个让 AI 走过一手
+     * （`battle-ai-error` 用 Worker 桩、`battle-thinking` 在思考中就被拦下），
+     * 于是「默认界面不出现算法说明」那条判据**恒真**——不是因为修好了，
+     * 而是因为那段说明根本没被渲染过。
+     *
+     * 用 `beginner` 档 + 6 手开局：盘面简单、预算最低，不吃满 2600ms。
+     */
+    id: 'battle-ai-moved',
+    group: 'battle',
+    async boot(page) {
+      // humanColor 2 = 人执白，于是第 7 手轮到 AI（黑）。开局 6 手后正是它。
+      await seedSession(page, session({ moves: OPENING, humanColor: 2, difficulty: 'beginner' }))
+      await page.waitForSelector('[data-testid="ai-player-view"]')
+      await page.waitForSelector('[data-testid="status-pill"]:has-text("轮到你落子")')
+    },
+  },
+  {
+    /** 同上 + 点开「?」。任务书 §九 点名要「AI 技术详情」这张图，没有它就没有对照。 */
+    id: 'battle-ai-moved-expanded',
+    group: 'battle',
+    async boot(page) {
+      await seedSession(page, session({ moves: OPENING, humanColor: 2, difficulty: 'beginner' }))
+      await page.waitForSelector('[data-testid="ai-player-view"]')
+      await page.getByRole('button', { name: 'AI 引擎的技术详情' }).click()
+      await page.waitForSelector('text=Negamax')
     },
   },
   {
@@ -573,6 +753,163 @@ const MEASURE = () => {
     }
   }
 
+  /**
+   * 从 `:root` 的计算样式里读一个颜色令牌，解析不了返回 null。
+   *
+   * 两个坑，各踩过一次，两次的表现都是**整块量测静默地全 null**：
+   *
+   * 1. **`getPropertyValue` 返回的字符串带前导空格**（自定义属性保留原样空白）→ 要 trim；
+   * 2. **令牌是十六进制写的**（`#5c5c63`），而 `parse()` 只认 `rgb()/rgba()` 语法
+   *    ——它服务的是 DOM 计算样式那条路，那边浏览器给的一律是 `rgb(...)`。
+   *    所以这里先把 `#rgb` / `#rrggbb` 归一成 `rgb(...)` 再交给它。
+   */
+  const token = (name) => {
+    const raw = getComputedStyle(document.documentElement).getPropertyValue(name).trim()
+    const hex = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(raw)
+    if (hex !== null) {
+      const body = hex[1]
+      const full =
+        body.length === 3
+          ? body
+              .split('')
+              .map((ch) => ch + ch)
+              .join('')
+          : body
+      const [r, g, b] = [0, 2, 4].map((i) => Number.parseInt(full.slice(i, i + 2), 16))
+      return { r, g, b, a: 1 }
+    }
+    return parse(raw)
+  }
+
+  /** 元素的计算 `fill` / `stroke`（`var()` 在这里已经被浏览器解析成实际颜色）。 */
+  const paint = (element, prop) =>
+    element === null ? null : parse(getComputedStyle(element).getPropertyValue(prop))
+
+  const round2 = (value) => Math.round(value * 100) / 100
+
+  /**
+   * 网格线的设备像素宽度。
+   *
+   * 棋盘 viewBox 是 16 个用户单位（`MARGIN 1 + EXTENT 14 + MARGIN 1`），
+   * 所以 1 用户单位 = 棋盘宽 / 16。
+   */
+  const gridLineMetrics = () => {
+    const grid = document.querySelector('[data-testid="board-grid"]')
+    const boardEl = document.querySelector('[data-testid="board"]')
+    if (grid === null || boardEl === null) return null
+
+    const strokeWidth = Number.parseFloat(
+      grid.getAttribute('stroke-width') ?? getComputedStyle(grid).strokeWidth,
+    )
+    const unitPx = boardEl.getBoundingClientRect().width / 16
+    const dpr = window.devicePixelRatio
+
+    return {
+      userUnits: strokeWidth,
+      unitPx: round2(unitPx),
+      dpr,
+      devicePx: round2(strokeWidth * unitPx * dpr),
+    }
+  }
+
+  /**
+   * 棋盘装饰的对比度。
+   *
+   * **为什么单开一个函数**：下面那个对比度循环对 SVG 直接 `continue`
+   * （「底色是木纹渐变，量不了」）。跳过是对的——但它跳掉的不只是坐标标签，
+   * 还有最后一手标记、胜利连线、标记文字这三组**必须看得见**的东西。
+   * 量不了渐变，就把该量的两两组合挑出来单独量。
+   *
+   * 棋子对木色只**记录**不设阈值：黑子边缘在深色主题下贴着底（≈1:1），
+   * 而它在截图里清清楚楚——可辨性来自高光表达的形状，不是边界的亮度差。
+   * 拿亮度当门禁会逼着人去给棋子加白边（理由见 PHASE_03.md §3.4.1）。
+   */
+  const boardContrastMetrics = () => {
+    const out = {
+      lastMoveDot: null,
+      winRing: null,
+      markText: null,
+      stones: null,
+      note: null,
+    }
+
+    const stone = {
+      blackA: token('--c-stone-black-a'),
+      blackB: token('--c-stone-black-b'),
+      whiteA: token('--c-stone-white-a'),
+      whiteB: token('--c-stone-white-b'),
+    }
+    const boardA = token('--c-board-a')
+    const boardB = token('--c-board-b')
+
+    if (stone.blackA !== null && stone.blackB !== null && boardA !== null && boardB !== null) {
+      // 木色是渐变，取**两端里最不利的那一端**——那是棋子最容易糊掉的地方
+      const worst = (fg) => round2(Math.min(contrast(fg, boardA), contrast(fg, boardB)))
+      out.stones = {
+        blackEdge: worst(stone.blackB),
+        blackBody: worst(stone.blackA),
+        whiteEdge: worst(stone.whiteB),
+        whiteBody: worst(stone.whiteA),
+      }
+    }
+
+    // 最后一手：与**所在棋子**的对比。最不利的一侧是棋子渐变里离它最近的那端。
+    const dot = document.querySelector('[data-testid="last-move-dot"]')
+    if (dot !== null) {
+      const fill = paint(dot, 'fill')
+      const onBlack = dot.getAttribute('fill') === 'var(--c-stone-white-a)'
+      const bg = onBlack ? [stone.blackA, stone.blackB] : [stone.whiteA, stone.whiteB]
+      if (fill !== null && bg[0] !== null && bg[1] !== null) {
+        out.lastMoveDot = {
+          fill: dot.getAttribute('fill'),
+          radius: Number.parseFloat(dot.getAttribute('r') ?? '0'),
+          // 与半径一起报出来，「在最小棋盘上还剩几 px」才不用另算
+          diameterPxAt320: round2(Number.parseFloat(dot.getAttribute('r') ?? '0') * 2 * (320 / 16)),
+          ratio: round2(Math.min(contrast(fill, bg[0]), contrast(fill, bg[1]))),
+          threshold: 3,
+        }
+      }
+    }
+
+    // 胜利环：画在棋子**上面**（r=0.49 的那一圈）
+    const winRing = document.querySelector('[data-testid="win-line"] circle')
+    if (winRing !== null) {
+      const stroke = paint(winRing, 'stroke')
+      if (stroke !== null && stone.blackA !== null && stone.whiteA !== null) {
+        out.winRing = {
+          stroke: winRing.getAttribute('stroke'),
+          strokeWidth: Number.parseFloat(winRing.getAttribute('stroke-width') ?? '0'),
+          onBlack: round2(contrast(stroke, stone.blackA)),
+          onWhite: round2(contrast(stroke, stone.whiteA)),
+          threshold: 3,
+        }
+      }
+    }
+
+    // 标记文字 vs 标记底色（字对底，阈值是 4.5 而不是 3）
+    const markGroup = document.querySelector('[data-testid^="board-mark-"]')
+    if (markGroup !== null) {
+      const text = markGroup.querySelector('text')
+      const shape = markGroup.querySelector('circle, rect')
+      const fill = paint(text, 'fill')
+      const background = paint(shape, 'fill')
+      if (fill !== null && background !== null) {
+        out.markText = {
+          tone: markGroup.getAttribute('data-tone'),
+          shape: markGroup.getAttribute('data-shape'),
+          ratio: round2(contrast(fill, background)),
+          threshold: 4.5,
+        }
+      }
+    }
+
+    if (out.stones !== null && out.stones.blackEdge < 2) {
+      out.note = '棋子对木色的亮度对比只作记录，不作判据（见 PHASE_03.md §3.4.1）'
+    }
+
+    return out
+  }
+
   const all = [...document.querySelectorAll('*')]
   const visible = (element) => {
     const r = element.getBoundingClientRect()
@@ -695,6 +1032,14 @@ const MEASURE = () => {
     .map((element) => ({
       level: element.tagName.toLowerCase(),
       text: (element.textContent ?? '').trim().replace(/\s+/g, ' '),
+      /*
+       * 顶边与高度。**没有几何就判不了「内容落在折线以下」**——
+       * `PLAN.md` 的验收标准 1 写着「`棋谱` 顶边 ≤ 750」，
+       * 而这份量测此前只记 `level` 与 `text`，那条判据一直判不了。
+       * 覆盖棘轮按 `level:text` 比对，多这两个字段不影响它。
+       */
+      top: Math.round(element.getBoundingClientRect().top),
+      h: Math.round(element.getBoundingClientRect().height),
     }))
 
   const buttons = [...document.querySelectorAll('button')]
@@ -751,6 +1096,23 @@ const MEASURE = () => {
       mainGridTemplate: main === null ? null : getComputedStyle(main).gridTemplateColumns,
     },
     board: rectOf(board),
+    /*
+     * 网格线的**设备像素**宽度。
+     *
+     * 任务书 §二 点名要「避免在高分辨率屏幕上出现明显的线条模糊」。
+     * SVG 的描边宽度是用户单位，换算到设备像素之后如果不是整数就会抗锯齿——
+     * 这不是缺陷，但**「是不是细到碎掉」需要一个数**：
+     * 判据是 ≥ 0.5 设备像素（见 `checkCriteria` 第 6 条）。
+     */
+    gridLine: gridLineMetrics(),
+    /*
+     * 棋盘装饰的对比度：最后一手标记 / 胜利连线 / 标记文字。
+     *
+     * 这三组此前**完全没有守卫**——探针在下面的对比度循环里
+     * `if (element instanceof SVGElement) continue`（底色是木纹渐变，量不了）。
+     * 量不了就把该量的东西挑出来单独量，而不是一起跳过。
+     */
+    boardContrast: boardContrastMetrics(),
     boardRatioOfViewport:
       board === null ? null : Math.round(((board.getBoundingClientRect().width / vw) * 100 + Number.EPSILON) * 10) / 10,
     statusPill: document.querySelector('[data-testid="status-pill"]')?.textContent?.trim() ?? null,
@@ -996,9 +1358,9 @@ try {
   console.log(`量测数据 → ${reportPath}`)
 
   /*
-   * ── 五条量化判据的自检闸门 ──────────────────────────────────
+   * ── 七条量化判据的自检闸门 ──────────────────────────────────
    *
-   * `DESIGN_SYSTEM.md` §12 的五条判据此前只是「量得到」：探针把它们写进
+   * `DESIGN_SYSTEM.md` §12 的判据此前只是「量得到」：探针把它们写进
    * `measurements.json`，人再去翻。于是代码注释里「由探针守着」这句话是假的——
    * 采集不等于判定。**一条永远不红的判据等于没有判据**，这个仓库已经为此吃过亏
    * （F-UI-01 就是这么活下来的：169px 的棋盘在 46 条 e2e 全绿的状态下存在了两天）。
@@ -1014,7 +1376,7 @@ try {
     if (violations.length > 20) console.error(`   ……另有 ${violations.length - 20} 处`)
     process.exitCode = 1
   } else {
-    console.log(`\n✓ 五条量化判据全部通过（本次 ${measurements.length} 条量测）`)
+    console.log(`\n✓ 七条量化判据全部通过（本次 ${measurements.length} 条量测）`)
   }
 } finally {
   if (browser !== undefined) await browser.close()
@@ -1022,7 +1384,8 @@ try {
 }
 
 /**
- * `DESIGN_SYSTEM.md` §12 的五条量化判据，逐条判真假，返回人话形式的违规清单。
+ * 量化判据，逐条判真假，返回人话形式的违规清单。前五条出自
+ * `DESIGN_SYSTEM.md` §12，后两条是 Phase 03 补的（棋盘上有两样东西此前**没有任何守卫**）。
  *
  * 判据的口径与那份文档逐条一致，**改一处要同步另一处**：
  *
@@ -1033,6 +1396,15 @@ try {
  * 5. `smallTargets.under24` 只允许剩下棋盘交叉点（`rect[intersection-*]`）——
  *    一格 = 棋盘/16，390 屏幕满幅也只有约 24px，棋盘永远过不了这条线，
  *    而规范又明令不许放大命中区；棋盘的安全由判据 2、3 单独守。
+ * 6. `gridLine.devicePx ≥ 0.5`——网格线细到碎掉才算「明显模糊」（任务书 §二）；
+ * 7. `boardContrast`：最后一手点对所在棋子 ≥ 3:1 且最小棋盘上直径 ≥ 5px、
+ *    标记文字对标记底色 ≥ 4.5:1。
+ *
+ * **判据 7 只吃「量到了」的那几项。** 不含最后一手的画面（空盘、复盘）本来就没有
+ * 那个元素，字段是 `null`，跳过是对的；但如果**所有**行都量不到，
+ * 说明选择器写错了——那时判据会一次都不执行却印 ✓，
+ * 也就是一条**恒真的空断言**。所以下面专门有一条「全 null 就红」的自检。
+ * （这不是假想的：第一版就是 `getPropertyValue` 没 trim，58 行全是 null，而探针印的是 ✓。）
  */
 function checkCriteria(rows) {
   const bad = []
@@ -1065,6 +1437,76 @@ function checkCriteria(rows) {
         bad.push(`[5 命中区] ${where}：${target.element} 只有 ${target.w}×${target.h}`)
       }
     }
+
+    /*
+     * 6. 网格线不能细到碎掉。
+     *
+     * 「模糊」是主观的，「设备像素宽度」不是。SVG 的描边是用户单位，
+     * 棋盘 viewBox 16 单位 → 1 单位 = 棋盘/16，再乘 DPR 才是真实的设备像素。
+     * 低于 0.5 个设备像素时线会碎成不连续的灰点——那才是任务书 §二 说的「明显模糊」。
+     * 分数宽度引起的抗锯齿是 SVG 的正常渲染，**不判它**。
+     */
+    const grid = row.gridLine
+    if (grid != null && grid.devicePx < 0.5) {
+      bad.push(
+        `[6 网格线] ${where}：一格 ${grid.unitPx}px、线宽 ${grid.userUnits} 单位 → ` +
+          `${grid.devicePx} 设备像素，低于 0.5`,
+      )
+    }
+
+    /*
+     * 7. 棋盘上必须看得见的两样东西。
+     *
+     * 这一条此前**完全不存在**：对比度循环对 SVG 直接 continue，
+     * 于是最后一手标记与标记文字的对比度从来没被量过。
+     * 棋子对木色只记录不判（理由见 `boardContrastMetrics` 与 PHASE_03.md §3.4.1）。
+     */
+    const bc = row.boardContrast
+    if (bc != null) {
+      if (bc.lastMoveDot !== null && bc.lastMoveDot !== undefined) {
+        if (bc.lastMoveDot.ratio < bc.lastMoveDot.threshold) {
+          bad.push(
+            `[7 最后一手] ${where}：点（${bc.lastMoveDot.fill}）在所在棋子上只有 ` +
+              `${bc.lastMoveDot.ratio}:1，低于 ${bc.lastMoveDot.threshold}`,
+          )
+        }
+        if (bc.lastMoveDot.diameterPxAt320 < 5) {
+          bad.push(
+            `[7 最后一手] ${where}：最小棋盘（320px）下点直径只有 ` +
+              `${bc.lastMoveDot.diameterPxAt320}px，低于 5`,
+          )
+        }
+      }
+      if (bc.markText !== null && bc.markText !== undefined) {
+        if (bc.markText.ratio < bc.markText.threshold) {
+          bad.push(
+            `[7 标记文字] ${where}：${bc.markText.tone} 档的标记文字只有 ` +
+              `${bc.markText.ratio}:1，低于 ${bc.markText.threshold}`,
+          )
+        }
+      }
+    }
+  }
+
+  /*
+   * 判据 7 的「恒真空断言」自检。
+   *
+   * 它只在量到元素时才判，所以选择器一写错，它就**一次都不执行**，
+   * 然后和别的判据一起印 ✓。第一版正是这样：`getPropertyValue` 返回的令牌
+   * 带前导空格没 trim，58 行 `boardContrast.lastMoveDot` 全是 null，
+   * 探针照样报「全部通过」。
+   *
+   * 「棋子对木色」那几项在任何有棋盘的画面上都量得到，拿它当哨兵最合适。
+   */
+  const withContrast = rows.filter((row) => row.boardContrast != null)
+  const withStones = withContrast.filter(
+    (row) => row.boardContrast.stones !== null && row.boardContrast.stones !== undefined,
+  )
+  if (withContrast.length > 0 && withStones.length === 0) {
+    bad.push(
+      `[7 自检] ${withContrast.length} 行都量到了 boardContrast，但没有一行量得到棋子对木色的对比——` +
+        '选择器或令牌读取写错了，判据 7 一次都没真的执行',
+    )
   }
 
   return bad

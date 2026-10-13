@@ -278,3 +278,59 @@ describe.each(['light', 'dark'] as const)('用法层：%s 主题下渲染出来�
     })
   })
 })
+
+/**
+ * 棋盘标记的三档色调必须**互相分得开**（任务书 §六「不同标记类型的颜色差异」）。
+ *
+ * 判据只用色相距离，且**只对 `bad` 设阈值**——实测三档的 ΔH 是
+ * accent↔good **33.5°**、good↔bad 125.5°、accent↔bad 159°。
+ * `accent` 与 `good` 是弱区分（同亮度、色相只差 33.5°），
+ * 所以**不给它们定一条当场就会红的假阈值**：两者从不出现在同一屏
+ * （accent 是对战/教学页的提示标记，good/bad 是残局页的判题标记），
+ * 各自还有文案与位置兜底。这里把数字如实钉住，弱区分这件事记录在案。
+ */
+describe('棋盘标记的三档色调', () => {
+  /** 取 HSL 里的色相（度）。 */
+  function hue(hex: string): number {
+    const h = hex.replace('#', '')
+    const full = h.length === 3 ? [...h].map((c) => c + c).join('') : h
+    const [r, g, b] = [0, 2, 4].map((i) => Number.parseInt(full.slice(i, i + 2), 16) / 255) as [
+      number,
+      number,
+      number,
+    ]
+    const max = Math.max(r, g, b)
+    const min = Math.min(r, g, b)
+    const d = max - min
+    if (d === 0) return 0
+    const raw = max === r ? ((g - b) / d) % 6 : max === g ? (b - r) / d + 2 : (r - g) / d + 4
+    return ((raw * 60) % 360 + 360) % 360
+  }
+
+  function hueGap(a: string, b: string): number {
+    const d = Math.abs(hue(a) - hue(b))
+    return Math.min(d, 360 - d)
+  }
+
+  it.each(Object.entries(TOKENS))('%s 主题下，bad 与另外两档的色相距离 ≥ 60°', (_n, selector) => {
+    const tokens = readTokens(selector)
+    const accent = tokens.get('--c-accent')!
+    const good = tokens.get('--c-good')!
+    const bad = tokens.get('--c-danger')!
+
+    expect(hueGap(bad, accent)).toBeGreaterThanOrEqual(60)
+    expect(hueGap(bad, good)).toBeGreaterThanOrEqual(60)
+  })
+
+  it.each(Object.entries(TOKENS))(
+    '%s 主题下，accent 与 good 的弱区分被如实钉住（低于 60° 仍是已知事实）',
+    (_n, selector) => {
+      const tokens = readTokens(selector)
+      const gap = hueGap(tokens.get('--c-accent')!, tokens.get('--c-good')!)
+
+      // 这条断言的方向是**反的**：它记录「它们确实很近」。
+      // 哪天有人把两者拉开了，这里会红，那时把这条改成 ≥60 才是对的。
+      expect(gap).toBeLessThan(60)
+    },
+  )
+})

@@ -26,7 +26,15 @@ const REPO = resolve(HERE, '..')
 
 const DEFAULTS = {
   baseline: resolve(HERE, 'coverage.baseline.json'),
-  current: resolve(REPO, 'docs/ui-redesign/screenshots/after-phase02/measurements.json'),
+  /*
+   * 指向**最新一代**的量测快照。
+   *
+   * 基线（`coverage.baseline.json`）是冻结的，快照必须跟着最近一次 `yarn ui:probe` 走——
+   * 否则 `yarn check:coverage` 本地跑的是「phase02 比 phase02」，
+   * 一条**恒真的空检查**（Phase 03 收尾时发现它停在了 after-phase02）。
+   * CI 显式传 `--current`，不受这里影响。
+   */
+  current: resolve(REPO, 'docs/ui-redesign/screenshots/after-phase03/measurements.json'),
 }
 
 
