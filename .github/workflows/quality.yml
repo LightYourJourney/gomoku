@@ -58,8 +58,13 @@ jobs:
           if ! sudo apt-get install -y -qq fonts-noto-cjk; then
             echo "::error::装 fonts-noto-cjk 失败——本轮 e2e 若仍红，不能排除是缺字体所致"
           fi
-          echo "—— 实际可用的中文字体 ——"
-          fc-list :lang=zh | head -5 || echo "（一个中文字体都没有）"
+          echo "—— 实际可用的中文字体（按字族去重）——"
+          # 按**字族**去重：`fc-list` 原始输出每个字重/语言各一行，看不出到底装了哪些。
+          # 关注点：应用的字栈里点名的是 'Noto Sans SC'，而 fonts-noto-cjk 装上的
+          # 可能只有 Serif 系列。对**度量**无所谓（CJK 字形一律 1em 宽），
+          # 对**观感**有所谓——所以把它记进日志。
+          fc-list :lang=zh family | tr ',' '\n' | sed 's/^ *//' | sort -u | head -8 \
+            || echo "（一个中文字体都没有）"
 
       # **不要手工先起 dev server**：Playwright 的 webServer 自己管 5181
       # （`reuseExistingServer: !process.env.CI`，CI 里是 false）。
@@ -96,18 +101,17 @@ jobs:
 
       # 探针**自带 dev server**（bench/ui.probe.mjs 里 5184），不需要外部起。
       # `--out ci` 是必须的：不带会去写 before/，而那份是入库基线，探针会拒绝开跑并退出 2。
-      # **首跑实测：五条判据在 runner 上全部通过，且棋盘占比与本机基线逐条相同**
-      # （1440×700 仍是 36.7%、390 仍是 87.2%——因为行高是写死的 CSS 值，与字体无关）。
-      # 但本轮给 job 装了中文字体，**环境的改变让那次观测作废**：横向度量会变，
-      # 贴着 35% 的那条余量必须重新量。所以再取一轮数才转正。
+      # **两次观测，数字逐条相同** → 转成真闸门：
+      #   无字体那轮：五条判据全过，battle-* @1440x700 = 36.7%
+      #   装字体那轮：五条判据全过，同样是 36.7%（棋盘占比对字体不敏感——
+      #              行高是写死的 CSS 值，字体只影响横向度量）
+      # 最紧的一条是 35% 那条线、余量 1.7 个百分点，所以「稳不稳」必须由两次观测说话。
       - run: yarn ui:probe --out ci
-        continue-on-error: true
       # 覆盖棘轮：扫到的状态、每行的控件与棋盘必须覆盖入库基线（少了就红）。
       # 路径注意：探针把 `--out ci` 解析成 **docs/ui-redesign/screenshots/ci/**，
       # 不是仓库根的 ci/（首跑就是接错在这里，棘轮读不到产物、退出 2）。
-      # **这一步还没成功跑过一次**，所以这一轮仍不阻断——先看它真跑绿。
+      # 首跑时它接错了路径（读不到产物、退出 2），修对之后跑绿过一次 → 转正。
       - run: node quality/coverage.ratchet.mjs --current docs/ui-redesign/screenshots/ci/measurements.json
-        continue-on-error: true
 
   bench:
     runs-on: ubuntu-latest
