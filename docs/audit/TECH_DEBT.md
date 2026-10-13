@@ -21,7 +21,7 @@ Phase D 只做**设计级影响分析**，不开发任何新功能。
 | 分析缓存只在页面打开期间有效 | `store/analysisStore.ts:56` | 慢 | 设计取舍，不是遗漏 |
 | 分析固定初级档 + 400ms、同时只分析一局、满盘末局无结论 | `ReviewScreen.tsx:112`、`analysisStore.ts:36,92` | 慢 | 同上 |
 | 回放游标不持久化（有意） | `store/replayStore.ts` | — | **不是债**，是产品决策 |
-| 基准不做断言、无 CI 门禁 | `bench/engine.bench.ts` | **中** | 性能回退不会被任何门禁拦住。但阈值定多少本身是产品决策 |
+| ~~基准不做断言、无 CI 门禁~~ | `bench/engine.bench.ts` | ~~中~~ | **2026-10-13 已偿还**：`yarn bench:check`（`bench/gate.mjs` + `bench/baseline.json`）断言余量充足的行与机器无关的不变量，`.github/workflows/quality.yml` 里跑。**保留残余**：耗时列仍只打印不判定——那部分仍然靠人看 |
 | 子路径部署无自动化用例 | `vite.config.ts:10` | 慢 | 靠 README 的两条 `grep` 兜着 |
 | 复盘页对读屏用户只是一张图 | `ReplayBoard.tsx:54` | 慢 | 要做需要先设计一套可读的逐步导航 |
 | Web Worker 降级：极老浏览器无回退路径 | `ai/browserEngine.ts` | 慢 | 目标浏览器不明确，暂不处理 |
@@ -69,7 +69,9 @@ Phase D 只做**设计级影响分析**，不开发任何新功能。
 - 教学/题库不拆出主包
 - `noUncheckedIndexedAccess` 未开
 - 两套棋型分值表、两种「三」的口径、`threatScoreWith` 里那次看似多余的 `analyzeRuns`
-- 无 router；无 CI 配置（后者是产品决策，不是缺陷）
+- 无 router；~~无 CI 配置（后者是产品决策，不是缺陷）~~
+  —— **2026-10-13 有 CI 了**（`.github/workflows/quality.yml`，见本文件 §1.1 与 `AGENTS.md` 的「两道闸门」）。
+  无 router 仍未变
 
 ---
 
