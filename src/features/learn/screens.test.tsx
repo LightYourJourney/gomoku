@@ -36,10 +36,14 @@ describe('LearnScreen —— 课程列表', () => {
   })
 
   /**
-   * F-UI-26：摘要**不截断**。390 下它原本被截成一行半，而它正是玩家挑课的唯一依据；
-   * 卡片高度由内容决定，列表本来就在滚。
+   * F-UI-26：摘要**不套截断样式**。
+   *
+   * 说明它**不是什么**：jsdom 没有布局，这条断的是类名而不是「真的换行了」。
+   * 「390 下摘要完整可读」由 `yarn ui:probe` 的 `overflowing` / `clipped` 与
+   * `e2e/mobile.spec.ts` 的溢出判据守（那两处才是量得出来的）。
+   * 这里守的是「没人把 `truncate` 加回来」——加回来上面的判据才可能失守。
    */
-  it('课程摘要不截断', () => {
+  it('课程摘要不套 truncate 类', () => {
     render(<LearnScreen />)
 
     for (const lesson of LESSONS) {

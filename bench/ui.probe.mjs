@@ -39,7 +39,10 @@ const OUT_DIR = resolve(
 )
 
 // ── 受控夹具 ────────────────────────────────────────────────────
-// 全部经 `bench/ui.fixtures.mjs` 的校验器验过：无重复落子、无提前成五。
+// 每个夹具都由下面的 `assertFixture()` 在**探针开跑之前**验一遍：
+// 坐标在盘内、无重复落子、任何一方都没有提前成五。
+// （这句注释原先写着「经 `bench/ui.fixtures.mjs` 校验」——那份文件**并不存在**，
+// 于是「有校验器守着」是一句纸面承诺。Phase 03 新增夹具时把它补成了真的。）
 
 /** 30 手的中局。双方都没有「下一手成五」的点，盘面看起来像一盘真下过的棋。 */
 const MIDGAME = [
@@ -1438,8 +1441,12 @@ try {
  * **判据 7 只吃「量到了」的那几项。** 不含最后一手的画面（空盘、复盘）本来就没有
  * 那个元素，字段是 `null`，跳过是对的；但如果**所有**行都量不到，
  * 说明选择器写错了——那时判据会一次都不执行却印 ✓，
- * 也就是一条**恒真的空断言**。所以下面专门有一条「全 null 就红」的自检。
- * （这不是假想的：第一版就是 `getPropertyValue` 没 trim，58 行全是 null，而探针印的是 ✓。）
+ * 也就是一条**恒真的空断言**。所以下面专门有**两条**「全 null 就红」的自检：
+ *
+ * - 一条看**令牌**通路（`stones`）——第一版是 `getPropertyValue` 没 trim、
+ *   第二版是没把十六进制归一成 `rgb()`，两次都是几十行全 null 而探针印 ✓；
+ * - 一条看**元素**通路（`lastMoveDot`）——令牌通路绿**不代表**选择器活着，
+ *   少了这一条，元素选择器写错时判据 7 里靠元素判的那几项会一次都不执行。
  */
 function checkCriteria(rows) {
   const bad = []
@@ -1555,7 +1562,29 @@ function checkCriteria(rows) {
   if (withContrast.length > 0 && withStones.length === 0) {
     bad.push(
       `[7 自检] ${withContrast.length} 行都量到了 boardContrast，但没有一行量得到棋子对木色的对比——` +
-        '选择器或令牌读取写错了，判据 7 一次都没真的执行',
+        '令牌读取写错了，判据 7 一次都没真的执行',
+    )
+  }
+
+  /*
+   * 第二个哨兵，管的是**另一件事**。
+   *
+   * 上面那个只读 `:root` 的令牌——令牌通路好使，它就绿，
+   * 跟「有没有选中棋盘上的元素」**毫无关系**。而选择器写错时，
+   * `lastMoveDot` 会 220 行全 null，判据 7 照样印 ✓。
+   * （这不是假想：`token()` 第一版没 trim、第二版没归一十六进制，
+   * 两次都是「全 null 却报全部通过」。）
+   *
+   * 所以再要一个**来自元素**的哨兵：所有带最后一手的画面里都有那个点，
+   * 一行都量不到就说明选择器断了。
+   */
+  const withDot = withContrast.filter(
+    (row) => row.boardContrast.lastMoveDot !== null && row.boardContrast.lastMoveDot !== undefined,
+  )
+  if (withContrast.length > 0 && withDot.length === 0) {
+    bad.push(
+      `[7 自检] ${withContrast.length} 行都量到了 boardContrast，但没有一行量得到最后一手标记——` +
+        '元素选择器写错了（改为只看令牌是看不出来的），判据 7 里靠元素判的那几项一次都没执行',
     )
   }
 

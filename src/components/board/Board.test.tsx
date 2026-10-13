@@ -685,7 +685,8 @@ describe('Board —— 最后一手标记（Phase 03）', () => {
     const board = boardFromLines(['..............B'])
     const { container } = setup({ board, lastMove: { x: 14, y: 0 } })
 
-    expect(screen.getByTestId('last-move-dot')).not.toHaveAttribute('stroke', 'var(--c-danger)')
+    // 只留这一条：点**根本没有** stroke 属性，拿它当断言是恒真的
+    // （`not.toHaveAttribute` 对不存在的属性永远通过）。
     expect(container.querySelectorAll('[stroke="var(--c-danger)"]')).toHaveLength(0)
   })
 
@@ -850,5 +851,33 @@ describe('Board —— 不动的清单（任务书 §五）', () => {
     expect(screen.getByTestId('focus-ring')).toBeInTheDocument()
     expect(screen.getByTestId('hover-stone')).toHaveAttribute('cx', '3')
     expect(screen.getByTestId('intersection-7-7')).toHaveAttribute('tabindex', '0')
+  })
+})
+
+/**
+ * 徽标形状的**边界**（Phase 03）。
+ *
+ * 这条把「什么时候还是圆、什么时候变成 pill」钉成一个可读的数——
+ * 免得日后有人在别处写「编号外观零变化」而它其实只对一位数成立。
+ */
+describe('Board —— 标记形状的边界', () => {
+  it('回放编号：1–9 手是圆，第 10 手起是 pill（半径 0.26 太窄，两位数塞不进圆）', () => {
+    const marks = Array.from({ length: 12 }, (_, i) => ({ point: { x: i, y: 0 }, radius: 0.26 }))
+    setup({ marks })
+
+    const shapeOf = (index: number): string | null =>
+      screen.getByTestId(`board-mark-${index}-0`).getAttribute('data-shape')
+
+    expect(shapeOf(0)).toBe('circle') // 第 1 手
+    expect(shapeOf(8)).toBe('circle') // 第 9 手
+    expect(shapeOf(9)).toBe('pill') // 第 10 手
+    expect(shapeOf(11)).toBe('pill') // 第 12 手
+  })
+
+  it('默认半径下，一位编号是圆（对战页的提示编号与判题标记都在这一档）', () => {
+    setup({ marks: [{ point: { x: 0, y: 0 } }, { point: { x: 1, y: 0 } }] })
+
+    expect(screen.getByTestId('board-mark-0-0')).toHaveAttribute('data-shape', 'circle')
+    expect(screen.getByTestId('board-mark-1-0')).toHaveAttribute('data-shape', 'circle')
   })
 })

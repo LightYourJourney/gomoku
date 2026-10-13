@@ -9,7 +9,7 @@
 export const MOTION = {
   /** 刚落下的那颗子。只加给最新一手——225 颗每颗都播会让整盘闪。 */
   stoneDrop: 'motion-stone-drop',
-  /** 最后一手的朱砂环。 */
+  /** 最后一手的反色点（Phase 03 之前是朱砂环）。 */
   lastMovePulse: 'motion-last-move-pulse',
   /** 弹窗淡入。 */
   panelIn: 'motion-panel-in',
