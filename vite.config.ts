@@ -35,7 +35,9 @@ export default defineConfig({
      * **应用源码之外的东西，一律不该驱动 dev server 刷新。**
      */
     watch: {
-      ignored: ['**/*.md', '**/docs/**', '**/e2e/**', '**/bench/**'],
+      // `quality/**` 是覆盖棘轮的基线（`quality/coverage.baseline.json`）——
+      // 它不属于模块图，改了同样会整页重载，和 `docs/` 一个道理。
+      ignored: ['**/*.md', '**/docs/**', '**/e2e/**', '**/bench/**', '**/quality/**'],
     },
   },
   test: {
