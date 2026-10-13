@@ -112,13 +112,12 @@ export function Segmented<T extends string>({
      * - 而本阶段加了确认之后，它还会先弹一句「切换对战模式？」——
      *   用户根本没切换什么，却拿到一个破坏性确认。
      *
-     * 已选中的那一项仍要处理焦点：触摸/点击之后焦点该在它身上，不该被
-     * `snapBackToSelection` 挪走（那一条是给**被否决**的情况用的）。
+     * 焦点不在这里搬：浏览器在点击（mousedown）时就已经把它给了被点的这一颗，
+     * 与下面 `onChange(next)` 那条路径一样，交给浏览器。
+     * 这里曾经显式 `focus()` 了一次，**但它量不到**——撤掉之后用例照样全绿
+     * （user-event 在 mousedown 阶段就 focus 了），按「不做没验证的复杂度」删掉。
      */
-    if (next === value) {
-      buttons.current.get(next)?.focus()
-      return
-    }
+    if (next === value) return
 
     if (beforeChange?.(next) === false) {
       // 浏览器已经先把焦点给了被点的这一颗，收回来

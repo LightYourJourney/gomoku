@@ -241,6 +241,48 @@ test.describe('浏览器文字缩放', () => {
       }
     })
   }
+
+  /**
+   * **对战页也要在放大文字下看一眼。**
+   *
+   * 这条此前只走教学 / 残局 / 复盘三个「阅读型」页面，从不进对战页——
+   * 而对战页有全站唯一一条**横向排了四块**的状态条（两侧 + 药丸 + 手数）。
+   * 实测：文字放大到 200%、视口 390 时，药丸（85.5~304.5）**压在**左侧
+   * 「你 · 黑」（止于 149.2）之上，文字叠文字。
+   *
+   * 那正是「横向溢出为 0」量不到的那一类：没有东西溢出视口，
+   * 只是两块画在了同一个位置。所以这里**直接量几何**。
+   */
+  for (const width of [390, 1024] as const) {
+    test(`@${width}：对战页文字放大到 200% 时状态条内不叠压`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 })
+      await page.goto('/')
+      await page.addStyleTag({ content: 'html { font-size: 32px }' })
+      await page.waitForTimeout(150)
+
+      const box = async (testId: string) => (await page.getByTestId(testId).boundingBox())!
+      const pill = await box('status-pill')
+      const pieces: Record<string, Awaited<ReturnType<typeof box>>> = {
+        黑方: await box('match-side-1'),
+        白方: await box('match-side-2'),
+        手数: await box('match-moves'),
+      }
+
+      for (const [name, other] of Object.entries(pieces)) {
+        const overlaps =
+          pill.x < other.x + other.width &&
+          other.x < pill.x + pill.width &&
+          pill.y < other.y + other.height &&
+          other.y < pill.y + pill.height
+        expect(overlaps, `200% 文字下，状态条里的药丸与${name}压在一起了`).toBe(false)
+      }
+
+      const overflow = await page.evaluate(
+        () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      )
+      expect(overflow, `对战页在 200% 文字下横向溢出了 ${overflow}px`).toBeLessThanOrEqual(0)
+    })
+  }
 })
 
 /**
@@ -363,6 +405,26 @@ test.describe('对战页：棋盘与操作区不互相遮挡', () => {
       // 顺序：状态条在棋盘上方，工具栏在棋盘下方
       expect(regions.状态条!.y + regions.状态条!.height).toBeLessThanOrEqual(regions.棋盘!.y + 1)
       expect(regions.工具栏!.y).toBeGreaterThanOrEqual(regions.棋盘!.y + regions.棋盘!.height - 1)
+
+      /*
+       * **状态条内部也不许压盖。** 它是 `auto | 1fr | auto`：两侧先按内容吃满，
+       * 中间那条 `1fr` 拿剩下的——而药丸是 `whitespace-nowrap`（全条唯一不能缩的），
+       * 空间不够时它不会截断，会**压到旁边**。而探针的 `clipped` 要求元素自身
+       * `overflow-x:hidden`、`overflowing` 只看视口，**两条都看不见这种压盖**——
+       * 所以「390 下 clipped 为空」不能当作这条的证据（上面那张表里确实一个都不红）。
+       * 这里直接量几何。
+       */
+      const pill = (await page.getByTestId('status-pill').boundingBox())!
+      const inside: Record<string, { x: number; width: number }> = {
+        黑方: (await page.getByTestId('match-side-1').boundingBox())!,
+        白方: (await page.getByTestId('match-side-2').boundingBox())!,
+        手数: (await page.getByTestId('match-moves').boundingBox())!,
+      }
+      for (const [name, box] of Object.entries(inside)) {
+        const overlaps =
+          pill.x < box.x + box.width && box.x < pill.x + pill.width
+        expect(overlaps, `状态条里的药丸与${name}压在一起了`).toBe(false)
+      }
     })
   }
 })

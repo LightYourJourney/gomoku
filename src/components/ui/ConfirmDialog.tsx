@@ -9,8 +9,8 @@ export interface ConfirmDialogProps {
    * **后果描述**，写「会发生什么」，不是「你确定吗」。
    *
    * 「这一步不可撤销」这类话不解决任何问题——玩家需要知道的是
-   * 哪一局会被丢掉、丢了之后还剩什么。对战页四处确认的文案见 `BattleScreen` 的
-   * `CONFIRM_TITLE` / `confirmDescription`。
+   * 哪一局会被丢掉、丢了之后还剩什么。对战页四处确认的文案都在 `BattleScreen` 的
+   * `CONFIRM` 表里（按 `kind` 一处索引：标题、按钮文案、色调、后果描述）。
    */
   description: ReactNode
   confirmLabel: string

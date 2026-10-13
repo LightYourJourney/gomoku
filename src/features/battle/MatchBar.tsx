@@ -41,14 +41,29 @@ export function MatchBar({ game, mode, humanColor, difficulty, aiThinking }: Mat
     <section
       aria-label="对局状态"
       /*
-       * 两侧按**内容**占宽、中间吃掉剩余并让药丸居中（`justify-self` 在 StatusPill 上）。
+       * **一行放不下就换行，不叠压。**
        *
-       * 原先写的是 `1fr auto 1fr`：两侧各分到固定一半，390 下右侧要同时放下
-       * 「AI · 初级」与「12 手」，于是被 `truncate` 切成「A」和「初…」
-       * （探针的 `clipped` 量到过）。当时的处置是把窄屏的手数藏掉，但任务书 §三
-       * 要求状态区**默认展示当前手数**——改成按内容占宽之后两样都留得住。
+       * 这里试过三种排法，前两种都在极端情形下出问题（都是量出来的）：
+       *
+       * 1. `grid-cols-[1fr_auto_1fr]`（最初）：两侧各分固定一半，390 下右侧
+       *    同时装「AI · 初级」与「12 手」装不下，被 `truncate` 切成「A」「初…」；
+       * 2. `grid-cols-[auto_minmax(0,1fr)_auto]`：两侧按内容占宽之后正常了，
+       *    但**文字放大到 200% 时药丸压在两侧上面**——它是全条唯一不能缩的
+       *    （`whitespace-nowrap`），实测 390 下药丸 85.5~304.5 压在左侧（止于 149.2）
+       *    之上，文字叠文字；
+       * 3. `grid-cols-[minmax(0,auto)_minmax(min-content,1fr)_minmax(0,auto)]`：
+       *    以为下界给 0 两侧就会让位，实测**没用**——轨道合计 408px 撑破了 366px 的条。
+       *
+       * 换成能换行的 flex：放得下时就是一行（与 grid 版观感一致），
+       * 放不下时整块折到下一行——**给位而不是叠压**。工具栏（`ControlBar`）
+       * 用的是同一个办法。
+       *
+       * 这条为什么需要专门的断言：`clipped` 要求元素自身 `overflow-x:hidden`、
+       * `overflowing` 只看视口，**两种叠压它们都看不见**；
+       * 而 200% 缩放那条 e2e 原先只走教学/残局/复盘，从不进对战页。
+       * 现在 `e2e/layout.spec.ts` 里有两条直接量几何的（100% 与 200%）。
        */
-      className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2"
+      className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1"
     >
       <Side player={BLACK} mode={mode} humanColor={humanColor} difficulty={difficulty}
         active={playing && status.player === BLACK} />
@@ -87,7 +102,7 @@ function Side({ player, mode, humanColor, difficulty, active }: SideProps) {
       data-active={active || undefined}
       className={cx(
         // `w-fit`：高亮只包住这一侧的**内容**，不铺满整格——
-        // `grid-cols-[1fr_auto_1fr]` 里的块级元素默认会把整格撑满，
+        // 状态条两侧的轨道宽度由内容决定（`auto`），块级元素默认会把整格撑满，
         // 于是「你 · 黑」后面拖出一条 300px 的色带，看着像进度条。
         'flex w-fit min-w-0 items-center gap-2 rounded-lg px-2 py-1',
         active ? 'bg-accent-soft text-accent' : 'text-muted',

@@ -422,6 +422,17 @@ interface ConfirmFacts {
   readonly resigner: Player
 }
 
+/**
+ * 「会开一局新的」那三档共用的后果描述框。
+ *
+ * 三条 `describe` 复述同一句话（只有中间那句不一样）——合成一个构造函数，
+ * 文案改一处就够。**这是上一轮整改自己引入的重复**：整改前是一处模板 +
+ * 一个小 switch，为了消灭「`kind` 排三遍」反而把模板写了三遍。
+ */
+function resetDescription(what: string): (facts: ConfirmFacts) => string {
+  return (facts) => `当前这局还没结束，${what}，已经下的 ${facts.moves} 手会被清空。`
+}
+
 /** 一处确认的全部文案与后果描述，按 `kind` 索引。 */
 const CONFIRM: Record<
   PendingConfirm['kind'],
@@ -435,7 +446,7 @@ const CONFIRM: Record<
   restart: {
     title: '重新开始？',
     label: '确认重新开始',
-    describe: (facts) => `当前这局还没结束，重新开始会开一局新的，已经下的 ${facts.moves} 手会被清空。`,
+    describe: resetDescription('重新开始会开一局新的'),
   },
   resign: {
     title: '认输？',
@@ -448,11 +459,11 @@ const CONFIRM: Record<
   mode: {
     title: '切换对战模式？',
     label: '确认切换',
-    describe: (facts) => `当前这局还没结束，切换对战模式会开一局新的，已经下的 ${facts.moves} 手会被清空。`,
+    describe: resetDescription('切换对战模式会开一局新的'),
   },
   color: {
     title: '切换执子？',
     label: '确认切换',
-    describe: (facts) => `当前这局还没结束，切换执子会开一局新的，已经下的 ${facts.moves} 手会被清空。`,
+    describe: resetDescription('切换执子会开一局新的'),
   },
 }
