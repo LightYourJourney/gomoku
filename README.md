@@ -33,6 +33,7 @@ yarn dev          # 开发服务器
 | `yarn e2e:prod` | 生产构建冒烟：自带一次 `yarn build`，跑在 `dist` 上 |
 | `yarn bench` | 引擎基准（约一两分钟），数字见 [docs/AI_ENGINE.md](docs/AI_ENGINE.md) 的「实测」 |
 | `yarn bench:render` | 首屏与落子成本的浏览器实测，数字见 [docs/TEST_REPORT.md](docs/TEST_REPORT.md) |
+| `yarn check:cycles` | 循环依赖闸门（madge）。**范围只到 `src/`**——`bench/`、`e2e/` 是脚本，循环风险低，但别以为全仓都查过。有环即红并点名环路 |
 
 提交前的完整清单见 [AGENTS.md](AGENTS.md)。
 
