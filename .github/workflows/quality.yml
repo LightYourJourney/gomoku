@@ -1,15 +1,22 @@
-# 质量门禁 · 全档。
+# 质量门禁。
 #
-# 分两步开（见 docs/superpowers/specs/2026-10-13-quality-gates-design.md 的反目标）：
-# 先只跑快档，绿了再打开全档——否则首跑一红，分不清是环境还是代码。
+# 分两层（见 docs/superpowers/specs/2026-10-13-quality-gates-design.md）：
+#   fast   —— 与本地 pre-push 钩子**同一批脚本**，所以「本地绿、CI 红」只可能是环境差异
+#   全档   —— e2e / e2e:prod / 探针 / 基准，本地钩子跑不动（太慢），只有 CI 跑
 #
-# 快档与本地 pre-push 钩子跑的是**同一批脚本**，所以「本地绿、CI 红」只可能是环境差异。
+# **快档不含 e2e 与探针**。所以「推得出去」不等于「安全网没缩水」——
+# 改了界面结构、布局或扫描范围的人，要看全档这几个 job。
+#
+# 拆成互不相同的 job 而不是一个大 job，理由是**报错要能归因**：
+#   bench 是唯一对机器速度敏感的判据，和别人挤一台机器会把「机器忙」误报成「算法变慢」
+#   probe 自己起 dev server（5184）、跑几分钟，失败原因要单独可见
+#   e2e   最可能因为**环境**（滚动条宽度、字体）而不是代码变红
 name: quality
 
 on: [push, pull_request]
 
 jobs:
-  # 与 .githooks/pre-push 同口径。热跑约 45 秒（本地），CI 上更久但远低于超时。
+  # 与 .githooks/pre-push 同口径。首跑实测 166 秒。
   fast:
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -18,6 +25,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           # 与本地一致（本机 v26.11.1）。仓库没有版本固定文件，这里就是唯一的钉子。
+          # 首跑已证实 runner 上取得到。
           node-version: '26'
           cache: yarn
       - run: yarn install --frozen-lockfile
@@ -26,3 +34,60 @@ jobs:
       - run: yarn test
       - run: yarn build
       - run: yarn gates
+
+  e2e:
+    runs-on: ubuntu-latest
+    # 本地 102 条跑 2.4 分钟；runner 上留足余量。
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '26'
+          cache: yarn
+      - run: yarn install --frozen-lockfile
+      # **不要手工先起 dev server**：Playwright 的 webServer 自己管 5181
+      # （`reuseExistingServer: !process.env.CI`，CI 里是 false）。
+      # 在 5181 手工起一个会让它再起一个同端口进程、--strictPort 直接失败，
+      # e2e 会在什么都没改的情况下红。
+      - run: yarn e2e
+      - run: yarn e2e:prod
+
+  probe:
+    runs-on: ubuntu-latest
+    # 本地全量 172 张约 4.7 分钟；runner 上更慢，给足。
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '26'
+          cache: yarn
+      - run: yarn install --frozen-lockfile
+      # 探针**自带 dev server**（bench/ui.probe.mjs 里 5184），不需要外部起。
+      # `--out ci` 是必须的：不带会去写 before/，而那份是入库基线，探针会拒绝开跑并退出 2。
+      # 首跑先只取数不阻断——它的判据是绝对像素值（标定在 macOS 的 Chrome 上），
+      # Linux 的字体回退与滚动条宽度可能把它们推过线。**看清数是环境差异还是真回退再转正。**
+      - run: yarn ui:probe --out ci
+        continue-on-error: true
+      # 覆盖棘轮：扫到的状态、每行的控件与棋盘必须覆盖入库基线（少了就红）。
+      # 它读上面那份 ci/measurements.json，所以必须紧跟其后。
+      - run: node quality/coverage.ratchet.mjs --current ci/measurements.json
+        continue-on-error: true
+
+  bench:
+    runs-on: ubuntu-latest
+    # 本地约 1.5 分钟。
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '26'
+          cache: yarn
+      - run: yarn install --frozen-lockfile
+      # 首跑先只取数：断言行是按「基线耗时 ≤ 预算 20%」挑的，那个 20% 的余量
+      # 是在本机量的，还没有 runner 上的实测。**看清 runner 有多慢再转正。**
+      - run: yarn bench
+      - run: node bench/gate.mjs
+        continue-on-error: true

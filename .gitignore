@@ -17,6 +17,9 @@ dist-ssr
 # 文档引用那一份——否则重跑一次基准就会让文档里的数字失去出处，而且工作区变脏。
 bench/last-run.json
 
+# 探针在 CI 里的输出（`yarn ui:probe --out ci`）：172 张 PNG，不入库
+/ci/
+
 # 测试与调试产物
 # vitest 每次跑测都会覆盖它。**不入库**，但请别删——某次红灯的用例名就靠它留证。
 vitest-report.json

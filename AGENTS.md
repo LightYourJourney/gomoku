@@ -41,6 +41,22 @@ yarn lint && yarn typecheck && yarn test && yarn build && yarn e2e
 
 五条全绿才算完成。改了棋盘交互或布局，再加一次真实浏览器目视复核。
 
+### 两道闸门，各管各的
+
+| | 跑什么 | 什么时候跑 | 挡不住什么 |
+| --- | --- | --- | --- |
+| **快档** | `lint` / `typecheck` / `test` / `build` / `yarn gates`（四道防退化闸门） | **本地 `git push` 自动拦**（`.githooks/pre-push`，热跑约 40 秒）+ CI 的 `fast` job | e2e、探针、基准 |
+| **全档** | 上面 + `e2e` + `e2e:prod` + 探针 + 覆盖棘轮 + `bench:check` | 只有 CI（`.github/workflows/quality.yml`） | — |
+
+**「本地绿了、推得出去」不等于「安全网没缩水」**：快档不含 e2e 与探针，
+而「某颗控件从所有扫描里消失」这类退化（Phase 02 真发生过一次）**只有探针 + 覆盖棘轮抓得到**。
+所以改了界面结构、布局或扫描范围之后，要等 CI 的全档绿，不能本地绿了就放心。
+
+**绕过与调松都是违规，不是选项**：`git push --no-verify` 是明确接受的逃生门（代价自负），
+但**闸门配置文件本身**（`knip.jsonc` / `.jscpd.json` / `bench/baseline.json` /
+`quality/*.baseline.json` / `.githooks/`）的改动是 **review 必看项**。
+工具坏了或环境变了，正确动作是**更新钉住的版本并说明**，不是放宽配置。
+
 阶段收尾（以及任何改了构建配置、Worker 或资源路径的改动）再加一条：
 
 ```bash
