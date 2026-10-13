@@ -51,31 +51,9 @@ jobs:
           node-version: '26'
           cache: yarn
       - run: yarn install --frozen-lockfile
-      # 这个应用的中文走**系统字体栈**（src/index.css 的 --font-sans 里是 PingFang SC /
-      # Noto Sans SC 等，仓库没有内置字体）。runner 上一个中文字体都没有的话，
-      # 中文会以回退字形渲染——**那不是任何真实 Linux 用户看到的界面**，
-      # 而横向度量（两个字有多宽）会随之改变。首跑实测：这一条让 `复盘` 标题
-      # 从 macOS 的 40px 变成 30px、教学页高度变化导致可滚动距离从 >100px 变成 81px。
-      # 装字体而不是调小断言：调小断言会把「安全网缩水」写进历史。
-      - name: 装中文字体（缺了必须红，不能只是一条注释）
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq fonts-noto-cjk
-          echo "—— 实际可用的中文字体（按字族去重）——"
-          # 按**字族**去重：`fc-list` 原始输出每个字重/语言各一行，看不出到底装了哪些。
-          # 关注点：应用的字栈里点名的是 'Noto Sans SC'，而 fonts-noto-cjk 装上的
-          # 可能只有 Serif 系列。对**度量**无所谓（CJK 字形一律 1em 宽），
-          # 对**观感**有所谓——所以把它记进日志。
-          fc-list :lang=zh family | tr ',' '\n' | sed 's/^ *//' | sort -u | head -8 || true
-          # **前提断言**：下面那些文本度量断言（复盘标题 ≥40px、教学页可滚动 >100px）
-          # 的数值是按「有中文字体」标定的。字体不在时它们会红得看不出原因——
-          # 所以字体本身必须是被断言的前提，而不是一句「装不上也照跑」的注释。
-          # （早先这里是 `if ! ...; then echo "::error::" ; fi`：`::error::` 只是注解，
-          #   步骤照样 exit 0，于是「全档绿」并不构成「字体装上了」的证据。）
-          test -n "$(fc-list :lang=zh)" || {
-            echo "::error::装完 fonts-noto-cjk 仍然一个中文字体都没有——下面的文本度量断言不可信"
-            exit 1
-          }
+      # 中文必须真的装上（缺了这一步就红）。理由、实测数字与断言都在
+      # .github/actions/install-cjk-font/action.yml——那边只有一份，改一处两边都跟。
+      - uses: ./.github/actions/install-cjk-font
 
       # **不要手工先起 dev server**：Playwright 的 webServer 自己管 5181
       # （`reuseExistingServer: !process.env.CI`，CI 里是 false）。
@@ -95,27 +73,9 @@ jobs:
           node-version: '26'
           cache: yarn
       - run: yarn install --frozen-lockfile
-      # 这个应用的中文走**系统字体栈**（src/index.css 的 --font-sans 里是 PingFang SC /
-      # Noto Sans SC 等，仓库没有内置字体）。runner 上一个中文字体都没有的话，
-      # 中文会以回退字形渲染——**那不是任何真实 Linux 用户看到的界面**，
-      # 而横向度量（两个字有多宽）会随之改变。首跑实测：这一条让 `复盘` 标题
-      # 从 macOS 的 40px 变成 30px、教学页高度变化导致可滚动距离从 >100px 变成 81px。
-      # 装字体而不是调小断言：调小断言会把「安全网缩水」写进历史。
-      - name: 装中文字体（缺了必须红，不能只是一条注释）
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq fonts-noto-cjk
-          echo "—— 实际可用的中文字体（按字族去重）——"
-          fc-list :lang=zh family | tr ',' '\n' | sed 's/^ *//' | sort -u | head -8 || true
-          # **前提断言**：下面那些文本度量断言（复盘标题 ≥40px、教学页可滚动 >100px）
-          # 的数值是按「有中文字体」标定的。字体不在时它们会红得看不出原因——
-          # 所以字体本身必须是被断言的前提，而不是一句「装不上也照跑」的注释。
-          # （早先这里是 `if ! ...; then echo "::error::" ; fi`：`::error::` 只是注解，
-          #   步骤照样 exit 0，于是「全档绿」并不构成「字体装上了」的证据。）
-          test -n "$(fc-list :lang=zh)" || {
-            echo "::error::装完 fonts-noto-cjk 仍然一个中文字体都没有——下面的文本度量断言不可信"
-            exit 1
-          }
+      # 中文必须真的装上（缺了这一步就红）。理由、实测数字与断言都在
+      # .github/actions/install-cjk-font/action.yml——那边只有一份，改一处两边都跟。
+      - uses: ./.github/actions/install-cjk-font
 
       # 探针**自带 dev server**（bench/ui.probe.mjs 里 5184），不需要外部起。
       # `--out ci` 是必须的：不带会去写 before/，而那份是入库基线，探针会拒绝开跑并退出 2。
@@ -146,5 +106,7 @@ jobs:
       # 跳过原因里的数字证明这台 runner 明显更慢（hard|中盘 吃到预算的 93%，本机基线是 58%），
       # 而门禁没有假红——「只断言余量充足的行」这条设计被第二台机器证实。
       # 基准与字体无关，所以那次观测仍然有效 → 转成真闸门。
-      - run: yarn bench
-      - run: node bench/gate.mjs
+      #
+      # 跑的是 `yarn bench:check`（= `yarn bench && node bench/gate.mjs`），
+      # 与本地**同一条命令**：拆成两步的话，日后改脚本还得记得改这里。
+      - run: yarn bench:check

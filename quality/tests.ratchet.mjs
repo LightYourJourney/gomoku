@@ -19,16 +19,12 @@ import { execFileSync } from 'node:child_process'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
+import { assertShape, readJson } from './lib.mjs'
+
 const HERE = dirname(fileURLToPath(import.meta.url))
 const REPO = resolve(HERE, '..')
 
-let baseline
-try {
-  baseline = JSON.parse(await readFile(resolve(HERE, 'tests.baseline.json'), 'utf8'))
-} catch (err) {
-  console.error(`✗ 读不到基线 quality/tests.baseline.json：${err.message}`)
-  process.exit(2)
-}
+const baseline = await readJson(resolve(HERE, 'tests.baseline.json'), '基线')
 
 /*
  * 基线形状校验。**没有它，基线里少一个键就等于把那条判据悄悄关掉**：
@@ -39,12 +35,7 @@ try {
   for (const k of ['unitTotal', 'unitPending', 'unitTodo', 'e2eTotal']) {
     if (typeof baseline[k] !== 'number') bad.push(`${k} 不是数字（实际 ${JSON.stringify(baseline[k])}）`)
   }
-  if (bad.length > 0) {
-    console.error(`✗ 基线形状不对（quality/tests.baseline.json）——${bad.length} 处：`)
-    for (const b of bad) console.error(`  - ${b}`)
-    console.error('  基线坏了就判不出东西，所以这里直接停：修好基线再跑。')
-    process.exit(2)
-  }
+  assertShape(bad, 'quality/tests.baseline.json')
 }
 
 // ── 单测条数（读 yarn test 落盘的报告）─────────────────────────────

@@ -1,0 +1,32 @@
+# 装中文字体，并**断言它真的装上了**。
+#
+# 为什么这一步不能省：这个应用的中文走**系统字体栈**（`src/index.css` 的 `--font-sans`
+# 里点名 PingFang SC / Noto Sans SC 等，仓库没有内置字体）。runner 上一个中文字体都没有时，
+# 中文以回退字形渲染——**那不是任何真实 Linux 用户看到的界面**，而横向度量会随之改变。
+# 实测：`复盘` 标题从 macOS 的 40px 变成 30px（判据 `≥40`）、教学页高度变化导致
+# 可滚动距离从 >100px 变成 81px（判据 `>100`）。
+#
+# 装字体而不是调小断言：调小断言会把「安全网缩水」写进历史。
+#
+# 而且字体本身必须是被**断言**的前提，不能只是「装不上也照跑」的一步——
+# 那两条 layout 断言的数值正是靠它才有意义，「全档绿」得真的蕴含「字体在」。
+name: 装中文字体
+description: 让 runner 上的中文文本度量与真实 Linux 桌面一致；缺了就让这一步红
+
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      run: |
+        sudo apt-get update -qq
+        sudo apt-get install -y -qq fonts-noto-cjk
+        echo "—— 实际可用的中文字体（按字族去重）——"
+        # 按**字族**去重：`fc-list` 原始输出每个字重/语言各一行，看不出到底装了哪些。
+        # 关注点：应用的字栈里点名的是 'Noto Sans SC'，而 fonts-noto-cjk 装上的
+        # 可能只有 Serif 系列。对**度量**无所谓（CJK 字形一律 1em 宽），
+        # 对**观感**有所谓——所以把它记进日志。
+        fc-list :lang=zh family | tr ',' '\n' | sed 's/^ *//' | sort -u | head -8 || true
+        test -n "$(fc-list :lang=zh)" || {
+          echo "::error::装完 fonts-noto-cjk 仍然一个中文字体都没有——下面的文本度量断言不可信"
+          exit 1
+        }

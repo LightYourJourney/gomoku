@@ -23,37 +23,18 @@
  * 用法：`node bench/gate.mjs [--current <产物路径>]`
  */
 
-import { readFile } from 'node:fs/promises'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+
+import { argValue, assertShape, readJson } from '../quality/lib.mjs'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 
 /** 只打印耗时、不判定的字段——它们随机器变，判了就是假红。 */
 const TIMING_FIELDS = ['elapsedMs', 'perCallUs', 'suggestionsMs', 'fastUs', 'pointUs', 'vcfMs', 'vctMs']
 
-/** 取 `--flag value`。漏写值时给人话，而不是 `resolve(undefined)` 的栈。 */
-function argValue(name) {
-  const i = process.argv.indexOf(name)
-  if (i === -1) return undefined
-  const v = process.argv[i + 1]
-  if (v === undefined || v.startsWith('--')) {
-    console.error(`✗ ${name} 后面要跟一个路径，实际给的是：${v ?? '（没有）'}`)
-    process.exit(2)
-  }
-  return resolve(v)
-}
 
-async function readJson(path, what) {
-  try {
-    return JSON.parse(await readFile(path, 'utf8'))
-  } catch (err) {
-    console.error(`✗ 读不到${what}：${path}`)
-    console.error(`  ${err.message}`)
-    console.error('  先跑 `yarn bench`，或用 --current 指一份已有产物。')
-    process.exit(2)
-  }
-}
+
 
 /**
  * 基线形状校验。**没有它，基线丢一个 `gated` 字段就等于把这道闸门整个关掉**：
@@ -75,21 +56,13 @@ function assertBaselineShape(baseline) {
   if (inv === undefined || !Array.isArray(inv.threat) || !Array.isArray(inv.vct)) {
     bad.push('invariants.threat / invariants.vct 不是数组')
   }
-  if (bad.length > 0) {
-    console.error(`✗ 基线形状不对（bench/baseline.json）——${bad.length} 处：`)
-    for (const b of bad.slice(0, 10)) console.error(`  - ${b}`)
-    if (bad.length > 10) console.error(`  ……还有 ${bad.length - 10} 处`)
-    console.error('  基线坏了就判不出东西，所以这里直接停：修好基线再跑。')
-    process.exit(2)
-  }
+  assertShape(bad, 'bench/baseline.json')
 }
 
+const HINT = '先跑 `yarn bench`，或用 --current 指一份已有产物。'
 const baseline = await readJson(resolve(HERE, 'baseline.json'), '基线')
 assertBaselineShape(baseline)
-const current = await readJson(
-  argValue('--current') ?? resolve(HERE, 'last-run.json'),
-  '本次产物',
-)
+const current = await readJson(argValue('--current') ?? resolve(HERE, 'last-run.json'), '本次产物', HINT)
 
 const failures = []
 const skipped = []

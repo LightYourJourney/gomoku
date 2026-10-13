@@ -16,9 +16,10 @@
  *   yarn check:coverage          # 用两个默认路径
  */
 
-import { readFile } from 'node:fs/promises'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+
+import { argValue, assertShape, readJson } from './lib.mjs'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const REPO = resolve(HERE, '..')
@@ -28,16 +29,7 @@ const DEFAULTS = {
   current: resolve(REPO, 'docs/ui-redesign/screenshots/after-phase02/measurements.json'),
 }
 
-function argValue(name) {
-  const i = process.argv.indexOf(name)
-  if (i === -1) return undefined
-  const v = process.argv[i + 1]
-  if (v === undefined || v.startsWith('--')) {
-    console.error(`✗ ${name} 后面要跟一个路径，实际给的是：${v ?? '（没有）'}`)
-    process.exit(2)
-  }
-  return resolve(v)
-}
+
 
 /**
  * 基线形状校验。**没有它，基线丢一个 `buttons` 字段就等于把这道闸门整个关掉**：
@@ -52,25 +44,9 @@ function assertBaselineShape(baseline) {
     if (!Array.isArray(r?.headings)) bad.push(`${where}：headings 不是数组`)
     if (typeof r?.hasBoard !== 'boolean') bad.push(`${where}：hasBoard 不是布尔`)
   }
-  if (bad.length > 0) {
-    console.error(`✗ 基线形状不对（quality/coverage.baseline.json）——${bad.length} 处：`)
-    for (const b of bad.slice(0, 10)) console.error(`  - ${b}`)
-    if (bad.length > 10) console.error(`  ……还有 ${bad.length - 10} 处`)
-    console.error('  基线坏了就判不出东西，所以这里直接停：修好基线再跑。')
-    process.exit(2)
-  }
+  assertShape(bad, 'quality/coverage.baseline.json')
 }
 
-async function readJson(path, what) {
-  try {
-    return JSON.parse(await readFile(path, 'utf8'))
-  } catch (err) {
-    // 读不到就**响亮地失败**，绝不静默跳过——静默跳过就是一条永远不红的判据。
-    console.error(`✗ 读不到${what}：${path}`)
-    console.error(`  ${err.message}`)
-    process.exit(2)
-  }
-}
 
 const baseline = await readJson(argValue('--baseline') ?? DEFAULTS.baseline, '基线')
 const measured = await readJson(argValue('--current') ?? DEFAULTS.current, '量测产物')
