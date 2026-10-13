@@ -656,3 +656,199 @@ describe('Board —— 不可交互期间与之后', () => {
     }
   })
 })
+
+/**
+ * Phase 03：最后一手与标记的视觉。
+ *
+ * 这几条防的都是**具体的复发**，不是「看起来对」：
+ * 红环曾经是整块棋盘上唯一带色相的元素（见 PHASE_03.md §3.1），
+ * 多字标签曾经比底色圆宽 87%、白字直接落在木纹上（§3.2）。
+ */
+describe('Board —— 最后一手标记（Phase 03）', () => {
+  /** 一格等于棋盘宽的 1/16（`DESIGN_SYSTEM.md` §8.2 的换算基准）。 */
+  const UNIT = (boardPx: number) => boardPx / 16
+
+  it.each([
+    ['黑子', 'B', 'var(--c-stone-white-a)'],
+    ['白子', 'W', 'var(--c-stone-black-b)'],
+  ])('最后一手落在%s上时，点用与棋子反色的填充', (_name, stone, expected) => {
+    const board = boardFromLines([`..............${stone}`])
+    setup({ board, lastMove: { x: 14, y: 0 } })
+
+    const dot = screen.getByTestId('last-move-dot')
+    expect(dot).toHaveAttribute('fill', expected)
+    expect(dot).toHaveAttribute('cx', '14')
+    expect(dot).toHaveAttribute('cy', '0')
+  })
+
+  it('最后一手不再用 danger 色（红环曾经是棋盘上唯一带色相的元素）', () => {
+    const board = boardFromLines(['..............B'])
+    const { container } = setup({ board, lastMove: { x: 14, y: 0 } })
+
+    expect(screen.getByTestId('last-move-dot')).not.toHaveAttribute('stroke', 'var(--c-danger)')
+    expect(container.querySelectorAll('[stroke="var(--c-danger)"]')).toHaveLength(0)
+  })
+
+  it('点在最小支持棋盘（320px）下的直径不小于 5px，且比那圈环省得多', () => {
+    const board = boardFromLines(['..............B'])
+    setup({ board, lastMove: { x: 14, y: 0 } })
+
+    const r = Number(screen.getByTestId('last-move-dot').getAttribute('r'))
+    expect(r * 2 * UNIT(320)).toBeGreaterThanOrEqual(5)
+    // 环的着墨 2π·0.47·0.075；点的着墨 π·r²。点必须显著更克制。
+    expect(Math.PI * r * r).toBeLessThan(2 * Math.PI * 0.47 * 0.075 * 0.5)
+  })
+})
+
+describe('Board —— 标记底色随文字生长（Phase 03）', () => {
+  it('单字符标记仍是圆（数字编号与「解」这一档外观零变化）', () => {
+    setup({ marks: [{ point: { x: 7, y: 7 } }] })
+
+    const mark = screen.getByTestId('board-mark-7-7')
+    expect(mark).toHaveAttribute('data-shape', 'circle')
+  })
+
+  it('多字符标记的底色宽于文字，不再让白字落到木纹上', () => {
+    setup({ marks: [{ point: { x: 6, y: 7 }, label: '补这里' }] })
+
+    const mark = screen.getByTestId('board-mark-6-7')
+    expect(mark).toHaveAttribute('data-shape', 'pill')
+
+    const badge = mark.querySelector('rect')
+    expect(badge).not.toBeNull()
+    // 全角按 1em 估：3 字 × 0.5 + 两侧 0.12 = 1.74
+    expect(Number(badge?.getAttribute('width'))).toBeCloseTo(1.74, 5)
+    // 高度仍是整格内的一颗徽标
+    expect(Number(badge?.getAttribute('height'))).toBeCloseTo(0.8, 5)
+  })
+
+  it('两字标记也走 pill，但半宽不到一格——永远盖不到相邻交叉点的中心', () => {
+    setup({
+      marks: [
+        { point: { x: 5, y: 7 }, label: '活四' },
+        { point: { x: 9, y: 7 }, label: '补这里' },
+      ],
+    })
+
+    for (const id of ['board-mark-5-7', 'board-mark-9-7']) {
+      const mark = screen.getByTestId(id)
+      const width = Number(mark.querySelector('rect')?.getAttribute('width'))
+      expect(width / 2).toBeLessThan(1)
+    }
+  })
+
+  it('标记的文本原样渲染，一个字都不改（业务含义不许变）', () => {
+    setup({
+      marks: [
+        { point: { x: 1, y: 1 }, label: '可长' },
+        { point: { x: 3, y: 3 }, label: '冲四' },
+        { point: { x: 5, y: 5 }, label: '补这里' },
+        { point: { x: 7, y: 7 }, label: '解' },
+      ],
+    })
+
+    expect(screen.getByTestId('board-mark-1-1')).toHaveTextContent('可长')
+    expect(screen.getByTestId('board-mark-3-3')).toHaveTextContent('冲四')
+    expect(screen.getByTestId('board-mark-5-5')).toHaveTextContent('补这里')
+    expect(screen.getByTestId('board-mark-7-7')).toHaveTextContent('解')
+  })
+
+  it('标记压在棋子上时，棋子信息没被吃掉（标记层不吃指针）', () => {
+    const board = boardFromLines(['...............', '...............', '.......B.......'])
+    setup({ board, marks: [{ point: { x: 7, y: 2 }, tone: 'bad' }] })
+
+    const stone = screen.getByTestId('stone-7-2')
+    expect(stone).toHaveAttribute('data-player', '1')
+    expect(screen.getByTestId('board-marks')).toHaveAttribute('pointer-events', 'none')
+  })
+})
+
+describe('Board —— 落子动画只标注最新一手（Phase 03）', () => {
+  it('只有最后一手带落下动效，其余棋子不带（重渲染不会整盘一起闪）', () => {
+    const board = boardFromLines(['...............', '...............', '.....BBB.......'])
+    const { container } = setup({ board, lastMove: { x: 7, y: 2 } })
+
+    expect(container.querySelectorAll('.motion-stone-drop')).toHaveLength(1)
+    expect(screen.getByTestId('stone-7-2')).toHaveClass('motion-stone-drop')
+  })
+})
+
+/**
+ * 任务书 §五 的红线快照：**不许把棋盘换成 225 个原生按钮，也不许引入并行的交互系统。**
+ *
+ * 这十五条不是「顺手记一下」，是 `PHASE_03.md` §2.4 那张表变成会红的东西——
+ * 清单靠人记得就等于没有。改动任何一条都会红，改的人必须显式改这张表。
+ *
+ * 为什么它们值得单独守：本阶段**动了 `Board.tsx` 的渲染层**（最后一手标记、标记底色）。
+ * 渲染层的改动最容易顺手把装饰层挪到命中区之后、或者给棋子层加上 `pointer-events`——
+ * 那会让整块棋盘点不动，而**只有 e2e 抓得到**（jsdom 不做命中测试）。
+ */
+describe('Board —— 不动的清单（任务书 §五）', () => {
+  it('1/2/6：ARIA grid、roving tabindex、单一 Tab 入口', () => {
+    setup()
+
+    expect(screen.getAllByRole('row')).toHaveLength(15)
+    const cells = screen.getAllByRole('gridcell')
+    expect(cells).toHaveLength(225)
+    expect(document.querySelectorAll('[tabindex="0"]')).toHaveLength(1)
+    expect(cells.filter((cell) => cell.getAttribute('tabindex') === '0')).toHaveLength(1)
+  })
+
+  it('3/4：方向键移动焦点，Enter 与空格都落子', () => {
+    const { onPlay } = setup()
+    const center = screen.getByTestId('intersection-7-7')
+    center.focus()
+
+    fireEvent.keyDown(center, { key: 'ArrowRight' })
+    const right = screen.getByTestId('intersection-8-7')
+    expect(right).toHaveAttribute('tabindex', '0')
+
+    fireEvent.keyDown(right, { key: 'Enter' })
+    fireEvent.keyDown(right, { key: ' ' })
+    expect(onPlay).toHaveBeenCalledTimes(2)
+    expect(onPlay).toHaveBeenNthCalledWith(1, { x: 8, y: 7 })
+  })
+
+  it('5：非交互态点不动（不是自己的回合就落不了子）', () => {
+    const { onPlay } = setup({ interactive: false })
+
+    fireEvent.click(screen.getByTestId('intersection-7-7'))
+
+    expect(onPlay).not.toHaveBeenCalled()
+  })
+
+  it('9：已占用点的 aria-label 说得出是谁的子、是不是最后一手', () => {
+    const board = boardFromLines(['...............', '...............', '.......B.......'])
+    setup({ board, lastMove: { x: 7, y: 2 } })
+
+    expect(screen.getByTestId('intersection-7-2')).toHaveAttribute(
+      'aria-label',
+      'H13 黑棋（最后一手）',
+    )
+  })
+
+  it('13/15：命中区是整格、且不吃装饰的亏', () => {
+    setup()
+    const cell = screen.getByTestId('intersection-7-7')
+
+    expect(cell).toHaveAttribute('width', '1')
+    expect(cell).toHaveAttribute('height', '1')
+    expect(cell).toHaveAttribute('stroke-width', '0')
+    expect(cell).toHaveAttribute('pointer-events', 'all')
+    expect(screen.getByTestId('board')).toHaveStyle({ touchAction: 'none' })
+  })
+
+  it('7/12：焦点环独立于棋子层，焦点与悬停是两个互不干扰的状态', () => {
+    setup()
+    const cell = screen.getByTestId('intersection-7-7')
+
+    fireEvent.focus(cell)
+    expect(screen.getByTestId('focus-ring')).toBeInTheDocument()
+
+    // 悬停另一格不会把焦点格挪走
+    fireEvent.mouseEnter(screen.getByTestId('intersection-3-3'))
+    expect(screen.getByTestId('focus-ring')).toBeInTheDocument()
+    expect(screen.getByTestId('hover-stone')).toHaveAttribute('cx', '3')
+    expect(screen.getByTestId('intersection-7-7')).toHaveAttribute('tabindex', '0')
+  })
+})

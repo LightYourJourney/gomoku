@@ -61,6 +61,51 @@ const VIEW_BOX = `${-MARGIN} ${-MARGIN} ${VIEW_SIZE} ${VIEW_SIZE}`
 const STONE_RADIUS = 0.44
 
 /**
+ * 最后一手用一颗**与所在棋子反色的小点**标出，而不是一圈红环。
+ *
+ * 为什么换掉红环：`--c-danger` 是「认输 / 错误 / 判错」的颜色，
+ * 而最后一手只是一次正常的落子——语义错位。更要紧的是量：
+ * 环的着墨 `2π × 0.47 × 0.075 ≈ 0.22` 格²（相当于一颗棋子的 36%），
+ * 却是整块棋盘上**唯一带色相**的东西，于是 30 手的局面里眼睛第一眼落在它身上。
+ * 点在 0.13 半径下着墨 `π × 0.13² ≈ 0.053` 格²，**少 76%**，
+ * 而且永远与所在棋子反色，黑白子上都清楚。
+ *
+ * 尺寸下限：最小支持棋盘 320px 时一格 20px，点直径 `0.26 × 20 = 5.2px`。
+ * 这个数不许再降——再小就找不着了（用例里钉着）。
+ */
+const LAST_MOVE_DOT_RADIUS = 0.13
+
+/** 标记徽标两侧的内边距（用户单位）。 */
+const BADGE_PADDING = 0.12
+
+/**
+ * 按标签估算文字宽度，用来决定底色徽标要多大。
+ *
+ * **只多不少**：全角按 1 em、半角按 0.62 em 估，宁可在两侧多留一点白，
+ * 也不让字出框——出框的白字会落到木纹上，直接看不见。
+ * `--font-mono` 是等宽族，CJK 走全角，这个估法与实测吻合。
+ */
+function labelWidth(label: string, fontSize: number): number {
+  let em = 0
+  for (const ch of label) em += (ch.codePointAt(0) ?? 0) > 0x2e80 ? 1 : 0.62
+  return em * fontSize
+}
+
+/**
+ * 徽标的宽度：**贴着标签生长**。
+ *
+ * 一个字时它小于「直径 2r 的圆」，于是仍然画圆（编号、判题、「解」这一档外观零变化）；
+ * 两个字以上就超过圆的直径，改画 pill。
+ *
+ * 硬约束（用例钉着）：**半宽必须 < 1 格**。相邻交叉点在 1 格外，
+ * 半宽不到一格就永远盖不到相邻棋子的**中心**——被压住的棋子至少还看得出黑白。
+ * 按当前字号，3 个汉字是 1.74（半宽 0.87，安全），4 个字是 2.24（半宽 1.12，破线）。
+ */
+function badgeWidth(label: string, radius: number): number {
+  return Math.max(radius * 2, labelWidth(label, radius * 1.25) + BADGE_PADDING * 2)
+}
+
+/**
  * 命中区是边长一整格的正方形，相邻格子严丝合缝地铺满棋盘。
  *
  * 不用圆形热区：半径半格的圆只会在相邻交叉点处相切，格与格之间留下死区，
@@ -321,7 +366,8 @@ export function Board({
         fill={`url(#${uid}-wood)`}
       />
 
-      <g stroke="var(--c-grid)" strokeWidth={0.032} strokeLinecap="round">
+      {/* `data-testid` 是给探针的把手：网格线的设备像素宽度要单独量（避免线条模糊）。 */}
+      <g data-testid="board-grid" stroke="var(--c-grid)" strokeWidth={0.032} strokeLinecap="round">
         {AXIS.map((i) => (
           <line key={`h${i}`} x1={0} y1={i} x2={EXTENT} y2={i} />
         ))}
@@ -381,6 +427,7 @@ export function Board({
       {/* 连线画在棋子下面：压在棋子上会把棋子的质感糊掉。 */}
       {winLine !== null && winLine.length >= 2 && (
         <line
+          data-testid="win-line-segment"
           x1={winLine[0].x}
           y1={winLine[0].y}
           x2={winLine[winLine.length - 1].x}
@@ -433,15 +480,19 @@ export function Board({
                 opacity={isBlack ? 0.3 : 0.75}
                 transform={`rotate(-34 ${point.x - 0.13} ${point.y - 0.15})`}
               />
+              {/*
+                最后一手：与所在棋子**反色**的点。黑子上用浅点、白子上用深点，
+                所以两种棋子上都看得见（任务书 §四：「标记应当适用于黑棋和白棋」）。
+                脉冲动效动的是 opacity，与形状无关，点照样能用。
+              */}
               {key === lastKey && (
                 <circle
+                  data-testid="last-move-dot"
                   className={motionClass('lastMovePulse')}
                   cx={point.x}
                   cy={point.y}
-                  r={0.47}
-                  fill="none"
-                  stroke="var(--c-danger)"
-                  strokeWidth={0.075}
+                  r={LAST_MOVE_DOT_RADIUS}
+                  fill={isBlack ? 'var(--c-stone-white-a)' : 'var(--c-stone-black-b)'}
                 />
               )}
             </g>
@@ -474,20 +525,36 @@ export function Board({
           {visibleMarks.map((mark, index) => {
             const tone = mark.tone ?? 'accent'
             const radius = mark.radius ?? 0.4
+            const label = mark.label ?? String(index + 1)
+            const width = badgeWidth(label, radius)
+            const isPill = width > radius * 2
 
             return (
               <g
                 key={pointKey(mark.point)}
                 data-testid={`board-mark-${mark.point.x}-${mark.point.y}`}
                 data-tone={tone}
+                data-shape={isPill ? 'pill' : 'circle'}
               >
-                <circle
-                  cx={mark.point.x}
-                  cy={mark.point.y}
-                  r={radius}
-                  fill={MARK_FILL[tone]}
-                  opacity={0.92}
-                />
+                {isPill ? (
+                  <rect
+                    x={mark.point.x - width / 2}
+                    y={mark.point.y - radius}
+                    width={width}
+                    height={radius * 2}
+                    rx={radius}
+                    fill={MARK_FILL[tone]}
+                    opacity={0.92}
+                  />
+                ) : (
+                  <circle
+                    cx={mark.point.x}
+                    cy={mark.point.y}
+                    r={radius}
+                    fill={MARK_FILL[tone]}
+                    opacity={0.92}
+                  />
+                )}
                 <text
                   x={mark.point.x}
                   y={mark.point.y}
@@ -498,7 +565,7 @@ export function Board({
                   dominantBaseline="central"
                   fill="var(--c-accent-fg)"
                 >
-                  {mark.label ?? String(index + 1)}
+                  {label}
                 </text>
               </g>
             )
