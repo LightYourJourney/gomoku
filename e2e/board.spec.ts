@@ -55,15 +55,35 @@ test('标记的文字完全落在底色里，一个像素都不出框', async ({
   await page.getByRole('button', { name: '下一步' }).click()
   await page.getByRole('button', { name: '下一步' }).click()
 
-  const marks = page.locator('[data-testid^="board-mark-"]')
-  await expect(marks).toHaveCount(1)
-  const boxes = await markBoxes(marks.first())
+  /*
+   * **用标记自己的文字钉住「现在在哪一页」。**
+   *
+   * 初稿是 `marks.first()` + `toHaveCount(1)`，在 CI 上偶发失败。
+   * 复现（`--repeat-each=20`）后量到两件事：
+   *   - 每次打印出来 DOM 都是对的（`board-mark-6-7` / `pill` / `补这里`）；
+   *   - 失败时 Playwright 报的是 `Test ended.` 而**不是** `Received:`——
+   *     说明那一刻定位器**一个元素都取不到**，不是取到了形状不对的那个。
+   *
+   * 病根是这两条断言都**没有身份**：这一课的第 2 步（冲四）和第 3 步（补这里）
+   * 都只有一个标记，`toHaveCount(1)` 分不出它们；而再往前一步是练习页，
+   * 练习页在没点提示时**一个标记都没有**。于是任何一次「翻页翻多了/翻少了」
+   * 都表现为「标记忽然没了」，还说不清停在哪。
+   *
+   * 「补这里」这三个字是那一页唯一的身份，而且是自动重试的——
+   * 停在 2 / 3 或练习页都会直接报出来。
+   *
+   * （别拿工具栏的页码当锚点：`3 / 3` 在页面上有两处——工具栏的 span 与
+   * 步骤标题的 h2——`getByText` 会撞 strict mode。这条是我改的时候真踩的。）
+   */
+  const mark = page.getByTestId('board-mark-6-7')
+  await expect(mark).toHaveText('补这里')
+  await expect(mark).toHaveAttribute('data-shape', 'pill')
 
+  const boxes = await markBoxes(mark)
   expect(boxes).not.toBeNull()
   if (boxes === null) return
 
-  expect(marks.first()).toHaveAttribute('data-shape', 'pill')
-  // 容差 0.5 用户单位的一点点余量留给字体度量，但**方向是硬的**：文字必须比底色窄
+  // 文字必须整个落在底色里，**方向是硬的**
   expect(boxes.text.w).toBeLessThanOrEqual(boxes.shape.w)
   expect(boxes.text.h).toBeLessThanOrEqual(boxes.shape.h)
   expect(boxes.text.x).toBeGreaterThanOrEqual(boxes.shape.x)
@@ -120,23 +140,43 @@ async function dangerRgb(page: Page): Promise<string> {
   })
 }
 
-test('最后一手在黑子上清楚，在白子上也清楚', async ({ page }) => {
-  await gotoPvp(page)
-  await page.getByTestId('intersection-7-7').click()
-  await page.getByTestId('intersection-7-8').click()
+/**
+ * 最后一手必须在**两种棋子**上都清楚（任务书 §四：「标记应当适用于黑棋和白棋」）。
+ *
+ * 初版只走了一手白子，却挂着「黑子上也清楚」的标题；断言还是
+ * `fill !== dangerRgb`——而点的填色是 `--c-stone-black-b`，这条**近乎恒真**。
+ * 现在两色各测一次，判据是**可观察的**：点与所在棋子必须反色，
+ * 也就是「点在黑子上要亮、在白子上要暗」。
+ */
+for (const { name, moves, player, side } of [
+  { name: '黑子', moves: ['intersection-7-7'], player: '1', side: 'light' },
+  { name: '白子', moves: ['intersection-7-7', 'intersection-7-8'], player: '2', side: 'dark' },
+] as const) {
+  test(`最后一手在${name}上清楚：点与棋子反色`, async ({ page }) => {
+    await gotoPvp(page)
+    for (const id of moves) await page.getByTestId(id).click()
 
-  const dot = page.getByTestId('last-move-dot')
-  await expect(dot).toBeVisible()
+    const dot = page.getByTestId('last-move-dot')
+    await expect(dot).toBeVisible()
 
-  const painted = await dot.evaluate((element) => ({
-    fill: getComputedStyle(element).fill,
-    player: element.closest('[data-testid^="stone-"]')?.getAttribute('data-player') ?? null,
-  }))
+    const painted = await dot.evaluate((element) => {
+      const [r, g, b] = (getComputedStyle(element).fill.match(/[\d.]+/g) ?? []).map(Number)
+      const lin = (c: number): number => {
+        const v = (c ?? 0) / 255
+        return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4
+      }
+      return {
+        luminance: 0.2126 * lin(r ?? 0) + 0.7152 * lin(g ?? 0) + 0.0722 * lin(b ?? 0),
+        player: element.closest('[data-testid^="stone-"]')?.getAttribute('data-player') ?? null,
+      }
+    })
 
-  // 最后一手是白子（黑先、白后），点要用深色——与所在棋子反色才看得见
-  expect(painted.player).toBe('2')
-  expect(painted.fill).not.toBe(await dangerRgb(page))
-})
+    expect(painted.player).toBe(player)
+    // 相对亮度 0.5 是明暗分界：#fff ≈ 1，#0b0b0d ≈ 0.003，两头都离它很远
+    if (side === 'light') expect(painted.luminance).toBeGreaterThan(0.5)
+    else expect(painted.luminance).toBeLessThan(0.5)
+  })
+}
 
 test('棋盘上不出现 danger 色（判错标记只在残局练习页，对战棋盘上没有它）', async ({ page }) => {
   await gotoPvp(page)

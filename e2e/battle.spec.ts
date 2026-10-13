@@ -615,23 +615,33 @@ test.describe('AI 面板的两级信息', () => {
     await expect(page.getByText(/Negamax/)).toBeVisible()
   })
 
-  test('展开状态刷新后不保留', async ({ page }) => {
+  /**
+   * 展开状态**不持久化**（`DESIGN_SYSTEM.md` §7）。
+   *
+   * **不能拿「刷新页面」来测。** 刷新之后 `aiInfo` 就没了（它是运行时产物，不入存档），
+   * 面板回到「尚未产生分析结果。」——**无论有没有持久化，详情都不可能显示出来**。
+   * 初稿就是这么写的：一条永远不会红的用例。做反向验证时它露了馅
+   * （把 `showInfo` 改成持久化，它照样绿）。
+   *
+   * 换成**路由切走再回来**：store 在模块层，`aiInfo` 还活着，
+   * 所以回来之后面板**仍然有结果可展开**；而 `InfoButton` 的 `useState` 是组件本地的，
+   * 重新挂载必然是收起的。这时候「详情又自己展开了」才是真的 bug。
+   */
+  test('展开状态在离开页面再回来之后不保留', async ({ page }) => {
     await playUntilAiAnalysed(page)
 
     await page.getByRole('button', { name: 'AI 引擎的技术详情' }).click()
     await expect(page.getByText(/Negamax/)).toBeVisible()
 
-    await page.reload()
+    // 切到教学页再回来：BattleScreen 重新挂载，store 里的分析结果还在
+    await page.getByRole('button', { name: '教学', exact: true }).click()
+    await expect(page.getByRole('heading', { name: '互动教学' })).toBeVisible()
+    await page.getByRole('button', { name: '对战', exact: true }).click()
 
-    /*
-     * 只断言「技术详情没有跟着回来」。
-     *
-     * **不要顺带去断言那颗「?」还在**：刷新后 `aiInfo` 不持久化
-     * （它是这一局运行时才产生的分析结果），面板回到「尚未产生分析结果。」，
-     * 于是按钮**本来就不该在**——初稿断言了它，红得毫无道理。
-     * 展开状态不持久化的判据是**详情有没有回来**，不是按钮在不在。
-     */
+    // 先确认「确实还有东西可展开」——否则这条用例又变成上面那种恒真
+    await expect(page.getByTestId('ai-player-view')).toBeVisible()
+    const button = page.getByRole('button', { name: 'AI 引擎的技术详情' })
+    await expect(button).toHaveAttribute('aria-expanded', 'false')
     await expect(page.getByText(/Negamax/)).toHaveCount(0)
-    await expect(page.getByTestId('ai-player-view')).toHaveCount(0)
   })
 })
