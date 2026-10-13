@@ -17,7 +17,7 @@ Phase 4（复盘与分析）、Phase 5（最终打磨）、Phase 5 之后的**�
 | 单元 / 组件用例 | **912**（56 个文件） |
 | 端到端用例 | **103**（桌面 87 + 移动触屏 8 + 平板 8），另有生产构建冒烟 5 条（`yarn e2e:prod`） |
 | 界面基线与量测 | `yarn ui:probe`：21 个受控状态 × 视口矩阵 = 172 张截图 + 172 条 DOM 量测，逐张可对照 |
-| 质量门禁 | 本地 pre-push 快档（5 条命令，热跑约 40 秒）+ CI 全档（4 个 job）+ 四道防退化闸门 + 两把覆盖棘轮，见「〇之十一」 |
+| 质量门禁 | 本地 pre-push 快档（5 条命令，热跑 30–45 秒，看机器负载）+ CI 全档（4 个 job）+ 四道防退化闸门 + 两把覆盖棘轮，见「〇之十一」 |
 | 基准脚本 | `yarn bench`（引擎，结果见 `docs/AI_ENGINE.md` 的「实测」一节）；`yarn bench:render`（首屏与落子，结果见本文「〇之四、Phase 5 摘要 · 性能实测」） |
 
 各阶段发现并修复的问题：
@@ -60,7 +60,7 @@ Phase 4（复盘与分析）、Phase 5（最终打磨）、Phase 5 之后的**�
 重复代码（jscpd，`src/` 排除测试、**阈值 0**、6 个文件显式豁免）、测试条数棘轮。
 
 两把覆盖棘轮（**这一半才是用户真正担心的**）：探针扫到的状态/控件/棋盘（`quality/coverage.baseline.json`，172 条 / 21 状态）
-与测试条数（`quality/tests.baseline.json`，912 / 0 / 0 / 102）——**只许涨不许跌**。
+与测试条数（`quality/tests.baseline.json`，912 / 0 / 0 / 103）——**只许涨不许跌**。
 
 ### 每道闸门都做了反向验证（注入违规，确认它真的红）
 
@@ -135,6 +135,15 @@ macOS 基线、Linux 无字体、Linux 装字体三种情况下**都是 36.7%**�
 
 **修法**：拆成两个测试（Playwright 每条测试自带全新页面，手势状态天然隔离），
 **断言一条没减**，导航提成 `gotoPracticeBoard` 复用。e2e 102 → 103，棘轮基线同步。
+
+**Playwright 浏览器不需要额外处理**：两个 config 都用 `channel: 'chrome'`（系统 Chrome，
+配置里明说不下载 Chromium），ubuntu runner 自带。所以 CI 里**没有** `playwright install` 这一步——
+别去加它。
+
+**本地 `yarn check:coverage` 是「自己跟自己比」**：它的默认 `--current` 指向
+`docs/ui-redesign/screenshots/after-phase02/measurements.json`，而那份基线正是从它裁出来的，
+所以本机单跑必然绿。**这道闸门的红只可能发生在 CI**（读 `ci/measurements.json`）。
+要本机验它，得像反向验证那样喂一份改过的产物（`--current` 支持换路径）。
 
 ### 全档 CI 最终实测（ubuntu-latest + node 26 + 中文字体）
 

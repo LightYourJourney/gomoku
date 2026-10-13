@@ -126,8 +126,11 @@ Expected: 只剩「只被签名引用」的类型导出（实测 9–10 个，�
 > 根本没有"按符号名忽略"这回事。所以那份 9–10 条的手工基线连同
 > 「升级 knip 后要重跑更新基线」的长期规则，**整批删掉**。
 
-`src/ai/difficulty.ts` 那对同义常量单独处理：给 `AVAILABLE_DIFFICULTIES` 加 JSDoc `@public`
-并写明理由（它是「定义了哪些档」与「开放哪些档」的分界点，今天两者恰好相等）。
+`src/ai/difficulty.ts` 那对同义常量单独处理。**实施时改用了 `ignoreIssues`，没有用 `@public`**：
+knip 报的是 `duplicates`（两个导出同值），`@public` 管的是「未被使用的导出」，对它无效。
+所以配置是 `"ignoreIssues": { "src/ai/difficulty.ts": ["duplicates"] }`，理由写在 `knip.jsonc` 的注释里
+（文件名也从计划里的 `knip.json` 改成了 `.jsonc`——要写注释就得用 jsonc）。
+反向验证过它是承重的：去掉这条会立刻红 `Duplicate exports … DIFFICULTIES, AVAILABLE_DIFFICULTIES`。
 
 - [ ] **Step 5: 跑一次，确认绿**
 

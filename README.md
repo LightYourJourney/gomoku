@@ -43,8 +43,8 @@ yarn dev          # 开发服务器
 
 提交前的完整清单见 [AGENTS.md](AGENTS.md)。
 
-`git push` 会被本地 pre-push 钩子拦一道（快档：lint / typecheck / test / build / 三个闸门，
-热跑约 45 秒）。**但它不含 e2e 与 `ui:probe`** —— 本地绿了只说明快档过了；
+`git push` 会被本地 pre-push 钩子拦一道（快档：lint / typecheck / test / build / 四道闸门，
+热跑 30–45 秒，看机器负载）。**但它不含 e2e 与 `ui:probe`** —— 本地绿了只说明快档过了；
 改了界面结构、布局或扫描范围的人，要等 CI 的全档绿。装钩子靠 `yarn install`（`prepare` 里配的）。
 
 ![教学课程](docs/screenshots/phase3-lessons.png)
@@ -138,8 +138,8 @@ bench/         引擎基准与渲染探针（不进常规测试套件）
 
 | 项 | 数量 |
 | --- | --- |
-| 单元 / 组件用例 | **805**（45 个文件） |
-| 端到端用例 | **46**（桌面 32 + 移动触屏 7 + 平板触屏 7） |
+| 单元 / 组件用例 | **912**（56 个文件） |
+| 端到端用例 | **103**（桌面 87 + 移动触屏 8 + 平板 8） |
 | 生产构建冒烟 | 5（`yarn e2e:prod`） |
 
 关键实现都有反向验证记录（改坏实现确认用例会红），详见 [docs/TEST_REPORT.md](docs/TEST_REPORT.md)。

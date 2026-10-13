@@ -141,7 +141,9 @@ Phase 2 结束后跑过一轮两轴代码审查，另做了一轮 3 次自审 + 
 
 - **性能结论有前提**：上面两条的「不做」建立在当前渲染路径上。若棋盘将来改成每帧重绘（拖拽预览、动画重采样），落子成本必须重量一遍再决定。
 - **`bench:render` 的数字受机器负载影响**：探针量的是墙钟时间，负载高时只会偏高（所以是保守上界）。要拿绝对值请在空闲机器上跑。
-- **基准仍不做断言**：`yarn bench` 与 `yarn bench:render` 都只产数字，没有阈值、没有 CI 门禁。
+- ~~**基准仍不做断言**~~：**2026-10-13 已偿还**——`yarn bench` 有阈值了（`yarn bench:check`，
+  只断言余量充足的行与机器无关的不变量），CI 里也在跑。`yarn bench:render` 仍是只产数字：
+  它量的是墙钟时间（见上一条），跨机器设阈值会变成假红制造机。
 - **子路径部署没有自动化用例**：`VITE_BASE` 的效果靠构建产物断言（见 README 的两条 `grep`），没有 e2e 覆盖。
 - **复盘页对读屏用户只是一张图**：回放棋盘 `interactive={false}`，走的是 `role="img"` 加一句「已落子 N 手、最后一手在 X」。逐手编号是画在 SVG 里的文字，读屏读不出来，也没有实时播报——要做得先给回放设计一套可读的逐步导航。
 
@@ -189,12 +191,12 @@ Phase 5 之后功能与工程层面都已收口，但界面本身**从未被系�
 
 | 文件 | 内容 |
 | --- | --- |
-| [ui-redesign/BASELINE.md](ui-redesign/BASELINE.md) | 基线：commit、环境、六条命令的实跑结果、19 个受控状态与 156 张截图的可复跑做法 |
+| [ui-redesign/BASELINE.md](ui-redesign/BASELINE.md) | 基线：commit、环境、六条命令的实跑结果、21 个受控状态与 172 张截图的可复跑做法 |
 | [ui-redesign/FINDINGS.md](ui-redesign/FINDINGS.md) | 28 条 UI 发现（P0×1 / P1×4 / P2×11 / P3×12）+ 查过没问题的部分 |
 | [ui-redesign/DESIGN_SYSTEM.md](ui-redesign/DESIGN_SYSTEM.md) | 设计规范：字号、行高、颜色语义、对比度、间距、圆角、阴影、按钮、状态、焦点、棋盘、动效 |
 | [ui-redesign/PLAN.md](ui-redesign/PLAN.md) | Phase 01–07 的实施计划（含 3 轮自审） |
 | [ui-redesign/REVIEW.md](ui-redesign/REVIEW.md) | 独立终审的结论 |
-| `bench/ui.probe.mjs` | 探针：19 个受控状态 × 视口矩阵的截图与量测（`yarn ui:probe`） |
+| `bench/ui.probe.mjs` | 探针：21 个受控状态 × 视口矩阵的截图与量测（`yarn ui:probe`） |
 
 **结论**：对比度、键盘可达性、错误恢复三项**没有发现缺陷**（156 次量测逐元素扫过，
 0 处低于 WCAG AA）。问题集中在布局与信息密度：
@@ -265,6 +267,5 @@ Phase 5 之后功能与工程层面都已收口，但界面本身**从未被系�
 以下事项已识别但尚未排期：
 
 - **增量局面评估**：当前 `evaluateBoard` 每次重扫全盘（72 µs/次），是搜索的主要开销。改成只重算受落子影响的 4 条线段后，专家档才有可能真正搜到第 7 层。
-- **基准回归**：`yarn bench` 目前只产数字、不做断言。若要防性能回退，应该在 CI 里对关键指标设阈值。
 
 - **Web Worker 降级**：极老的浏览器不支持 module worker 时目前没有回退路径。

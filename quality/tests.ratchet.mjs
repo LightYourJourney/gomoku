@@ -30,6 +30,23 @@ try {
   process.exit(2)
 }
 
+/*
+ * 基线形状校验。**没有它，基线里少一个键就等于把那条判据悄悄关掉**：
+ * `5 < undefined` 为 false，于是「删掉 900 条用例 + 键名打错」会静默通过。
+ */
+{
+  const bad = []
+  for (const k of ['unitTotal', 'unitPending', 'unitTodo', 'e2eTotal']) {
+    if (typeof baseline[k] !== 'number') bad.push(`${k} 不是数字（实际 ${JSON.stringify(baseline[k])}）`)
+  }
+  if (bad.length > 0) {
+    console.error(`✗ 基线形状不对（quality/tests.baseline.json）——${bad.length} 处：`)
+    for (const b of bad) console.error(`  - ${b}`)
+    console.error('  基线坏了就判不出东西，所以这里直接停：修好基线再跑。')
+    process.exit(2)
+  }
+}
+
 // ── 单测条数（读 yarn test 落盘的报告）─────────────────────────────
 let report
 try {
@@ -43,6 +60,7 @@ try {
 
 // ── e2e 条数（问 playwright 要，不去数字符）────────────────────────
 let e2eTotal = null
+let e2eError = null
 try {
   const out = execFileSync('yarn', ['playwright', 'test', '--list'], {
     cwd: REPO,
@@ -51,21 +69,30 @@ try {
   })
   const m = out.match(/Total:\s*(\d+)\s+tests?/)
   if (m) e2eTotal = Number(m[1])
-} catch {
-  // 下面的 `e2eTotal === null` 分支会响亮失败
+  else e2eError = 'playwright 跑完了，但输出里没有 `Total: N tests`'
+} catch (err) {
+  /*
+   * **不能吞掉它的输出**：这一条本来最可能因为「自己写的 spec 有语法错 / 配置错」
+   * 而失败，而那是要看报错才能修的。早先这里是个空 `catch {}`，
+   * 于是任何原因都只表现为「playwright 没跑起来？」，把人往环境问题上引。
+   */
+  const stderr = (err.stderr ?? '').toString().trim()
+  e2eError =
+    `playwright --list 失败（退出码 ${err.status ?? '?'}）` +
+    (stderr === '' ? '' : `：\n${stderr.split('\n').slice(-6).join('\n')}`)
 }
 
 const checks = [
-  ['单测总数', report.numTotalTests, baseline.unitTotal, 'below'],
-  ['单测被跳过的（.skip）', report.numPendingTests, baseline.unitPending, 'above'],
-  ['单测待办的（.todo）', report.numTodoTests, baseline.unitTodo, 'above'],
-  ['e2e 总数', e2eTotal, baseline.e2eTotal, 'below'],
+  ['单测总数', report.numTotalTests, baseline.unitTotal, 'below', 'vitest-report.json 里没有这个字段'],
+  ['单测被跳过的（.skip）', report.numPendingTests, baseline.unitPending, 'above', 'vitest-report.json 里没有这个字段'],
+  ['单测待办的（.todo）', report.numTodoTests, baseline.unitTodo, 'above', 'vitest-report.json 里没有这个字段'],
+  ['e2e 总数', e2eTotal, baseline.e2eTotal, 'below', e2eError ?? 'playwright --list 的输出里没找到总数'],
 ]
 
 const failures = []
-for (const [name, actual, expected, dir] of checks) {
+for (const [name, actual, expected, dir, why] of checks) {
   if (actual === null || actual === undefined) {
-    failures.push(`${name}：拿不到数值（playwright 没跑起来？）`)
+    failures.push(`${name}：拿不到数值 —— ${why}`)
     continue
   }
   const bad = dir === 'below' ? actual < expected : actual > expected
