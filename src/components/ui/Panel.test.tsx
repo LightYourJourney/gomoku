@@ -125,6 +125,27 @@ describe('Panel 的折叠', () => {
     expect(screen.getByText('内容')).toBeInTheDocument()
   })
 
+  /**
+   * `aria-controls` 必须解析到文档里的元素。内容区在折叠时会被卸载，
+   * 那个 IDREF 就会悬空（无效 ARIA，axe 的 `aria-valid-attr-value` 会报）——
+   * 「显示与声音」默认折叠，所以对战页首屏就是这个状态。
+   */
+  it('折叠时不输出悬空的 aria-controls', () => {
+    render(
+      <Panel title="显示与声音" collapsible>
+        <p>内容</p>
+      </Panel>,
+    )
+
+    const toggle = screen.getByRole('button', { name: /显示与声音/ })
+    expect(toggle).not.toHaveAttribute('aria-controls')
+
+    fireEvent.click(toggle)
+    const controls = toggle.getAttribute('aria-controls')
+    expect(controls).not.toBeNull()
+    expect(document.getElementById(controls!)).not.toBeNull()
+  })
+
   it('defaultOpen=false 时一开始就是收起的', () => {
     render(
       <Panel title="显示与声音" collapsible>

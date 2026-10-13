@@ -464,11 +464,14 @@ strict mode 违规，而 §9.4 里「点按钮 → 点确认」的写法就不�
 
 对战页给它的类：`lg:flex-1` 加上下限。
 
-**下限不能写 `lg:min-h-[20rem]`（320px）**——独立终审算出来的：`cqh` 量的是**内容盒**，
-而 `BoardStage` 自带 `lg:py-3`（上下各 12px），320px 的下限会让棋盘缩到 **296px**，
-**静默**跌破 `DESIGN_SYSTEM.md` §8.1 的 320px 硬下限。所以写
-**`lg:min-h-[344px]`（= 320 + 24）**，并在注释里写明「这个值 = 内容盒下限 + 自身内边距，
-改内边距就要改它」。§7.3「装不下就滚」的阈值同理按 344 算。
+**下限原本打算写 `lg:min-h-[344px]`（= 320 + 24 内边距），最终一个都没写。**
+独立终审的推导是对的：`cqh` 量的是**内容盒**，而 `BoardStage` 自带 `lg:py-3`，
+若照 320px 写下限，棋盘会缩到 296px、**静默**跌破 `DESIGN_SYSTEM.md` §8.1 的硬下限。
+
+但实施之后发现**下限本身不需要**：棋盘是跟着高度**收缩**的（任务书允许「尺寸收缩」），
+而探针实测最矮的两档 SHORT 视口下是 497 / 517px，离 320 还远（§13.3）。
+无下限就无内边距折算问题，也省掉了「`lg:min-h-[344px]` 与自带 `lg:min-h-0` 谁赢」
+那场 CSS 顺序赌博。**判据仍由 `yarn ui:probe` 的闸门实判**（判据 2：棋盘 ≥320）。
 
 **顺带改一句会变成假话的注释**：`BoardStage.tsx:6` 把「移动端的 `order-1`」
 列为抽出来的理由之一，删掉那两行之后这句就不成立了。
@@ -484,27 +487,40 @@ strict mode 违规，而 §9.4 里「点按钮 → 点确认」的写法就不�
 ### 7.3 矮窗口
 
 ≥1024 时应用根是 `h-dvh overflow-hidden`（`App.tsx`），溢出会被裁掉而不是滚动。
-所以中列给 `lg:overflow-y-auto`：正常高度下不出现滚动条，只有在矮到装不下
-「状态条 + 320px 棋盘 + 工具栏」时才滚。这满足任务书「较矮的桌面窗口允许合理滚动或尺寸收缩」，
-也不违反「移动端不制造多个相互竞争的滚动容器」（那条针对的是 <1024，那里是文档单滚动）。
+
+**中列最终没有加 `lg:overflow-y-auto`**（初稿打算加）：棋盘本身就是跟着高度缩的，
+滚动条永远不会出现——留一段永远不执行的 CSS 不如不加。任务书那句话是
+「允许合理滚动**或尺寸收缩**」，这里走的是后半条，实测见 §13.3。
+移动端（<1024）是文档单滚动，实测只有棋谱列表那一个元素级滚动容器 ✓。
 
 ---
 
-## 八、改动文件清单（预期）
+## 八、改动文件清单
 
-**新增**：`src/features/battle/MatchBar.tsx`、`src/components/ui/ConfirmDialog.tsx`、
-`src/lib/useMediaQuery.ts`、`src/features/battle/MatchBar.test.tsx`、
-`src/components/ui/ConfirmDialog.test.tsx`、`src/lib/useMediaQuery.test.ts`。
+**下面这一节在验收自审时按真实 diff 重写过**（原先是「预期」清单，与交付不符：
+漏了 4 个文件、多了 1 个没动的）。差异本身记在 §十六 的验收记录里。
 
-**重写**：`src/features/battle/BattleScreen.tsx`、`src/components/panels/ControlBar.tsx`。
+**实际新增 8 个**：`src/features/battle/MatchBar.tsx`、`src/components/ui/ConfirmDialog.tsx`、
+`src/lib/useMediaQuery.ts`，以及五个测试文件
+（`MatchBar.test.tsx`、`ConfirmDialog.test.tsx`、`useMediaQuery.test.ts`、
+`ControlBar.test.tsx`、`StatusPill.test.tsx`——后两个是原计划里漏写的）。
 
-**改动**：`Panel.tsx`（collapsible）、`Modal.tsx`（焦点归还）、`StatusPill.tsx`（busy）、
-`HintPanel.tsx`（移出按钮）、`SettingsPanel.tsx`（拆分两组、回调可被拦）、`AiPanel.tsx`（条件渲染说明）、
-`BoardStage.tsx`（className、删掉 order 两行）。
+**实际改动 23 个**：
 
-**测试**：`BattleScreen.test.tsx`、`Modal.test.tsx`、`HintPanel.test.tsx`、
-`e2e/battle.spec.ts`、`e2e/layout.spec.ts`、`e2e/a11y.spec.ts`、`e2e/tablet.spec.ts`、
-`bench/ui.probe.mjs`（新增确认弹窗状态与截图）。
+源码：`BattleScreen.tsx`（重写）、`ControlBar.tsx`（重写）、`Panel.tsx`（collapsible）、
+`Modal.tsx`（焦点归还）、`Segmented.tsx`（`beforeChange` 拦截钩子）、
+`StatusPill.tsx`（`busy` 判据）、`HintPanel.tsx`（移出按钮）、`SettingsPanel.tsx`（两组可折叠、
+拦截钩子透传）、`AiPanel.tsx`（说明段条件渲染）、`BoardStage.tsx`（`className`、删掉 order 两行、
+`lg:py-3`→`lg:py-2`）、`status.ts`（新增纯函数 `playerName`）。
+
+测试：`Modal.test.tsx`、`Panel.test.tsx`、`Segmented.test.tsx`、`HintPanel.test.tsx`、
+`AiPanel.test.tsx`、`status.test.ts`、`e2e/battle.spec.ts`、`e2e/layout.spec.ts`、
+`e2e/a11y.spec.ts`、`e2e/tablet.spec.ts`、`bench/ui.probe.mjs`（新增确认弹窗状态）。
+
+> **计划里列了、实际一行没改的**：`src/features/battle/BattleScreen.test.tsx`。
+> 原计划把 12 条验收用例里的 9 条放在 jsdom 里，最后**全部落在 e2e 上**——
+> 它们测的都是「点一下之后发生了什么」，而在真实浏览器里验比在 jsdom 里验更强
+> （弹窗、焦点、布局、触摸都只有浏览器说得清）。**代价与补课记在 §十六。**
 
 **文档**：本文件、`DESIGN_SYSTEM.md`（§10.1/§10.2 断点与侧栏）、`docs/ARCHITECTURE.md`
 （对战页布局与组件分层；**另加一句例外说明**——动效那一段旁边写清「布局为什么可以判媒体查询」，
@@ -519,31 +535,34 @@ strict mode 违规，而 §9.4 里「点按钮 → 点确认」的写法就不�
 
 ## 九、测试计划（任务书 §八 逐条落地）
 
-### 9.1 单元 / 组件（jsdom）
+### 9.1 任务书 §八 的 12 条（**最终全部落在 e2e 上**，与本节初稿不同）
 
-| # | 任务书条目 | 用例 | 落在 |
+初稿把这 9 条放在 jsdom（`BattleScreen.test.tsx`）里。**实施时改了主意**：
+它们测的都是「点一下之后发生了什么」——弹窗、焦点、后续交互——而这些在真实浏览器里
+验比在 jsdom 里验更强。于是全部落进 `e2e/battle.spec.ts`
+（**代价：`BattleScreen.test.tsx` 一行没改**，而初稿把它列进了文件清单；
+这件事在验收自审时被发现并记在 §十六）。
+
+| # | 任务书条目 | 落在哪条用例 | 浏览器 |
 | --- | --- | --- | --- |
-| 1 | 空棋盘重新开始不弹确认 | 空局点「重新开始」→ 无 `role="dialog"`，`moves` 仍 0 | `BattleScreen.test.tsx` |
-| 2 | 进行中重新开始弹确认 | 2 手 → 点 → 出现对话框，含后果描述 | 同上 |
-| 3 | 取消后棋局完整保留 | 记下 `game` 引用与 `pendingRequestId` → 取消 → 逐字段相等 | 同上 |
-| 4 | 确认后正确初始化 | 确认 → `moves` 0、`status playing`、`hint` 清空、`pendingRequestId` null | 同上 |
-| 5 | 认输取消与确认 | 取消 → 仍 playing；确认 → `resigned` 且 winner 正确 | 同上 |
-| 6 | 模式变更取消与确认 | 取消 → `mode` 不变且选中项不变；确认 → `mode` 变、棋盘重建 | 同上 |
-| 7 | 执子变更取消与确认 | 同上（`humanColor`） | 同上 |
-| 8 | AI 思考期间的确认/取消 | `aiThinking` + `pendingRequestId` 置位 → 取消 → 两者原样；确认 → 新局，**再直接调 `useGameStore.getState().applyAiResponse({requestId: 旧值, …})`**，盘上仍 0 子 | 同上 |
-| 9 | 终局后重新开局 | 终局 → 点工具栏「重新开始」→ **不弹确认** | 同上 |
-| 10 | 本地双人状态显示正确 | `mode='pvp'` → 状态条里出现「黑方」「白方」，且**这一块内**不出现「你」 | `MatchBar.test.tsx` |
-| 11 | 焦点：取消回到触发按钮 | 点按钮 → 取消 → `document.activeElement` 是那个按钮 | `ConfirmDialog.test.tsx` + `Modal.test.tsx` |
-| 12 | 求提示只有一个入口 | 全页 `getByRole('button', {name:'求提示'})` 恰好 1 个 | `BattleScreen.test.tsx` |
-| 13 | 终局后「再来一局」不弹确认 | 终局 → 点终局弹窗的「再来一局」→ **不出现确认框**，直接新局 | `BattleScreen.test.tsx` |
+| 1 | 空棋盘重新开始不弹冗余确认 | `防误触确认 › 空棋盘重新开始不弹确认` | Chrome |
+| 2 | 进行中重新开始弹出确认 | `重新开始会清空棋盘`（先确认再开新局）+ `取消重新开始，棋局一手不动` | Chrome |
+| 3 | 取消重新开始后棋局完整保留 | `取消重新开始，棋局一手不动` | Chrome |
+| 4 | 确认重新开始后棋局正确初始化 | `重新开始会清空棋盘` | Chrome |
+| 5 | 认输取消与确认 | `取消认输，棋局一手不动` + `认输弹出结果弹窗…` | Chrome |
+| 6 | 模式变更取消与确认 | `切换模式：取消则原样，确认才重建棋局` | Chrome |
+| 7 | 执子变更取消与确认 | `切换执子：取消则原样，确认才重建棋局` | Chrome / **平板** |
+| 8 | AI 思考期间发生确认/取消操作 | `AI 思考期间取消重新开始，AI 那一手照样落下` + `专家档深算期间悔棋…` | Chrome |
+| 9 | 终局后重新开局 | `终局之后的「重新开始」与「再来一局」都不弹确认` | Chrome |
+| 10 | 本地双人模式状态显示正确 | `MatchBar 的双方信息`（jsdom，含「不出现『你』」）+ `本地双人模式不触发 AI…`（浏览器里再断言一次状态条） | 两者 |
+| 11 | 不同宽度下没有操作区域遮挡 | `对战页：棋盘与操作区不互相遮挡`（5 档宽度，棋盘 / 状态条 / 工具栏 / **每一个侧栏**两两不相交） | Chrome |
+| 12 | 键盘及触控操作正确 | 键盘：`键盘操作工具栏` 三条；触控：`触摸：工具栏四颗按钮都点得中…` | Chrome / **平板（真触摸）** |
 
-第 8 条的后半**不需要动 Worker 桩**：`BattleScreen.test.tsx` 顶部那个 `FakeWorker` 是空壳，
-但「旧响应不得落子」这件事可以直接调 store 的公开动作 `applyAiResponse` 投递——
-它正是 Worker 回调最终会调的那个函数。测的是「UI 走没走 `newGame`」，
-而不是再验一遍 store 的闸门（那 4 条已经在 `gameStore.test.ts` 里）。
+**第 5 条与第 7 条是验收自审时补的**：它们的取消路径（以及`beforeHumanColorChange`
+整个分支）当时**一行测试都没有**。补完之后反向验证过——把拦截撤掉，两条都红。
 
-第 6、7 条再加一条断言：取消后 `document.activeElement` 的 `aria-checked` 为 `true`
-（理由见 §5.2 的 `canChange`）。
+**第 11 条初稿承诺了「右栏」却没进断言**（用例名叫「四块」实际只比了三块），
+验收时一并补上，现在连 1440 下的两个侧栏都在内。
 
 ### 9.2 真实浏览器（Playwright）
 
@@ -916,3 +935,53 @@ AI 思考 / 进行中 / **重新开始确认弹窗** / 终局）。除确认弹�
 
 **下一阶段（任务书 Phase 03）之前不要再动中列的纵向尺寸**：1440×700 的 35.9% 只有
 0.9 个百分点的余量，任何加高都会被判据当场拦下——这是设计如此。
+
+---
+
+## 十六、验收自审（用户要求的独立复核）
+
+阶段提交之后，按用户列的 12 个关注点做了一轮**独立自审**：一个独立代理只读复核
+（它自己按五条判据重核了 164 条量测、逐条比对了测试文件的删改、核对文档与真实 diff），
+外加我自己按同一份清单逐项核。**结论：有条件通过**，理由与整改见下。
+
+### 16.1 找出的真问题（全部已修）
+
+| # | 问题 | 性质 | 修法 |
+| --- | --- | --- | --- |
+| 1 | **认输确认框在「轮到 AI」时把赢家说反了。** 我用 `game.current` 推认输的是谁，而 store 的语义是人机模式下**无论轮到谁，认输的都是玩家**（`gameStore.ts` 的注释点名警告过这个坑，`src/store/gameStore.ts:450`）。于是玩家执白或 AI 思考时点认输，弹窗写「记为**你**获胜」，按下去却是「你认输了」 | **高·用户可见的错误陈述**。触发面不小：玩家执白时开局第一屏就是这个状态；而此前所有认输用例都恰好发生在「轮到玩家」时，文案碰巧是对的 | 把判据抽成 `resignerFor(state)`，**store 与弹窗共用同一处**（不是各推一遍）；新增 e2e 用例，**桩掉 Worker 让「轮到 AI」永不结束**——不桩的话这条用例抓不住东西（AI 一落子 `game.current` 就变、文案跟着重算，读到的已经是修正后的文本，这一点是反向验证时发现的） |
+| 2 | **`面板折叠时 `aria-controls` 悬空**：内容区被卸载，IDREF 指向不存在的元素（无效 ARIA，axe 的 `aria-valid-attr-value` 会报）。而「显示与声音」默认折叠 → 对战页首屏就是这个状态 | 低·无障碍真缺陷 | 折叠时不输出 `aria-controls`；补回归用例 |
+| 3 | **读屏播报在本地双人仍说「轮到你落子」**，与状态条的「轮到黑棋」分叉——任务书 §三 明确要求两者一致，且点名不许沿用单人对 AI 的「你」视角 | 低·但正是任务书点名的那条；我此前在 commit message 与注释里声称「同源」，与代码不符 | `BoardAnnouncer` 的 pvp 分支改用 `describeStatus().label`（终局那一支本来就是这么做的，中盘这支是漏网的）。既有用例的断言跟着换（那条断言的是**旧行为**） |
+| 4 | **「四块互不相交」的用例名比断言大**：叫「棋盘/状态条/工具栏/侧栏四块」，实际只比了三块，**右栏根本没进 `regions`** | 中·「声称覆盖但没覆盖」 | 把 `main > aside` 全部纳入（1440 下 5 块两两比）；顺带补上任务书要的「宽屏居中」断言 |
+| 5 | **三条确认路径零覆盖**：认输的**取消**半条、切执子整条（`beforeHumanColorChange` 一行没验过）、AI 思考期间的**确认**（非取消） | 中·任务书 §八 第 5、7 条点名 | 补三条 e2e；执子那条反向验证过（撤掉拦截即红） |
+| 6 | **和棋与本地双人终局在界面层没有测试**（`status.player === null` 那条分支零覆盖） | 中 | 补 3 条 `MatchBar` 用例 |
+| 7 | **五条量化判据没有可执行的闸门**：探针只采集，代码注释却写「由 `yarn ui:probe` 守着」——**采集不等于判定** | 低·但违反本仓「验证必须响亮地失败」的纪律 | 探针末尾加 `checkCriteria`，不合格逐条打印并退出码非 0。**验证过它会红**：临时塞一个 12×12 的按钮，它报 `[5 命中区] … 只有 12×12` 并以 1 退出 |
+| 8 | **一条死 prop**：`ConfirmDialog.cancelLabel` 无任何调用方 | 低·未验证的可配置性 | 删掉（文案固定「取消」） |
+| 9 | **文档与真实 diff 不一致**：§八 清单多列了 `BattleScreen.test.tsx`（一行没改）、漏列 8 个文件；§9.1 把 11 条用例指派给 jsdom 而实际全落在 e2e；§7.1/§7.3 仍以规范语气写着两条**未采用**的写法；`ROADMAP` 与 `TEST_REPORT` 的单测数不一致（901 vs 903） | 低·文档口径 | 逐处按实际重写；单测数以最终实测为准 |
+| 10 | **触摸下的「求提示」没验过**（§9.2 第 16 条承诺了，实现只点了悔棋/重开/认输） | 低 | 补一次 `.tap()` 并断言候选出现 |
+
+### 16.2 复核后确认**没有**问题的部分
+
+- **没有删测试、没有削弱断言**：被删的只有 `HintPanel.test.tsx` 里三条随按钮搬家的用例，
+  等价覆盖在 `ControlBar.test.tsx`（点击调 `onHint` ✓、`canHint` 禁用 ✓、`hintThinking` 禁用 ✓）
+  与 `HintPanel.test.tsx`（面板内没有第二个入口 ✓）；`battle.spec.ts` / `a11y.spec.ts` 的既有断言
+  **一字未改**，只各加了一步确认点击。全仓无 `.skip` / `.only` / 已注释掉的断言。
+- **没有碰与本阶段无关的层**：`src/core` / `src/ai` / `src/persist` / `src/learn` 改动数为 **0**；
+  `src/store` 只新增了一个纯函数 `resignerFor`（行为逐字不变，`resign()` 只是改用它）。
+  对战规则、AI 请求的 `requestId`/`gameVersion` 双闸门、教学判定、存档兼容性**一行未动**。
+- **不是「只换颜色改间距」**：棋盘 1024 档 +77%、操作从两处收成一处、四处确认从无到有、
+  状态条从顶栏搬到棋盘上方——都是结构与交互的改动。
+- **几何断言全部在真实浏览器**：jsdom 里只有类名代理（如 `bg-accent` / `ml-auto`），
+  所有尺寸、位置、命中区、滚动断言都在 `e2e/` 与探针里。
+- **§五 的六条安全要求**：被拦下时三个入口只 `setConfirm`、一次都不碰 store；
+  确认路径复用的就是原来的 action。取消不碰 store 现在有**直接断言**
+  （jsdom 逐字段引用相等，注入 `undoMove()` 即红）。
+- **九类截图齐全**、深色与浅色都实际看过（不只是看数字）。
+
+### 16.3 这一轮自审自己的教训
+
+- **两条新写的用例没有鉴别力**：认输文案那条（AI 落子后文案自我修正）与模板并存那条。
+  都是**反向验证时才发现**的——写完用例就跑一次「撤掉修复」，是唯一能发现这类问题的手段。
+- **替换没生效也算「验证过了」**：第一次反向验证时我的脚本没匹配上锚点，测试当然还是绿的。
+  后来给脚本加了 `assert`。**验证脚本自己也要响亮地失败。**
+
+---

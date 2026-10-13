@@ -34,6 +34,7 @@ export interface MatchBarProps {
  */
 export function MatchBar({ game, mode, humanColor, difficulty, aiThinking }: MatchBarProps) {
   const status = describeStatus({ game, mode, humanColor, aiThinking })
+  // 行动方也用 `status.player`，不自己重推一遍手番——那句「一个判断都不复制」才是真的
   const playing = game.status === 'playing'
 
   return (
@@ -42,13 +43,13 @@ export function MatchBar({ game, mode, humanColor, difficulty, aiThinking }: Mat
       className="grid grid-cols-[1fr_auto_1fr] items-center gap-2"
     >
       <Side player={BLACK} mode={mode} humanColor={humanColor} difficulty={difficulty}
-        active={playing && game.current === BLACK} />
+        active={playing && status.player === BLACK} />
 
       <StatusPill status={status} busy={aiThinking} />
 
       <div className="flex min-w-0 items-center justify-end gap-2">
         <Side player={WHITE} mode={mode} humanColor={humanColor} difficulty={difficulty}
-          active={playing && game.current === WHITE} />
+          active={playing && status.player === WHITE} />
         {/*
           `hidden sm:inline`：390 下这一条要同时放下两侧、药丸与手数，
           手数会把 AI 那一侧挤到 `truncate`——探针的 `clipped` 量到过

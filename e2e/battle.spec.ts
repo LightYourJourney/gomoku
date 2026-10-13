@@ -161,6 +161,16 @@ test('本地双人模式不触发 AI，黑白轮流落子', async ({ page }) => 
 
   await page.getByRole('radio', { name: '本地双人' }).click()
 
+  /*
+   * 双人时**不能出现「你」**（任务书 §三：同一块屏幕上坐着两个人，
+   * 单人对 AI 的视角在这里指谁都是错的）。单测里已经钉住，这里在真实浏览器
+   * 再确认一遍——状态条是这一阶段新加的，读它的是用户的眼睛。
+   */
+  const bar = page.getByLabel('对局状态')
+  await expect(bar).toContainText('黑方')
+  await expect(bar).toContainText('白方')
+  await expect(bar).not.toContainText('你')
+
   await page.getByTestId('intersection-7-7').click()
   await expect(page.getByTestId('status-pill')).toHaveText('轮到白棋')
 
@@ -184,6 +194,13 @@ test('请求提示后棋盘上出现候选标记，且棋局一手未变', async
 
   const before = await stones(page)
   expect(before).toBeGreaterThan(0)
+
+  /*
+   * 任务书 §四：**同一个请求不得有多个入口**。入口从 `HintPanel` 搬进工具栏时，
+   * 一边加、另一边没删就会留下两个「求提示」——点哪颗都像对的，
+   * 而它们迟早会在某一处行为不同。这里显式数一次，别只靠「点击没撞上 strict mode」。
+   */
+  await expect(page.getByRole('button', { name: '求提示' })).toHaveCount(1)
 
   await page.getByRole('button', { name: '求提示' }).click()
 
@@ -303,6 +320,79 @@ test.describe('防误触确认', () => {
   })
 
   /**
+   * 任务书 §八 第 5 条的**取消那一半**：认输也要能取消，取消之后这一局必须原样。
+   *
+   * 这条是验收自审时补上的——原来只测了「确认认输 → 终局」，
+   * 而「取消认输 → 什么都不变」一次都没验过。取消路径不碰 store 是结构性成立的，
+   * 但**结构性成立不等于验过**：有人在取消分支里加一行副作用，只有这条会红。
+   */
+  test('取消认输，棋局一手不动', async ({ page }) => {
+    await page.goto('/')
+    await page.getByRole('radio', { name: '本地双人' }).click()
+    await page.getByTestId('intersection-7-7').click()
+    await expect(page.getByTestId(/^stone-/)).toHaveCount(1)
+
+    await page.getByRole('button', { name: '认输' }).click()
+    await expect(page.getByRole('dialog')).toContainText('认输不能撤销')
+    await page.getByRole('button', { name: '取消' }).click()
+
+    await expect(page.getByRole('dialog')).toBeHidden()
+    await expect(page.getByTestId(/^stone-/)).toHaveCount(1)
+    await expect(page.getByTestId('status-pill')).toHaveText('轮到白棋')
+    // 还能接着下——对局没有被结束掉
+    await page.getByTestId('intersection-3-3').click()
+    await expect(page.getByTestId(/^stone-/)).toHaveCount(2)
+  })
+
+  /**
+   * 任务书 §八 第 7 条：**执子**变更的取消与确认。
+   *
+   * `setHumanColor` 与 `setMode` 一样会重建棋局（`newGame`），所以两者都该拦。
+   * 这条同样是验收自审时补的——原先只测了模式那一半，
+   * 执子的拦截分支（`beforeHumanColorChange`）**一行都没被验过**。
+   */
+  test('切换执子：取消则原样，确认才重建棋局', async ({ page }) => {
+    await page.goto('/')
+    // 落在 3-3 而不是天元：确认重建之后 AI（执黑）会开盘于天元，
+    // 拿天元当「玩家那一手还在不在」的锚点会自己骗自己。
+    await page.getByTestId('intersection-3-3').click()
+    await expect(page.getByTestId(/^stone-/)).toHaveCount(2)
+    await expect(page.getByTestId('stone-3-3')).toBeVisible()
+
+    // —— 取消：执子不变、选中项不变、棋盘不变
+    await page.getByRole('radio', { name: '执白后行' }).click()
+    await expect(page.getByRole('dialog')).toContainText('切换执子会开一局新的')
+    await page.getByRole('button', { name: '取消' }).click()
+    await expect(page.getByRole('dialog')).toBeHidden()
+    await expect(page.getByRole('radio', { name: '执黑先行' })).toHaveAttribute(
+      'aria-checked',
+      'true',
+    )
+    await expect(page.getByTestId('stone-3-3')).toBeVisible()
+    // 取消之后焦点回到**选中项**上，不是那个没被选中的选项
+    const focusedChecked = await page.evaluate(
+      () => document.activeElement?.getAttribute('aria-checked') ?? null,
+    )
+    expect(focusedChecked, '取消之后焦点落在了没被选中的选项上').toBe('true')
+
+    // —— 确认：执子真的换了，棋盘重建（玩家那一手没了），而且轮到 AI 先走
+    await page.getByRole('radio', { name: '执白后行' }).click()
+    await page.getByRole('button', { name: '确认切换' }).click()
+    await expect(page.getByRole('radio', { name: '执白后行' })).toHaveAttribute(
+      'aria-checked',
+      'true',
+    )
+    await expect(page.getByTestId('stone-3-3')).toHaveCount(0)
+    /*
+     * 「切换生效」要看的是**状态条上玩家换到了白方**，不是轮次文案——
+     * 切换前后都会出现「轮到你落子」（AI 应完手就轮到玩家），拿它当判据会假绿。
+     */
+    const bar = page.getByLabel('对局状态')
+    await expect(bar).toContainText('你 · 白')
+    await expect(bar).not.toContainText('你 · 黑')
+  })
+
+  /**
    * 「AI 正在思考时，取消不应意外中断原来的 AI 请求」（任务书 §五 点名）。
    * 取消路径一次都不碰 store，所以这一手必须照样落下来。
    */
@@ -322,6 +412,46 @@ test.describe('防误触确认', () => {
     await expect(page.getByTestId(/^stone-/)).toHaveCount(2, { timeout: 15_000 })
     await expect(page.getByTestId('status-pill')).toHaveText('轮到你落子')
     await expect(page.getByTestId('stone-7-7')).toBeVisible()
+  })
+
+  /**
+   * **验收自审抓到的真 bug 的回归用例**：认输确认框会说「记为谁获胜」，
+   * 而人机模式下「认输的是玩家」**与轮到谁走无关**（`resignerFor`）。
+   * 在此之前所有认输用例都发生在「轮到玩家」时，`game.current === humanColor`，
+   * 文案恰好是对的——**轮到 AI 时它会写成「记为你获胜」，按下去却变成「你认输了」**。
+   *
+   * 触发条件不罕见：玩家执白时，开局第一屏就是「轮到 AI」。
+   */
+  test('轮到 AI 时点认输，确认框说的赢家是 AI 而不是玩家', async ({ page }) => {
+    /*
+     * **桩掉 Worker**，让「轮到 AI」这个状态永不结束（同 `e2e/a11y.spec.ts` 的
+     * `holdAiInThinking`，也是 F-18 的结论：别跟 AI 赛跑，把赛道拆了）。
+     *
+     * 不桩的话这条**抓不住它要抓的东西**：AI 一落子 `game.current` 就变，
+     * 而确认框的文案每次渲染都重算——读到手里已经是「自我修正」之后的文本了。
+     * 这一点是反向验证时发现的：把判据退回 `game.current`，用例照样绿。
+     */
+    await page.addInitScript(() => {
+      class StubWorker {
+        postMessage(): void {}
+        addEventListener(): void {}
+        terminate(): void {}
+      }
+      Object.assign(globalThis, { Worker: StubWorker })
+    })
+    await page.goto('/')
+
+    await page.getByTestId('intersection-7-7').click()
+    await expect(page.getByTestId('status-pill')).toHaveText('AI 思考中…')
+
+    await page.getByRole('button', { name: '认输' }).click()
+    const dialog = page.getByRole('dialog')
+    // 人机模式下认输的**永远是玩家**（与轮到谁走无关），所以赢家是 AI
+    await expect(dialog).toContainText('记为AI获胜')
+    await expect(dialog).not.toContainText('记为你获胜')
+
+    await page.getByRole('button', { name: '确认认输' }).click()
+    await expect(page.getByTestId('status-pill')).toHaveText('你认输了')
   })
 
   test('终局之后的「重新开始」与「再来一局」都不弹确认', async ({ page }) => {

@@ -43,9 +43,9 @@ Phase 4（复盘与分析）、Phase 5（最终打磨）、Phase 5 之后的**�
 **范围**：对战页布局三档、对局状态条、工具栏重组、四处防误触确认、侧栏重组。
 不改规则 / 引擎 / 持久化；不改 15×15 棋盘算法、SVG 坐标系与命中机制。
 
-**测试**：单测 850 → **903**（56 文件），e2e 74 → **96**，`e2e:prod` 5。
-新增源文件 4 个（`features/battle/MatchBar.tsx`、`components/ui/ConfirmDialog.tsx`、
-`lib/useMediaQuery.ts` 与三个测试文件），重写 2 个（`BattleScreen.tsx`、`ControlBar.tsx`）。
+**测试**：单测 850 → **909**（56 文件），e2e 74 → **99**，`e2e:prod` 5。
+新增 8 个文件（3 个源文件 `features/battle/MatchBar.tsx`、`components/ui/ConfirmDialog.tsx`、
+`lib/useMediaQuery.ts`，5 个测试文件），重写 2 个（`BattleScreen.tsx`、`ControlBar.tsx`）。
 
 ### 这一阶段解决的问题
 

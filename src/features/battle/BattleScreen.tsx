@@ -14,7 +14,14 @@ import type { Player } from '../../core/types'
 import { cx } from '../../lib/cx'
 import { createStoneSound, type StoneSound } from '../../lib/sound'
 import { useMediaQuery } from '../../lib/useMediaQuery'
-import { canHumanPlay, canUndo, moverAt, shouldAiMove, type GameMode } from '../../store/gameStore'
+import {
+  canHumanPlay,
+  canUndo,
+  moverAt,
+  resignerFor,
+  shouldAiMove,
+  type GameMode,
+} from '../../store/gameStore'
 import { useSettingsStore } from '../../store/settingsStore'
 import { useGameStore } from '../../store/useGameStore'
 import { AppHeader } from '../shell/AppHeader'
@@ -278,7 +285,10 @@ export function BattleScreen({ sound: injectedSound }: BattleScreenProps = {}) {
           工具栏 38、棋盘容器自身的 8（在 `BoardStage` 里）——
           **改任何一个都要重跑 `yarn ui:probe`**。
         */}
-        <div className="flex min-h-0 flex-col gap-1.5 px-3 py-1.5 lg:px-4">
+        <div
+          data-testid="battle-center-column"
+          className="flex min-h-0 flex-col gap-1.5 px-3 py-1.5 lg:px-4"
+        >
           <MatchBar
             game={game}
             mode={mode}
@@ -380,7 +390,8 @@ export function BattleScreen({ sound: injectedSound }: BattleScreenProps = {}) {
           moves: moveCount,
           mode,
           humanColor,
-          resigner: game.current,
+          // **与 store 同源**：认输的是谁由 `resignerFor` 判，这里不自己推一遍
+          resigner: resignerFor({ mode, humanColor, game }),
         })}
         confirmLabel={confirm ? CONFIRM_LABEL[confirm.kind] : ''}
         tone={confirm?.kind === 'resign' ? 'danger' : 'default'}

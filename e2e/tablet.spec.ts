@@ -147,9 +147,14 @@ test.describe('平板横屏（1080×810）', () => {
     await page.getByTestId('intersection-7-7').click()
     await expect(page.getByTestId(/^stone-/)).toHaveCount(2)
 
-    // 悔棋：点得到、生效
+    // 求提示：点得到、出候选（触摸下的命中与后续渲染都算数）
+    await page.getByRole('button', { name: '求提示' }).tap()
+    await expect(page.getByTestId(/^board-mark-/)).toHaveCount(3)
+
+    // 悔棋：提示标记跟着局面清掉，棋子也没了
     await page.getByRole('button', { name: '悔棋' }).tap()
     await expect(page.getByTestId(/^stone-/)).toHaveCount(0)
+    await expect(page.getByTestId(/^board-mark-/)).toHaveCount(0)
 
     // 重新开始：盘上已无子，直接开新局（不弹确认）
     await page.getByRole('button', { name: '重新开始' }).tap()

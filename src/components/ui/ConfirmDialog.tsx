@@ -10,11 +10,10 @@ export interface ConfirmDialogProps {
    *
    * 「这一步不可撤销」这类话不解决任何问题——玩家需要知道的是
    * 哪一局会被丢掉、丢了之后还剩什么。对战页四处确认的文案见 `BattleScreen` 的
-   * `CONFIRM_TEXT`。
+   * `CONFIRM_TITLE` / `confirmDescription`。
    */
   description: ReactNode
   confirmLabel: string
-  cancelLabel?: string
   /** 破坏性操作用 `danger`（认输）。默认的确认用 `primary`。 */
   tone?: 'default' | 'danger'
   onConfirm: () => void
@@ -40,7 +39,6 @@ export function ConfirmDialog({
   title,
   description,
   confirmLabel,
-  cancelLabel = '取消',
   tone = 'default',
   onConfirm,
   onCancel,
@@ -53,7 +51,7 @@ export function ConfirmDialog({
       footer={
         <>
           <Button block onClick={onCancel}>
-            {cancelLabel}
+            取消
           </Button>
           <Button
             block

@@ -292,6 +292,18 @@ test.describe('对战页的三档结构', () => {
     const column = (await page.getByTestId('battle-settings-column').boundingBox())!
     const board = (await page.getByTestId('board').boundingBox())!
     expect(column.x + column.width).toBeLessThanOrEqual(board.x + 1)
+
+    /*
+     * 任务书 §七：「宽屏中合理居中」。棋盘是被高度卡住的，中列横向会富余出
+     * 几十到几百像素——**富余要平分到两边**，否则棋盘会贴着某一侧。
+     */
+    const center = (await page.getByTestId('battle-center-column').boundingBox())!
+    const leftSlack = board.x - center.x
+    const rightSlack = center.x + center.width - (board.x + board.width)
+    expect(
+      Math.abs(leftSlack - rightSlack),
+      `棋盘没居中：左空 ${Math.round(leftSlack)}px、右空 ${Math.round(rightSlack)}px`,
+    ).toBeLessThan(2)
   })
 
   test('1440 与 1439 之间只差 1px，结构却真的换了', async ({ page }) => {
@@ -311,15 +323,29 @@ test.describe('对战页：棋盘与操作区不互相遮挡', () => {
   const WIDTHS = [390, 768, 1024, 1440, 1920] as const
 
   for (const width of WIDTHS) {
-    test(`@${width}：状态条、棋盘、工具栏、侧栏四块互不相交`, async ({ page }) => {
+    /*
+     * **侧栏也要进来比。** 这条用例原先叫「四块互不相交」却只比了三块
+     * （棋盘 / 状态条 / 工具栏），右栏根本没进 `regions`——名字比断言大，
+     * 正是这个仓库最忌讳的那种「看着覆盖了、其实没有」。
+     * 右侧栏在 1440 是并排的一列、在 390 是棋盘下面的一摞，两种情况下
+     * 「不与棋盘叠压」都成立、也都值得断言。
+     */
+    test(`@${width}：状态条、棋盘、工具栏、侧栏互不相交`, async ({ page }) => {
       await page.setViewportSize({ width, height: 900 })
       await page.goto('/')
       await expect(page.getByTestId('board')).toBeVisible()
 
-      const regions = {
+      const regions: Record<string, { x: number; y: number; width: number; height: number }> = {
         棋盘: (await page.getByTestId('board').boundingBox())!,
         状态条: (await page.getByLabel('对局状态').boundingBox())!,
         工具栏: (await page.getByRole('group', { name: '对局操作' }).boundingBox())!,
+      }
+
+      const asides = page.locator('main > aside')
+      const asideCount = await asides.count()
+      expect(asideCount, '对战页至少要有右栏').toBeGreaterThanOrEqual(1)
+      for (let i = 0; i < asideCount; i++) {
+        regions[`侧栏${i}`] = (await asides.nth(i).boundingBox())!
       }
 
       const pairs = Object.entries(regions)
@@ -334,8 +360,8 @@ test.describe('对战页：棋盘与操作区不互相遮挡', () => {
       }
 
       // 顺序：状态条在棋盘上方，工具栏在棋盘下方
-      expect(regions.状态条.y + regions.状态条.height).toBeLessThanOrEqual(regions.棋盘.y + 1)
-      expect(regions.工具栏.y).toBeGreaterThanOrEqual(regions.棋盘.y + regions.棋盘.height - 1)
+      expect(regions.状态条!.y + regions.状态条!.height).toBeLessThanOrEqual(regions.棋盘!.y + 1)
+      expect(regions.工具栏!.y).toBeGreaterThanOrEqual(regions.棋盘!.y + regions.棋盘!.height - 1)
     })
   }
 })

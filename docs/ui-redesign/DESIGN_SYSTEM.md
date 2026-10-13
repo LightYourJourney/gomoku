@@ -389,7 +389,7 @@ yarn lint && yarn typecheck && yarn test && yarn build && yarn e2e && yarn e2e:p
 yarn ui:probe --out after-phaseNN     # 与 screenshots/before/ 逐张对照
 ```
 
-`e2e/layout.spec.ts`（Phase 01 新增，28 条）把下面几条变成了可断言的：
+`e2e/layout.spec.ts`（Phase 01 新增 28 条，Phase 02 扩到 **41 条**）把下面几条变成了可断言的：
 棋盘 ≥320px 且是正方形（六档宽度、三个页面）、跨过 `lg` 后棋盘 ≥620px、
 页面标题不被压成竖排、滚动后顶栏不位移、顶栏高度跨页面不跳、
 导航在 390 下右侧不留空档、文字放大到 200% 不横向溢出。
@@ -397,7 +397,9 @@ yarn ui:probe --out after-phaseNN     # 与 screenshots/before/ 逐张对照
 （`yarn ui:probe` 不带 `--out` 会被拒绝执行——它默认写 `before/`，
 而那会把基线覆盖掉。真要重拍基线得显式加 `--force`。）
 
-外加**五条量化判据**，全部能从 `measurements.json` 直接判真假：
+外加**五条量化判据**。**判据由探针自己判定并在不合格时退出码非 0**
+（`bench/ui.probe.mjs` 的 `checkCriteria`）——此前它们只是「量得到」，
+而一个永远不会红的判据等于没有判据（F-UI-01 就是这么活下来的）：
 
 1. **`contrastViolations` 全为 0**。
 2. **`board` 的宽高在任何状态、任何视口下都 ≥ 320px**

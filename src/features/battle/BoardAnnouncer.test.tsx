@@ -54,13 +54,23 @@ describe('BoardAnnouncer', () => {
     expect(screen.getByTestId('board-announcer')).toHaveTextContent('等待对手落子')
   })
 
-  it('本地双人时两方都算「轮到你」', () => {
+  /**
+   * 本地双人**按颜色播报**，不套用单人对 AI 的「你」视角
+   * （任务书 §三 点名，且要求与可见状态条一致）。
+   *
+   * 这条用例原先断言的是「两方都算『轮到你』」——那是**故意的旧行为**，
+   * 但它与状态条分叉，也与任务书的视角要求冲突。Phase 02 的验收自审时改正，
+   * 断言换成更强的那一条：颜色要说出来。
+   */
+  it('本地双人按颜色播报，与状态条同一句话', () => {
     const first = applyMove(createGame(), { x: 7, y: 7 })
     if (!first.ok) throw new Error('落子失败')
 
     renderAnnouncer({ game: first.state, mode: 'pvp' })
 
-    expect(screen.getByTestId('board-announcer')).toHaveTextContent('轮到你落子')
+    // 黑先落子之后轮到白棋
+    expect(screen.getByTestId('board-announcer')).toHaveTextContent('轮到白棋')
+    expect(screen.getByTestId('board-announcer')).not.toHaveTextContent('你')
   })
 
   it('认输终局播报结果，且用界面上的同一句话', () => {

@@ -976,7 +976,78 @@ try {
   console.log(`\n本次 ${states.length} 个状态、${shot} 张截图 → ${OUT_DIR}`)
   console.log(`量测报告共 ${covered.length} 个状态 / ${all.length} 条`)
   console.log(`量测数据 → ${reportPath}`)
+
+  /*
+   * ── 五条量化判据的自检闸门 ──────────────────────────────────
+   *
+   * `DESIGN_SYSTEM.md` §12 的五条判据此前只是「量得到」：探针把它们写进
+   * `measurements.json`，人再去翻。于是代码注释里「由探针守着」这句话是假的——
+   * 采集不等于判定。**一条永远不红的判据等于没有判据**，这个仓库已经为此吃过亏
+   * （F-UI-01 就是这么活下来的：169px 的棋盘在 46 条 e2e 全绿的状态下存在了两天）。
+   *
+   * 所以在这里真的判一次，不合格就响亮地退出。
+   * **只判本次跑到的状态**，不判 merge 进来的历史快照——
+   * 重拍修好之前的基线（`--force` 拍 `before/`）本来就应该红，那是它的意义。
+   */
+  const violations = checkCriteria(measurements)
+  if (violations.length > 0) {
+    console.error(`\n✗ ${violations.length} 处违反 DESIGN_SYSTEM.md §12 的量化判据：`)
+    for (const line of violations.slice(0, 20)) console.error(`   ${line}`)
+    if (violations.length > 20) console.error(`   ……另有 ${violations.length - 20} 处`)
+    process.exitCode = 1
+  } else {
+    console.log(`\n✓ 五条量化判据全部通过（本次 ${measurements.length} 条量测）`)
+  }
 } finally {
   if (browser !== undefined) await browser.close()
   server.kill('SIGTERM')
+}
+
+/**
+ * `DESIGN_SYSTEM.md` §12 的五条量化判据，逐条判真假，返回人话形式的违规清单。
+ *
+ * 判据的口径与那份文档逐条一致，**改一处要同步另一处**：
+ *
+ * 1. `contrastViolations` 全 0；
+ * 2. `board` 宽高 ≥ 320（任何状态、任何视口）；
+ * 3. `boardRatioOfViewport` 在任何 ≥1024 的视口下 ≥ 35%；
+ * 4. `document.horizontalOverflow` 全 false；
+ * 5. `smallTargets.under24` 只允许剩下棋盘交叉点（`rect[intersection-*]`）——
+ *    一格 = 棋盘/16，390 屏幕满幅也只有约 24px，棋盘永远过不了这条线，
+ *    而规范又明令不许放大命中区；棋盘的安全由判据 2、3 单独守。
+ */
+function checkCriteria(rows) {
+  const bad = []
+
+  for (const row of rows) {
+    const where = `${row.state} @ ${row.size}`
+
+    for (const violation of row.contrastViolations ?? []) {
+      bad.push(`[1 对比度] ${where}：${violation.element} ${violation.ratio}:1 < ${violation.threshold}`)
+    }
+
+    const board = row.board
+    if (board !== null && board !== undefined && (board.w < 320 || board.h < 320)) {
+      bad.push(`[2 棋盘] ${where}：${board.w}×${board.h}，低于 320`)
+    }
+
+    const vw = row.viewport?.vw
+    if (vw !== undefined && vw >= 1024 && row.boardRatioOfViewport !== null) {
+      if (row.boardRatioOfViewport !== undefined && row.boardRatioOfViewport < 35) {
+        bad.push(`[3 占比] ${where}：棋盘只占视口宽 ${row.boardRatioOfViewport}%，低于 35%`)
+      }
+    }
+
+    if (row.document?.horizontalOverflow) {
+      bad.push(`[4 横向溢出] ${where}：文档横向溢出 ${row.document.scrollWidth - row.document.clientWidth}px`)
+    }
+
+    for (const target of row.smallTargets ?? []) {
+      if (target.under24 && !String(target.element).includes('intersection-')) {
+        bad.push(`[5 命中区] ${where}：${target.element} 只有 ${target.w}×${target.h}`)
+      }
+    }
+  }
+
+  return bad
 }

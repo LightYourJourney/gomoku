@@ -150,6 +150,25 @@ export function canHumanPlay(
   return !state.aiThinking && state.game.current === state.humanColor
 }
 
+/**
+ * 这一局是谁在认输。
+ *
+ * 人机模式下「认输」是**玩家**认输——即使此刻轮到 AI 走，认的也是玩家自己。
+ * 本地双人没有「玩家」这一方：按钮是轮到谁走时谁点的，所以认的是 `game.current`。
+ * 这里曾经一律用 `humanColor`，而它在双人模式下既不可见也不可改，是上一次人机模式
+ * 留下的残留值——结果是「点认输，屏幕上刚在下棋的那个人被判赢了」。
+ *
+ * **导出是因为确认弹窗要算「认输之后谁获胜」**：它得说清后果，而后果必须与这里
+ * 判的是同一个人。UI 侧自己再推一遍（比如用 `game.current`）就是第二套判据——
+ * Phase 02 的验收自审里正是这么错的：轮到 AI 时弹窗写成「记为你获胜」，
+ * 而按下去实际发生的是「你认输了」。**同一件事只有这一个出处。**
+ */
+export function resignerFor(
+  state: Pick<GameStore, 'mode' | 'humanColor' | 'game'>,
+): Player {
+  return state.mode === 'pve' ? state.humanColor : state.game.current
+}
+
 export function canUndo(state: Pick<GameStore, 'game' | 'mode' | 'humanColor'>): boolean {
   const plies = undoPlies(state)
   if (plies === 0) return false
@@ -439,16 +458,7 @@ export function createGameStore(
         const current = get()
         if (current.game.status !== 'playing') return
 
-        /*
-         * 人机模式下「认输」是**玩家**认输——即使此刻轮到 AI 走，认的也是玩家自己。
-         *
-         * 本地双人没有「玩家」这一方：按钮是轮到谁走时谁点的，所以认的是
-         * `game.current`。这里曾经一律用 `humanColor`，而它在双人模式下
-         * 既不可见也不可改，是上一次人机模式留下的残留值——结果是「点认输，
-         * 屏幕上刚在下棋的那个人被判赢了」。
-         */
-        const resigning = current.mode === 'pve' ? current.humanColor : current.game.current
-        const resigned = resignGame(current.game, resigning)
+        const resigned = resignGame(current.game, resignerFor(current))
         set({
           game: resigned,
           aiThinking: false,

@@ -73,7 +73,10 @@ export function Panel({
               <button
                 type="button"
                 aria-expanded={open}
-                aria-controls={bodyId}
+                // 折叠时**不输出** `aria-controls`：内容区那时被卸载了，
+                // 留着一个指向不存在元素的 IDREF 是无效 ARIA
+                // （`aria-controls` 必须解析到文档中的元素）。
+                aria-controls={open ? bodyId : undefined}
                 onClick={() => setOpen((value) => !value)}
                 // `min-h-7`（28px）：探针的 `smallTargets` 量到过 20px——
                 // 标题文字本身只有 20px 高，**低于 WCAG 2.5.8 的 24px 下限**。

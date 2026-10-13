@@ -148,3 +148,46 @@ describe('MatchBar —— 状态与手数', () => {
     expect(within(screen.getByLabelText('对局状态')).getAllByTestId('status-pill')).toHaveLength(1)
   })
 })
+
+describe('MatchBar —— 和棋与认输终局', () => {
+  /**
+   * 和棋（任务书 §三 要求清楚区分的九种情形之一）。
+   * `describeStatus` 那边有单元覆盖，但**界面**这一侧没有：
+   * 和棋没有归属方（`player: null`），所以药丸里不该有棋子点——
+   * 有的话就是在暗示某一方赢了。
+   */
+  it('和棋：药丸说「和棋」，且不画任何一方的棋子点', () => {
+    const drawn: GameState = { ...createGame(), status: 'draw' }
+    const { container } = setup({ game: drawn })
+
+    expect(screen.getByTestId('status-pill')).toHaveTextContent('和棋')
+    // 圆点是 aria-hidden 的装饰，这里数的是 DOM
+    expect(container.querySelectorAll('[data-testid="status-pill"] span[aria-hidden]')).toHaveLength(0)
+  })
+
+  it('本地双人终局说「黑棋获胜」，不是「你赢了」', () => {
+    const won = played([
+      { x: 0, y: 0 }, { x: 0, y: 1 },
+      { x: 1, y: 0 }, { x: 1, y: 1 },
+      { x: 2, y: 0 }, { x: 2, y: 1 },
+      { x: 3, y: 0 }, { x: 3, y: 1 },
+      { x: 4, y: 0 },
+    ])
+    setup({ game: won, mode: 'pvp' })
+
+    expect(screen.getByTestId('status-pill')).toHaveTextContent('黑棋获胜')
+  })
+
+  it('人机模式同一局面说「你赢了」', () => {
+    const won = played([
+      { x: 0, y: 0 }, { x: 0, y: 1 },
+      { x: 1, y: 0 }, { x: 1, y: 1 },
+      { x: 2, y: 0 }, { x: 2, y: 1 },
+      { x: 3, y: 0 }, { x: 3, y: 1 },
+      { x: 4, y: 0 },
+    ])
+    setup({ game: won, mode: 'pve', humanColor: BLACK })
+
+    expect(screen.getByTestId('status-pill')).toHaveTextContent('你赢了')
+  })
+})

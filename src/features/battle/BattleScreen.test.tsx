@@ -1,4 +1,4 @@
-import { act, render } from '@testing-library/react'
+import { act, fireEvent, render, screen } from '@testing-library/react'
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { applyMove, createGame, resign } from '../../core/game'
 import type { GameState } from '../../core/game'
@@ -162,5 +162,64 @@ describe('BattleScreen —— 终局音效', () => {
 
     setGame(wonByBlack())
     expect(sound.win).toHaveBeenCalledTimes(2)
+  })
+})
+
+/**
+ * 防误触确认的**取消路径**：任务书 §五 要求「取消之后保留所有棋局状态」。
+ *
+ * e2e 那边验的是**后果**（棋子还在、AI 那一手照样落下来）；这里验的是**机制**：
+ * 取消之后 store 的每一个字段都还是原来那个对象引用。
+ * 两者的分工是有意的——e2e 抓「用户看得见的不对」，这条抓「将来有人在取消分支里
+ * 加了一行副作用」，而那种改动在界面上可能一时看不出来。
+ *
+ * §5.2 当初点名要的就是这一条：`pendingRequestId` 与 `aiThinking` 必须原样保留，
+ * 否则取消会顺手把 AI 正在飞的那一手作废掉。
+ */
+describe('BattleScreen —— 确认弹窗的取消不碰 store', () => {
+  const WATCHED = [
+    'game',
+    'mode',
+    'humanColor',
+    'difficulty',
+    'aiThinking',
+    'aiError',
+    'aiInfo',
+    'pendingRequestId',
+    'hint',
+    'hintUrgency',
+    'hintConfidence',
+    'hintThinking',
+    'hintError',
+    'pendingHintRequestId',
+    'recordSaveState',
+    'recordedSeq',
+  ] as const
+
+  it.each([
+    ['重新开始', '重新开始'],
+    ['认输', '认输'],
+  ])('点「%s」再取消，字段逐个没动', (_label, buttonName) => {
+    // 「进行中 + 有落子 + AI 正在思考」：把所有会被拦的条件一次性踩满
+    const played = applyMove(createGame(), { x: 7, y: 7 })
+    if (!played.ok) throw new Error('落子失败')
+    setup(played.state)
+    act(() => {
+      useGameStore.setState({ aiThinking: true, pendingRequestId: 4242 })
+    })
+
+    const before = useGameStore.getState()
+
+    fireEvent.click(screen.getByRole('button', { name: buttonName }))
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: '取消' }))
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+
+    const after = useGameStore.getState()
+    for (const key of WATCHED) {
+      // 引用相等：store 是不可变的，没被碰过的字段就是同一个对象
+      expect(after[key], `${key} 被改动了`).toBe(before[key])
+    }
   })
 })
