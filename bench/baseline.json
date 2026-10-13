@@ -1,0 +1,263 @@
+{
+  "artifact": "runs/7a08f32.json",
+  "note": "断言行由 gated 决定，预算是冻结值。改这里 = 显式改基线，改动进 diff。",
+  "maxBudgetRatio": 0.2,
+  "rows": [
+    {
+      "difficulty": "beginner",
+      "position": "开局",
+      "budgetMs": 250,
+      "depth": 1,
+      "nodes": 12,
+      "gated": true
+    },
+    {
+      "difficulty": "beginner",
+      "position": "中盘",
+      "budgetMs": 250,
+      "depth": 1,
+      "nodes": 12,
+      "gated": true
+    },
+    {
+      "difficulty": "beginner",
+      "position": "四连威胁",
+      "budgetMs": 250,
+      "depth": 0,
+      "nodes": 0,
+      "gated": true
+    },
+    {
+      "difficulty": "beginner",
+      "position": "双三",
+      "budgetMs": 250,
+      "depth": 1,
+      "nodes": 12,
+      "gated": true
+    },
+    {
+      "difficulty": "beginner",
+      "position": "接近满盘",
+      "budgetMs": 250,
+      "depth": 1,
+      "nodes": 12,
+      "gated": true
+    },
+    {
+      "difficulty": "easy",
+      "position": "开局",
+      "budgetMs": 500,
+      "depth": 2,
+      "nodes": 59,
+      "gated": true
+    },
+    {
+      "difficulty": "easy",
+      "position": "中盘",
+      "budgetMs": 500,
+      "depth": 2,
+      "nodes": 68,
+      "gated": true
+    },
+    {
+      "difficulty": "easy",
+      "position": "四连威胁",
+      "budgetMs": 500,
+      "depth": 0,
+      "nodes": 0,
+      "gated": true
+    },
+    {
+      "difficulty": "easy",
+      "position": "双三",
+      "budgetMs": 500,
+      "depth": 2,
+      "nodes": 71,
+      "gated": true
+    },
+    {
+      "difficulty": "easy",
+      "position": "接近满盘",
+      "budgetMs": 500,
+      "depth": 2,
+      "nodes": 46,
+      "gated": true
+    },
+    {
+      "difficulty": "medium",
+      "position": "开局",
+      "budgetMs": 1000,
+      "depth": 4,
+      "nodes": 746,
+      "gated": true
+    },
+    {
+      "difficulty": "medium",
+      "position": "中盘",
+      "budgetMs": 1000,
+      "depth": 4,
+      "nodes": 596,
+      "gated": true
+    },
+    {
+      "difficulty": "medium",
+      "position": "四连威胁",
+      "budgetMs": 1000,
+      "depth": 0,
+      "nodes": 0,
+      "gated": true
+    },
+    {
+      "difficulty": "medium",
+      "position": "双三",
+      "budgetMs": 1000,
+      "depth": 4,
+      "nodes": 864,
+      "gated": true
+    },
+    {
+      "difficulty": "medium",
+      "position": "接近满盘",
+      "budgetMs": 1000,
+      "depth": 4,
+      "nodes": 265,
+      "gated": true
+    },
+    {
+      "difficulty": "hard",
+      "position": "开局",
+      "budgetMs": 1600,
+      "depth": 6,
+      "nodes": 10076,
+      "gated": false
+    },
+    {
+      "difficulty": "hard",
+      "position": "中盘",
+      "budgetMs": 1600,
+      "depth": 6,
+      "nodes": 7202,
+      "gated": false
+    },
+    {
+      "difficulty": "hard",
+      "position": "四连威胁",
+      "budgetMs": 1600,
+      "depth": 0,
+      "nodes": 0,
+      "gated": true
+    },
+    {
+      "difficulty": "hard",
+      "position": "双三",
+      "budgetMs": 1600,
+      "depth": 5,
+      "nodes": 11568,
+      "gated": false
+    },
+    {
+      "difficulty": "hard",
+      "position": "接近满盘",
+      "budgetMs": 1600,
+      "depth": 6,
+      "nodes": 808,
+      "gated": true
+    },
+    {
+      "difficulty": "expert",
+      "position": "开局",
+      "budgetMs": 2600,
+      "depth": 6,
+      "nodes": 23939,
+      "gated": false
+    },
+    {
+      "difficulty": "expert",
+      "position": "中盘",
+      "budgetMs": 2600,
+      "depth": 6,
+      "nodes": 18308,
+      "gated": false
+    },
+    {
+      "difficulty": "expert",
+      "position": "四连威胁",
+      "budgetMs": 2600,
+      "depth": 0,
+      "nodes": 0,
+      "gated": true
+    },
+    {
+      "difficulty": "expert",
+      "position": "双三",
+      "budgetMs": 2600,
+      "depth": 5,
+      "nodes": 18802,
+      "gated": false
+    },
+    {
+      "difficulty": "expert",
+      "position": "接近满盘",
+      "budgetMs": 2600,
+      "depth": 8,
+      "nodes": 1738,
+      "gated": true
+    }
+  ],
+  "invariants": {
+    "threat": [
+      {
+        "name": "活三（3 手胜）",
+        "mismatch": false,
+        "found": true,
+        "plies": 3
+      },
+      {
+        "name": "已成四（1 手胜）",
+        "mismatch": false,
+        "found": true,
+        "plies": 1
+      },
+      {
+        "name": "有活三但被反先（无杀）",
+        "mismatch": false,
+        "found": false,
+        "plies": 0
+      },
+      {
+        "name": "散子安静局面（无杀）",
+        "mismatch": false,
+        "found": false,
+        "plies": 0
+      }
+    ],
+    "vct": [
+      {
+        "name": "孤立活三",
+        "vcfFound": true,
+        "vctFound": true,
+        "gains": false,
+        "vcfPlies": 3,
+        "vctPlies": 3
+      },
+      {
+        "name": "两条活三",
+        "vcfFound": true,
+        "vctFound": true,
+        "gains": false,
+        "vcfPlies": 7,
+        "vctPlies": 11
+      },
+      {
+        "name": "活三 + 远处活二",
+        "vcfFound": true,
+        "vctFound": true,
+        "gains": false,
+        "vcfPlies": 3,
+        "vctPlies": 3
+      }
+    ],
+    "evaluateCalls": 200000,
+    "analysisPoints": 44
+  }
+}

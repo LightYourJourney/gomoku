@@ -18,7 +18,8 @@
     "ui:probe": "node bench/ui.probe.mjs",
     "check:cycles": "madge --circular --extensions ts,tsx src",
     "check:deadcode": "knip --reporter compact",
-    "check:dupes": "jscpd --config .jscpd.json"
+    "check:dupes": "jscpd --config .jscpd.json",
+    "bench:check": "yarn bench && node bench/gate.mjs"
   },
   "dependencies": {
     "react": "^19.2.8",
