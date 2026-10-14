@@ -5,9 +5,21 @@ import { cx } from '../../lib/cx'
 import { LESSONS } from '../../learn/lessons'
 import { useLearnStore } from '../../store/learnStore'
 import { PageShell } from '../shell/PageShell'
-import { LessonProgress } from './LessonProgress'
+import { ProgressBlock } from './ProgressBlock'
 import { LessonView } from './LessonView'
 import { STAGES, resolveNext } from './courseOutline'
+
+/**
+ * 进度块的文案。放在模块级而不是渲染里现写：一个渲染期新建的对象字面量
+ * 每次都是新引用，将来谁给它加一层 `memo` 就会被无声地打穿。
+ */
+const PROGRESS_TEXTS = {
+  loading: '正在读取学习进度…',
+  doneLabel: '已完成',
+  unit: '节',
+  action: '继续学习',
+  allDone: `${LESSONS.length} 节课都完成了。去「残局挑战」把那些棋型再练一遍吧。`,
+} as const
 
 /**
  * 课程页：分阶段的列表与单课之间切换。
@@ -97,10 +109,12 @@ export function LearnScreen() {
       />
 
       <div className="space-y-6">
-        <LessonProgress
+        <ProgressBlock
           loaded={loaded}
           done={done}
           total={LESSONS.length}
+          testId="learn-progress"
+          texts={PROGRESS_TEXTS}
           next={nextLesson}
           onContinue={
             nextLesson === null

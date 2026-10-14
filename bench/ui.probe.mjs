@@ -652,6 +652,97 @@ const STATES = [
     },
   },
   {
+    /* Phase 05：部分完成的首页——分类计数一半亮、推荐指向第一道没做的 */
+    id: 'puzzle-list-partial',
+    group: 'puzzles',
+    async boot(page) {
+      await bootLearned(
+        page,
+        progress({
+          lastView: 'puzzles',
+          // 「一步获胜」做了两道（该类 2 / 3），「连续冲四」做完一道
+          solvedPuzzles: ['win-h', 'win-diag', 'vcf-basic'],
+        }),
+      )
+      await page.waitForSelector('[data-testid="puzzle-progress"]:has-text("已通过 3 / 15 题")')
+    },
+  },
+  {
+    /* Phase 05：十五道全做完的首页（完成态文案取代主操作） */
+    id: 'puzzle-all-done',
+    group: 'puzzles',
+    async boot(page) {
+      /*
+        题目 id 从**页面上**读，不从源码 import——探针跑在裸 node 下，
+        解析不了没带扩展名的 TS import（`learn-list-all-done` 那儿的注释写了同一件事）。
+        选择器带 `[data-done]`：残局的进度块也用 `puzzle-` 前缀
+        （`puzzle-progress` 等），只有卡片带这个属性。
+      */
+      await bootLearned(page, progress({ lastView: 'puzzles' }))
+      const ids = await page.$$eval('[data-testid^="puzzle-"][data-done]', (nodes) =>
+        nodes.map((node) => (node.getAttribute('data-testid') ?? '').replace('puzzle-', '')),
+      )
+      await seedIndexedDb(page, {
+        learn: progress({ lastView: 'puzzles', solvedPuzzles: ids }),
+        records: [],
+      })
+      await page.reload()
+      await waitApp(page)
+      await page.waitForSelector(
+        `[data-testid="puzzle-progress"]:has-text("已通过 ${ids.length} / ${ids.length} 题")`,
+      )
+    },
+  },
+  {
+    /* Phase 05：三级提示全部揭开的样子——棋盘上标着「解」，面板里是第三级文案 */
+    id: 'puzzle-hint',
+    group: 'puzzles',
+    async boot(page) {
+      await bootLearned(
+        page,
+        progress({ lastView: 'puzzles', lastVisited: { kind: 'puzzle', id: 'win-h' } }),
+      )
+      await page.waitForSelector('[data-testid="board"]')
+      for (let i = 0; i < 3; i++) {
+        await page.getByRole('button', { name: /要提示|再具体一点/ }).click()
+      }
+      await page.waitForSelector('[data-testid="hint"]')
+      await page.locator('[data-testid^="board-mark-"]').first().waitFor()
+    },
+  },
+  {
+    /* Phase 05：做到题库最后一道——结束状态（不是「下一题」，也不谎称全部通过） */
+    id: 'puzzle-last-step',
+    group: 'puzzles',
+    async boot(page) {
+      await bootLearned(page, progress({ lastView: 'puzzles' }))
+      const ids = await page.$$eval('[data-testid^="puzzle-"][data-done]', (nodes) =>
+        nodes.map((node) => (node.getAttribute('data-testid') ?? '').replace('puzzle-', '')),
+      )
+      await seedIndexedDb(page, {
+        learn: progress({
+          lastView: 'puzzles',
+          lastVisited: { kind: 'puzzle', id: ids[ids.length - 1] },
+        }),
+        records: [],
+      })
+      await page.reload()
+      await waitApp(page)
+      await page.waitForSelector('[data-testid="board"]')
+
+      // 三级提示 → 从标记反解坐标 → 落子（与 `puzzle-correct` 同一套，不写死答案）
+      for (let i = 0; i < 3; i++) {
+        await page.getByRole('button', { name: /要提示|再具体一点/ }).click()
+      }
+      const mark = page.locator('[data-testid^="board-mark-"]').first()
+      await mark.waitFor()
+      const testId = await mark.getAttribute('data-testid')
+      const [, x, y] = /board-mark-(\d+)-(\d+)/.exec(testId)
+      await page.getByTestId(`intersection-${x}-${y}`).click()
+      await page.waitForSelector('[data-testid="feedback"][data-ok="true"]')
+    },
+  },
+  {
     id: 'review-empty',
     group: 'review',
     async boot(page) {

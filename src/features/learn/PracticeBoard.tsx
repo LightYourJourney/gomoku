@@ -58,7 +58,20 @@ export function PracticeBoard({ practice, onSolved, alreadySolved = false, foote
     // `String(index + 1)` 的兜底，棋盘上于是出现一个**写着「1」、含义不明**的圆。
     // 回放编号靠那个兜底，判题反馈不该也靠它。
     marks.push({ point: attempt.move, tone: solved ? 'good' : 'bad', label: solved ? '对' : '错' })
-  } else if (solution !== null) {
+  }
+
+  /*
+    「解」的标记在**判错之后仍然留着**。
+
+    它原先写成 `else if`——一落子就撤掉。后果是：玩家靠第三级提示拿到了点位，
+    却走了别处，判错的那一瞬间解法标记消失，而提示面板上还写着
+    「棋盘上标出了其中一种解法」。**文字说在一处、标记在另一处**，
+    正是任务书 §六 点名的那种不一致。
+
+    判对时不画：那时解法点必然就是玩家落子的那个点（`solveMove` 与 `judgeMove`
+    用的是同一把尺子），画上去只会两个标记叠在一起。
+  */
+  if (solution !== null && !solved) {
     marks.push({ point: solution, label: '解' })
   }
 

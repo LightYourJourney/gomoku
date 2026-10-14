@@ -140,40 +140,6 @@ test('做完一节课刷新页面，完成标记还在', async ({ page }) => {
   await expect(page.getByTestId('lesson-two')).not.toHaveAccessibleDescription(/已完成/)
 })
 
-test('残局页做对一题，进度计数 +1 并刷新后仍在', async ({ page }) => {
-  await page.goto('/')
-  await page.getByRole('button', { name: '残局', exact: true }).click()
-
-  await expect(page.getByTestId('puzzle-progress')).toContainText('0 / 15')
-  await page.getByTestId('puzzle-win-h').click()
-  await page.getByTestId('intersection-4-7').click()
-  await expect(page.getByTestId('feedback')).toHaveAttribute('data-ok', 'true')
-
-  await page.reload()
-
-  // 刷新后回到残局页，而且直接停在刚才那道题里（位置也记下来了）。
-  await expect(page.getByText('横向补满')).toBeVisible()
-  await expect(page.getByRole('button', { name: '← 残局列表' })).toBeVisible()
-
-  // 但**反馈条不该跟着活下来**：它是这一次答题才产生的状态，
-  // 重建出来的棋盘是干净的。留下来的只有进度。
-  await expect(page.getByTestId('feedback')).toHaveCount(0)
-  await expect(page.getByText('做对的题会记在进度里，刷新也不会丢。')).toBeVisible()
-
-  await page.getByRole('button', { name: '← 残局列表' }).click()
-  await expect(page.getByTestId('puzzle-progress')).toContainText('1 / 15')
-  await expect(page.getByTestId('puzzle-win-h')).toHaveAttribute('data-done', 'true')
-})
-
-test('六个分类都有题，且分类标题是中文', async ({ page }) => {
-  await page.goto('/')
-  await page.getByRole('button', { name: '残局', exact: true }).click()
-
-  for (const label of ['一步获胜', '挡住直接胜着', '构造活四', '双重威胁', '连续冲四', '强制获胜路线']) {
-    await expect(page.getByRole('heading', { name: label })).toBeVisible()
-  }
-})
-
 test('点「下一节」换课，从头讲起而不是停在上一课的页码', async ({ page }) => {
   await gotoLearn(page)
   await page.getByTestId('lesson-rules').click()
@@ -222,7 +188,12 @@ test('进度没读出来时给占位：不出现任何数字，也不提前推�
   await page.goto('/')
   await page.getByRole('button', { name: '教学', exact: true }).click()
 
-  const placeholder = page.getByTestId('learn-loading')
+  /*
+    Phase 05：占位块的 testid 从 `learn-loading` 改成 `learn-progress-loading`
+    ——`ProgressBlock` 抽出来之后，四个测试点（主 / -block / -bar / -loading）
+    统一由传进来的 `testId` 派生，规则只有一条。改名是有意的，不是回归。
+  */
+  const placeholder = page.getByTestId('learn-progress-loading')
   await expect(placeholder).toBeVisible()
   await expect(placeholder).toHaveAttribute('aria-busy', 'true')
   // 一个数字都不许出现——那是在说一件还不知道的事

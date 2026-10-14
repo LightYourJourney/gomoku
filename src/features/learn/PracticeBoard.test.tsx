@@ -275,4 +275,45 @@ describe('PracticeBoard —— 判题标记（F-UI-12）', () => {
     expect(marks[0]).toHaveTextContent('错')
     expect(marks[0]).toHaveAttribute('data-tone', 'bad')
   })
+
+  /**
+   * **判错之后「解」不许跟着消失。**
+   *
+   * 原先写成 `else if`：一落子就撤掉解法标记，而提示面板上还写着
+   * 「棋盘上标出了其中一种解法」——文字在一处、标记在另一处。
+   * 这条钉的就是那个一致性（任务书 §六）。
+   */
+  it('用满三级提示之后走错：解法标记仍然在棋盘上', () => {
+    setup()
+
+    const hintButton = () => screen.getByRole('button', { name: /提示|再具体一点/ })
+    fireEvent.click(hintButton())
+    fireEvent.click(hintButton())
+    fireEvent.click(hintButton())
+
+    const solutionId = screen.getAllByTestId(/^board-mark-/)[0]!.getAttribute('data-testid')!
+
+    play(0, 0) // 走一个跟解法无关的地方
+
+    expect(screen.getByTestId('board-mark-0-0')).toHaveTextContent('错')
+    expect(screen.getByTestId(solutionId)).toHaveTextContent('解')
+    expect(screen.getAllByTestId(/^board-mark-/)).toHaveLength(2)
+  })
+
+  it('走对了就只剩「对」——那时解法点与落子点是同一个，两个标记只会叠在一起', () => {
+    setup()
+
+    const hintButton = () => screen.getByRole('button', { name: /提示|再具体一点/ })
+    fireEvent.click(hintButton())
+    fireEvent.click(hintButton())
+    fireEvent.click(hintButton())
+
+    const solutionId = screen.getAllByTestId(/^board-mark-/)[0]!.getAttribute('data-testid')!
+    const [, x, y] = /board-mark-(\d+)-(\d+)/.exec(solutionId)!
+    play(Number(x), Number(y))
+
+    const marks = screen.getAllByTestId(/^board-mark-/)
+    expect(marks).toHaveLength(1)
+    expect(marks[0]).toHaveTextContent('对')
+  })
 })

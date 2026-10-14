@@ -257,13 +257,13 @@ describe('PuzzleScreen —— 残局列表', () => {
     expect(await screen.findByText('这一题已经通过。')).toBeInTheDocument()
   })
 
-  it('「再来一次」把棋盘清回初始局面', async () => {
+  it('「再做一次」把棋盘清回初始局面', async () => {
     render(<PuzzleScreen />)
     fireEvent.click(screen.getByTestId('puzzle-win-h'))
     fireEvent.click(screen.getByTestId('intersection-4-7'))
     await screen.findByText('这一题已经通过。')
 
-    fireEvent.click(screen.getByRole('button', { name: '再来一次' }))
+    fireEvent.click(screen.getByRole('button', { name: '再做一次' }))
 
     expect(screen.queryByTestId('feedback')).not.toBeInTheDocument()
     expect(screen.queryAllByTestId(/^board-mark-/)).toHaveLength(0)
@@ -568,7 +568,7 @@ describe('LearnScreen —— 最后一节的出口（Phase 04）', () => {
  * 一条用例都不会红**。这条就是来补这个洞的（删掉那行它必须红）。
  */
 describe('PuzzleScreen —— 重进已通过的题（Phase 04 验收补）', () => {
-  it('重进一道已通过的题，一次都没做也看得见「再来一次」', () => {
+  it('重进一道已通过的题，一次都没做也看得见出口', () => {
     useLearnStore.setState({
       progress: { ...EMPTY_PROGRESS, solvedPuzzles: [PUZZLES[0]!.id] },
       loaded: true,
@@ -579,6 +579,152 @@ describe('PuzzleScreen —— 重进已通过的题（Phase 04 验收补）', ()
     fireEvent.click(screen.getByTestId(`puzzle-${PUZZLES[0]!.id}`))
 
     expect(screen.getByText('这一题已经通过。')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: '再来一次' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '再做一次' })).toBeInTheDocument()
+  })
+})
+
+/**
+ * Phase 05：残局列表页的信息架构。
+ *
+ * 这一组守的是「首页说的每一句话都来自真实数据」——分类计数、推荐、卡片类别
+ * 全部由 `PUZZLES` × `solvedPuzzles` 派生，没有一份额外的状态。
+ * 播种进度而不是真做题：这里验的是**读出来的东西对不对**，
+ * 「真做完一道题之后进度会不会变」由上面那组和 e2e 负责。
+ */
+describe('PuzzleScreen —— 首页信息（Phase 05）', () => {
+  const seedSolved = (ids: readonly string[]): void => {
+    useLearnStore.setState({
+      progress: { ...EMPTY_PROGRESS, solvedPuzzles: [...ids] },
+      loaded: true,
+      view: 'puzzles',
+    })
+  }
+
+  it('每个分类标题旁边有该类自己的 X / Y，而且 X / Y 不在标题文字里', () => {
+    seedSolved(['win-h', 'win-diag'])
+    render(<PuzzleScreen />)
+
+    const heading = screen.getByRole('heading', { name: '一步获胜' })
+    /*
+      **整段文字只有分类名**。这条不是排版洁癖：覆盖率基线按 `level:text`
+      钉着 `h2:一步获胜` 这些键，把计数塞进标题里就会让旧键消失、
+      棘轮按「丢了标题」报红（D2 的硬约束）。
+    */
+    expect(heading.textContent).toBe('一步获胜')
+
+    expect(screen.getByTestId('category-winInOne-progress')).toHaveTextContent('2 / 3')
+    expect(screen.getByTestId('category-blockFive-progress')).toHaveTextContent('0 / 3')
+  })
+
+  it('卡片上写着它属于哪一类', () => {
+    render(<PuzzleScreen />)
+
+    const card = screen.getByTestId('puzzle-win-h')
+    expect(card).toHaveTextContent('横向补满')
+    expect(card).toHaveTextContent('一步获胜')
+  })
+
+  it('「继续挑战」指向第一道没做的，跳着做也一样', () => {
+    seedSolved(['win-h', 'block-h'])
+    render(<PuzzleScreen />)
+
+    expect(screen.getByRole('button', { name: /继续挑战/ })).toHaveTextContent('斜向补满')
+  })
+
+  it('全做完时不给「继续挑战」，只给完成文案', () => {
+    seedSolved(PUZZLES.map((puzzle) => puzzle.id))
+    render(<PuzzleScreen />)
+
+    expect(screen.queryByRole('button', { name: /继续挑战/ })).not.toBeInTheDocument()
+    expect(screen.getByText(new RegExp(`${PUZZLES.length} 道题都通过了`))).toBeInTheDocument()
+  })
+})
+
+/**
+ * Phase 05：通关之后的出口。
+ *
+ * 此前只有「再来一次」一个——做对一题之后想接着练，得自己退回列表再点下一道。
+ * 这一组守的是「出口指的是**题库里真实存在的**下一道」，以及切过去之后
+ * 上一题的临时状态不许跟过来。
+ */
+describe('PuzzleScreen —— 出口（Phase 05）', () => {
+  it('做对之后能直接进下一题，而且上一题的反馈没有跟过来', async () => {
+    render(<PuzzleScreen />)
+    fireEvent.click(screen.getByTestId('puzzle-win-h'))
+    fireEvent.click(screen.getByTestId('intersection-4-7'))
+    await screen.findByText('这一题已经通过。')
+
+    fireEvent.click(screen.getByRole('button', { name: '下一题 →' }))
+
+    // 换到了题库里的下一道，而且是它自己那个干净的局面
+    expect(screen.getByRole('heading', { name: '斜向补满' })).toBeInTheDocument()
+    expect(screen.queryByTestId('feedback')).not.toBeInTheDocument()
+    expect(screen.queryAllByTestId(/^board-mark-/)).toHaveLength(0)
+    expect(screen.queryByTestId('hint')).not.toBeInTheDocument()
+  })
+
+  it('最后一题给结束状态与实战出口，不给「下一题」', () => {
+    const last = PUZZLES[PUZZLES.length - 1]!
+    useLearnStore.setState({
+      progress: { ...EMPTY_PROGRESS, solvedPuzzles: PUZZLES.map((puzzle) => puzzle.id) },
+      loaded: true,
+      view: 'puzzles',
+    })
+    render(<PuzzleScreen />)
+    fireEvent.click(screen.getByTestId(`puzzle-${last.id}`))
+
+    expect(screen.getByText(new RegExp(`${PUZZLES.length} 道题都通过了`))).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '去实战试试 →' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: '下一题 →' })).not.toBeInTheDocument()
+  })
+
+  /**
+   * **列表不锁顺序**（任务书 §四 / §七 明确要求），所以「走到最后一道」与
+   * 「前面的都做完了」是两件事。混成一件的后果是一句假话——
+   * Phase 04 在教学页上抓到过同形的缺陷（出口只由「是不是最后一节」决定），
+   * 这一条守的是残局这边不要再犯。
+   */
+  it('只是走到最后一道、前面还有没做的——不能说「都通过了」', () => {
+    const last = PUZZLES[PUZZLES.length - 1]!
+    useLearnStore.setState({
+      progress: { ...EMPTY_PROGRESS, solvedPuzzles: [last.id] },
+      loaded: true,
+      view: 'puzzles',
+    })
+    render(<PuzzleScreen />)
+    fireEvent.click(screen.getByTestId(`puzzle-${last.id}`))
+
+    expect(screen.queryByText(/道题都通过了/)).not.toBeInTheDocument()
+    expect(screen.getByText(/这是题库里的最后一道/)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '回到残局列表' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: '去实战试试 →' })).not.toBeInTheDocument()
+  })
+
+  it('这一类全通了就给分类完成提示', () => {
+    // 「一步获胜」三道全通，重进其中一道
+    useLearnStore.setState({
+      progress: {
+        ...EMPTY_PROGRESS,
+        solvedPuzzles: ['win-h', 'win-diag', 'win-vertical'],
+      },
+      loaded: true,
+      view: 'puzzles',
+    })
+    render(<PuzzleScreen />)
+    fireEvent.click(screen.getByTestId('puzzle-win-h'))
+
+    expect(screen.getByText('「一步获胜」这一类全部通过了。')).toBeInTheDocument()
+  })
+
+  it('这一类还没做完就不说那句', () => {
+    useLearnStore.setState({
+      progress: { ...EMPTY_PROGRESS, solvedPuzzles: ['win-h'] },
+      loaded: true,
+      view: 'puzzles',
+    })
+    render(<PuzzleScreen />)
+    fireEvent.click(screen.getByTestId('puzzle-win-h'))
+
+    expect(screen.queryByText(/这一类全部通过了/)).not.toBeInTheDocument()
   })
 })

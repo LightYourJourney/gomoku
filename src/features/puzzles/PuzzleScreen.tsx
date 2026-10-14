@@ -1,20 +1,35 @@
-import { useCallback, useState } from 'react'
-import { Button } from '../../components/ui/Button'
+import { useState } from 'react'
 import { PageHeader } from '../../components/ui/PageHeader'
-import { Panel } from '../../components/ui/Panel'
 import { cx } from '../../lib/cx'
-import { CATEGORY_LABELS, CATEGORY_ORDER, PUZZLES } from '../../learn/puzzles'
-import type { Puzzle } from '../../learn/types'
+import { CATEGORY_LABELS, PUZZLES } from '../../learn/puzzles'
 import { useLearnStore } from '../../store/learnStore'
-import { PracticeBoard } from '../learn/PracticeBoard'
+import { ProgressBlock } from '../learn/ProgressBlock'
 import { PageShell } from '../shell/PageShell'
+import { PuzzleView } from './PuzzleView'
+import { categoryProgress, nextPuzzleAfter, resolveNextPuzzle } from './puzzleOutline'
 
-/** 残局挑战：按分类列题，进去之后用与课程同一套练习交互。 */
+/**
+ * 进度块的文案。模块级常量，理由同 `LearnScreen` 的同名常量。
+ *
+ * **`doneLabel` 与 `unit` 拼出来的那句必须原样是 `已通过 X / 15 题`**：
+ * 探针三个残局状态的 boot 绑着这条逐字文案（`ui.probe.mjs:617`），
+ * 改了它 boot 会超时——而超时比报错更难查。
+ */
+const PROGRESS_TEXTS = {
+  loading: '正在读取挑战进度…',
+  doneLabel: '已通过',
+  unit: '题',
+  action: '继续挑战',
+  allDone: `${PUZZLES.length} 道题都通过了。这些棋型，去实战里用用看吧。`,
+} as const
+
+/** 残局挑战：按战术分类列题，进去之后用与课程同一套练习交互。 */
 export function PuzzleScreen() {
   const loaded = useLearnStore((state) => state.loaded)
   const progress = useLearnStore((state) => state.progress)
   const isPuzzleDone = useLearnStore((state) => state.isPuzzleDone)
   const visit = useLearnStore((state) => state.visit)
+  const setView = useLearnStore((state) => state.setView)
 
   const [openId, setOpenId] = useState<string | null>(null)
 
@@ -37,133 +52,172 @@ export function PuzzleScreen() {
     visit('puzzle', id)
   }
 
+  const backToList = (): void => {
+    setOpenId(null)
+    visit(null)
+  }
+
   if (puzzle !== null) {
+    const next = nextPuzzleAfter(PUZZLES, puzzle.id)
+    const mine = categoryProgress(PUZZLES, progress.solvedPuzzles).find(
+      (entry) => entry.category === puzzle.category,
+    )
+    // 题库**不锁顺序**：做到最后一道 ≠ 前面的都做过了。这两个状态得分开，
+    // 否则文案会说一句「十五道题都通过了」的假话（Phase 04 的同形缺陷）。
+    const allSolved = PUZZLES.every((entry) => progress.solvedPuzzles.includes(entry.id))
+
     return (
       <PuzzleView
         puzzle={puzzle}
-        onExit={() => {
-          setOpenId(null)
-          visit(null)
-        }}
+        onExit={backToList}
+        exit={
+          next === null
+            ? {
+                kind: 'allDone',
+                allSolved,
+                total: PUZZLES.length,
+                // 真的全做完了，这条链就到头了：教学 → 残局 → 实战。
+                // 只是走到最后一道的话，出口是**回列表**接前面没做的题。
+                run: () => {
+                  backToList()
+                  if (allSolved) setView('battle')
+                },
+              }
+            : {
+                kind: 'next',
+                // 「这一类做完了」要在**做过之后**判：`solvePuzzle` 是同步写 store 的，
+                // 所以这次渲染读到的已完成列表里已经含当前这道题，
+                // 不需要手工把它加进去（手工加就是第二份真相）。
+                // `mine` 为 undefined 只在题库里没有这一分类时出现，那时不该说「全通过」。
+                categoryDone: mine !== undefined && mine.done === mine.total,
+                run: () => {
+                  open(next.id)
+                },
+              }
+        }
       />
     )
   }
 
+  // 按题库里分类出现的顺序列，一处都不重排——分类表本身已经在 `puzzles.ts` 里
+  // 定过顺序了，这里再造一条就是第二个真相。
+  const groups = categoryProgress(PUZZLES, progress.solvedPuzzles)
   const done = PUZZLES.filter((entry) => isPuzzleDone(entry.id)).length
+  const nextUp = resolveNextPuzzle(PUZZLES, progress.solvedPuzzles)
 
   return (
     <PageShell>
       <PageHeader
         title="残局挑战"
-        /* 进度还没读出来时不要断言「已通过 0 题」——那是在说一件还不知道的事 */
-        meta={
-          loaded ? (
-            <span data-testid="puzzle-progress">
-              已通过 {done} / {PUZZLES.length} 题
-            </span>
-          ) : undefined
-        }
-        description="每道题都只给局面和目标，不给答案。解法由引擎现场算出来，所以想出别的走法一样算对——判定看的是棋型，不是某一个坐标。"
+        description="十五道题按战术分成六类。分类的先后是教学上的由浅入深，不是难度评级——每题只给局面和目标，解法由引擎现场算出来，所以走出别的取胜着法一样算对。"
       />
 
-      <div className="space-y-4">
-          {CATEGORY_ORDER.map((category) => {
-            const group = PUZZLES.filter((entry) => entry.category === category)
+      <div className="space-y-6">
+        <ProgressBlock
+          loaded={loaded}
+          done={done}
+          total={PUZZLES.length}
+          testId="puzzle-progress"
+          texts={PROGRESS_TEXTS}
+          next={nextUp}
+          onContinue={
+            nextUp === null
+              ? undefined
+              : () => {
+                  open(nextUp.id)
+                }
+          }
+        />
 
-            return (
-              <Panel key={category} title={CATEGORY_LABELS[category]} padding="tight">
-                <ul className="space-y-2">
-                  {group.map((entry) => {
-                    const solved = isPuzzleDone(entry.id)
+        {groups.map((group) => (
+          <section key={group.category} aria-labelledby={`category-${group.category}`}>
+            <div className="flex items-baseline justify-between gap-3 px-1">
+              {/*
+                分类标题是 h2：不分组时读屏用户听到的是「十五个并列按钮」。
+                层级也要对——h1 是「残局挑战」。
+              */}
+              <h2 id={`category-${group.category}`} className="text-sm font-semibold text-muted">
+                {CATEGORY_LABELS[group.category]}
+              </h2>
+              {/*
+                `X / Y` 必须在 h2 的**外面**：塞进标题文字里，覆盖率基线里
+                `h2:一步获胜` 这些键就会变成 `h2:一步获胜 3 / 3`，旧键消失、
+                棘轮按「丢了标题」报红（`quality/coverage.baseline.json` 里
+                这一组实测有 6 条这样的键）。
+              */}
+              <span
+                data-testid={`category-${group.category}-progress`}
+                className="font-mono text-xs tabular-nums text-faint"
+              >
+                {group.done} / {group.total}
+              </span>
+            </div>
 
-                    return (
-                      <li key={entry.id}>
-                        <button
-                          type="button"
-                          onClick={() => open(entry.id)}
-                          data-testid={`puzzle-${entry.id}`}
-                          data-done={solved}
-                          /*
-                            列表项**不再自带边框**：外面那层分类 Panel 已经有一圈，
-                            里面每条再来一圈就是「边框套边框」。层级改用底色表达——
-                            已完成的是绿底，其余靠 hover 的浅底提示可点。
-                          */
-                          className={cx(
-                            'flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition',
-                            solved ? 'bg-good-soft' : 'hover:bg-surface-2',
-                          )}
-                        >
-                          <span
-                            aria-hidden="true"
-                            className={cx(
-                              'grid h-5 w-5 shrink-0 place-items-center rounded-full text-xs font-bold',
-                              solved ? 'bg-good text-accent-fg' : 'bg-surface-2 text-muted',
-                            )}
-                          >
-                            {solved ? '✓' : '·'}
-                          </span>
-                          <span className="min-w-0 truncate text-sm text-fg">{entry.title}</span>
-                          <span className="ml-auto text-xs text-muted">›</span>
-                        </button>
-                      </li>
-                    )
-                  })}
-                </ul>
-              </Panel>
-            )
-          })}
+            <ul className="mt-2 space-y-2">
+              {PUZZLES.filter((entry) => entry.category === group.category).map((entry, index) => {
+                const solved = isPuzzleDone(entry.id)
+                const recommended = nextUp?.id === entry.id
+
+                return (
+                  <li key={entry.id}>
+                    {/*
+                      完成状态对读屏也得可读，而且要走**描述**、不走名称——
+                      理由与课程卡片逐字相同（`LearnScreen.tsx` 的同一处注释：
+                      名称答「这是什么」、描述答「它现在什么样」，
+                      而名字随状态漂移会让语音控制点不中）。
+                    */}
+                    {solved && (
+                      <span id={`puzzle-done-${entry.id}`} className="sr-only">
+                        已完成
+                      </span>
+                    )}
+                    <button
+                      type="button"
+                      aria-describedby={solved ? `puzzle-done-${entry.id}` : undefined}
+                      onClick={() => open(entry.id)}
+                      data-testid={`puzzle-${entry.id}`}
+                      data-done={solved}
+                      data-recommended={recommended}
+                      className={cx(
+                        'flex w-full items-center gap-3 rounded-xl border px-3 py-3 text-left transition active:brightness-95',
+                        solved ? 'border-good/40' : 'border-border hover:border-border-strong',
+                        // 推荐那一张只用**底色上一档**加权重，不铺 accent：
+                        // 顶部那颗「继续挑战」才是本页唯一的主操作（§6.1）
+                        recommended ? 'bg-surface-2' : 'bg-surface',
+                      )}
+                    >
+                      <span
+                        aria-hidden="true"
+                        className={cx(
+                          'grid h-6 w-6 shrink-0 place-items-center rounded-full text-xs font-bold',
+                          solved ? 'bg-good text-accent-fg' : 'bg-surface-2 text-muted',
+                        )}
+                      >
+                        {solved ? '✓' : index + 1}
+                      </span>
+                      <span className="min-w-0">
+                        <span className="block text-sm font-medium text-fg">{entry.title}</span>
+                        {/*
+                          类别。分组标题上已经有了，这里再来一遍不是冗余：
+                          列表滚起来之后分组标题会滚出视野，卡片自己答得了
+                          「这题是哪一类」——任务书 §三 也是这么要求的。
+                          做成 12px 的次要文字，不加徽标、不加图标。
+                        */}
+                        <span className="block text-xs text-muted">
+                          {CATEGORY_LABELS[entry.category]}
+                        </span>
+                      </span>
+                      <span aria-hidden="true" className="ml-auto text-xs text-muted">
+                        ›
+                      </span>
+                    </button>
+                  </li>
+                )
+              })}
+            </ul>
+          </section>
+        ))}
       </div>
-    </PageShell>
-  )
-}
-
-interface PuzzleViewProps {
-  readonly puzzle: Puzzle
-  readonly onExit: () => void
-}
-
-function PuzzleView({ puzzle, onExit }: PuzzleViewProps) {
-  const solved = useLearnStore((state) => state.isPuzzleDone(puzzle.id))
-  const solvePuzzle = useLearnStore((state) => state.solvePuzzle)
-  const [round, setRound] = useState(0)
-
-  // 引用要稳定：练习组件把它放进 effect 的依赖里。
-  const handleSolved = useCallback(() => solvePuzzle(puzzle.id), [puzzle.id, solvePuzzle])
-
-  return (
-    <PageShell
-      variant="flush"
-      // 返回 / 标题工具栏是页面级控件，交给壳渲染在顶栏正下方
-      toolbar={
-        <div className="flex shrink-0 items-center gap-2 border-b border-border px-3 py-2">
-          <Button onClick={onExit}>← 残局列表</Button>
-          <span className="truncate text-sm font-medium text-fg">{puzzle.title}</span>
-          <span className="ml-auto text-xs text-faint">{CATEGORY_LABELS[puzzle.category]}</span>
-        </div>
-      }
-      footer={
-        solved ? (
-          <p className="shrink-0 px-3 pb-3 text-xs text-faint">
-            做对的题会记在进度里，刷新也不会丢。
-          </p>
-        ) : undefined
-      }
-    >
-      <PracticeBoard
-        // 换 key 强制重建，用来实现「再来一次」
-        key={`${puzzle.id}:${round}`}
-        practice={puzzle}
-        onSolved={handleSolved}
-        alreadySolved={solved}
-        footer={
-          <div className="space-y-2">
-            <p className="text-xs text-good">这一题已经通过。</p>
-            <Button block onClick={() => setRound((value) => value + 1)}>
-              再来一次
-            </Button>
-          </div>
-        }
-      />
     </PageShell>
   )
 }
