@@ -57,15 +57,28 @@ describe('PageShell 的棋盘型正文', () => {
    * 但**绝不能带 `grid-rows`**——带上的话棋盘会落进 `auto` 行，
    * 行高由侧栏内容决定，1440 下棋盘只有 169px。
    */
-  it('lg 下是两栏栅格', () => {
+  /**
+   * 两栏的条件是 `wide-layout:`，**不再是 `lg:`**（Phase 05 改的）。
+   *
+   * `wide-layout` 是 `index.css` 里的自定义变体：`≥1024`，**或者**
+   * `≥768 且横屏且高度 ≥500`——平板横屏本来就该是两栏，而横屏手机
+   * （915×412）被高度那条挡在外面（那时棋盘会被压到 320px 底线以下）。
+   *
+   * 这里只能断类名：jsdom 不做媒体查询，**真正的行为在
+   * `e2e/layout.spec.ts`**（三条：横屏小平板两栏、横屏手机不两栏、竖屏不两栏）。
+   * 这条用例守的是「别把变体名写错了」——写错的话那三条 e2e 也会红，
+   * 但它们跑得慢，这条在单元层就先喊。
+   */
+  it('两栏栅格挂在 wide-layout 变体上', () => {
     render(
       <PageShell variant="flush">
         <section>棋盘</section>
       </PageShell>,
     )
     const classes = screen.getByRole('main').className
-    expect(classes).toContain('lg:grid')
-    expect(classes).toContain('lg:grid-cols-[minmax(0,1fr)_344px]')
+    expect(classes).toContain('wide-layout:grid')
+    expect(classes).toContain('wide-layout:grid-cols-[minmax(0,1fr)_344px]')
+    expect(classes).not.toContain('lg:grid')
   })
 
   it('绝不声明 grid-rows —— 那正是棋盘塌陷的成因', () => {

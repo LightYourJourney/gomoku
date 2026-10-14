@@ -3,6 +3,27 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /*
+ * 「棋盘 + 侧栏」两栏的生效条件。
+ *
+ * 为什么不直接用 `lg:`（min-width: 1024px）：平板**横屏**本来就是两栏该有的样子，
+ * 而 768–1023 之间那些横屏窗口会被 `lg:` 卡在纵向堆叠上——棋盘与目标说明分屏，
+ * 玩家得在两者之间来回滚。`DESIGN_SYSTEM.md` §10.1 写的「≥1024 两栏」
+ * 是 Phase 02 为**对战页**定的，详情页跟着一起用是被顺带带上的。
+ *
+ * `min-height` 那一项不是凑数：只写 `orientation: landscape` 的话，**横屏手机**
+ * （Pixel 7 横过来是 915×412）也会命中，而那时整屏只有 412px 高，
+ * 棋盘会被压到 320px 的底线以下。500px 的依据是「棋盘最小 320 + 顶栏 60 +
+ * 工具栏 44 + 内外边距 ≈ 460，取 500 留余量」。
+ *
+ * **对战页不用这个变体**：它自有三档（`BattleScreen`），宽度与高度自成一套。
+ */
+@custom-variant wide-layout {
+  @media (min-width: 1024px), (min-width: 768px) and (orientation: landscape) and (min-height: 500px) {
+    @slot;
+  }
+}
+
+/*
  * 设计令牌
  *
  * 深浅两套的 `faint` / `accent` / `good` / `warn` 是按 WCAG AA 的 4.5:1 反推出来的，

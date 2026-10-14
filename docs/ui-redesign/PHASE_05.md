@@ -39,7 +39,7 @@ PageHeader「残局挑战」+ meta「已通过 X / 15 题」+ 一段说明
 | --- | --- | --- |
 | 15 道题、6 个分类（3 / 3 / 2 / 3 / 2 / 2） | `learn/puzzles.ts` | 分类进度可由 `PUZZLES` × `solvedPuzzles` 派生 |
 | 题目字段只有 `id / title / category / prompt / board / player / goal / hints / solution` | `learn/types.ts:97` | **没有任何难度字段** |
-| `CATEGORY_ORDER` 就是 `CATEGORY_LABELS` 的键顺序 | `puzzles.ts:22` | 顺序即「由浅入深」的**教学**顺序 |
+| `CATEGORY_ORDER` 就是 `CATEGORY_LABELS` 的键顺序 | `puzzles.ts:23` | 顺序即「由浅入深」的**教学**顺序 |
 | 进度只存 `solvedPuzzles: string[]` | `persist/progress.ts:16` | 分类进度**必须**派生，不许加字段 |
 | 判定是谓词不是坐标表（`judgeMove`） | `learn/verify.ts` | 多解天然成立，不改 |
 | 提示三级：文案 → 目标复述 → 引擎算出的点位 | `learn/hints.ts` | 层级语义已定，不改 |
@@ -165,7 +165,7 @@ interface ProgressBlockProps {
 
 ### D3 · 判错后**保留**「解」标记（修一处真实的不一致）
 
-**现状**（`PracticeBoard.tsx:56-63`）：
+**改动前**的长这样（当时在 `PracticeBoard.tsx` 的标记那段）：
 
 ```ts
 if (attempt !== null)      marks = [玩家那一手：对 / 错]
@@ -211,7 +211,7 @@ type PuzzleExit =
 
 ### D6 · 详情页标题升 `h1`
 
-`PuzzleScreen.tsx:140` 的题名是 `span`。升 `h1` + `text-xl font-semibold`
+改动前 `PuzzleScreen` 里那道题名是个 `span`。升 `h1` + `text-xl font-semibold`
 （§3.2「页面标题」档，与 `PageHeader` / `LessonView` 同一套）。
 
 **连带**：探针的 `headings` 会量到新键 → `quality/coverage.baseline.json` 要**显式**改，
@@ -258,7 +258,7 @@ export function nextPuzzleAfter(puzzles, id): Puzzle | null
 5. 在提交信息里写明「哪几个键因何改名」。
 
 （**升 `h1` 不动基线**——这一条我初稿写反了：棘轮的规矩是「新增不用改，少一条才红」
-（`coverage.ratchet.mjs:12`），而探针只收 `h1–h4`（`ui.probe.mjs:1119`）、
+（`coverage.ratchet.mjs:12`），而探针只收 `h1–h4`（`MEASURE` 里那句 `querySelectorAll('h1, h2, h3, h4')`）、
 残局详情页的题名今天是 `span`，所以升 `h1` 是**新增**键。Phase 04 之所以要改基线，
 是因为那次是把**已经扫到的** `h1` 降成了 `h2`——方向相反。）
 
@@ -421,15 +421,17 @@ D3 的「解」标记保留、D9 的分类完成判定。
 
 - ~~覆盖率棘轮：`h1:横向补满` 是新键、`span` 那个旧键消失 → 必须显式改基线~~
   **这一条初稿写反了，终审指出后核实**：棘轮的规矩是「新增不用改、少一条才红」
-  （`coverage.ratchet.mjs:12` 的注释与 `:79-85` 的实现都写了，`yarn check:coverage`
-  的输出也印着「另有 64 条新增覆盖（不报错）」），而探针只收 `h1–h4`（`ui.probe.mjs:1119`）、
+  （`coverage.ratchet.mjs` 的注释与实现都写了，`yarn check:coverage`
+  的输出也印着「另有 N 条新增覆盖（不报错）」），而探针只收 `h1–h4`（`MEASURE` 里那句
+  `querySelectorAll('h1, h2, h3, h4')`）、
   残局题名今天是 `span` → 升 `h1` 是**新增**，不用动基线。
   **真正会红的在别处**：卡片补类别会改掉 15 个已入库的按钮键，见 D8。
 - ~~探针 `puzzle-list` 等三个状态的 `boot` 里 `waitForSelector('[data-testid="puzzle-progress"]')` ✓ 仍然有效~~
   **同样写错了，终审指出后核实**：实际是
   `waitForSelector('[data-testid="puzzle-progress"]:has-text("已通过 0 / 15 题")')`
   （`ui.probe.mjs:617`）——**绑着逐字文案**。处置见 §四 末尾：进度块的文案格式保持原样。
-- e2e `learn.spec.ts:143` 那条断言 `puzzle-progress` 的文本用的是 `toHaveTextContent`
+- e2e 里断言 `puzzle-progress` 文本的那条（写这段时它在 `learn.spec.ts`，
+  残局独立成 `puzzles.spec.ts` 之后搬过去了）用的是 `toHaveTextContent`
   （**子串**匹配）→ 文本里多几个字不会红 ✓ 但要确认新文本**仍然包含** `1 / 15`。
 - `Panel` → `<section>`：`h2` 的 `textContent` 必须**仍等于**分类名，否则
   `h2:一步获胜` 这些键会消失（基线里 `puzzle-list` 那组有 6 条）。这条也解释了
@@ -466,7 +468,7 @@ D3 的「解」标记保留、D9 的分类完成判定。
 | 4 | **testid 契约在声明的接口里表达不了**：同一个节点要既叫 `learn-progress` 又叫 `puzzle-progress`，载入文案也不同，而初稿写死「只有 8 个参数、不留插槽」 | ✅ 属实，实施时必然临时加参数 | D1 的接口改成七个顶层参数（含 `testId` 与打包的 `texts`） |
 
 终审另外两条附带结论：**过度设计：无**；`PuzzleView` 的行数我写成 73，实际是 **50**
-（`PuzzleScreen.tsx:120-169`）——已改。这条虽然不影响任何决策，但它说明
+（改动前是 `PuzzleScreen` 里 50 行的私有组件）——已改。这条虽然不影响任何决策，但它说明
 **我自己的数字也要当场量**，不能凭印象写。
 
 **终审没看到的，我自己补了一条**：`X / Y` 若塞进 `h2` 会改掉 `h2:一步获胜` 这些键
@@ -625,3 +627,144 @@ D3 的「解」标记保留、D9 的分类完成判定。
 4. **`puzzle-list-partial` 这个探针状态拍的是 3 / 15**，也就是「某些分类做了、某些没做」。
    它不覆盖「某一类恰好全部做完、而全局没做完」的那一档首页外观
    （那一档的差别只在分类计数是 `3 / 3` 而不是 `2 / 3`，没有新元素）。
+
+---
+
+## 十三、第二轮：审查与整改（固定点 `891b4ac`）
+
+做法：两轴各一个只读子代理并行审（标准轴对着 `AGENTS.md` 与 `DESIGN_SYSTEM.md` +
+Fowler 坏味道基线；规格轴对着任务书原文逐条数），结论分开列、**不合并**。
+回来后我**逐条对着代码复核**，再定整改清单。下面是复核后的结论与计划。
+
+### 13.1 复核后成立的（12 条）
+
+| # | 来源 | 发现 | 处置 |
+| --- | --- | --- | --- |
+| A1 | 标准（硬） | `e2e/puzzles.spec.ts` 抬头写「没有一处写死答案坐标」，而其中两处都是 `intersection-4-7`——**那就是 `win-h` 的答案着** | 两处改走 `solveWithHints`（修代码，不是改注释） |
+| A2 | 标准（硬） | `ProgressBlock` 的 `next.id` 全仓零读取点 | 与 A4 合并成**描述符** `next: { title, run } \| null` |
+| A3 | 标准 | 「全部做完」那句写了两份且**已经漂了**（`用用看吧。` vs `用用看。`） | 抽到 `puzzleOutline.ts` 的 `allDoneText(total)` |
+| A4 | 标准 | `onContinue?` 可选 + `next === null` 表达同一件事；不同步会渲染一颗点了没反应的 `primary` | 同上，描述符把「有目标」与「能做」绑成一个值 |
+| A5 | 标准 | `categoryProgress` 只给计数，消费方还得再 `PUZZLES.filter(...)` 找成员——分组做了两遍 | 返回 `{ category, puzzles, done }`（`total` 由 `puzzles.length` 推出，不留冗余字段） |
+| A6 | 标准 | `description` 写死「十五道题…六类」，而同一提交的教学页为同类数字写着「不写死」 | 用 `PUZZLES.length` / `CATEGORY_ORDER.length` |
+| A7 | 标准 | 探针里同一段抓 id 的 `$$eval` 逐字重复两次 | 抽 `readPuzzleIds(page)` |
+| A8 | 标准 | `progress.solvedPuzzles.includes(...)` 与 `isPuzzleDone(...)` 同文件两种问法 | 统一用 store 的 `isPuzzleDone` |
+| A9 | **规格** | **第三级提示的文案只看 `hintLevel`、不看 `solution !== null`**——`solveMove` 返回 null 时又变成「文字说标出了、棋盘上没有」 | 加上 `solution !== null` 并把条件一起断言（这条与 A1 同类：都是**这次声称修好、实际只修了一半**） |
+| A10 | **规格** | §十 第 13 条「手机 / 平板布局」：**残局在 `mobile` / `tablet` 两个项目里零用例** | 各补一条：390 下残局可玩不溢出、平板下棋盘完整且触摸能落子 |
+| A11 | **规格** | 「判错之后**点下一题**」这条现场路径没有 e2e（现在测的是"返回列表再进另一题"） | 补一条（重进已通过的题 → 走错 → 点「下一题」→ 新题干净） |
+| A12 | 两轴都提 | `_puzzle-list-partial` 不覆盖「某一类恰好全做完、全局没做完」 | 新增探针状态（**不改现有的**——改它要动已入库的按钮键） |
+
+**判定不成立的两条**（记下来免得下次再被提一遍）：
+
+- 标准轴说「`allSolved` 的判定散在两个文件，改口径要同时改两处」——
+  `PuzzleView` 里那颗出口按钮读的是**传进来的** `exit.allSolved`（不是自己再判一次）。
+  一个值被「行为」与「文案」两处消费是必然的，而且两条用例已经钉住两者一致。
+- 标准轴说卡片序号（六类里各有一个「1」）「可能被读成等级」——
+  那是与教学页 `LearnScreen` 逐字一致的**分组内**序号，而分组标题就在它头顶。
+  任务书 §三 禁的是「简单 / 困难 / 大师」那类**难度等级**，不是序号。
+
+**一条属于既有约定、不改**：八类截图 PNG 不入库（`.gitignore:36`，Phase 00 起就是这样，
+入库的是 `measurements.json`）。
+
+### 13.2 用户拍板的三件事
+
+**B1 · 「继续挑战」按类推荐。** 仍指第一道没做的；但**本次会话里打开过的那一类**
+若还有没做的，优先给那一类里的第一道——跳着练的人不会被弹回最前面。
+
+**这条有一个必须写下来的约束**：`lastVisited` **不能**用来实现它。
+点「← 残局列表」会把它清成 `null`（`PuzzleScreen` 的 `backToList`），而列表页能显示的前提
+正是它不是一道有效的题——**读它的那个分支到不了**（与 Phase 04 删掉的
+`resolveNext` 分支同类）。所以用**会话内记忆**（列表页自己的 state）。
+
+**局限**：刷新列表页之后记忆丢失，回退到「第一道没做的」。
+不引持久化字段换来这个局限是划算的——跨刷新要区分「用户主动退出到列表」
+与「用户就停在那道题里」，那需要新增一个状态，而任务书 §四 明确要求
+分类进度这类东西**由现有数据推导**。
+
+**B2 · 补「首次完成提示」。** 首次做对那句与重进已通过的题不同。
+需要一个「进入这道题时它是否已经通过」的判定——`isPuzzleDone` 是 store 状态，
+做完之后也为真，**区分不出来**，所以要在挂载时取一次快照。
+`PuzzleView` 因此要加 `key={puzzle.id}`：换题必须重建，否则那道快照会跟着串题。
+
+**B3 · 平板 768–1023 只在横屏改双栏。** 竖屏（768×1024）保持纵向堆叠——
+那时纵向让棋盘吃到 **478px**（实测），改双栏只剩 ~408px，违反
+`DESIGN_SYSTEM.md` §10.2 第 1 条「先缩面板 → 再折叠面板 → 最后才动棋盘」。
+
+实现不写 `md:landscape: lg:` 两遍（`PracticeBoard` 的 aside 有 5 处 `lg:` 前缀，
+双写就是 10 处）：在 `index.css` 定义一个**自定义变体**，
+把「≥1024」与「≥768 且横屏」合成一个条件，五处类名只改一处定义。
+
+### 13.3 不做的一条（如实记）
+
+**难度分级仍然不做。** 任务书 §三 的原话是「没有独立难度数据时，**不得**随意生成
+『简单 / 困难 / 大师』等级冒充客观难度」——题库 15 道题没有任何难度字段，
+分类顺序只是教学顺序。要做得先有数据（每题求解耗时、所需算杀深度、玩家通过率），
+而那属于内容与产品设计，不是这一轮能补的。
+
+### 13.4 执行顺序与验证
+
+1. 先改代码（A1–A9），每条改完跑对应用例；
+2. 补测试（A10、A11）与探针状态（A12）；
+3. 三件拍板的事（B1–B3）；
+4. **反向验证**：新加的每条守卫都要精确注入确认变红（至少 B1 的按类推荐、
+   B2 的首次判定、A9 的文案条件、B3 的断点）；
+5. 全档门禁 + 重跑探针（B3 改了布局，必须重拍）；
+6. 文档同步（本节、`ROADMAP`、`USAGE`、`DESIGN_SYSTEM` 若 §10.1 需要补注）。
+
+### 13.5 实施记录（第二轮整改）
+
+**A1–A9 的代码改动**：
+
+| # | 改动 |
+| --- | --- |
+| A1 | `e2e/puzzles.spec.ts` 那两处写死的 `intersection-4-7` 改成 `solveWithHints`——**改代码不是改注释**，抬头那句「没有一处写死答案坐标」现在是成立的 |
+| A2+A4 | `ProgressBlock` 的 `next` 换成描述符 `{ title, run } \| null`：零读取点的 `id` 没了，可选的 `onContinue` 也没了——「有目标但没回调」这种状态在类型上不存在 |
+| A3 | 「全部做完」那句抽成 `allDoneText(total)`，两处共用（此前已经漂成两个版本） |
+| A5 | `categoryProgress` 改成返回 `CategoryGroup { category, puzzles, done }`：消费方不再自己 `filter` 一遍，`total` 由 `puzzles.length` 推出，不留会与成员对不上的冗余字段。新增一条不变量用例（每道题恰好落在自己那一类里） |
+| A6 | `PuzzleScreen` 的 `description` 改用 `PUZZLES.length` / `CATEGORY_ORDER.length` |
+| A7 | 探针抽 `readPuzzleIds(page)`，两处 8 行逐字重复没了 |
+| A8 | 统一用 store 的 `isPuzzleDone`（此前同文件里两种问法） |
+| A9 | 第三级提示的文案改用 `solution !== null` 把关——**与棋盘标记用的是同一个变量**，不可能再不一致。补一条无解题的用例（今天不可达，但内容可增删） |
+
+**A10–A12 的测试**：手机 2 条（不溢出 + 触摸命中，坐标从棋盘反解）、
+平板 1 条（棋盘完整 + 触摸）、`puzzles.spec.ts` 1 条（重进已通过的题走错一手再点「下一题」）、
+探针 +1 个状态（`puzzle-category-done`）。
+
+**B1–B3**：见 §13.2 的方案，实现如下——
+
+- **B1**：`resolveNextPuzzle` 接受第三个参数 `preferredCategory`，
+  `PuzzleScreen` 用**会话内 state** 记住「本次打开过哪一类」（不碰 `lastVisited`，
+  理由见 §13.2）。5 条纯函数用例 + 1 条 UI 用例。
+- **B2**：`PuzzleView` 挂载时取一次 `alreadySolvedOnEntry` 快照，
+  首次说「第一次做对这道题。」、重进说「这一题已经通过。」；
+  `PuzzleScreen` 给 `PuzzleView` 加 `key={puzzle.id}`（换题必须重建，否则快照串题）。
+- **B3**：`index.css` 新增 `wide-layout` 变体，四处类名从 `lg:` 换过去
+  （`PageShell` 的栅格 + 三个 `aside`）。`DESIGN_SYSTEM.md` §10.1 补了这段条件与两处理由。
+
+**反向验证 4 条**（每条精确注入）：按类推荐（删掉偏好分支）、首次完成的判定
+（快照恒为 true）、第三级提示的文案条件（退回只看级数）、两栏的高度下限
+（从变体里删掉 `min-height`）——**全部按预期变红**，跑完即还原。
+
+**过程中自己踩的一个坑**：在 `e2e/mobile.spec.ts` 里写了 `toHaveTextContent`
+（那是 testing-library 的匹配器，Playwright 里叫 `toHaveText`）。
+`tsc` 抓得到（`TS2339`），但我是**先跑测试再跑 typecheck** 的顺序，
+所以是先被浏览器测试红出来的。加完 e2e 用例要立刻跑一次 `yarn typecheck`。
+
+### 13.6 第二轮的门禁（全部实跑，全绿）
+
+| 命令 | 结果 |
+| --- | --- |
+| `yarn lint` / `yarn typecheck` | ✓ |
+| `yarn test` | ✓ **1024 passed / 60 文件**（第一轮收尾是 1015） |
+| `yarn build` | ✓ |
+| `yarn gates` | ✓ 0 clones；棘轮 **1024 · 134**（e2e 127 → 134） |
+| `yarn e2e` | ✓ **134 passed** |
+| `yarn e2e:prod` | ✓ **5 passed** |
+| `yarn check:coverage` | ✓ 172 条 / 21 状态，实比 **3084 条没掉档**，新增覆盖 96 → 104（**本轮不用动基线**——改的都是文案与布局，没落在按钮与标题键上） |
+| `yarn bench:check` | ✓ 断言 19/19、不变量 29 项 |
+| `yarn ui:probe --out after-phase05` | ✓ **34 状态 / 276 张**，七条判据全过（第一轮是 33 / 268） |
+
+**文档引用做过一次行号复核**：写第一轮时留下的 `PuzzleView.tsx:125`、`PuzzleScreen.tsx:56`、
+`ui.probe.mjs:1119`、`learn.spec.ts:143`、`puzzles.ts:22` 都因为后续改动**漂了**，
+已逐条对着代码改正——其中三处改成**符号定位**（说「`PuzzleScreen` 的 `backToList`」
+而不是「第 56 行」），另外三处描述的是**改动前**的样子，加了标注。
+剩下 8 处行号引用逐个 `sed` 核过，指向的确实是那句话。

@@ -115,12 +115,14 @@ export function LearnScreen() {
           total={LESSONS.length}
           testId="learn-progress"
           texts={PROGRESS_TEXTS}
-          next={nextLesson}
-          onContinue={
+          next={
             nextLesson === null
-              ? undefined
-              : () => {
-                  open(nextLesson.id)
+              ? null
+              : {
+                  title: nextLesson.title,
+                  run: () => {
+                    open(nextLesson.id)
+                  },
                 }
           }
         />

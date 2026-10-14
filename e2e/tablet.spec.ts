@@ -319,3 +319,41 @@ test.describe('触屏命中与误触', () => {
     await expect(stones).toHaveCount(1)
   })
 })
+
+/**
+ * Phase 05：残局详情在平板上。
+ *
+ * 平板这一档此前只有对战页的用例；残局与教学共用练习组件，但**外层的工具栏
+ * 与侧栏不一样**，而平板的宽度刚好卡在两栏断点附近——只有真浏览器量得出来。
+ */
+test.describe('残局详情', () => {
+  test('平板横屏：棋盘完整可见，触摸点按能落子', async ({ page }) => {
+    await page.goto('/')
+    await page.getByRole('button', { name: '残局', exact: true }).click()
+    await page.getByTestId('puzzle-win-h').click()
+    await expect(page.getByTestId('board')).toBeVisible()
+
+    const box = await page.getByTestId('board').boundingBox()
+    expect(box).not.toBeNull()
+    if (box === null) return
+
+    // 完整落在视口内，而且没被挤到最小尺寸以下
+    expect(box.x).toBeGreaterThanOrEqual(0)
+    expect(box.x + box.width).toBeLessThanOrEqual(page.viewportSize()!.width)
+    expect(box.width).toBeGreaterThanOrEqual(320)
+
+    /*
+      触摸真的能落子：点一个空点，反馈条要出现（对错不论，这一条验的是通道）。
+
+      **不能点棋盘正中**：这道题的四连就在中间那一行（`win-h` 的第 7 行是
+      `.....BBBB......`），(7,7) 上已经有子——而 `Board.handleClick` 对已占的格子
+      直接 return，于是反馈条永远不出现，失败信息只会是「找不到 feedback」。
+      (0,0) 在题面里是空的，而且它在角上，顺带把「边角的触摸命中」也走了一遍。
+    */
+    const corner = await page.getByTestId('intersection-0-0').boundingBox()
+    expect(corner).not.toBeNull()
+    if (corner === null) return
+    await page.touchscreen.tap(corner.x + corner.width / 2, corner.y + corner.height / 2)
+    await expect(page.getByTestId('feedback')).toBeVisible()
+  })
+})

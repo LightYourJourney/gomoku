@@ -1,12 +1,18 @@
 import { useState } from 'react'
 import { PageHeader } from '../../components/ui/PageHeader'
 import { cx } from '../../lib/cx'
-import { CATEGORY_LABELS, PUZZLES } from '../../learn/puzzles'
+import { CATEGORY_LABELS, CATEGORY_ORDER, PUZZLES } from '../../learn/puzzles'
+import type { PuzzleCategory } from '../../learn/types'
 import { useLearnStore } from '../../store/learnStore'
 import { ProgressBlock } from '../learn/ProgressBlock'
 import { PageShell } from '../shell/PageShell'
 import { PuzzleView } from './PuzzleView'
-import { categoryProgress, nextPuzzleAfter, resolveNextPuzzle } from './puzzleOutline'
+import {
+  allDoneText,
+  categoryProgress,
+  nextPuzzleAfter,
+  resolveNextPuzzle,
+} from './puzzleOutline'
 
 /**
  * 进度块的文案。模块级常量，理由同 `LearnScreen` 的同名常量。
@@ -20,7 +26,7 @@ const PROGRESS_TEXTS = {
   doneLabel: '已通过',
   unit: '题',
   action: '继续挑战',
-  allDone: `${PUZZLES.length} 道题都通过了。这些棋型，去实战里用用看吧。`,
+  allDone: allDoneText(PUZZLES.length),
 } as const
 
 /** 残局挑战：按战术分类列题，进去之后用与课程同一套练习交互。 */
@@ -32,6 +38,14 @@ export function PuzzleScreen() {
   const setView = useLearnStore((state) => state.setView)
 
   const [openId, setOpenId] = useState<string | null>(null)
+  /*
+    「本次会话里打开过哪一类」。
+
+    **只能记在这里，不能读 `lastVisited`**：点「← 残局列表」会把它清成 null，
+    而列表页能显示的前提正是它不是一道有效的题——那条路到不了。
+    代价是刷新之后偏好丢失，回退成「第一道没做的」。
+  */
+  const [lastCategory, setLastCategory] = useState<PuzzleCategory | null>(null)
 
   // 进度载入之后恢复上次那道题。**不读它的话，visit('puzzle', …) 写的那个
   // 位置就是一个只写不读的死字段**——刷新残局会退回列表。
@@ -48,6 +62,8 @@ export function PuzzleScreen() {
   const puzzle = PUZZLES.find((entry) => entry.id === openId) ?? null
 
   const open = (id: string): void => {
+    const entry = PUZZLES.find((puzzle) => puzzle.id === id)
+    if (entry !== undefined) setLastCategory(entry.category)
     setOpenId(id)
     visit('puzzle', id)
   }
@@ -64,10 +80,12 @@ export function PuzzleScreen() {
     )
     // 题库**不锁顺序**：做到最后一道 ≠ 前面的都做过了。这两个状态得分开，
     // 否则文案会说一句「十五道题都通过了」的假话（Phase 04 的同形缺陷）。
-    const allSolved = PUZZLES.every((entry) => progress.solvedPuzzles.includes(entry.id))
+    const allSolved = PUZZLES.every((entry) => isPuzzleDone(entry.id))
 
     return (
       <PuzzleView
+        // 换题必须重建：`alreadySolvedOnEntry` 是挂载时取的快照，复用实例会串题
+        key={puzzle.id}
         puzzle={puzzle}
         onExit={backToList}
         exit={
@@ -89,7 +107,7 @@ export function PuzzleScreen() {
                 // 所以这次渲染读到的已完成列表里已经含当前这道题，
                 // 不需要手工把它加进去（手工加就是第二份真相）。
                 // `mine` 为 undefined 只在题库里没有这一分类时出现，那时不该说「全通过」。
-                categoryDone: mine !== undefined && mine.done === mine.total,
+                categoryDone: mine !== undefined && mine.done === mine.puzzles.length,
                 run: () => {
                   open(next.id)
                 },
@@ -103,13 +121,13 @@ export function PuzzleScreen() {
   // 定过顺序了，这里再造一条就是第二个真相。
   const groups = categoryProgress(PUZZLES, progress.solvedPuzzles)
   const done = PUZZLES.filter((entry) => isPuzzleDone(entry.id)).length
-  const nextUp = resolveNextPuzzle(PUZZLES, progress.solvedPuzzles)
+  const nextUp = resolveNextPuzzle(PUZZLES, progress.solvedPuzzles, lastCategory)
 
   return (
     <PageShell>
       <PageHeader
         title="残局挑战"
-        description="十五道题按战术分成六类。分类的先后是教学上的由浅入深，不是难度评级——每题只给局面和目标，解法由引擎现场算出来，所以走出别的取胜着法一样算对。"
+        description={`${PUZZLES.length} 道题按战术分成 ${CATEGORY_ORDER.length} 类。分类的先后是教学上的由浅入深，不是难度评级——每题只给局面和目标，解法由引擎现场算出来，所以走出别的取胜着法一样算对。`}
       />
 
       <div className="space-y-6">
@@ -119,12 +137,14 @@ export function PuzzleScreen() {
           total={PUZZLES.length}
           testId="puzzle-progress"
           texts={PROGRESS_TEXTS}
-          next={nextUp}
-          onContinue={
+          next={
             nextUp === null
-              ? undefined
-              : () => {
-                  open(nextUp.id)
+              ? null
+              : {
+                  title: nextUp.title,
+                  run: () => {
+                    open(nextUp.id)
+                  },
                 }
           }
         />
@@ -149,12 +169,12 @@ export function PuzzleScreen() {
                 data-testid={`category-${group.category}-progress`}
                 className="font-mono text-xs tabular-nums text-faint"
               >
-                {group.done} / {group.total}
+                {group.done} / {group.puzzles.length}
               </span>
             </div>
 
             <ul className="mt-2 space-y-2">
-              {PUZZLES.filter((entry) => entry.category === group.category).map((entry, index) => {
+              {group.puzzles.map((entry, index) => {
                 const solved = isPuzzleDone(entry.id)
                 const recommended = nextUp?.id === entry.id
 

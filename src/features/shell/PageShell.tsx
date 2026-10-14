@@ -50,7 +50,7 @@ export function PageShell({ children, toolbar, footer, variant = 'reading' }: Pa
          * （FINDINGS 的 F-UI-01）。删掉行模板后只剩一个隐式行，
          * `align-content: normal`（= `stretch`）会把它撑满，棋盘拿到整列高度。
          */
-        <main className="flex min-h-0 flex-1 flex-col lg:grid lg:grid-cols-[minmax(0,1fr)_344px]">
+        <main className="flex min-h-0 flex-1 flex-col wide-layout:grid wide-layout:grid-cols-[minmax(0,1fr)_344px]">
           {children}
         </main>
       )}

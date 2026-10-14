@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react'
 import { Button } from '../../components/ui/Button'
 import { CATEGORY_LABELS } from '../../learn/puzzles'
+import { allDoneText } from './puzzleOutline'
 import type { Puzzle } from '../../learn/types'
 import { useLearnStore } from '../../store/learnStore'
 import { PracticeBoard } from '../learn/PracticeBoard'
@@ -54,6 +55,16 @@ export function PuzzleView({ puzzle, exit, onExit }: PuzzleViewProps) {
   const solvePuzzle = useLearnStore((state) => state.solvePuzzle)
   const [round, setRound] = useState(0)
 
+  /*
+    **进入这道题时**它是否已经通过。
+
+    与 `solved` 不是一回事：那是 store 的当前状态，这次做对之后同样为真——
+    用它分不出「头一回做对」与「重进一道做过的」。所以挂载时取一次快照。
+    组件必须按题重建（`PuzzleScreen` 给了 `key={puzzle.id}`），
+    否则换题时这份快照会跟着串到下一道题上。
+  */
+  const [alreadySolvedOnEntry] = useState(() => useLearnStore.getState().isPuzzleDone(puzzle.id))
+
   // 引用要稳定：练习组件把它放进 effect 的依赖里。
   const handleSolved = useCallback(() => solvePuzzle(puzzle.id), [puzzle.id, solvePuzzle])
 
@@ -91,7 +102,9 @@ export function PuzzleView({ puzzle, exit, onExit }: PuzzleViewProps) {
         alreadySolved={solved}
         footer={
           <div className="space-y-2">
-            <p className="text-xs text-good">这一题已经通过。</p>
+            <p className="text-xs text-good">
+              {alreadySolvedOnEntry ? '这一题已经通过。' : '第一次做对这道题。'}
+            </p>
 
             {/*
               完成提示只给**跨越了一次状态边界**的两条：
@@ -101,9 +114,7 @@ export function PuzzleView({ puzzle, exit, onExit }: PuzzleViewProps) {
             */}
             {exit.kind === 'allDone' ? (
               exit.allSolved ? (
-                <p className="text-xs text-good">
-                  {exit.total} 道题都通过了——这些棋型，去实战里用用看。
-                </p>
+                <p className="text-xs text-good">{allDoneText(exit.total)}</p>
               ) : (
                 <p className="text-xs text-muted">
                   这是题库里的最后一道。前面还有没做的，随时回列表接着练。

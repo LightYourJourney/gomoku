@@ -254,14 +254,14 @@ describe('PuzzleScreen —— 残局列表', () => {
     await waitFor(() =>
       expect(useLearnStore.getState().progress.solvedPuzzles).toContain('win-h'),
     )
-    expect(await screen.findByText('这一题已经通过。')).toBeInTheDocument()
+    expect(await screen.findByText('第一次做对这道题。')).toBeInTheDocument()
   })
 
   it('「再做一次」把棋盘清回初始局面', async () => {
     render(<PuzzleScreen />)
     fireEvent.click(screen.getByTestId('puzzle-win-h'))
     fireEvent.click(screen.getByTestId('intersection-4-7'))
-    await screen.findByText('这一题已经通过。')
+    await screen.findByText('第一次做对这道题。')
 
     fireEvent.click(screen.getByRole('button', { name: '再做一次' }))
 
@@ -631,6 +631,31 @@ describe('PuzzleScreen —— 首页信息（Phase 05）', () => {
     expect(screen.getByRole('button', { name: /继续挑战/ })).toHaveTextContent('斜向补满')
   })
 
+  /**
+   * 跳着练的人不该被弹回最前面。
+   *
+   * 场景：用户直接去做「连续冲四」（题库里它在第六类），做完回列表——
+   * 若「继续挑战」还指「题库里最早那道没做的」，他会被送回「一步获胜」，
+   * 那不是「继续」，是「回到」。偏好只活在本次会话里（刷新即丢），
+   * 理由见 `puzzleOutline.ts` 的注释。
+   */
+  it('打开过某一类之后回列表，「继续挑战」跟着那一类走', () => {
+    render(<PuzzleScreen />)
+
+    // 一开始指向题库里最早那道没做的
+    expect(screen.getByRole('button', { name: /继续挑战/ })).toHaveTextContent('横向补满')
+
+    fireEvent.click(screen.getByTestId('puzzle-vcf-basic'))
+    fireEvent.click(screen.getByRole('button', { name: '← 残局列表' }))
+
+    /*
+      给的是「连续冲四」里第一道**还没做的**——也就是刚刚打开、还没做的这一道
+      （初稿在这里断的是「冲四连击」，那是把「打开过」当成了「做过」：
+      偏好只决定**从哪一类里挑**，挑的仍然是那一类里第一道没做的）。
+    */
+    expect(screen.getByRole('button', { name: /继续挑战/ })).toHaveTextContent('冲四开场')
+  })
+
   it('全做完时不给「继续挑战」，只给完成文案', () => {
     seedSolved(PUZZLES.map((puzzle) => puzzle.id))
     render(<PuzzleScreen />)
@@ -652,7 +677,7 @@ describe('PuzzleScreen —— 出口（Phase 05）', () => {
     render(<PuzzleScreen />)
     fireEvent.click(screen.getByTestId('puzzle-win-h'))
     fireEvent.click(screen.getByTestId('intersection-4-7'))
-    await screen.findByText('这一题已经通过。')
+    await screen.findByText('第一次做对这道题。')
 
     fireEvent.click(screen.getByRole('button', { name: '下一题 →' }))
 
@@ -698,6 +723,26 @@ describe('PuzzleScreen —— 出口（Phase 05）', () => {
     expect(screen.getByText(/这是题库里的最后一道/)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '回到残局列表' })).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: '去实战试试 →' })).not.toBeInTheDocument()
+  })
+
+  it('首次做对与重进已通过的题，说的不是同一句话', async () => {
+    const first = render(<PuzzleScreen />)
+    fireEvent.click(screen.getByTestId('puzzle-win-h'))
+    fireEvent.click(screen.getByTestId('intersection-4-7'))
+    expect(await screen.findByText('第一次做对这道题。')).toBeInTheDocument()
+    first.unmount()
+
+    // 重进一道已经通过的
+    useLearnStore.setState({
+      progress: { ...EMPTY_PROGRESS, solvedPuzzles: ['win-h'] },
+      loaded: true,
+      view: 'puzzles',
+    })
+    render(<PuzzleScreen />)
+    fireEvent.click(screen.getByTestId('puzzle-win-h'))
+
+    expect(screen.getByText('这一题已经通过。')).toBeInTheDocument()
+    expect(screen.queryByText('第一次做对这道题。')).not.toBeInTheDocument()
   })
 
   it('这一类全通了就给分类完成提示', () => {

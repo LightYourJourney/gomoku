@@ -31,6 +31,36 @@ describe('继续挑战指向哪一道', () => {
 })
 
 /**
+ * 按类推荐（会话内偏好）。
+ *
+ * 场景是**跳着练**：用户直接去做「连续冲四」，做完回列表时，若还按「题库里最早的
+ * 那道没做的」推荐，他会被弹回「一步获胜」——那不是「继续」，是「回到」。
+ */
+describe('继续挑战的偏好', () => {
+  it('那一类还有没做的，就优先给那一类里的第一道', () => {
+    // 只做过「连续冲四」的第一道；题库里最早的没做的是 win-h，但偏好说该给 vcf-chain
+    expect(resolveNextPuzzle(PUZZLES, ['vcf-basic'], 'vcf')?.id).toBe('vcf-chain')
+  })
+
+  it('那一类做完了就回退到「第一道没做的」', () => {
+    expect(resolveNextPuzzle(PUZZLES, ['vcf-basic', 'vcf-chain'], 'vcf')?.id).toBe('win-h')
+  })
+
+  it('偏好那一类整个没做过时，给的就是它的第一道', () => {
+    expect(resolveNextPuzzle(PUZZLES, [], 'doubleThreat')?.id).toBe('double-four')
+  })
+
+  it('不给偏好时，就是题库里第一道没做的', () => {
+    expect(resolveNextPuzzle(PUZZLES, ['win-h'])?.id).toBe('win-diag')
+    expect(resolveNextPuzzle(PUZZLES, ['win-h'], null)?.id).toBe('win-diag')
+  })
+
+  it('全做完时仍然是 null——偏好不影响这个结论', () => {
+    expect(resolveNextPuzzle(PUZZLES, ALL_IDS, 'vcf')).toBeNull()
+  })
+})
+
+/**
  * 「下一题」按**题库声明的顺序**走。
  *
  * 不按分类内循环：`PUZZLES` 的顺序就是唯一的真实顺序（分类顺序 × 类内顺序），
@@ -88,16 +118,39 @@ describe('分类进度', () => {
     const progress = categoryProgress(PUZZLES, ['win-h', 'win-diag', 'block-h'])
     const byCategory = new Map(progress.map((entry) => [entry.category, entry]))
 
-    expect(byCategory.get('winInOne')).toEqual({ category: 'winInOne', done: 2, total: 3 })
-    expect(byCategory.get('blockFive')).toEqual({ category: 'blockFive', done: 1, total: 3 })
-    expect(byCategory.get('vcf')).toEqual({ category: 'vcf', done: 0, total: 2 })
+    expect(byCategory.get('winInOne')!.done).toBe(2)
+    expect(byCategory.get('winInOne')!.puzzles).toHaveLength(3)
+    expect(byCategory.get('blockFive')!.done).toBe(1)
+    expect(byCategory.get('vcf')!.done).toBe(0)
+    expect(byCategory.get('vcf')!.puzzles).toHaveLength(2)
   })
 
-  it('任何一个分类的 done 都不会超过 total——重复 id 也不例外', () => {
+  /**
+   * **分组成员必须真的属于这个分类**，而且每道题恰好出现在一组里。
+   *
+   * 这条是「连成员一起返回」换来的：计数与成员如果各算各的，可以同时正确却互不相干
+   * （比如某一类数了 3 道，成员却列了别类的 3 道）。两轴审查之前，成员是消费方
+   * 自己 `filter` 出来的第二个答案——那时这个不变量无处安放。
+   */
+  it('每道题恰好落在自己那一类里，成员与计数同源', () => {
+    const progress = categoryProgress(PUZZLES, [])
+
+    const listed = progress.flatMap((group) => group.puzzles.map((puzzle) => puzzle.id))
+    expect([...listed].sort()).toEqual([...ALL_IDS].sort())
+    expect(new Set(listed).size).toBe(listed.length)
+
+    for (const group of progress) {
+      for (const puzzle of group.puzzles) {
+        expect(puzzle.category).toBe(group.category)
+      }
+    }
+  })
+
+  it('任何一个分类的 done 都不会超过它自己的题数——重复 id 也不例外', () => {
     const progress = categoryProgress(PUZZLES, ['win-h', 'win-h', 'win-h'])
 
-    for (const entry of progress) {
-      expect(entry.done).toBeLessThanOrEqual(entry.total)
+    for (const group of progress) {
+      expect(group.done).toBeLessThanOrEqual(group.puzzles.length)
     }
   })
 
@@ -115,8 +168,8 @@ describe('分类进度', () => {
   it('十五道题一个不漏地落进六个分类，题数与题库对得上', () => {
     const progress = categoryProgress(PUZZLES, [])
 
-    expect(progress.map((entry) => entry.category)).toEqual([...CATEGORY_ORDER])
-    expect(progress.reduce((sum, entry) => sum + entry.total, 0)).toBe(PUZZLES.length)
+    expect(progress.map((group) => group.category)).toEqual([...CATEGORY_ORDER])
+    expect(progress.reduce((sum, group) => sum + group.puzzles.length, 0)).toBe(PUZZLES.length)
     expect(new Set(PUZZLES.map((puzzle) => puzzle.category)).size).toBe(CATEGORY_ORDER.length)
   })
 })

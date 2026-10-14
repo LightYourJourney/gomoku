@@ -18,8 +18,7 @@ function setup(overrides: Partial<Parameters<typeof ProgressBlock>[0]> = {}) {
       total={8}
       testId="demo-progress"
       texts={TEXTS}
-      next={{ id: 'two', title: '活二与眠二' }}
-      onContinue={() => {}}
+      next={{ title: '活二与眠二', run: () => {} }}
       {...overrides}
     />,
   )
@@ -73,13 +72,12 @@ describe('ProgressBlock', () => {
   })
 
   it('主操作把目的地写在脸上，点了就回调', () => {
-    const onContinue = vi.fn()
-    setup({ onContinue })
+    const run = vi.fn()
+    setup({ next: { title: '活二与眠二', run } })
 
-    const button = screen.getByRole('button', { name: '继续学习：活二与眠二' })
-    fireEvent.click(button)
+    fireEvent.click(screen.getByRole('button', { name: '继续学习：活二与眠二' }))
 
-    expect(onContinue).toHaveBeenCalledTimes(1)
+    expect(run).toHaveBeenCalledTimes(1)
   })
 
   /**

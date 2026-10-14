@@ -153,6 +153,52 @@ describe('PracticeBoard —— 三级提示', () => {
     expect(hintButton()).toBeDisabled()
   })
 
+  /**
+   * **无解的题，第三级也不能说「棋盘上标出了」。**
+   *
+   * 那种情况下 `solveMove` 返回 null，棋盘上一个标记都没有——这句话若只按
+   * **提示级数**显示，又成了「文字在一处、标记在另一处」，正是本阶段在修的那类毛病
+   * （两轴审查指出：当时的条件确实只看级数）。现在它绑在 `solution` 上，
+   * 与标记用的是同一个变量。
+   *
+   * 题库自检（`content.test.ts`）钉住 15 道题都有解，所以这条路径今天不可达；
+   * 但**内容可以增删**，而「不可达所以不管」的缺口本仓吃过好几次
+   * （`no_move`、`resolveNext` 的优先分支都是同类）。
+   */
+  it('题目无解时，第三级也不说「棋盘上标出了」', () => {
+    setup({
+      // 黑棋只有三个孤子，连四连都没有 —— 任何一手都成不了五，`solveMove` 返回 null
+      board: {
+        lines: [
+          '...............',
+          '...............',
+          '...............',
+          '...............',
+          '...............',
+          '...............',
+          '...............',
+          '...B.B.B.......',
+          '...............',
+          '...............',
+          '...............',
+          '...............',
+          '...............',
+          '...............',
+          '...............',
+        ],
+      },
+      goal: { kind: 'win' },
+    })
+
+    const hintButton = () => screen.getByRole('button', { name: /提示|再具体一点/ })
+    fireEvent.click(hintButton())
+    fireEvent.click(hintButton())
+    fireEvent.click(hintButton())
+
+    expect(screen.queryByText(/棋盘上标出了/)).not.toBeInTheDocument()
+    expect(screen.queryAllByTestId(/^board-mark-/)).toHaveLength(0)
+  })
+
   it('标出点位不等于替玩家通关', () => {
     const { onSolved } = setup()
 

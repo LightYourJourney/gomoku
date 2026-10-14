@@ -153,7 +153,7 @@ export function PracticeBoard({ practice, onSolved, alreadySolved = false, foote
         />
       </BoardStage>
 
-      <aside className="order-2 space-y-3 px-3 pb-4 lg:order-3 lg:overflow-y-auto lg:border-l lg:border-border lg:px-4 lg:py-4">
+      <aside className="order-2 space-y-3 px-3 pb-4 wide-layout:order-3 wide-layout:overflow-y-auto wide-layout:border-l wide-layout:border-border wide-layout:px-4 wide-layout:py-4">
         <Panel title="练习">
           <p className="text-sm leading-relaxed text-fg">{practice.prompt}</p>
           <p className="mt-2 flex items-center gap-2 text-xs text-faint">
@@ -202,7 +202,15 @@ export function PracticeBoard({ practice, onSolved, alreadySolved = false, foote
             <p data-testid="hint" className="text-xs leading-relaxed text-muted">
               {hintText}
             </p>
-            {hintLevel >= HINT_LEVELS && (
+            {/*
+              条件是 `solution !== null`，**不是** `hintLevel >= HINT_LEVELS`。
+              两者平时等价（`solution` 只在第三级才算），但题目无解时
+              `solveMove` 返回 null，棋盘上就不会有标记——那时若还按级数显示，
+              又成了「文字说标出了、棋盘上什么都没有」，正是上面那段注释在修的毛病。
+              **绑在同一个变量上，这种不一致就不可能发生**（`solveMove` 与 `judgeMove`
+              共用一把尺子，所以能算出来就一定标得出来）。
+            */}
+            {solution !== null && (
               <p className="mt-2 text-xs text-faint">
                 棋盘上标出了其中一种解法。走上去试试——判定看的是棋型，别的走法同样算对。
               </p>

@@ -40,12 +40,21 @@ export interface ProgressBlockProps {
   /**
    * 主操作指向的那一项。
    *
+   * **是个描述符**（`{ title, run }`），不是「一个对象 + 一个可选回调」：
+   * 那样写会出现「`next` 有值而回调没传」的状态，渲染出一颗点了没反应的
+   * 主按钮——而类型系统拦不住它。绑成一个值，这种状态就不存在。
+   *
    * `null` 有两种含义，用 `loaded` 分开：还没读出来，或者**全部完成了**。
    * 合成一个布尔值会让「加载中」和「全完成」显示成同一句话，那正是
    * `LearnScreen` 原先要避免的错误（载入前显示「已完成 0 节」）。
    */
-  readonly next: { readonly id: string; readonly title: string } | null
-  readonly onContinue?: () => void
+  readonly next: ProgressTarget | null
+}
+
+/** 主操作的目标：显示什么、点了去哪。两件事绑在一起，不允许只出现一半。 */
+export interface ProgressTarget {
+  readonly title: string
+  readonly run: () => void
 }
 
 /**
@@ -58,15 +67,7 @@ export interface ProgressBlockProps {
  * 抽出来的理由不是「看着像」：进度条实现、载入占位、`progressbar` 的 aria 三件套
  * 会有两份，而这两块 UI **注定要一起演进**（改进度条样式就要改两处）。
  */
-export function ProgressBlock({
-  loaded,
-  done,
-  total,
-  testId,
-  texts,
-  next,
-  onContinue,
-}: ProgressBlockProps) {
+export function ProgressBlock({ loaded, done, total, testId, texts, next }: ProgressBlockProps) {
   /*
     载入态要**占位**，不是不渲染。
     原先的做法是 meta 整块 `undefined`：不显示「0 / 8」这件事做对了，但页面上
@@ -124,7 +125,7 @@ export function ProgressBlock({
       {next === null ? (
         <p className="mt-3 text-sm text-good">{texts.allDone}</p>
       ) : (
-        <Button variant="primary" block className="mt-3" onClick={onContinue}>
+        <Button variant="primary" block className="mt-3" onClick={next.run}>
           {texts.action}：{next.title}
         </Button>
       )}

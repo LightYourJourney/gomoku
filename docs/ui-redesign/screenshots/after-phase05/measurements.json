@@ -28,6 +28,7 @@
     "learn-practice-correct",
     "learn-practice-wrong",
     "puzzle-all-done",
+    "puzzle-category-done",
     "puzzle-correct",
     "puzzle-hint",
     "puzzle-last-step",
@@ -52,7 +53,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-empty__390-light.png",
-      "setupMs": 952,
+      "setupMs": 1975,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -458,7 +459,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-empty__768-light.png",
-      "setupMs": 1539,
+      "setupMs": 2868,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -864,7 +865,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-empty__1024-light.png",
-      "setupMs": 1432,
+      "setupMs": 2499,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -1277,7 +1278,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-empty__1280-light.png",
-      "setupMs": 1002,
+      "setupMs": 2654,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -1684,7 +1685,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-empty__1440-light.png",
-      "setupMs": 871,
+      "setupMs": 2341,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -2090,7 +2091,7 @@
       "size": "1280x680",
       "theme": "light",
       "file": "battle-battle-empty__1280x680-light.png",
-      "setupMs": 755,
+      "setupMs": 1923,
       "boardDetails": {
         "coordText": {
           "width": 9.97,
@@ -2503,7 +2504,7 @@
       "size": "1440x700",
       "theme": "light",
       "file": "battle-battle-empty__1440x700-light.png",
-      "setupMs": 694,
+      "setupMs": 1942,
       "boardDetails": {
         "coordText": {
           "width": 10.36,
@@ -2915,7 +2916,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-empty__1920-light.png",
-      "setupMs": 777,
+      "setupMs": 911,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -3321,7 +3322,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-empty__390-dark-dark.png",
-      "setupMs": 607,
+      "setupMs": 788,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -3727,7 +3728,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-empty__1440-dark-dark.png",
-      "setupMs": 750,
+      "setupMs": 982,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -4133,7 +4134,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-midgame__390-light.png",
-      "setupMs": 746,
+      "setupMs": 766,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -4560,7 +4561,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-midgame__768-light.png",
-      "setupMs": 651,
+      "setupMs": 704,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -4987,7 +4988,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-midgame__1024-light.png",
-      "setupMs": 918,
+      "setupMs": 951,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -5420,7 +5421,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-midgame__1280-light.png",
-      "setupMs": 1066,
+      "setupMs": 1338,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -5847,7 +5848,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-midgame__1440-light.png",
-      "setupMs": 753,
+      "setupMs": 1828,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -6274,7 +6275,7 @@
       "size": "1280x680",
       "theme": "light",
       "file": "battle-battle-midgame__1280x680-light.png",
-      "setupMs": 686,
+      "setupMs": 990,
       "boardDetails": {
         "coordText": {
           "width": 9.97,
@@ -6707,7 +6708,7 @@
       "size": "1440x700",
       "theme": "light",
       "file": "battle-battle-midgame__1440x700-light.png",
-      "setupMs": 672,
+      "setupMs": 1077,
       "boardDetails": {
         "coordText": {
           "width": 10.36,
@@ -7146,7 +7147,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-midgame__1920-light.png",
-      "setupMs": 931,
+      "setupMs": 615,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -7573,7 +7574,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-midgame__390-dark-dark.png",
-      "setupMs": 702,
+      "setupMs": 598,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -8000,7 +8001,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-midgame__1440-dark-dark.png",
-      "setupMs": 803,
+      "setupMs": 1133,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -8427,7 +8428,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-thinking__390-light.png",
-      "setupMs": 644,
+      "setupMs": 778,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -8852,7 +8853,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-thinking__768-light.png",
-      "setupMs": 688,
+      "setupMs": 811,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -9277,7 +9278,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-thinking__1024-light.png",
-      "setupMs": 940,
+      "setupMs": 679,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -9709,7 +9710,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-thinking__1280-light.png",
-      "setupMs": 992,
+      "setupMs": 1211,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -10141,7 +10142,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-thinking__1440-light.png",
-      "setupMs": 1047,
+      "setupMs": 1052,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -10572,7 +10573,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-thinking__1920-light.png",
-      "setupMs": 1119,
+      "setupMs": 849,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -11003,7 +11004,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-thinking__390-dark-dark.png",
-      "setupMs": 903,
+      "setupMs": 1178,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -11428,7 +11429,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-thinking__1440-dark-dark.png",
-      "setupMs": 1115,
+      "setupMs": 2468,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -11859,7 +11860,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-hint__390-light.png",
-      "setupMs": 1488,
+      "setupMs": 2824,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -12354,7 +12355,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-hint__768-light.png",
-      "setupMs": 999,
+      "setupMs": 2792,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -12849,7 +12850,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-hint__1024-light.png",
-      "setupMs": 1184,
+      "setupMs": 1869,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -13350,7 +13351,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-hint__1280-light.png",
-      "setupMs": 1024,
+      "setupMs": 1309,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -13845,7 +13846,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-hint__1440-light.png",
-      "setupMs": 1183,
+      "setupMs": 1147,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -14340,7 +14341,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-hint__1920-light.png",
-      "setupMs": 1323,
+      "setupMs": 1027,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -14835,7 +14836,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-hint__390-dark-dark.png",
-      "setupMs": 1178,
+      "setupMs": 1396,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -15330,7 +15331,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-hint__1440-dark-dark.png",
-      "setupMs": 1132,
+      "setupMs": 1131,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -15825,7 +15826,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-confirm-restart__390-light.png",
-      "setupMs": 846,
+      "setupMs": 789,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -16289,7 +16290,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-confirm-restart__768-light.png",
-      "setupMs": 940,
+      "setupMs": 1042,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -16753,7 +16754,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-confirm-restart__1024-light.png",
-      "setupMs": 873,
+      "setupMs": 2171,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -17223,7 +17224,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-confirm-restart__1280-light.png",
-      "setupMs": 917,
+      "setupMs": 1144,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -17687,7 +17688,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-confirm-restart__1440-light.png",
-      "setupMs": 1218,
+      "setupMs": 984,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -18151,7 +18152,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-confirm-restart__1920-light.png",
-      "setupMs": 1554,
+      "setupMs": 1221,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -18615,7 +18616,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-confirm-restart__390-dark-dark.png",
-      "setupMs": 973,
+      "setupMs": 1108,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -19079,7 +19080,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-confirm-restart__1440-dark-dark.png",
-      "setupMs": 1424,
+      "setupMs": 778,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -19543,7 +19544,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-display-settings__390-light.png",
-      "setupMs": 770,
+      "setupMs": 707,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -20001,7 +20002,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-display-settings__768-light.png",
-      "setupMs": 674,
+      "setupMs": 884,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -20459,7 +20460,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-display-settings__1024-light.png",
-      "setupMs": 841,
+      "setupMs": 798,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -20923,7 +20924,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-display-settings__1280-light.png",
-      "setupMs": 1038,
+      "setupMs": 1766,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -21381,7 +21382,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-display-settings__1440-light.png",
-      "setupMs": 815,
+      "setupMs": 1043,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -21839,7 +21840,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-display-settings__1920-light.png",
-      "setupMs": 786,
+      "setupMs": 1311,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -22297,7 +22298,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-display-settings__390-dark-dark.png",
-      "setupMs": 756,
+      "setupMs": 650,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -22755,7 +22756,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-display-settings__1440-dark-dark.png",
-      "setupMs": 757,
+      "setupMs": 1226,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -23213,7 +23214,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-finished__390-light.png",
-      "setupMs": 592,
+      "setupMs": 746,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -23682,7 +23683,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-finished__768-light.png",
-      "setupMs": 539,
+      "setupMs": 676,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -24151,7 +24152,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-finished__1024-light.png",
-      "setupMs": 710,
+      "setupMs": 1171,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -24627,7 +24628,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-finished__1280-light.png",
-      "setupMs": 674,
+      "setupMs": 783,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -25103,7 +25104,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-finished__1440-light.png",
-      "setupMs": 929,
+      "setupMs": 578,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -25578,7 +25579,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-finished__1920-light.png",
-      "setupMs": 746,
+      "setupMs": 743,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -26053,7 +26054,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-finished__390-dark-dark.png",
-      "setupMs": 732,
+      "setupMs": 1119,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -26522,7 +26523,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-finished__1440-dark-dark.png",
-      "setupMs": 820,
+      "setupMs": 737,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -26997,7 +26998,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-opening__390-light.png",
-      "setupMs": 723,
+      "setupMs": 609,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -27417,7 +27418,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-opening__768-light.png",
-      "setupMs": 860,
+      "setupMs": 1382,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -27837,7 +27838,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-opening__1024-light.png",
-      "setupMs": 775,
+      "setupMs": 1280,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -28264,7 +28265,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-opening__1280-light.png",
-      "setupMs": 802,
+      "setupMs": 950,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -28685,7 +28686,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-opening__1440-light.png",
-      "setupMs": 737,
+      "setupMs": 921,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -29105,7 +29106,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-opening__1920-light.png",
-      "setupMs": 699,
+      "setupMs": 1504,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -29525,7 +29526,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-opening__390-dark-dark.png",
-      "setupMs": 551,
+      "setupMs": 970,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -29945,7 +29946,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-opening__1440-dark-dark.png",
-      "setupMs": 765,
+      "setupMs": 1123,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -30365,7 +30366,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-dense-black__390-light.png",
-      "setupMs": 652,
+      "setupMs": 646,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -30792,7 +30793,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-dense-black__768-light.png",
-      "setupMs": 676,
+      "setupMs": 637,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -31219,7 +31220,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-dense-black__1024-light.png",
-      "setupMs": 919,
+      "setupMs": 868,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -31652,7 +31653,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-dense-black__1280-light.png",
-      "setupMs": 772,
+      "setupMs": 1077,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -32079,7 +32080,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-dense-black__1440-light.png",
-      "setupMs": 915,
+      "setupMs": 770,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -32506,7 +32507,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-dense-black__1920-light.png",
-      "setupMs": 917,
+      "setupMs": 675,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -32933,7 +32934,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-dense-black__390-dark-dark.png",
-      "setupMs": 679,
+      "setupMs": 553,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -33360,7 +33361,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-dense-black__1440-dark-dark.png",
-      "setupMs": 992,
+      "setupMs": 690,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -33787,7 +33788,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-dense-white__390-light.png",
-      "setupMs": 702,
+      "setupMs": 510,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -34214,7 +34215,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-dense-white__768-light.png",
-      "setupMs": 708,
+      "setupMs": 542,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -34641,7 +34642,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-dense-white__1024-light.png",
-      "setupMs": 804,
+      "setupMs": 702,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -35074,7 +35075,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-dense-white__1280-light.png",
-      "setupMs": 1379,
+      "setupMs": 822,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -35501,7 +35502,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-dense-white__1440-light.png",
-      "setupMs": 936,
+      "setupMs": 710,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -35928,7 +35929,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-dense-white__1920-light.png",
-      "setupMs": 1090,
+      "setupMs": 683,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -36355,7 +36356,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-dense-white__390-dark-dark.png",
-      "setupMs": 803,
+      "setupMs": 712,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -36782,7 +36783,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-dense-white__1440-dark-dark.png",
-      "setupMs": 919,
+      "setupMs": 860,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -37209,7 +37210,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-win-board__390-light.png",
-      "setupMs": 979,
+      "setupMs": 810,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -37641,7 +37642,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-win-board__768-light.png",
-      "setupMs": 978,
+      "setupMs": 1238,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -38073,7 +38074,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-win-board__1024-light.png",
-      "setupMs": 941,
+      "setupMs": 1111,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -38512,7 +38513,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-win-board__1280-light.png",
-      "setupMs": 971,
+      "setupMs": 1114,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -38951,7 +38952,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-win-board__1440-light.png",
-      "setupMs": 938,
+      "setupMs": 870,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -39389,7 +39390,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-win-board__1920-light.png",
-      "setupMs": 1105,
+      "setupMs": 1021,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -39827,7 +39828,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-win-board__390-dark-dark.png",
-      "setupMs": 913,
+      "setupMs": 1013,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -40259,7 +40260,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-win-board__1440-dark-dark.png",
-      "setupMs": 1189,
+      "setupMs": 927,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -40697,7 +40698,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-ai-moved__390-light.png",
-      "setupMs": 964,
+      "setupMs": 1119,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -41156,7 +41157,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-ai-moved__768-light.png",
-      "setupMs": 1018,
+      "setupMs": 796,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -41615,7 +41616,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-ai-moved__1024-light.png",
-      "setupMs": 971,
+      "setupMs": 650,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -42081,7 +42082,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-ai-moved__1280-light.png",
-      "setupMs": 1132,
+      "setupMs": 779,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -42541,7 +42542,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-ai-moved__1440-light.png",
-      "setupMs": 973,
+      "setupMs": 784,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -43000,7 +43001,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-ai-moved__1920-light.png",
-      "setupMs": 1166,
+      "setupMs": 829,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -43459,7 +43460,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-ai-moved__390-dark-dark.png",
-      "setupMs": 876,
+      "setupMs": 633,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -43918,7 +43919,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-ai-moved__1440-dark-dark.png",
-      "setupMs": 1025,
+      "setupMs": 768,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -44377,7 +44378,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-ai-moved-expanded__390-light.png",
-      "setupMs": 991,
+      "setupMs": 741,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -44852,7 +44853,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-ai-moved-expanded__768-light.png",
-      "setupMs": 902,
+      "setupMs": 862,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -45327,7 +45328,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-ai-moved-expanded__1024-light.png",
-      "setupMs": 939,
+      "setupMs": 831,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -45809,7 +45810,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-ai-moved-expanded__1280-light.png",
-      "setupMs": 1174,
+      "setupMs": 970,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -46285,7 +46286,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-ai-moved-expanded__1440-light.png",
-      "setupMs": 1065,
+      "setupMs": 1110,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -46767,7 +46768,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-ai-moved-expanded__1920-light.png",
-      "setupMs": 1091,
+      "setupMs": 996,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -47249,7 +47250,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-ai-moved-expanded__390-dark-dark.png",
-      "setupMs": 867,
+      "setupMs": 811,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -47724,7 +47725,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-ai-moved-expanded__1440-dark-dark.png",
-      "setupMs": 1354,
+      "setupMs": 1089,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -48206,7 +48207,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-ai-error__390-light.png",
-      "setupMs": 728,
+      "setupMs": 1957,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -48657,7 +48658,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-ai-error__768-light.png",
-      "setupMs": 640,
+      "setupMs": 1246,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -49108,7 +49109,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-ai-error__1024-light.png",
-      "setupMs": 954,
+      "setupMs": 919,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -49565,7 +49566,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-ai-error__1280-light.png",
-      "setupMs": 659,
+      "setupMs": 1329,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -50022,7 +50023,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-ai-error__1440-light.png",
-      "setupMs": 721,
+      "setupMs": 1386,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -50479,7 +50480,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-ai-error__1920-light.png",
-      "setupMs": 790,
+      "setupMs": 1307,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -50936,7 +50937,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-ai-error__390-dark-dark.png",
-      "setupMs": 620,
+      "setupMs": 757,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -51387,7 +51388,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-ai-error__1440-dark-dark.png",
-      "setupMs": 980,
+      "setupMs": 926,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -51844,7 +51845,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-finish-unsaved__390-light.png",
-      "setupMs": 974,
+      "setupMs": 1058,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -52313,7 +52314,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-finish-unsaved__768-light.png",
-      "setupMs": 917,
+      "setupMs": 1242,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -52782,7 +52783,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-finish-unsaved__1024-light.png",
-      "setupMs": 1031,
+      "setupMs": 894,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -53258,7 +53259,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-finish-unsaved__1280-light.png",
-      "setupMs": 1185,
+      "setupMs": 817,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -53734,7 +53735,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-finish-unsaved__1440-light.png",
-      "setupMs": 1273,
+      "setupMs": 889,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -54209,7 +54210,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-finish-unsaved__1920-light.png",
-      "setupMs": 1183,
+      "setupMs": 827,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -54684,7 +54685,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-finish-unsaved__390-dark-dark.png",
-      "setupMs": 1224,
+      "setupMs": 947,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -55153,7 +55154,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-finish-unsaved__1440-dark-dark.png",
-      "setupMs": 1248,
+      "setupMs": 932,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -55628,7 +55629,7 @@
       "size": "390",
       "theme": "light",
       "file": "learn-learn-list__390-light.png",
-      "setupMs": 844,
+      "setupMs": 680,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -55899,7 +55900,7 @@
       "size": "768",
       "theme": "light",
       "file": "learn-learn-list__768-light.png",
-      "setupMs": 746,
+      "setupMs": 703,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -56170,7 +56171,7 @@
       "size": "1024",
       "theme": "light",
       "file": "learn-learn-list__1024-light.png",
-      "setupMs": 875,
+      "setupMs": 567,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -56448,7 +56449,7 @@
       "size": "1280",
       "theme": "light",
       "file": "learn-learn-list__1280-light.png",
-      "setupMs": 765,
+      "setupMs": 606,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -56726,7 +56727,7 @@
       "size": "1440",
       "theme": "light",
       "file": "learn-learn-list__1440-light.png",
-      "setupMs": 1126,
+      "setupMs": 620,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -57004,7 +57005,7 @@
       "size": "1920",
       "theme": "light",
       "file": "learn-learn-list__1920-light.png",
-      "setupMs": 970,
+      "setupMs": 704,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -57282,7 +57283,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "learn-learn-list__390-dark-dark.png",
-      "setupMs": 995,
+      "setupMs": 575,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -57553,7 +57554,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "learn-learn-list__1440-dark-dark.png",
-      "setupMs": 771,
+      "setupMs": 733,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -57831,7 +57832,7 @@
       "size": "390",
       "theme": "light",
       "file": "learn-learn-list-done__390-light.png",
-      "setupMs": 750,
+      "setupMs": 652,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -58119,7 +58120,7 @@
       "size": "768",
       "theme": "light",
       "file": "learn-learn-list-done__768-light.png",
-      "setupMs": 834,
+      "setupMs": 970,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -58407,7 +58408,7 @@
       "size": "1024",
       "theme": "light",
       "file": "learn-learn-list-done__1024-light.png",
-      "setupMs": 946,
+      "setupMs": 923,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -58702,7 +58703,7 @@
       "size": "1280",
       "theme": "light",
       "file": "learn-learn-list-done__1280-light.png",
-      "setupMs": 1012,
+      "setupMs": 948,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -58997,7 +58998,7 @@
       "size": "1440",
       "theme": "light",
       "file": "learn-learn-list-done__1440-light.png",
-      "setupMs": 1172,
+      "setupMs": 1162,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -59292,7 +59293,7 @@
       "size": "1920",
       "theme": "light",
       "file": "learn-learn-list-done__1920-light.png",
-      "setupMs": 837,
+      "setupMs": 643,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -59587,7 +59588,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "learn-learn-list-done__390-dark-dark.png",
-      "setupMs": 973,
+      "setupMs": 905,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -59875,7 +59876,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "learn-learn-list-done__1440-dark-dark.png",
-      "setupMs": 1220,
+      "setupMs": 1163,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -60170,7 +60171,7 @@
       "size": "390",
       "theme": "light",
       "file": "learn-learn-diagram__390-light.png",
-      "setupMs": 2262,
+      "setupMs": 1714,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -60459,7 +60460,7 @@
       "size": "768",
       "theme": "light",
       "file": "learn-learn-diagram__768-light.png",
-      "setupMs": 1006,
+      "setupMs": 1550,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -60742,7 +60743,7 @@
       "size": "1024",
       "theme": "light",
       "file": "learn-learn-diagram__1024-light.png",
-      "setupMs": 893,
+      "setupMs": 1407,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -61025,7 +61026,7 @@
       "size": "1280",
       "theme": "light",
       "file": "learn-learn-diagram__1280-light.png",
-      "setupMs": 905,
+      "setupMs": 1282,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -61308,7 +61309,7 @@
       "size": "1440",
       "theme": "light",
       "file": "learn-learn-diagram__1440-light.png",
-      "setupMs": 1029,
+      "setupMs": 1036,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -61591,7 +61592,7 @@
       "size": "1920",
       "theme": "light",
       "file": "learn-learn-diagram__1920-light.png",
-      "setupMs": 956,
+      "setupMs": 973,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -61874,7 +61875,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "learn-learn-diagram__390-dark-dark.png",
-      "setupMs": 822,
+      "setupMs": 836,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -62163,7 +62164,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "learn-learn-diagram__1440-dark-dark.png",
-      "setupMs": 842,
+      "setupMs": 863,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -62446,7 +62447,7 @@
       "size": "390",
       "theme": "light",
       "file": "learn-learn-practice__390-light.png",
-      "setupMs": 766,
+      "setupMs": 1217,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -62700,7 +62701,7 @@
       "size": "768",
       "theme": "light",
       "file": "learn-learn-practice__768-light.png",
-      "setupMs": 797,
+      "setupMs": 1395,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -62954,7 +62955,7 @@
       "size": "1024",
       "theme": "light",
       "file": "learn-learn-practice__1024-light.png",
-      "setupMs": 885,
+      "setupMs": 1577,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -63208,7 +63209,7 @@
       "size": "1280",
       "theme": "light",
       "file": "learn-learn-practice__1280-light.png",
-      "setupMs": 935,
+      "setupMs": 2631,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -63456,7 +63457,7 @@
       "size": "1440",
       "theme": "light",
       "file": "learn-learn-practice__1440-light.png",
-      "setupMs": 927,
+      "setupMs": 2016,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -63704,7 +63705,7 @@
       "size": "1920",
       "theme": "light",
       "file": "learn-learn-practice__1920-light.png",
-      "setupMs": 939,
+      "setupMs": 1600,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -63952,7 +63953,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "learn-learn-practice__390-dark-dark.png",
-      "setupMs": 891,
+      "setupMs": 1209,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -64206,7 +64207,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "learn-learn-practice__1440-dark-dark.png",
-      "setupMs": 977,
+      "setupMs": 1538,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -64454,7 +64455,7 @@
       "size": "390",
       "theme": "light",
       "file": "learn-learn-practice-wrong__390-light.png",
-      "setupMs": 1022,
+      "setupMs": 1441,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -64745,7 +64746,7 @@
       "size": "768",
       "theme": "light",
       "file": "learn-learn-practice-wrong__768-light.png",
-      "setupMs": 1055,
+      "setupMs": 1134,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -65036,7 +65037,7 @@
       "size": "1024",
       "theme": "light",
       "file": "learn-learn-practice-wrong__1024-light.png",
-      "setupMs": 1168,
+      "setupMs": 1431,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -65327,7 +65328,7 @@
       "size": "1280",
       "theme": "light",
       "file": "learn-learn-practice-wrong__1280-light.png",
-      "setupMs": 1211,
+      "setupMs": 1287,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -65618,7 +65619,7 @@
       "size": "1440",
       "theme": "light",
       "file": "learn-learn-practice-wrong__1440-light.png",
-      "setupMs": 1665,
+      "setupMs": 1209,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -65909,7 +65910,7 @@
       "size": "1920",
       "theme": "light",
       "file": "learn-learn-practice-wrong__1920-light.png",
-      "setupMs": 1626,
+      "setupMs": 1120,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -66200,7 +66201,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "learn-learn-practice-wrong__390-dark-dark.png",
-      "setupMs": 1694,
+      "setupMs": 1684,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -66491,7 +66492,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "learn-learn-practice-wrong__1440-dark-dark.png",
-      "setupMs": 1641,
+      "setupMs": 1388,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -66782,7 +66783,7 @@
       "size": "390",
       "theme": "light",
       "file": "learn-learn-practice-correct__390-light.png",
-      "setupMs": 1509,
+      "setupMs": 2051,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -67087,7 +67088,7 @@
       "size": "768",
       "theme": "light",
       "file": "learn-learn-practice-correct__768-light.png",
-      "setupMs": 1447,
+      "setupMs": 1441,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -67392,7 +67393,7 @@
       "size": "1024",
       "theme": "light",
       "file": "learn-learn-practice-correct__1024-light.png",
-      "setupMs": 2301,
+      "setupMs": 1610,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -67697,7 +67698,7 @@
       "size": "1280",
       "theme": "light",
       "file": "learn-learn-practice-correct__1280-light.png",
-      "setupMs": 1841,
+      "setupMs": 1276,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -68002,7 +68003,7 @@
       "size": "1440",
       "theme": "light",
       "file": "learn-learn-practice-correct__1440-light.png",
-      "setupMs": 2575,
+      "setupMs": 1102,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -68307,7 +68308,7 @@
       "size": "1920",
       "theme": "light",
       "file": "learn-learn-practice-correct__1920-light.png",
-      "setupMs": 1667,
+      "setupMs": 1160,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -68612,7 +68613,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "learn-learn-practice-correct__390-dark-dark.png",
-      "setupMs": 1240,
+      "setupMs": 996,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -68917,7 +68918,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "learn-learn-practice-correct__1440-dark-dark.png",
-      "setupMs": 1452,
+      "setupMs": 1143,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -69222,7 +69223,7 @@
       "size": "390",
       "theme": "light",
       "file": "learn-learn-list-all-done__390-light.png",
-      "setupMs": 1303,
+      "setupMs": 773,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -69495,7 +69496,7 @@
       "size": "768",
       "theme": "light",
       "file": "learn-learn-list-all-done__768-light.png",
-      "setupMs": 1204,
+      "setupMs": 819,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -69768,7 +69769,7 @@
       "size": "1024",
       "theme": "light",
       "file": "learn-learn-list-all-done__1024-light.png",
-      "setupMs": 1171,
+      "setupMs": 938,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -70048,7 +70049,7 @@
       "size": "1280",
       "theme": "light",
       "file": "learn-learn-list-all-done__1280-light.png",
-      "setupMs": 1352,
+      "setupMs": 825,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -70328,7 +70329,7 @@
       "size": "1440",
       "theme": "light",
       "file": "learn-learn-list-all-done__1440-light.png",
-      "setupMs": 1364,
+      "setupMs": 939,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -70608,7 +70609,7 @@
       "size": "1920",
       "theme": "light",
       "file": "learn-learn-list-all-done__1920-light.png",
-      "setupMs": 1186,
+      "setupMs": 966,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -70888,7 +70889,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "learn-learn-list-all-done__390-dark-dark.png",
-      "setupMs": 1048,
+      "setupMs": 823,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -71161,7 +71162,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "learn-learn-list-all-done__1440-dark-dark.png",
-      "setupMs": 1264,
+      "setupMs": 968,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -71441,7 +71442,7 @@
       "size": "390",
       "theme": "light",
       "file": "puzzles-puzzle-list__390-light.png",
-      "setupMs": 816,
+      "setupMs": 646,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -71535,7 +71536,7 @@
           "lineHeight": "22px",
           "color": "rgb(111, 103, 94)",
           "weight": "400",
-          "sample": "p{十五道题按战术分成六类。分类的先后是教学上的由浅}",
+          "sample": "p{15 道题按战术分成 6 类。分类的先后是教学上}",
           "count": 1
         },
         {
@@ -71716,7 +71717,7 @@
       "size": "768",
       "theme": "light",
       "file": "puzzles-puzzle-list__768-light.png",
-      "setupMs": 772,
+      "setupMs": 724,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -71810,7 +71811,7 @@
           "lineHeight": "22px",
           "color": "rgb(111, 103, 94)",
           "weight": "400",
-          "sample": "p{十五道题按战术分成六类。分类的先后是教学上的由浅}",
+          "sample": "p{15 道题按战术分成 6 类。分类的先后是教学上}",
           "count": 1
         },
         {
@@ -71991,7 +71992,7 @@
       "size": "1024",
       "theme": "light",
       "file": "puzzles-puzzle-list__1024-light.png",
-      "setupMs": 745,
+      "setupMs": 621,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -72000,7 +72001,7 @@
       "metaThemeColor": "#f6f4f0",
       "scrollContainers": [
         {
-          "element": "main{残局挑战十五道题按战术分成六类。分类的先后是教学}",
+          "element": "main{残局挑战15 道题按战术分成 6 类。分类的先后}",
           "clientHeight": 831,
           "scrollHeight": 1562,
           "hidden": 731
@@ -72092,7 +72093,7 @@
           "lineHeight": "22px",
           "color": "rgb(111, 103, 94)",
           "weight": "400",
-          "sample": "p{十五道题按战术分成六类。分类的先后是教学上的由浅}",
+          "sample": "p{15 道题按战术分成 6 类。分类的先后是教学上}",
           "count": 1
         },
         {
@@ -72273,7 +72274,7 @@
       "size": "1280",
       "theme": "light",
       "file": "puzzles-puzzle-list__1280-light.png",
-      "setupMs": 775,
+      "setupMs": 1328,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -72282,7 +72283,7 @@
       "metaThemeColor": "#f6f4f0",
       "scrollContainers": [
         {
-          "element": "main{残局挑战十五道题按战术分成六类。分类的先后是教学}",
+          "element": "main{残局挑战15 道题按战术分成 6 类。分类的先后}",
           "clientHeight": 831,
           "scrollHeight": 1562,
           "hidden": 731
@@ -72374,7 +72375,7 @@
           "lineHeight": "22px",
           "color": "rgb(111, 103, 94)",
           "weight": "400",
-          "sample": "p{十五道题按战术分成六类。分类的先后是教学上的由浅}",
+          "sample": "p{15 道题按战术分成 6 类。分类的先后是教学上}",
           "count": 1
         },
         {
@@ -72555,7 +72556,7 @@
       "size": "1440",
       "theme": "light",
       "file": "puzzles-puzzle-list__1440-light.png",
-      "setupMs": 682,
+      "setupMs": 2420,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -72564,7 +72565,7 @@
       "metaThemeColor": "#f6f4f0",
       "scrollContainers": [
         {
-          "element": "main{残局挑战十五道题按战术分成六类。分类的先后是教学}",
+          "element": "main{残局挑战15 道题按战术分成 6 类。分类的先后}",
           "clientHeight": 831,
           "scrollHeight": 1562,
           "hidden": 731
@@ -72656,7 +72657,7 @@
           "lineHeight": "22px",
           "color": "rgb(111, 103, 94)",
           "weight": "400",
-          "sample": "p{十五道题按战术分成六类。分类的先后是教学上的由浅}",
+          "sample": "p{15 道题按战术分成 6 类。分类的先后是教学上}",
           "count": 1
         },
         {
@@ -72837,7 +72838,7 @@
       "size": "1920",
       "theme": "light",
       "file": "puzzles-puzzle-list__1920-light.png",
-      "setupMs": 811,
+      "setupMs": 990,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -72846,7 +72847,7 @@
       "metaThemeColor": "#f6f4f0",
       "scrollContainers": [
         {
-          "element": "main{残局挑战十五道题按战术分成六类。分类的先后是教学}",
+          "element": "main{残局挑战15 道题按战术分成 6 类。分类的先后}",
           "clientHeight": 831,
           "scrollHeight": 1562,
           "hidden": 731
@@ -72938,7 +72939,7 @@
           "lineHeight": "22px",
           "color": "rgb(111, 103, 94)",
           "weight": "400",
-          "sample": "p{十五道题按战术分成六类。分类的先后是教学上的由浅}",
+          "sample": "p{15 道题按战术分成 6 类。分类的先后是教学上}",
           "count": 1
         },
         {
@@ -73119,7 +73120,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "puzzles-puzzle-list__390-dark-dark.png",
-      "setupMs": 892,
+      "setupMs": 1304,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -73213,7 +73214,7 @@
           "lineHeight": "22px",
           "color": "rgb(154, 160, 170)",
           "weight": "400",
-          "sample": "p{十五道题按战术分成六类。分类的先后是教学上的由浅}",
+          "sample": "p{15 道题按战术分成 6 类。分类的先后是教学上}",
           "count": 1
         },
         {
@@ -73394,7 +73395,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "puzzles-puzzle-list__1440-dark-dark.png",
-      "setupMs": 920,
+      "setupMs": 1714,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -73403,7 +73404,7 @@
       "metaThemeColor": "#f6f4f0",
       "scrollContainers": [
         {
-          "element": "main{残局挑战十五道题按战术分成六类。分类的先后是教学}",
+          "element": "main{残局挑战15 道题按战术分成 6 类。分类的先后}",
           "clientHeight": 831,
           "scrollHeight": 1562,
           "hidden": 731
@@ -73495,7 +73496,7 @@
           "lineHeight": "22px",
           "color": "rgb(154, 160, 170)",
           "weight": "400",
-          "sample": "p{十五道题按战术分成六类。分类的先后是教学上的由浅}",
+          "sample": "p{15 道题按战术分成 6 类。分类的先后是教学上}",
           "count": 1
         },
         {
@@ -73676,7 +73677,7 @@
       "size": "390",
       "theme": "light",
       "file": "puzzles-puzzle-wrong__390-light.png",
-      "setupMs": 949,
+      "setupMs": 1184,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -73960,7 +73961,7 @@
       "size": "768",
       "theme": "light",
       "file": "puzzles-puzzle-wrong__768-light.png",
-      "setupMs": 851,
+      "setupMs": 898,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -74244,7 +74245,7 @@
       "size": "1024",
       "theme": "light",
       "file": "puzzles-puzzle-wrong__1024-light.png",
-      "setupMs": 1305,
+      "setupMs": 912,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -74528,7 +74529,7 @@
       "size": "1280",
       "theme": "light",
       "file": "puzzles-puzzle-wrong__1280-light.png",
-      "setupMs": 1443,
+      "setupMs": 809,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -74812,7 +74813,7 @@
       "size": "1440",
       "theme": "light",
       "file": "puzzles-puzzle-wrong__1440-light.png",
-      "setupMs": 1297,
+      "setupMs": 900,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -75096,7 +75097,7 @@
       "size": "1920",
       "theme": "light",
       "file": "puzzles-puzzle-wrong__1920-light.png",
-      "setupMs": 1055,
+      "setupMs": 871,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -75380,7 +75381,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "puzzles-puzzle-wrong__390-dark-dark.png",
-      "setupMs": 866,
+      "setupMs": 745,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -75664,7 +75665,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "puzzles-puzzle-wrong__1440-dark-dark.png",
-      "setupMs": 913,
+      "setupMs": 890,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -75948,7 +75949,7 @@
       "size": "390",
       "theme": "light",
       "file": "puzzles-puzzle-correct__390-light.png",
-      "setupMs": 1006,
+      "setupMs": 966,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -76138,7 +76139,7 @@
           "lineHeight": "16px",
           "color": "rgb(40, 123, 60)",
           "weight": "400",
-          "sample": "p{这一题已经通过。}",
+          "sample": "p{第一次做对这道题。}",
           "count": 1
         },
         {
@@ -76261,7 +76262,7 @@
       "size": "768",
       "theme": "light",
       "file": "puzzles-puzzle-correct__768-light.png",
-      "setupMs": 990,
+      "setupMs": 896,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -76451,7 +76452,7 @@
           "lineHeight": "16px",
           "color": "rgb(40, 123, 60)",
           "weight": "400",
-          "sample": "p{这一题已经通过。}",
+          "sample": "p{第一次做对这道题。}",
           "count": 1
         },
         {
@@ -76574,7 +76575,7 @@
       "size": "1024",
       "theme": "light",
       "file": "puzzles-puzzle-correct__1024-light.png",
-      "setupMs": 1227,
+      "setupMs": 928,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -76764,7 +76765,7 @@
           "lineHeight": "16px",
           "color": "rgb(40, 123, 60)",
           "weight": "400",
-          "sample": "p{这一题已经通过。}",
+          "sample": "p{第一次做对这道题。}",
           "count": 1
         },
         {
@@ -76887,7 +76888,7 @@
       "size": "1280",
       "theme": "light",
       "file": "puzzles-puzzle-correct__1280-light.png",
-      "setupMs": 1141,
+      "setupMs": 1157,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -77077,7 +77078,7 @@
           "lineHeight": "16px",
           "color": "rgb(40, 123, 60)",
           "weight": "400",
-          "sample": "p{这一题已经通过。}",
+          "sample": "p{第一次做对这道题。}",
           "count": 1
         },
         {
@@ -77200,7 +77201,7 @@
       "size": "1440",
       "theme": "light",
       "file": "puzzles-puzzle-correct__1440-light.png",
-      "setupMs": 1855,
+      "setupMs": 1204,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -77390,7 +77391,7 @@
           "lineHeight": "16px",
           "color": "rgb(40, 123, 60)",
           "weight": "400",
-          "sample": "p{这一题已经通过。}",
+          "sample": "p{第一次做对这道题。}",
           "count": 1
         },
         {
@@ -77513,7 +77514,7 @@
       "size": "1920",
       "theme": "light",
       "file": "puzzles-puzzle-correct__1920-light.png",
-      "setupMs": 1583,
+      "setupMs": 1242,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -77703,7 +77704,7 @@
           "lineHeight": "16px",
           "color": "rgb(40, 123, 60)",
           "weight": "400",
-          "sample": "p{这一题已经通过。}",
+          "sample": "p{第一次做对这道题。}",
           "count": 1
         },
         {
@@ -77826,7 +77827,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "puzzles-puzzle-correct__390-dark-dark.png",
-      "setupMs": 1304,
+      "setupMs": 1033,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -78016,7 +78017,7 @@
           "lineHeight": "16px",
           "color": "rgb(95, 191, 118)",
           "weight": "400",
-          "sample": "p{这一题已经通过。}",
+          "sample": "p{第一次做对这道题。}",
           "count": 1
         },
         {
@@ -78139,7 +78140,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "puzzles-puzzle-correct__1440-dark-dark.png",
-      "setupMs": 1959,
+      "setupMs": 1181,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -78329,7 +78330,7 @@
           "lineHeight": "16px",
           "color": "rgb(95, 191, 118)",
           "weight": "400",
-          "sample": "p{这一题已经通过。}",
+          "sample": "p{第一次做对这道题。}",
           "count": 1
         },
         {
@@ -78452,7 +78453,7 @@
       "size": "390",
       "theme": "light",
       "file": "puzzles-puzzle-list-partial__390-light.png",
-      "setupMs": 1656,
+      "setupMs": 642,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -78555,7 +78556,7 @@
           "lineHeight": "22px",
           "color": "rgb(111, 103, 94)",
           "weight": "400",
-          "sample": "p{十五道题按战术分成六类。分类的先后是教学上的由浅}",
+          "sample": "p{15 道题按战术分成 6 类。分类的先后是教学上}",
           "count": 1
         },
         {
@@ -78744,7 +78745,7 @@
       "size": "768",
       "theme": "light",
       "file": "puzzles-puzzle-list-partial__768-light.png",
-      "setupMs": 1285,
+      "setupMs": 634,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -78847,7 +78848,7 @@
           "lineHeight": "22px",
           "color": "rgb(111, 103, 94)",
           "weight": "400",
-          "sample": "p{十五道题按战术分成六类。分类的先后是教学上的由浅}",
+          "sample": "p{15 道题按战术分成 6 类。分类的先后是教学上}",
           "count": 1
         },
         {
@@ -79036,7 +79037,7 @@
       "size": "1024",
       "theme": "light",
       "file": "puzzles-puzzle-list-partial__1024-light.png",
-      "setupMs": 649,
+      "setupMs": 616,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -79045,7 +79046,7 @@
       "metaThemeColor": "#f6f4f0",
       "scrollContainers": [
         {
-          "element": "main{残局挑战十五道题按战术分成六类。分类的先后是教学}",
+          "element": "main{残局挑战15 道题按战术分成 6 类。分类的先后}",
           "clientHeight": 831,
           "scrollHeight": 1562,
           "hidden": 731
@@ -79146,7 +79147,7 @@
           "lineHeight": "22px",
           "color": "rgb(111, 103, 94)",
           "weight": "400",
-          "sample": "p{十五道题按战术分成六类。分类的先后是教学上的由浅}",
+          "sample": "p{15 道题按战术分成 6 类。分类的先后是教学上}",
           "count": 1
         },
         {
@@ -79335,7 +79336,7 @@
       "size": "1280",
       "theme": "light",
       "file": "puzzles-puzzle-list-partial__1280-light.png",
-      "setupMs": 713,
+      "setupMs": 676,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -79344,7 +79345,7 @@
       "metaThemeColor": "#f6f4f0",
       "scrollContainers": [
         {
-          "element": "main{残局挑战十五道题按战术分成六类。分类的先后是教学}",
+          "element": "main{残局挑战15 道题按战术分成 6 类。分类的先后}",
           "clientHeight": 831,
           "scrollHeight": 1562,
           "hidden": 731
@@ -79445,7 +79446,7 @@
           "lineHeight": "22px",
           "color": "rgb(111, 103, 94)",
           "weight": "400",
-          "sample": "p{十五道题按战术分成六类。分类的先后是教学上的由浅}",
+          "sample": "p{15 道题按战术分成 6 类。分类的先后是教学上}",
           "count": 1
         },
         {
@@ -79634,7 +79635,7 @@
       "size": "1440",
       "theme": "light",
       "file": "puzzles-puzzle-list-partial__1440-light.png",
-      "setupMs": 780,
+      "setupMs": 733,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -79643,7 +79644,7 @@
       "metaThemeColor": "#f6f4f0",
       "scrollContainers": [
         {
-          "element": "main{残局挑战十五道题按战术分成六类。分类的先后是教学}",
+          "element": "main{残局挑战15 道题按战术分成 6 类。分类的先后}",
           "clientHeight": 831,
           "scrollHeight": 1562,
           "hidden": 731
@@ -79744,7 +79745,7 @@
           "lineHeight": "22px",
           "color": "rgb(111, 103, 94)",
           "weight": "400",
-          "sample": "p{十五道题按战术分成六类。分类的先后是教学上的由浅}",
+          "sample": "p{15 道题按战术分成 6 类。分类的先后是教学上}",
           "count": 1
         },
         {
@@ -79933,7 +79934,7 @@
       "size": "1920",
       "theme": "light",
       "file": "puzzles-puzzle-list-partial__1920-light.png",
-      "setupMs": 778,
+      "setupMs": 884,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -79942,7 +79943,7 @@
       "metaThemeColor": "#f6f4f0",
       "scrollContainers": [
         {
-          "element": "main{残局挑战十五道题按战术分成六类。分类的先后是教学}",
+          "element": "main{残局挑战15 道题按战术分成 6 类。分类的先后}",
           "clientHeight": 831,
           "scrollHeight": 1562,
           "hidden": 731
@@ -80043,7 +80044,7 @@
           "lineHeight": "22px",
           "color": "rgb(111, 103, 94)",
           "weight": "400",
-          "sample": "p{十五道题按战术分成六类。分类的先后是教学上的由浅}",
+          "sample": "p{15 道题按战术分成 6 类。分类的先后是教学上}",
           "count": 1
         },
         {
@@ -80232,7 +80233,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "puzzles-puzzle-list-partial__390-dark-dark.png",
-      "setupMs": 695,
+      "setupMs": 686,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -80335,7 +80336,7 @@
           "lineHeight": "22px",
           "color": "rgb(154, 160, 170)",
           "weight": "400",
-          "sample": "p{十五道题按战术分成六类。分类的先后是教学上的由浅}",
+          "sample": "p{15 道题按战术分成 6 类。分类的先后是教学上}",
           "count": 1
         },
         {
@@ -80524,7 +80525,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "puzzles-puzzle-list-partial__1440-dark-dark.png",
-      "setupMs": 752,
+      "setupMs": 917,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -80533,7 +80534,7 @@
       "metaThemeColor": "#f6f4f0",
       "scrollContainers": [
         {
-          "element": "main{残局挑战十五道题按战术分成六类。分类的先后是教学}",
+          "element": "main{残局挑战15 道题按战术分成 6 类。分类的先后}",
           "clientHeight": 831,
           "scrollHeight": 1562,
           "hidden": 731
@@ -80634,7 +80635,7 @@
           "lineHeight": "22px",
           "color": "rgb(154, 160, 170)",
           "weight": "400",
-          "sample": "p{十五道题按战术分成六类。分类的先后是教学上的由浅}",
+          "sample": "p{15 道题按战术分成 6 类。分类的先后是教学上}",
           "count": 1
         },
         {
@@ -80818,12 +80819,2383 @@
       }
     },
     {
+      "state": "puzzle-category-done",
+      "group": "puzzles",
+      "size": "390",
+      "theme": "light",
+      "file": "puzzles-puzzle-category-done__390-light.png",
+      "setupMs": 734,
+      "boardDetails": {
+        "coordText": null,
+        "intersectionHit": null
+      },
+      "spinner": null,
+      "metaThemeColor": "#f6f4f0",
+      "scrollContainers": [],
+      "viewport": {
+        "vw": 390,
+        "vh": 844
+      },
+      "document": {
+        "scrollWidth": 390,
+        "scrollHeight": 1697,
+        "horizontalOverflow": false,
+        "bodyScrollHeight": 1697
+      },
+      "regions": {
+        "header": {
+          "x": 0,
+          "y": 0,
+          "w": 390,
+          "h": 113
+        },
+        "main": {
+          "x": 0,
+          "y": 113,
+          "w": 390,
+          "h": 1584
+        },
+        "asides": [],
+        "mainGridTemplate": "none"
+      },
+      "board": null,
+      "gridLine": null,
+      "boardContrast": {
+        "lastMoveDot": null,
+        "winRing": null,
+        "markText": null,
+        "stones": {
+          "blackEdge": 10.77,
+          "blackBody": 3.63,
+          "whiteEdge": 1.07,
+          "whiteBody": 1.45
+        },
+        "note": null
+      },
+      "boardRatioOfViewport": null,
+      "statusPill": null,
+      "fontHistogram": {
+        "14px": 28,
+        "11px": 1,
+        "20px": 1,
+        "12px": 53,
+        "16px": 3
+      },
+      "typeSamples": [
+        {
+          "fontSize": "20px",
+          "lineHeight": "28px",
+          "color": "rgb(28, 25, 23)",
+          "weight": "600",
+          "sample": "h1{残局挑战}",
+          "count": 1
+        },
+        {
+          "fontSize": "16px",
+          "lineHeight": "24px",
+          "color": "rgb(28, 25, 23)",
+          "weight": "400",
+          "sample": "span{已完成}",
+          "count": 3
+        },
+        {
+          "fontSize": "14px",
+          "lineHeight": "20px",
+          "color": "rgb(28, 25, 23)",
+          "weight": "600",
+          "sample": "div{Gomoku Lab}",
+          "count": 1
+        },
+        {
+          "fontSize": "14px",
+          "lineHeight": "20px",
+          "color": "rgb(111, 103, 94)",
+          "weight": "500",
+          "sample": "button{对战}",
+          "count": 3
+        },
+        {
+          "fontSize": "14px",
+          "lineHeight": "20px",
+          "color": "rgb(44, 119, 104)",
+          "weight": "500",
+          "sample": "button{残局}",
+          "count": 1
+        },
+        {
+          "fontSize": "14px",
+          "lineHeight": "22px",
+          "color": "rgb(111, 103, 94)",
+          "weight": "400",
+          "sample": "p{15 道题按战术分成 6 类。分类的先后是教学上}",
+          "count": 1
+        },
+        {
+          "fontSize": "14px",
+          "lineHeight": "20px",
+          "color": "rgb(255, 255, 255)",
+          "weight": "500",
+          "sample": "button{继续挑战：堵住横向冲四}",
+          "count": 1
+        },
+        {
+          "fontSize": "14px",
+          "lineHeight": "20px",
+          "color": "rgb(111, 103, 94)",
+          "weight": "600",
+          "sample": "h2{一步获胜}",
+          "count": 6
+        },
+        {
+          "fontSize": "14px",
+          "lineHeight": "20px",
+          "color": "rgb(28, 25, 23)",
+          "weight": "500",
+          "sample": "span{横向补满}",
+          "count": 15
+        },
+        {
+          "fontSize": "12px",
+          "lineHeight": "16px",
+          "color": "rgb(111, 103, 94)",
+          "weight": "400",
+          "sample": "span[puzzle-progress]{已通过 3 / 15 题}",
+          "count": 31
+        },
+        {
+          "fontSize": "12px",
+          "lineHeight": "16px",
+          "color": "rgb(115, 106, 97)",
+          "weight": "400",
+          "sample": "span{20%}",
+          "count": 7
+        },
+        {
+          "fontSize": "12px",
+          "lineHeight": "16px",
+          "color": "rgb(255, 255, 255)",
+          "weight": "700",
+          "sample": "span{✓}",
+          "count": 3
+        },
+        {
+          "fontSize": "12px",
+          "lineHeight": "16px",
+          "color": "rgb(111, 103, 94)",
+          "weight": "700",
+          "sample": "span{1}",
+          "count": 12
+        },
+        {
+          "fontSize": "11px",
+          "lineHeight": "16px",
+          "color": "rgb(115, 106, 97)",
+          "weight": "400",
+          "sample": "div{五子棋实验室}",
+          "count": 1
+        }
+      ],
+      "contrastViolations": [],
+      "smallTargets": [
+        {
+          "element": "button{对战}",
+          "w": 85,
+          "h": 36,
+          "under24": false
+        },
+        {
+          "element": "button{教学}",
+          "w": 85,
+          "h": 36,
+          "under24": false
+        },
+        {
+          "element": "button{残局}",
+          "w": 85,
+          "h": 36,
+          "under24": false
+        },
+        {
+          "element": "button{复盘}",
+          "w": 85,
+          "h": 36,
+          "under24": false
+        },
+        {
+          "element": "button",
+          "w": 36,
+          "h": 36,
+          "under24": false
+        },
+        {
+          "element": "button{继续挑战：堵住横向冲四}",
+          "w": 332,
+          "h": 38,
+          "under24": false
+        }
+      ],
+      "headings": [
+        {
+          "level": "h1",
+          "text": "残局挑战",
+          "top": 133,
+          "h": 28
+        },
+        {
+          "level": "h2",
+          "text": "一步获胜",
+          "top": 387,
+          "h": 20
+        },
+        {
+          "level": "h2",
+          "text": "挡住直接胜着",
+          "top": 641,
+          "h": 20
+        },
+        {
+          "level": "h2",
+          "text": "构造活四",
+          "top": 895,
+          "h": 20
+        },
+        {
+          "level": "h2",
+          "text": "双重威胁",
+          "top": 1079,
+          "h": 20
+        },
+        {
+          "level": "h2",
+          "text": "连续冲四",
+          "top": 1333,
+          "h": 20
+        },
+        {
+          "level": "h2",
+          "text": "强制获胜路线",
+          "top": 1517,
+          "h": 20
+        }
+      ],
+      "buttons": [
+        "对战",
+        "教学",
+        "残局",
+        "复盘",
+        "继续挑战：堵住横向冲四",
+        "✓横向补满一步获胜›",
+        "✓斜向补满一步获胜›",
+        "✓竖向补满一步获胜›",
+        "1堵住横向冲四挡住直接胜着›",
+        "2堵住斜向冲四挡住直接胜着›",
+        "3堵住竖向冲四挡住直接胜着›",
+        "1把活三做成活四构造活四›",
+        "2斜线上的活四构造活四›",
+        "1一手做出两个冲四双重威胁›",
+        "2四三：冲四配活三双重威胁›",
+        "3一手做出两个活三双重威胁›",
+        "1冲四开场连续冲四›",
+        "2冲四连击连续冲四›",
+        "1换个地方的四三强制获胜路线›",
+        "2对手也有威胁时强制获胜路线›"
+      ],
+      "overflowing": [],
+      "clipped": [],
+      "counts": {
+        "elements": 196,
+        "overflowing": 0,
+        "clipped": 0,
+        "contrastViolations": 0,
+        "smallTargets": 6
+      }
+    },
+    {
+      "state": "puzzle-category-done",
+      "group": "puzzles",
+      "size": "768",
+      "theme": "light",
+      "file": "puzzles-puzzle-category-done__768-light.png",
+      "setupMs": 686,
+      "boardDetails": {
+        "coordText": null,
+        "intersectionHit": null
+      },
+      "spinner": null,
+      "metaThemeColor": "#f6f4f0",
+      "scrollContainers": [],
+      "viewport": {
+        "vw": 768,
+        "vh": 900
+      },
+      "document": {
+        "scrollWidth": 768,
+        "scrollHeight": 1631,
+        "horizontalOverflow": false,
+        "bodyScrollHeight": 1631
+      },
+      "regions": {
+        "header": {
+          "x": 0,
+          "y": 0,
+          "w": 768,
+          "h": 69
+        },
+        "main": {
+          "x": 0,
+          "y": 69,
+          "w": 768,
+          "h": 1562
+        },
+        "asides": [],
+        "mainGridTemplate": "none"
+      },
+      "board": null,
+      "gridLine": null,
+      "boardContrast": {
+        "lastMoveDot": null,
+        "winRing": null,
+        "markText": null,
+        "stones": {
+          "blackEdge": 10.77,
+          "blackBody": 3.63,
+          "whiteEdge": 1.07,
+          "whiteBody": 1.45
+        },
+        "note": null
+      },
+      "boardRatioOfViewport": null,
+      "statusPill": null,
+      "fontHistogram": {
+        "14px": 28,
+        "11px": 1,
+        "20px": 1,
+        "12px": 53,
+        "16px": 3
+      },
+      "typeSamples": [
+        {
+          "fontSize": "20px",
+          "lineHeight": "28px",
+          "color": "rgb(28, 25, 23)",
+          "weight": "600",
+          "sample": "h1{残局挑战}",
+          "count": 1
+        },
+        {
+          "fontSize": "16px",
+          "lineHeight": "24px",
+          "color": "rgb(28, 25, 23)",
+          "weight": "400",
+          "sample": "span{已完成}",
+          "count": 3
+        },
+        {
+          "fontSize": "14px",
+          "lineHeight": "20px",
+          "color": "rgb(28, 25, 23)",
+          "weight": "600",
+          "sample": "div{Gomoku Lab}",
+          "count": 1
+        },
+        {
+          "fontSize": "14px",
+          "lineHeight": "20px",
+          "color": "rgb(111, 103, 94)",
+          "weight": "500",
+          "sample": "button{对战}",
+          "count": 3
+        },
+        {
+          "fontSize": "14px",
+          "lineHeight": "20px",
+          "color": "rgb(44, 119, 104)",
+          "weight": "500",
+          "sample": "button{残局}",
+          "count": 1
+        },
+        {
+          "fontSize": "14px",
+          "lineHeight": "22px",
+          "color": "rgb(111, 103, 94)",
+          "weight": "400",
+          "sample": "p{15 道题按战术分成 6 类。分类的先后是教学上}",
+          "count": 1
+        },
+        {
+          "fontSize": "14px",
+          "lineHeight": "20px",
+          "color": "rgb(255, 255, 255)",
+          "weight": "500",
+          "sample": "button{继续挑战：堵住横向冲四}",
+          "count": 1
+        },
+        {
+          "fontSize": "14px",
+          "lineHeight": "20px",
+          "color": "rgb(111, 103, 94)",
+          "weight": "600",
+          "sample": "h2{一步获胜}",
+          "count": 6
+        },
+        {
+          "fontSize": "14px",
+          "lineHeight": "20px",
+          "color": "rgb(28, 25, 23)",
+          "weight": "500",
+          "sample": "span{横向补满}",
+          "count": 15
+        },
+        {
+          "fontSize": "12px",
+          "lineHeight": "16px",
+          "color": "rgb(111, 103, 94)",
+          "weight": "400",
+          "sample": "span[puzzle-progress]{已通过 3 / 15 题}",
+          "count": 31
+        },
+        {
+          "fontSize": "12px",
+          "lineHeight": "16px",
+          "color": "rgb(115, 106, 97)",
+          "weight": "400",
+          "sample": "span{20%}",
+          "count": 7
+        },
+        {
+          "fontSize": "12px",
+          "lineHeight": "16px",
+          "color": "rgb(255, 255, 255)",
+          "weight": "700",
+          "sample": "span{✓}",
+          "count": 3
+        },
+        {
+          "fontSize": "12px",
+          "lineHeight": "16px",
+          "color": "rgb(111, 103, 94)",
+          "weight": "700",
+          "sample": "span{1}",
+          "count": 12
+        },
+        {
+          "fontSize": "11px",
+          "lineHeight": "16px",
+          "color": "rgb(115, 106, 97)",
+          "weight": "400",
+          "sample": "div{五子棋实验室}",
+          "count": 1
+        }
+      ],
+      "contrastViolations": [],
+      "smallTargets": [
+        {
+          "element": "button{对战}",
+          "w": 52,
+          "h": 36,
+          "under24": false
+        },
+        {
+          "element": "button{教学}",
+          "w": 52,
+          "h": 36,
+          "under24": false
+        },
+        {
+          "element": "button{残局}",
+          "w": 52,
+          "h": 36,
+          "under24": false
+        },
+        {
+          "element": "button{复盘}",
+          "w": 52,
+          "h": 36,
+          "under24": false
+        },
+        {
+          "element": "button",
+          "w": 36,
+          "h": 36,
+          "under24": false
+        },
+        {
+          "element": "button{继续挑战：堵住横向冲四}",
+          "w": 702,
+          "h": 38,
+          "under24": false
+        }
+      ],
+      "headings": [
+        {
+          "level": "h1",
+          "text": "残局挑战",
+          "top": 89,
+          "h": 28
+        },
+        {
+          "level": "h2",
+          "text": "一步获胜",
+          "top": 321,
+          "h": 20
+        },
+        {
+          "level": "h2",
+          "text": "挡住直接胜着",
+          "top": 575,
+          "h": 20
+        },
+        {
+          "level": "h2",
+          "text": "构造活四",
+          "top": 829,
+          "h": 20
+        },
+        {
+          "level": "h2",
+          "text": "双重威胁",
+          "top": 1013,
+          "h": 20
+        },
+        {
+          "level": "h2",
+          "text": "连续冲四",
+          "top": 1267,
+          "h": 20
+        },
+        {
+          "level": "h2",
+          "text": "强制获胜路线",
+          "top": 1451,
+          "h": 20
+        }
+      ],
+      "buttons": [
+        "对战",
+        "教学",
+        "残局",
+        "复盘",
+        "继续挑战：堵住横向冲四",
+        "✓横向补满一步获胜›",
+        "✓斜向补满一步获胜›",
+        "✓竖向补满一步获胜›",
+        "1堵住横向冲四挡住直接胜着›",
+        "2堵住斜向冲四挡住直接胜着›",
+        "3堵住竖向冲四挡住直接胜着›",
+        "1把活三做成活四构造活四›",
+        "2斜线上的活四构造活四›",
+        "1一手做出两个冲四双重威胁›",
+        "2四三：冲四配活三双重威胁›",
+        "3一手做出两个活三双重威胁›",
+        "1冲四开场连续冲四›",
+        "2冲四连击连续冲四›",
+        "1换个地方的四三强制获胜路线›",
+        "2对手也有威胁时强制获胜路线›"
+      ],
+      "overflowing": [],
+      "clipped": [],
+      "counts": {
+        "elements": 196,
+        "overflowing": 0,
+        "clipped": 0,
+        "contrastViolations": 0,
+        "smallTargets": 6
+      }
+    },
+    {
+      "state": "puzzle-category-done",
+      "group": "puzzles",
+      "size": "1024",
+      "theme": "light",
+      "file": "puzzles-puzzle-category-done__1024-light.png",
+      "setupMs": 845,
+      "boardDetails": {
+        "coordText": null,
+        "intersectionHit": null
+      },
+      "spinner": null,
+      "metaThemeColor": "#f6f4f0",
+      "scrollContainers": [
+        {
+          "element": "main{残局挑战15 道题按战术分成 6 类。分类的先后}",
+          "clientHeight": 831,
+          "scrollHeight": 1562,
+          "hidden": 731
+        }
+      ],
+      "viewport": {
+        "vw": 1024,
+        "vh": 900
+      },
+      "document": {
+        "scrollWidth": 1024,
+        "scrollHeight": 900,
+        "horizontalOverflow": false,
+        "bodyScrollHeight": 900
+      },
+      "regions": {
+        "header": {
+          "x": 0,
+          "y": 0,
+          "w": 1024,
+          "h": 69
+        },
+        "main": {
+          "x": 0,
+          "y": 69,
+          "w": 1024,
+          "h": 831
+        },
+        "asides": [],
+        "mainGridTemplate": "none"
+      },
+      "board": null,
+      "gridLine": null,
+      "boardContrast": {
+        "lastMoveDot": null,
+        "winRing": null,
+        "markText": null,
+        "stones": {
+          "blackEdge": 10.77,
+          "blackBody": 3.63,
+          "whiteEdge": 1.07,
+          "whiteBody": 1.45
+        },
+        "note": null
+      },
+      "boardRatioOfViewport": null,
+      "statusPill": null,
+      "fontHistogram": {
+        "14px": 28,
+        "11px": 1,
+        "20px": 1,
+        "12px": 53,
+        "16px": 3
+      },
+      "typeSamples": [
+        {
+          "fontSize": "20px",
+          "lineHeight": "28px",
+          "color": "rgb(28, 25, 23)",
+          "weight": "600",
+          "sample": "h1{残局挑战}",
+          "count": 1
+        },
+        {
+          "fontSize": "16px",
+          "lineHeight": "24px",
+          "color": "rgb(28, 25, 23)",
+          "weight": "400",
+          "sample": "span{已完成}",
+          "count": 3
+        },
+        {
+          "fontSize": "14px",
+          "lineHeight": "20px",
+          "color": "rgb(28, 25, 23)",
+          "weight": "600",
+          "sample": "div{Gomoku Lab}",
+          "count": 1
+        },
+        {
+          "fontSize": "14px",
+          "lineHeight": "20px",
+          "color": "rgb(111, 103, 94)",
+          "weight": "500",
+          "sample": "button{对战}",
+          "count": 3
+        },
+        {
+          "fontSize": "14px",
+          "lineHeight": "20px",
+          "color": "rgb(44, 119, 104)",
+          "weight": "500",
+          "sample": "button{残局}",
+          "count": 1
+        },
+        {
+          "fontSize": "14px",
+          "lineHeight": "22px",
+          "color": "rgb(111, 103, 94)",
+          "weight": "400",
+          "sample": "p{15 道题按战术分成 6 类。分类的先后是教学上}",
+          "count": 1
+        },
+        {
+          "fontSize": "14px",
+          "lineHeight": "20px",
+          "color": "rgb(255, 255, 255)",
+          "weight": "500",
+          "sample": "button{继续挑战：堵住横向冲四}",
+          "count": 1
+        },
+        {
+          "fontSize": "14px",
+          "lineHeight": "20px",
+          "color": "rgb(111, 103, 94)",
+          "weight": "600",
+          "sample": "h2{一步获胜}",
+          "count": 6
+        },
+        {
+          "fontSize": "14px",
+          "lineHeight": "20px",
+          "color": "rgb(28, 25, 23)",
+          "weight": "500",
+          "sample": "span{横向补满}",
+          "count": 15
+        },
+        {
+          "fontSize": "12px",
+          "lineHeight": "16px",
+          "color": "rgb(111, 103, 94)",
+          "weight": "400",
+          "sample": "span[puzzle-progress]{已通过 3 / 15 题}",
+          "count": 31
+        },
+        {
+          "fontSize": "12px",
+          "lineHeight": "16px",
+          "color": "rgb(115, 106, 97)",
+          "weight": "400",
+          "sample": "span{20%}",
+          "count": 7
+        },
+        {
+          "fontSize": "12px",
+          "lineHeight": "16px",
+          "color": "rgb(255, 255, 255)",
+          "weight": "700",
+          "sample": "span{✓}",
+          "count": 3
+        },
+        {
+          "fontSize": "12px",
+          "lineHeight": "16px",
+          "color": "rgb(111, 103, 94)",
+          "weight": "700",
+          "sample": "span{1}",
+          "count": 12
+        },
+        {
+          "fontSize": "11px",
+          "lineHeight": "16px",
+          "color": "rgb(115, 106, 97)",
+          "weight": "400",
+          "sample": "div{五子棋实验室}",
+          "count": 1
+        }
+      ],
+      "contrastViolations": [],
+      "smallTargets": [
+        {
+          "element": "button{对战}",
+          "w": 52,
+          "h": 36,
+          "under24": false
+        },
+        {
+          "element": "button{教学}",
+          "w": 52,
+          "h": 36,
+          "under24": false
+        },
+        {
+          "element": "button{残局}",
+          "w": 52,
+          "h": 36,
+          "under24": false
+        },
+        {
+          "element": "button{复盘}",
+          "w": 52,
+          "h": 36,
+          "under24": false
+        },
+        {
+          "element": "button",
+          "w": 36,
+          "h": 36,
+          "under24": false
+        },
+        {
+          "element": "button{继续挑战：堵住横向冲四}",
+          "w": 686,
+          "h": 38,
+          "under24": false
+        }
+      ],
+      "headings": [
+        {
+          "level": "h1",
+          "text": "残局挑战",
+          "top": 89,
+          "h": 28
+        },
+        {
+          "level": "h2",
+          "text": "一步获胜",
+          "top": 321,
+          "h": 20
+        },
+        {
+          "level": "h2",
+          "text": "挡住直接胜着",
+          "top": 575,
+          "h": 20
+        },
+        {
+          "level": "h2",
+          "text": "构造活四",
+          "top": 829,
+          "h": 20
+        },
+        {
+          "level": "h2",
+          "text": "双重威胁",
+          "top": 1013,
+          "h": 20
+        },
+        {
+          "level": "h2",
+          "text": "连续冲四",
+          "top": 1267,
+          "h": 20
+        },
+        {
+          "level": "h2",
+          "text": "强制获胜路线",
+          "top": 1451,
+          "h": 20
+        }
+      ],
+      "buttons": [
+        "对战",
+        "教学",
+        "残局",
+        "复盘",
+        "继续挑战：堵住横向冲四",
+        "✓横向补满一步获胜›",
+        "✓斜向补满一步获胜›",
+        "✓竖向补满一步获胜›",
+        "1堵住横向冲四挡住直接胜着›",
+        "2堵住斜向冲四挡住直接胜着›",
+        "3堵住竖向冲四挡住直接胜着›",
+        "1把活三做成活四构造活四›",
+        "2斜线上的活四构造活四›",
+        "1一手做出两个冲四双重威胁›",
+        "2四三：冲四配活三双重威胁›",
+        "3一手做出两个活三双重威胁›",
+        "1冲四开场连续冲四›",
+        "2冲四连击连续冲四›",
+        "1换个地方的四三强制获胜路线›",
+        "2对手也有威胁时强制获胜路线›"
+      ],
+      "overflowing": [],
+      "clipped": [],
+      "counts": {
+        "elements": 196,
+        "overflowing": 0,
+        "clipped": 0,
+        "contrastViolations": 0,
+        "smallTargets": 6
+      }
+    },
+    {
+      "state": "puzzle-category-done",
+      "group": "puzzles",
+      "size": "1280",
+      "theme": "light",
+      "file": "puzzles-puzzle-category-done__1280-light.png",
+      "setupMs": 888,
+      "boardDetails": {
+        "coordText": null,
+        "intersectionHit": null
+      },
+      "spinner": null,
+      "metaThemeColor": "#f6f4f0",
+      "scrollContainers": [
+        {
+          "element": "main{残局挑战15 道题按战术分成 6 类。分类的先后}",
+          "clientHeight": 831,
+          "scrollHeight": 1562,
+          "hidden": 731
+        }
+      ],
+      "viewport": {
+        "vw": 1280,
+        "vh": 900
+      },
+      "document": {
+        "scrollWidth": 1280,
+        "scrollHeight": 900,
+        "horizontalOverflow": false,
+        "bodyScrollHeight": 900
+      },
+      "regions": {
+        "header": {
+          "x": 0,
+          "y": 0,
+          "w": 1280,
+          "h": 69
+        },
+        "main": {
+          "x": 0,
+          "y": 69,
+          "w": 1280,
+          "h": 831
+        },
+        "asides": [],
+        "mainGridTemplate": "none"
+      },
+      "board": null,
+      "gridLine": null,
+      "boardContrast": {
+        "lastMoveDot": null,
+        "winRing": null,
+        "markText": null,
+        "stones": {
+          "blackEdge": 10.77,
+          "blackBody": 3.63,
+          "whiteEdge": 1.07,
+          "whiteBody": 1.45
+        },
+        "note": null
+      },
+      "boardRatioOfViewport": null,
+      "statusPill": null,
+      "fontHistogram": {
+        "14px": 28,
+        "11px": 1,
+        "20px": 1,
+        "12px": 53,
+        "16px": 3
+      },
+      "typeSamples": [
+        {
+          "fontSize": "20px",
+          "lineHeight": "28px",
+          "color": "rgb(28, 25, 23)",
+          "weight": "600",
+          "sample": "h1{残局挑战}",
+          "count": 1
+        },
+        {
+          "fontSize": "16px",
+          "lineHeight": "24px",
+          "color": "rgb(28, 25, 23)",
+          "weight": "400",
+          "sample": "span{已完成}",
+          "count": 3
+        },
+        {
+          "fontSize": "14px",
+          "lineHeight": "20px",
+          "color": "rgb(28, 25, 23)",
+          "weight": "600",
+          "sample": "div{Gomoku Lab}",
+          "count": 1
+        },
+        {
+          "fontSize": "14px",
+          "lineHeight": "20px",
+          "color": "rgb(111, 103, 94)",
+          "weight": "500",
+          "sample": "button{对战}",
+          "count": 3
+        },
+        {
+          "fontSize": "14px",
+          "lineHeight": "20px",
+          "color": "rgb(44, 119, 104)",
+          "weight": "500",
+          "sample": "button{残局}",
+          "count": 1
+        },
+        {
+          "fontSize": "14px",
+          "lineHeight": "22px",
+          "color": "rgb(111, 103, 94)",
+          "weight": "400",
+          "sample": "p{15 道题按战术分成 6 类。分类的先后是教学上}",
+          "count": 1
+        },
+        {
+          "fontSize": "14px",
+          "lineHeight": "20px",
+          "color": "rgb(255, 255, 255)",
+          "weight": "500",
+          "sample": "button{继续挑战：堵住横向冲四}",
+          "count": 1
+        },
+        {
+          "fontSize": "14px",
+          "lineHeight": "20px",
+          "color": "rgb(111, 103, 94)",
+          "weight": "600",
+          "sample": "h2{一步获胜}",
+          "count": 6
+        },
+        {
+          "fontSize": "14px",
+          "lineHeight": "20px",
+          "color": "rgb(28, 25, 23)",
+          "weight": "500",
+          "sample": "span{横向补满}",
+          "count": 15
+        },
+        {
+          "fontSize": "12px",
+          "lineHeight": "16px",
+          "color": "rgb(111, 103, 94)",
+          "weight": "400",
+          "sample": "span[puzzle-progress]{已通过 3 / 15 题}",
+          "count": 31
+        },
+        {
+          "fontSize": "12px",
+          "lineHeight": "16px",
+          "color": "rgb(115, 106, 97)",
+          "weight": "400",
+          "sample": "span{20%}",
+          "count": 7
+        },
+        {
+          "fontSize": "12px",
+          "lineHeight": "16px",
+          "color": "rgb(255, 255, 255)",
+          "weight": "700",
+          "sample": "span{✓}",
+          "count": 3
+        },
+        {
+          "fontSize": "12px",
+          "lineHeight": "16px",
+          "color": "rgb(111, 103, 94)",
+          "weight": "700",
+          "sample": "span{1}",
+          "count": 12
+        },
+        {
+          "fontSize": "11px",
+          "lineHeight": "16px",
+          "color": "rgb(115, 106, 97)",
+          "weight": "400",
+          "sample": "div{五子棋实验室}",
+          "count": 1
+        }
+      ],
+      "contrastViolations": [],
+      "smallTargets": [
+        {
+          "element": "button{对战}",
+          "w": 52,
+          "h": 36,
+          "under24": false
+        },
+        {
+          "element": "button{教学}",
+          "w": 52,
+          "h": 36,
+          "under24": false
+        },
+        {
+          "element": "button{残局}",
+          "w": 52,
+          "h": 36,
+          "under24": false
+        },
+        {
+          "element": "button{复盘}",
+          "w": 52,
+          "h": 36,
+          "under24": false
+        },
+        {
+          "element": "button",
+          "w": 36,
+          "h": 36,
+          "under24": false
+        },
+        {
+          "element": "button{继续挑战：堵住横向冲四}",
+          "w": 686,
+          "h": 38,
+          "under24": false
+        }
+      ],
+      "headings": [
+        {
+          "level": "h1",
+          "text": "残局挑战",
+          "top": 89,
+          "h": 28
+        },
+        {
+          "level": "h2",
+          "text": "一步获胜",
+          "top": 321,
+          "h": 20
+        },
+        {
+          "level": "h2",
+          "text": "挡住直接胜着",
+          "top": 575,
+          "h": 20
+        },
+        {
+          "level": "h2",
+          "text": "构造活四",
+          "top": 829,
+          "h": 20
+        },
+        {
+          "level": "h2",
+          "text": "双重威胁",
+          "top": 1013,
+          "h": 20
+        },
+        {
+          "level": "h2",
+          "text": "连续冲四",
+          "top": 1267,
+          "h": 20
+        },
+        {
+          "level": "h2",
+          "text": "强制获胜路线",
+          "top": 1451,
+          "h": 20
+        }
+      ],
+      "buttons": [
+        "对战",
+        "教学",
+        "残局",
+        "复盘",
+        "继续挑战：堵住横向冲四",
+        "✓横向补满一步获胜›",
+        "✓斜向补满一步获胜›",
+        "✓竖向补满一步获胜›",
+        "1堵住横向冲四挡住直接胜着›",
+        "2堵住斜向冲四挡住直接胜着›",
+        "3堵住竖向冲四挡住直接胜着›",
+        "1把活三做成活四构造活四›",
+        "2斜线上的活四构造活四›",
+        "1一手做出两个冲四双重威胁›",
+        "2四三：冲四配活三双重威胁›",
+        "3一手做出两个活三双重威胁›",
+        "1冲四开场连续冲四›",
+        "2冲四连击连续冲四›",
+        "1换个地方的四三强制获胜路线›",
+        "2对手也有威胁时强制获胜路线›"
+      ],
+      "overflowing": [],
+      "clipped": [],
+      "counts": {
+        "elements": 196,
+        "overflowing": 0,
+        "clipped": 0,
+        "contrastViolations": 0,
+        "smallTargets": 6
+      }
+    },
+    {
+      "state": "puzzle-category-done",
+      "group": "puzzles",
+      "size": "1440",
+      "theme": "light",
+      "file": "puzzles-puzzle-category-done__1440-light.png",
+      "setupMs": 886,
+      "boardDetails": {
+        "coordText": null,
+        "intersectionHit": null
+      },
+      "spinner": null,
+      "metaThemeColor": "#f6f4f0",
+      "scrollContainers": [
+        {
+          "element": "main{残局挑战15 道题按战术分成 6 类。分类的先后}",
+          "clientHeight": 831,
+          "scrollHeight": 1562,
+          "hidden": 731
+        }
+      ],
+      "viewport": {
+        "vw": 1440,
+        "vh": 900
+      },
+      "document": {
+        "scrollWidth": 1440,
+        "scrollHeight": 900,
+        "horizontalOverflow": false,
+        "bodyScrollHeight": 900
+      },
+      "regions": {
+        "header": {
+          "x": 0,
+          "y": 0,
+          "w": 1440,
+          "h": 69
+        },
+        "main": {
+          "x": 0,
+          "y": 69,
+          "w": 1440,
+          "h": 831
+        },
+        "asides": [],
+        "mainGridTemplate": "none"
+      },
+      "board": null,
+      "gridLine": null,
+      "boardContrast": {
+        "lastMoveDot": null,
+        "winRing": null,
+        "markText": null,
+        "stones": {
+          "blackEdge": 10.77,
+          "blackBody": 3.63,
+          "whiteEdge": 1.07,
+          "whiteBody": 1.45
+        },
+        "note": null
+      },
+      "boardRatioOfViewport": null,
+      "statusPill": null,
+      "fontHistogram": {
+        "14px": 28,
+        "11px": 1,
+        "20px": 1,
+        "12px": 53,
+        "16px": 3
+      },
+      "typeSamples": [
+        {
+          "fontSize": "20px",
+          "lineHeight": "28px",
+          "color": "rgb(28, 25, 23)",
+          "weight": "600",
+          "sample": "h1{残局挑战}",
+          "count": 1
+        },
+        {
+          "fontSize": "16px",
+          "lineHeight": "24px",
+          "color": "rgb(28, 25, 23)",
+          "weight": "400",
+          "sample": "span{已完成}",
+          "count": 3
+        },
+        {
+          "fontSize": "14px",
+          "lineHeight": "20px",
+          "color": "rgb(28, 25, 23)",
+          "weight": "600",
+          "sample": "div{Gomoku Lab}",
+          "count": 1
+        },
+        {
+          "fontSize": "14px",
+          "lineHeight": "20px",
+          "color": "rgb(111, 103, 94)",
+          "weight": "500",
+          "sample": "button{对战}",
+          "count": 3
+        },
+        {
+          "fontSize": "14px",
+          "lineHeight": "20px",
+          "color": "rgb(44, 119, 104)",
+          "weight": "500",
+          "sample": "button{残局}",
+          "count": 1
+        },
+        {
+          "fontSize": "14px",
+          "lineHeight": "22px",
+          "color": "rgb(111, 103, 94)",
+          "weight": "400",
+          "sample": "p{15 道题按战术分成 6 类。分类的先后是教学上}",
+          "count": 1
+        },
+        {
+          "fontSize": "14px",
+          "lineHeight": "20px",
+          "color": "rgb(255, 255, 255)",
+          "weight": "500",
+          "sample": "button{继续挑战：堵住横向冲四}",
+          "count": 1
+        },
+        {
+          "fontSize": "14px",
+          "lineHeight": "20px",
+          "color": "rgb(111, 103, 94)",
+          "weight": "600",
+          "sample": "h2{一步获胜}",
+          "count": 6
+        },
+        {
+          "fontSize": "14px",
+          "lineHeight": "20px",
+          "color": "rgb(28, 25, 23)",
+          "weight": "500",
+          "sample": "span{横向补满}",
+          "count": 15
+        },
+        {
+          "fontSize": "12px",
+          "lineHeight": "16px",
+          "color": "rgb(111, 103, 94)",
+          "weight": "400",
+          "sample": "span[puzzle-progress]{已通过 3 / 15 题}",
+          "count": 31
+        },
+        {
+          "fontSize": "12px",
+          "lineHeight": "16px",
+          "color": "rgb(115, 106, 97)",
+          "weight": "400",
+          "sample": "span{20%}",
+          "count": 7
+        },
+        {
+          "fontSize": "12px",
+          "lineHeight": "16px",
+          "color": "rgb(255, 255, 255)",
+          "weight": "700",
+          "sample": "span{✓}",
+          "count": 3
+        },
+        {
+          "fontSize": "12px",
+          "lineHeight": "16px",
+          "color": "rgb(111, 103, 94)",
+          "weight": "700",
+          "sample": "span{1}",
+          "count": 12
+        },
+        {
+          "fontSize": "11px",
+          "lineHeight": "16px",
+          "color": "rgb(115, 106, 97)",
+          "weight": "400",
+          "sample": "div{五子棋实验室}",
+          "count": 1
+        }
+      ],
+      "contrastViolations": [],
+      "smallTargets": [
+        {
+          "element": "button{对战}",
+          "w": 52,
+          "h": 36,
+          "under24": false
+        },
+        {
+          "element": "button{教学}",
+          "w": 52,
+          "h": 36,
+          "under24": false
+        },
+        {
+          "element": "button{残局}",
+          "w": 52,
+          "h": 36,
+          "under24": false
+        },
+        {
+          "element": "button{复盘}",
+          "w": 52,
+          "h": 36,
+          "under24": false
+        },
+        {
+          "element": "button",
+          "w": 36,
+          "h": 36,
+          "under24": false
+        },
+        {
+          "element": "button{继续挑战：堵住横向冲四}",
+          "w": 686,
+          "h": 38,
+          "under24": false
+        }
+      ],
+      "headings": [
+        {
+          "level": "h1",
+          "text": "残局挑战",
+          "top": 89,
+          "h": 28
+        },
+        {
+          "level": "h2",
+          "text": "一步获胜",
+          "top": 321,
+          "h": 20
+        },
+        {
+          "level": "h2",
+          "text": "挡住直接胜着",
+          "top": 575,
+          "h": 20
+        },
+        {
+          "level": "h2",
+          "text": "构造活四",
+          "top": 829,
+          "h": 20
+        },
+        {
+          "level": "h2",
+          "text": "双重威胁",
+          "top": 1013,
+          "h": 20
+        },
+        {
+          "level": "h2",
+          "text": "连续冲四",
+          "top": 1267,
+          "h": 20
+        },
+        {
+          "level": "h2",
+          "text": "强制获胜路线",
+          "top": 1451,
+          "h": 20
+        }
+      ],
+      "buttons": [
+        "对战",
+        "教学",
+        "残局",
+        "复盘",
+        "继续挑战：堵住横向冲四",
+        "✓横向补满一步获胜›",
+        "✓斜向补满一步获胜›",
+        "✓竖向补满一步获胜›",
+        "1堵住横向冲四挡住直接胜着›",
+        "2堵住斜向冲四挡住直接胜着›",
+        "3堵住竖向冲四挡住直接胜着›",
+        "1把活三做成活四构造活四›",
+        "2斜线上的活四构造活四›",
+        "1一手做出两个冲四双重威胁›",
+        "2四三：冲四配活三双重威胁›",
+        "3一手做出两个活三双重威胁›",
+        "1冲四开场连续冲四›",
+        "2冲四连击连续冲四›",
+        "1换个地方的四三强制获胜路线›",
+        "2对手也有威胁时强制获胜路线›"
+      ],
+      "overflowing": [],
+      "clipped": [],
+      "counts": {
+        "elements": 196,
+        "overflowing": 0,
+        "clipped": 0,
+        "contrastViolations": 0,
+        "smallTargets": 6
+      }
+    },
+    {
+      "state": "puzzle-category-done",
+      "group": "puzzles",
+      "size": "1920",
+      "theme": "light",
+      "file": "puzzles-puzzle-category-done__1920-light.png",
+      "setupMs": 755,
+      "boardDetails": {
+        "coordText": null,
+        "intersectionHit": null
+      },
+      "spinner": null,
+      "metaThemeColor": "#f6f4f0",
+      "scrollContainers": [
+        {
+          "element": "main{残局挑战15 道题按战术分成 6 类。分类的先后}",
+          "clientHeight": 831,
+          "scrollHeight": 1562,
+          "hidden": 731
+        }
+      ],
+      "viewport": {
+        "vw": 1920,
+        "vh": 900
+      },
+      "document": {
+        "scrollWidth": 1920,
+        "scrollHeight": 900,
+        "horizontalOverflow": false,
+        "bodyScrollHeight": 900
+      },
+      "regions": {
+        "header": {
+          "x": 0,
+          "y": 0,
+          "w": 1920,
+          "h": 69
+        },
+        "main": {
+          "x": 0,
+          "y": 69,
+          "w": 1920,
+          "h": 831
+        },
+        "asides": [],
+        "mainGridTemplate": "none"
+      },
+      "board": null,
+      "gridLine": null,
+      "boardContrast": {
+        "lastMoveDot": null,
+        "winRing": null,
+        "markText": null,
+        "stones": {
+          "blackEdge": 10.77,
+          "blackBody": 3.63,
+          "whiteEdge": 1.07,
+          "whiteBody": 1.45
+        },
+        "note": null
+      },
+      "boardRatioOfViewport": null,
+      "statusPill": null,
+      "fontHistogram": {
+        "14px": 28,
+        "11px": 1,
+        "20px": 1,
+        "12px": 53,
+        "16px": 3
+      },
+      "typeSamples": [
+        {
+          "fontSize": "20px",
+          "lineHeight": "28px",
+          "color": "rgb(28, 25, 23)",
+          "weight": "600",
+          "sample": "h1{残局挑战}",
+          "count": 1
+        },
+        {
+          "fontSize": "16px",
+          "lineHeight": "24px",
+          "color": "rgb(28, 25, 23)",
+          "weight": "400",
+          "sample": "span{已完成}",
+          "count": 3
+        },
+        {
+          "fontSize": "14px",
+          "lineHeight": "20px",
+          "color": "rgb(28, 25, 23)",
+          "weight": "600",
+          "sample": "div{Gomoku Lab}",
+          "count": 1
+        },
+        {
+          "fontSize": "14px",
+          "lineHeight": "20px",
+          "color": "rgb(111, 103, 94)",
+          "weight": "500",
+          "sample": "button{对战}",
+          "count": 3
+        },
+        {
+          "fontSize": "14px",
+          "lineHeight": "20px",
+          "color": "rgb(44, 119, 104)",
+          "weight": "500",
+          "sample": "button{残局}",
+          "count": 1
+        },
+        {
+          "fontSize": "14px",
+          "lineHeight": "22px",
+          "color": "rgb(111, 103, 94)",
+          "weight": "400",
+          "sample": "p{15 道题按战术分成 6 类。分类的先后是教学上}",
+          "count": 1
+        },
+        {
+          "fontSize": "14px",
+          "lineHeight": "20px",
+          "color": "rgb(255, 255, 255)",
+          "weight": "500",
+          "sample": "button{继续挑战：堵住横向冲四}",
+          "count": 1
+        },
+        {
+          "fontSize": "14px",
+          "lineHeight": "20px",
+          "color": "rgb(111, 103, 94)",
+          "weight": "600",
+          "sample": "h2{一步获胜}",
+          "count": 6
+        },
+        {
+          "fontSize": "14px",
+          "lineHeight": "20px",
+          "color": "rgb(28, 25, 23)",
+          "weight": "500",
+          "sample": "span{横向补满}",
+          "count": 15
+        },
+        {
+          "fontSize": "12px",
+          "lineHeight": "16px",
+          "color": "rgb(111, 103, 94)",
+          "weight": "400",
+          "sample": "span[puzzle-progress]{已通过 3 / 15 题}",
+          "count": 31
+        },
+        {
+          "fontSize": "12px",
+          "lineHeight": "16px",
+          "color": "rgb(115, 106, 97)",
+          "weight": "400",
+          "sample": "span{20%}",
+          "count": 7
+        },
+        {
+          "fontSize": "12px",
+          "lineHeight": "16px",
+          "color": "rgb(255, 255, 255)",
+          "weight": "700",
+          "sample": "span{✓}",
+          "count": 3
+        },
+        {
+          "fontSize": "12px",
+          "lineHeight": "16px",
+          "color": "rgb(111, 103, 94)",
+          "weight": "700",
+          "sample": "span{1}",
+          "count": 12
+        },
+        {
+          "fontSize": "11px",
+          "lineHeight": "16px",
+          "color": "rgb(115, 106, 97)",
+          "weight": "400",
+          "sample": "div{五子棋实验室}",
+          "count": 1
+        }
+      ],
+      "contrastViolations": [],
+      "smallTargets": [
+        {
+          "element": "button{对战}",
+          "w": 52,
+          "h": 36,
+          "under24": false
+        },
+        {
+          "element": "button{教学}",
+          "w": 52,
+          "h": 36,
+          "under24": false
+        },
+        {
+          "element": "button{残局}",
+          "w": 52,
+          "h": 36,
+          "under24": false
+        },
+        {
+          "element": "button{复盘}",
+          "w": 52,
+          "h": 36,
+          "under24": false
+        },
+        {
+          "element": "button",
+          "w": 36,
+          "h": 36,
+          "under24": false
+        },
+        {
+          "element": "button{继续挑战：堵住横向冲四}",
+          "w": 686,
+          "h": 38,
+          "under24": false
+        }
+      ],
+      "headings": [
+        {
+          "level": "h1",
+          "text": "残局挑战",
+          "top": 89,
+          "h": 28
+        },
+        {
+          "level": "h2",
+          "text": "一步获胜",
+          "top": 321,
+          "h": 20
+        },
+        {
+          "level": "h2",
+          "text": "挡住直接胜着",
+          "top": 575,
+          "h": 20
+        },
+        {
+          "level": "h2",
+          "text": "构造活四",
+          "top": 829,
+          "h": 20
+        },
+        {
+          "level": "h2",
+          "text": "双重威胁",
+          "top": 1013,
+          "h": 20
+        },
+        {
+          "level": "h2",
+          "text": "连续冲四",
+          "top": 1267,
+          "h": 20
+        },
+        {
+          "level": "h2",
+          "text": "强制获胜路线",
+          "top": 1451,
+          "h": 20
+        }
+      ],
+      "buttons": [
+        "对战",
+        "教学",
+        "残局",
+        "复盘",
+        "继续挑战：堵住横向冲四",
+        "✓横向补满一步获胜›",
+        "✓斜向补满一步获胜›",
+        "✓竖向补满一步获胜›",
+        "1堵住横向冲四挡住直接胜着›",
+        "2堵住斜向冲四挡住直接胜着›",
+        "3堵住竖向冲四挡住直接胜着›",
+        "1把活三做成活四构造活四›",
+        "2斜线上的活四构造活四›",
+        "1一手做出两个冲四双重威胁›",
+        "2四三：冲四配活三双重威胁›",
+        "3一手做出两个活三双重威胁›",
+        "1冲四开场连续冲四›",
+        "2冲四连击连续冲四›",
+        "1换个地方的四三强制获胜路线›",
+        "2对手也有威胁时强制获胜路线›"
+      ],
+      "overflowing": [],
+      "clipped": [],
+      "counts": {
+        "elements": 196,
+        "overflowing": 0,
+        "clipped": 0,
+        "contrastViolations": 0,
+        "smallTargets": 6
+      }
+    },
+    {
+      "state": "puzzle-category-done",
+      "group": "puzzles",
+      "size": "390-dark",
+      "theme": "dark",
+      "file": "puzzles-puzzle-category-done__390-dark-dark.png",
+      "setupMs": 637,
+      "boardDetails": {
+        "coordText": null,
+        "intersectionHit": null
+      },
+      "spinner": null,
+      "metaThemeColor": "#f6f4f0",
+      "scrollContainers": [],
+      "viewport": {
+        "vw": 390,
+        "vh": 844
+      },
+      "document": {
+        "scrollWidth": 390,
+        "scrollHeight": 1697,
+        "horizontalOverflow": false,
+        "bodyScrollHeight": 1697
+      },
+      "regions": {
+        "header": {
+          "x": 0,
+          "y": 0,
+          "w": 390,
+          "h": 113
+        },
+        "main": {
+          "x": 0,
+          "y": 113,
+          "w": 390,
+          "h": 1584
+        },
+        "asides": [],
+        "mainGridTemplate": "none"
+      },
+      "board": null,
+      "gridLine": null,
+      "boardContrast": {
+        "lastMoveDot": null,
+        "winRing": null,
+        "markText": null,
+        "stones": {
+          "blackEdge": 1.32,
+          "blackBody": 1.44,
+          "whiteEdge": 6.36,
+          "whiteBody": 12.67
+        },
+        "note": "棋子对木色的亮度对比只作记录，不作判据（见 PHASE_03.md §3.4.1）"
+      },
+      "boardRatioOfViewport": null,
+      "statusPill": null,
+      "fontHistogram": {
+        "14px": 28,
+        "11px": 1,
+        "20px": 1,
+        "12px": 53,
+        "16px": 3
+      },
+      "typeSamples": [
+        {
+          "fontSize": "20px",
+          "lineHeight": "28px",
+          "color": "rgb(236, 232, 227)",
+          "weight": "600",
+          "sample": "h1{残局挑战}",
+          "count": 1
+        },
+        {
+          "fontSize": "16px",
+          "lineHeight": "24px",
+          "color": "rgb(236, 232, 227)",
+          "weight": "400",
+          "sample": "span{已完成}",
+          "count": 3
+        },
+        {
+          "fontSize": "14px",
+          "lineHeight": "20px",
+          "color": "rgb(236, 232, 227)",
+          "weight": "600",
+          "sample": "div{Gomoku Lab}",
+          "count": 1
+        },
+        {
+          "fontSize": "14px",
+          "lineHeight": "20px",
+          "color": "rgb(154, 160, 170)",
+          "weight": "500",
+          "sample": "button{对战}",
+          "count": 3
+        },
+        {
+          "fontSize": "14px",
+          "lineHeight": "20px",
+          "color": "rgb(82, 179, 156)",
+          "weight": "500",
+          "sample": "button{残局}",
+          "count": 1
+        },
+        {
+          "fontSize": "14px",
+          "lineHeight": "22px",
+          "color": "rgb(154, 160, 170)",
+          "weight": "400",
+          "sample": "p{15 道题按战术分成 6 类。分类的先后是教学上}",
+          "count": 1
+        },
+        {
+          "fontSize": "14px",
+          "lineHeight": "20px",
+          "color": "rgb(7, 33, 27)",
+          "weight": "500",
+          "sample": "button{继续挑战：堵住横向冲四}",
+          "count": 1
+        },
+        {
+          "fontSize": "14px",
+          "lineHeight": "20px",
+          "color": "rgb(154, 160, 170)",
+          "weight": "600",
+          "sample": "h2{一步获胜}",
+          "count": 6
+        },
+        {
+          "fontSize": "14px",
+          "lineHeight": "20px",
+          "color": "rgb(236, 232, 227)",
+          "weight": "500",
+          "sample": "span{横向补满}",
+          "count": 15
+        },
+        {
+          "fontSize": "12px",
+          "lineHeight": "16px",
+          "color": "rgb(154, 160, 170)",
+          "weight": "400",
+          "sample": "span[puzzle-progress]{已通过 3 / 15 题}",
+          "count": 31
+        },
+        {
+          "fontSize": "12px",
+          "lineHeight": "16px",
+          "color": "rgb(132, 138, 149)",
+          "weight": "400",
+          "sample": "span{20%}",
+          "count": 7
+        },
+        {
+          "fontSize": "12px",
+          "lineHeight": "16px",
+          "color": "rgb(7, 33, 27)",
+          "weight": "700",
+          "sample": "span{✓}",
+          "count": 3
+        },
+        {
+          "fontSize": "12px",
+          "lineHeight": "16px",
+          "color": "rgb(154, 160, 170)",
+          "weight": "700",
+          "sample": "span{1}",
+          "count": 12
+        },
+        {
+          "fontSize": "11px",
+          "lineHeight": "16px",
+          "color": "rgb(132, 138, 149)",
+          "weight": "400",
+          "sample": "div{五子棋实验室}",
+          "count": 1
+        }
+      ],
+      "contrastViolations": [],
+      "smallTargets": [
+        {
+          "element": "button{对战}",
+          "w": 85,
+          "h": 36,
+          "under24": false
+        },
+        {
+          "element": "button{教学}",
+          "w": 85,
+          "h": 36,
+          "under24": false
+        },
+        {
+          "element": "button{残局}",
+          "w": 85,
+          "h": 36,
+          "under24": false
+        },
+        {
+          "element": "button{复盘}",
+          "w": 85,
+          "h": 36,
+          "under24": false
+        },
+        {
+          "element": "button",
+          "w": 36,
+          "h": 36,
+          "under24": false
+        },
+        {
+          "element": "button{继续挑战：堵住横向冲四}",
+          "w": 332,
+          "h": 38,
+          "under24": false
+        }
+      ],
+      "headings": [
+        {
+          "level": "h1",
+          "text": "残局挑战",
+          "top": 133,
+          "h": 28
+        },
+        {
+          "level": "h2",
+          "text": "一步获胜",
+          "top": 387,
+          "h": 20
+        },
+        {
+          "level": "h2",
+          "text": "挡住直接胜着",
+          "top": 641,
+          "h": 20
+        },
+        {
+          "level": "h2",
+          "text": "构造活四",
+          "top": 895,
+          "h": 20
+        },
+        {
+          "level": "h2",
+          "text": "双重威胁",
+          "top": 1079,
+          "h": 20
+        },
+        {
+          "level": "h2",
+          "text": "连续冲四",
+          "top": 1333,
+          "h": 20
+        },
+        {
+          "level": "h2",
+          "text": "强制获胜路线",
+          "top": 1517,
+          "h": 20
+        }
+      ],
+      "buttons": [
+        "对战",
+        "教学",
+        "残局",
+        "复盘",
+        "继续挑战：堵住横向冲四",
+        "✓横向补满一步获胜›",
+        "✓斜向补满一步获胜›",
+        "✓竖向补满一步获胜›",
+        "1堵住横向冲四挡住直接胜着›",
+        "2堵住斜向冲四挡住直接胜着›",
+        "3堵住竖向冲四挡住直接胜着›",
+        "1把活三做成活四构造活四›",
+        "2斜线上的活四构造活四›",
+        "1一手做出两个冲四双重威胁›",
+        "2四三：冲四配活三双重威胁›",
+        "3一手做出两个活三双重威胁›",
+        "1冲四开场连续冲四›",
+        "2冲四连击连续冲四›",
+        "1换个地方的四三强制获胜路线›",
+        "2对手也有威胁时强制获胜路线›"
+      ],
+      "overflowing": [],
+      "clipped": [],
+      "counts": {
+        "elements": 195,
+        "overflowing": 0,
+        "clipped": 0,
+        "contrastViolations": 0,
+        "smallTargets": 6
+      }
+    },
+    {
+      "state": "puzzle-category-done",
+      "group": "puzzles",
+      "size": "1440-dark",
+      "theme": "dark",
+      "file": "puzzles-puzzle-category-done__1440-dark-dark.png",
+      "setupMs": 637,
+      "boardDetails": {
+        "coordText": null,
+        "intersectionHit": null
+      },
+      "spinner": null,
+      "metaThemeColor": "#f6f4f0",
+      "scrollContainers": [
+        {
+          "element": "main{残局挑战15 道题按战术分成 6 类。分类的先后}",
+          "clientHeight": 831,
+          "scrollHeight": 1562,
+          "hidden": 731
+        }
+      ],
+      "viewport": {
+        "vw": 1440,
+        "vh": 900
+      },
+      "document": {
+        "scrollWidth": 1440,
+        "scrollHeight": 900,
+        "horizontalOverflow": false,
+        "bodyScrollHeight": 900
+      },
+      "regions": {
+        "header": {
+          "x": 0,
+          "y": 0,
+          "w": 1440,
+          "h": 69
+        },
+        "main": {
+          "x": 0,
+          "y": 69,
+          "w": 1440,
+          "h": 831
+        },
+        "asides": [],
+        "mainGridTemplate": "none"
+      },
+      "board": null,
+      "gridLine": null,
+      "boardContrast": {
+        "lastMoveDot": null,
+        "winRing": null,
+        "markText": null,
+        "stones": {
+          "blackEdge": 1.32,
+          "blackBody": 1.44,
+          "whiteEdge": 6.36,
+          "whiteBody": 12.67
+        },
+        "note": "棋子对木色的亮度对比只作记录，不作判据（见 PHASE_03.md §3.4.1）"
+      },
+      "boardRatioOfViewport": null,
+      "statusPill": null,
+      "fontHistogram": {
+        "14px": 28,
+        "11px": 1,
+        "20px": 1,
+        "12px": 53,
+        "16px": 3
+      },
+      "typeSamples": [
+        {
+          "fontSize": "20px",
+          "lineHeight": "28px",
+          "color": "rgb(236, 232, 227)",
+          "weight": "600",
+          "sample": "h1{残局挑战}",
+          "count": 1
+        },
+        {
+          "fontSize": "16px",
+          "lineHeight": "24px",
+          "color": "rgb(236, 232, 227)",
+          "weight": "400",
+          "sample": "span{已完成}",
+          "count": 3
+        },
+        {
+          "fontSize": "14px",
+          "lineHeight": "20px",
+          "color": "rgb(236, 232, 227)",
+          "weight": "600",
+          "sample": "div{Gomoku Lab}",
+          "count": 1
+        },
+        {
+          "fontSize": "14px",
+          "lineHeight": "20px",
+          "color": "rgb(154, 160, 170)",
+          "weight": "500",
+          "sample": "button{对战}",
+          "count": 3
+        },
+        {
+          "fontSize": "14px",
+          "lineHeight": "20px",
+          "color": "rgb(82, 179, 156)",
+          "weight": "500",
+          "sample": "button{残局}",
+          "count": 1
+        },
+        {
+          "fontSize": "14px",
+          "lineHeight": "22px",
+          "color": "rgb(154, 160, 170)",
+          "weight": "400",
+          "sample": "p{15 道题按战术分成 6 类。分类的先后是教学上}",
+          "count": 1
+        },
+        {
+          "fontSize": "14px",
+          "lineHeight": "20px",
+          "color": "rgb(7, 33, 27)",
+          "weight": "500",
+          "sample": "button{继续挑战：堵住横向冲四}",
+          "count": 1
+        },
+        {
+          "fontSize": "14px",
+          "lineHeight": "20px",
+          "color": "rgb(154, 160, 170)",
+          "weight": "600",
+          "sample": "h2{一步获胜}",
+          "count": 6
+        },
+        {
+          "fontSize": "14px",
+          "lineHeight": "20px",
+          "color": "rgb(236, 232, 227)",
+          "weight": "500",
+          "sample": "span{横向补满}",
+          "count": 15
+        },
+        {
+          "fontSize": "12px",
+          "lineHeight": "16px",
+          "color": "rgb(154, 160, 170)",
+          "weight": "400",
+          "sample": "span[puzzle-progress]{已通过 3 / 15 题}",
+          "count": 31
+        },
+        {
+          "fontSize": "12px",
+          "lineHeight": "16px",
+          "color": "rgb(132, 138, 149)",
+          "weight": "400",
+          "sample": "span{20%}",
+          "count": 7
+        },
+        {
+          "fontSize": "12px",
+          "lineHeight": "16px",
+          "color": "rgb(7, 33, 27)",
+          "weight": "700",
+          "sample": "span{✓}",
+          "count": 3
+        },
+        {
+          "fontSize": "12px",
+          "lineHeight": "16px",
+          "color": "rgb(154, 160, 170)",
+          "weight": "700",
+          "sample": "span{1}",
+          "count": 12
+        },
+        {
+          "fontSize": "11px",
+          "lineHeight": "16px",
+          "color": "rgb(132, 138, 149)",
+          "weight": "400",
+          "sample": "div{五子棋实验室}",
+          "count": 1
+        }
+      ],
+      "contrastViolations": [],
+      "smallTargets": [
+        {
+          "element": "button{对战}",
+          "w": 52,
+          "h": 36,
+          "under24": false
+        },
+        {
+          "element": "button{教学}",
+          "w": 52,
+          "h": 36,
+          "under24": false
+        },
+        {
+          "element": "button{残局}",
+          "w": 52,
+          "h": 36,
+          "under24": false
+        },
+        {
+          "element": "button{复盘}",
+          "w": 52,
+          "h": 36,
+          "under24": false
+        },
+        {
+          "element": "button",
+          "w": 36,
+          "h": 36,
+          "under24": false
+        },
+        {
+          "element": "button{继续挑战：堵住横向冲四}",
+          "w": 686,
+          "h": 38,
+          "under24": false
+        }
+      ],
+      "headings": [
+        {
+          "level": "h1",
+          "text": "残局挑战",
+          "top": 89,
+          "h": 28
+        },
+        {
+          "level": "h2",
+          "text": "一步获胜",
+          "top": 321,
+          "h": 20
+        },
+        {
+          "level": "h2",
+          "text": "挡住直接胜着",
+          "top": 575,
+          "h": 20
+        },
+        {
+          "level": "h2",
+          "text": "构造活四",
+          "top": 829,
+          "h": 20
+        },
+        {
+          "level": "h2",
+          "text": "双重威胁",
+          "top": 1013,
+          "h": 20
+        },
+        {
+          "level": "h2",
+          "text": "连续冲四",
+          "top": 1267,
+          "h": 20
+        },
+        {
+          "level": "h2",
+          "text": "强制获胜路线",
+          "top": 1451,
+          "h": 20
+        }
+      ],
+      "buttons": [
+        "对战",
+        "教学",
+        "残局",
+        "复盘",
+        "继续挑战：堵住横向冲四",
+        "✓横向补满一步获胜›",
+        "✓斜向补满一步获胜›",
+        "✓竖向补满一步获胜›",
+        "1堵住横向冲四挡住直接胜着›",
+        "2堵住斜向冲四挡住直接胜着›",
+        "3堵住竖向冲四挡住直接胜着›",
+        "1把活三做成活四构造活四›",
+        "2斜线上的活四构造活四›",
+        "1一手做出两个冲四双重威胁›",
+        "2四三：冲四配活三双重威胁›",
+        "3一手做出两个活三双重威胁›",
+        "1冲四开场连续冲四›",
+        "2冲四连击连续冲四›",
+        "1换个地方的四三强制获胜路线›",
+        "2对手也有威胁时强制获胜路线›"
+      ],
+      "overflowing": [],
+      "clipped": [],
+      "counts": {
+        "elements": 195,
+        "overflowing": 0,
+        "clipped": 0,
+        "contrastViolations": 0,
+        "smallTargets": 6
+      }
+    },
+    {
       "state": "puzzle-all-done",
       "group": "puzzles",
       "size": "390",
       "theme": "light",
       "file": "puzzles-puzzle-all-done__390-light.png",
-      "setupMs": 920,
+      "setupMs": 954,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -80926,7 +83298,7 @@
           "lineHeight": "22px",
           "color": "rgb(111, 103, 94)",
           "weight": "400",
-          "sample": "p{十五道题按战术分成六类。分类的先后是教学上的由浅}",
+          "sample": "p{15 道题按战术分成 6 类。分类的先后是教学上}",
           "count": 1
         },
         {
@@ -80934,7 +83306,7 @@
           "lineHeight": "20px",
           "color": "rgb(40, 123, 60)",
           "weight": "400",
-          "sample": "p{15 道题都通过了。这些棋型，去实战里用用看吧。}",
+          "sample": "p{15 道题都通过了——这些棋型，去实战里用用看。}",
           "count": 1
         },
         {
@@ -81100,7 +83472,7 @@
       "size": "768",
       "theme": "light",
       "file": "puzzles-puzzle-all-done__768-light.png",
-      "setupMs": 1653,
+      "setupMs": 1296,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -81203,7 +83575,7 @@
           "lineHeight": "22px",
           "color": "rgb(111, 103, 94)",
           "weight": "400",
-          "sample": "p{十五道题按战术分成六类。分类的先后是教学上的由浅}",
+          "sample": "p{15 道题按战术分成 6 类。分类的先后是教学上}",
           "count": 1
         },
         {
@@ -81211,7 +83583,7 @@
           "lineHeight": "20px",
           "color": "rgb(40, 123, 60)",
           "weight": "400",
-          "sample": "p{15 道题都通过了。这些棋型，去实战里用用看吧。}",
+          "sample": "p{15 道题都通过了——这些棋型，去实战里用用看。}",
           "count": 1
         },
         {
@@ -81377,7 +83749,7 @@
       "size": "1024",
       "theme": "light",
       "file": "puzzles-puzzle-all-done__1024-light.png",
-      "setupMs": 1327,
+      "setupMs": 1022,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -81386,7 +83758,7 @@
       "metaThemeColor": "#f6f4f0",
       "scrollContainers": [
         {
-          "element": "main{残局挑战十五道题按战术分成六类。分类的先后是教学}",
+          "element": "main{残局挑战15 道题按战术分成 6 类。分类的先后}",
           "clientHeight": 831,
           "scrollHeight": 1544,
           "hidden": 713
@@ -81487,7 +83859,7 @@
           "lineHeight": "22px",
           "color": "rgb(111, 103, 94)",
           "weight": "400",
-          "sample": "p{十五道题按战术分成六类。分类的先后是教学上的由浅}",
+          "sample": "p{15 道题按战术分成 6 类。分类的先后是教学上}",
           "count": 1
         },
         {
@@ -81495,7 +83867,7 @@
           "lineHeight": "20px",
           "color": "rgb(40, 123, 60)",
           "weight": "400",
-          "sample": "p{15 道题都通过了。这些棋型，去实战里用用看吧。}",
+          "sample": "p{15 道题都通过了——这些棋型，去实战里用用看。}",
           "count": 1
         },
         {
@@ -81661,7 +84033,7 @@
       "size": "1280",
       "theme": "light",
       "file": "puzzles-puzzle-all-done__1280-light.png",
-      "setupMs": 1785,
+      "setupMs": 906,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -81670,7 +84042,7 @@
       "metaThemeColor": "#f6f4f0",
       "scrollContainers": [
         {
-          "element": "main{残局挑战十五道题按战术分成六类。分类的先后是教学}",
+          "element": "main{残局挑战15 道题按战术分成 6 类。分类的先后}",
           "clientHeight": 831,
           "scrollHeight": 1544,
           "hidden": 713
@@ -81771,7 +84143,7 @@
           "lineHeight": "22px",
           "color": "rgb(111, 103, 94)",
           "weight": "400",
-          "sample": "p{十五道题按战术分成六类。分类的先后是教学上的由浅}",
+          "sample": "p{15 道题按战术分成 6 类。分类的先后是教学上}",
           "count": 1
         },
         {
@@ -81779,7 +84151,7 @@
           "lineHeight": "20px",
           "color": "rgb(40, 123, 60)",
           "weight": "400",
-          "sample": "p{15 道题都通过了。这些棋型，去实战里用用看吧。}",
+          "sample": "p{15 道题都通过了——这些棋型，去实战里用用看。}",
           "count": 1
         },
         {
@@ -81945,7 +84317,7 @@
       "size": "1440",
       "theme": "light",
       "file": "puzzles-puzzle-all-done__1440-light.png",
-      "setupMs": 1200,
+      "setupMs": 912,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -81954,7 +84326,7 @@
       "metaThemeColor": "#f6f4f0",
       "scrollContainers": [
         {
-          "element": "main{残局挑战十五道题按战术分成六类。分类的先后是教学}",
+          "element": "main{残局挑战15 道题按战术分成 6 类。分类的先后}",
           "clientHeight": 831,
           "scrollHeight": 1544,
           "hidden": 713
@@ -82055,7 +84427,7 @@
           "lineHeight": "22px",
           "color": "rgb(111, 103, 94)",
           "weight": "400",
-          "sample": "p{十五道题按战术分成六类。分类的先后是教学上的由浅}",
+          "sample": "p{15 道题按战术分成 6 类。分类的先后是教学上}",
           "count": 1
         },
         {
@@ -82063,7 +84435,7 @@
           "lineHeight": "20px",
           "color": "rgb(40, 123, 60)",
           "weight": "400",
-          "sample": "p{15 道题都通过了。这些棋型，去实战里用用看吧。}",
+          "sample": "p{15 道题都通过了——这些棋型，去实战里用用看。}",
           "count": 1
         },
         {
@@ -82229,7 +84601,7 @@
       "size": "1920",
       "theme": "light",
       "file": "puzzles-puzzle-all-done__1920-light.png",
-      "setupMs": 1092,
+      "setupMs": 1011,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -82238,7 +84610,7 @@
       "metaThemeColor": "#f6f4f0",
       "scrollContainers": [
         {
-          "element": "main{残局挑战十五道题按战术分成六类。分类的先后是教学}",
+          "element": "main{残局挑战15 道题按战术分成 6 类。分类的先后}",
           "clientHeight": 831,
           "scrollHeight": 1544,
           "hidden": 713
@@ -82339,7 +84711,7 @@
           "lineHeight": "22px",
           "color": "rgb(111, 103, 94)",
           "weight": "400",
-          "sample": "p{十五道题按战术分成六类。分类的先后是教学上的由浅}",
+          "sample": "p{15 道题按战术分成 6 类。分类的先后是教学上}",
           "count": 1
         },
         {
@@ -82347,7 +84719,7 @@
           "lineHeight": "20px",
           "color": "rgb(40, 123, 60)",
           "weight": "400",
-          "sample": "p{15 道题都通过了。这些棋型，去实战里用用看吧。}",
+          "sample": "p{15 道题都通过了——这些棋型，去实战里用用看。}",
           "count": 1
         },
         {
@@ -82513,7 +84885,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "puzzles-puzzle-all-done__390-dark-dark.png",
-      "setupMs": 1156,
+      "setupMs": 908,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -82616,7 +84988,7 @@
           "lineHeight": "22px",
           "color": "rgb(154, 160, 170)",
           "weight": "400",
-          "sample": "p{十五道题按战术分成六类。分类的先后是教学上的由浅}",
+          "sample": "p{15 道题按战术分成 6 类。分类的先后是教学上}",
           "count": 1
         },
         {
@@ -82624,7 +84996,7 @@
           "lineHeight": "20px",
           "color": "rgb(95, 191, 118)",
           "weight": "400",
-          "sample": "p{15 道题都通过了。这些棋型，去实战里用用看吧。}",
+          "sample": "p{15 道题都通过了——这些棋型，去实战里用用看。}",
           "count": 1
         },
         {
@@ -82790,7 +85162,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "puzzles-puzzle-all-done__1440-dark-dark.png",
-      "setupMs": 1434,
+      "setupMs": 1591,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -82799,7 +85171,7 @@
       "metaThemeColor": "#f6f4f0",
       "scrollContainers": [
         {
-          "element": "main{残局挑战十五道题按战术分成六类。分类的先后是教学}",
+          "element": "main{残局挑战15 道题按战术分成 6 类。分类的先后}",
           "clientHeight": 831,
           "scrollHeight": 1544,
           "hidden": 713
@@ -82900,7 +85272,7 @@
           "lineHeight": "22px",
           "color": "rgb(154, 160, 170)",
           "weight": "400",
-          "sample": "p{十五道题按战术分成六类。分类的先后是教学上的由浅}",
+          "sample": "p{15 道题按战术分成 6 类。分类的先后是教学上}",
           "count": 1
         },
         {
@@ -82908,7 +85280,7 @@
           "lineHeight": "20px",
           "color": "rgb(95, 191, 118)",
           "weight": "400",
-          "sample": "p{15 道题都通过了。这些棋型，去实战里用用看吧。}",
+          "sample": "p{15 道题都通过了——这些棋型，去实战里用用看。}",
           "count": 1
         },
         {
@@ -83074,7 +85446,7 @@
       "size": "390",
       "theme": "light",
       "file": "puzzles-puzzle-hint__390-light.png",
-      "setupMs": 2184,
+      "setupMs": 1501,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -83349,7 +85721,7 @@
       "size": "768",
       "theme": "light",
       "file": "puzzles-puzzle-hint__768-light.png",
-      "setupMs": 1506,
+      "setupMs": 1635,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -83624,7 +85996,7 @@
       "size": "1024",
       "theme": "light",
       "file": "puzzles-puzzle-hint__1024-light.png",
-      "setupMs": 1600,
+      "setupMs": 2914,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -83899,7 +86271,7 @@
       "size": "1280",
       "theme": "light",
       "file": "puzzles-puzzle-hint__1280-light.png",
-      "setupMs": 1903,
+      "setupMs": 1449,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -84168,7 +86540,7 @@
       "size": "1440",
       "theme": "light",
       "file": "puzzles-puzzle-hint__1440-light.png",
-      "setupMs": 1927,
+      "setupMs": 1197,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -84437,7 +86809,7 @@
       "size": "1920",
       "theme": "light",
       "file": "puzzles-puzzle-hint__1920-light.png",
-      "setupMs": 2336,
+      "setupMs": 1174,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -84706,7 +87078,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "puzzles-puzzle-hint__390-dark-dark.png",
-      "setupMs": 1224,
+      "setupMs": 979,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -84981,7 +87353,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "puzzles-puzzle-hint__1440-dark-dark.png",
-      "setupMs": 1729,
+      "setupMs": 1501,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -85250,7 +87622,7 @@
       "size": "390",
       "theme": "light",
       "file": "puzzles-puzzle-last-step__390-light.png",
-      "setupMs": 2510,
+      "setupMs": 1760,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -85440,7 +87812,7 @@
           "lineHeight": "16px",
           "color": "rgb(40, 123, 60)",
           "weight": "400",
-          "sample": "p{这一题已经通过。}",
+          "sample": "p{第一次做对这道题。}",
           "count": 1
         },
         {
@@ -85571,7 +87943,7 @@
       "size": "768",
       "theme": "light",
       "file": "puzzles-puzzle-last-step__768-light.png",
-      "setupMs": 2033,
+      "setupMs": 2101,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -85761,7 +88133,7 @@
           "lineHeight": "16px",
           "color": "rgb(40, 123, 60)",
           "weight": "400",
-          "sample": "p{这一题已经通过。}",
+          "sample": "p{第一次做对这道题。}",
           "count": 1
         },
         {
@@ -85892,7 +88264,7 @@
       "size": "1024",
       "theme": "light",
       "file": "puzzles-puzzle-last-step__1024-light.png",
-      "setupMs": 3474,
+      "setupMs": 1460,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -86082,7 +88454,7 @@
           "lineHeight": "16px",
           "color": "rgb(40, 123, 60)",
           "weight": "400",
-          "sample": "p{这一题已经通过。}",
+          "sample": "p{第一次做对这道题。}",
           "count": 1
         },
         {
@@ -86213,7 +88585,7 @@
       "size": "1280",
       "theme": "light",
       "file": "puzzles-puzzle-last-step__1280-light.png",
-      "setupMs": 2712,
+      "setupMs": 1557,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -86403,7 +88775,7 @@
           "lineHeight": "16px",
           "color": "rgb(40, 123, 60)",
           "weight": "400",
-          "sample": "p{这一题已经通过。}",
+          "sample": "p{第一次做对这道题。}",
           "count": 1
         },
         {
@@ -86534,7 +88906,7 @@
       "size": "1440",
       "theme": "light",
       "file": "puzzles-puzzle-last-step__1440-light.png",
-      "setupMs": 2615,
+      "setupMs": 1832,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -86724,7 +89096,7 @@
           "lineHeight": "16px",
           "color": "rgb(40, 123, 60)",
           "weight": "400",
-          "sample": "p{这一题已经通过。}",
+          "sample": "p{第一次做对这道题。}",
           "count": 1
         },
         {
@@ -86855,7 +89227,7 @@
       "size": "1920",
       "theme": "light",
       "file": "puzzles-puzzle-last-step__1920-light.png",
-      "setupMs": 1895,
+      "setupMs": 1625,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -87045,7 +89417,7 @@
           "lineHeight": "16px",
           "color": "rgb(40, 123, 60)",
           "weight": "400",
-          "sample": "p{这一题已经通过。}",
+          "sample": "p{第一次做对这道题。}",
           "count": 1
         },
         {
@@ -87176,7 +89548,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "puzzles-puzzle-last-step__390-dark-dark.png",
-      "setupMs": 1766,
+      "setupMs": 3137,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -87366,7 +89738,7 @@
           "lineHeight": "16px",
           "color": "rgb(95, 191, 118)",
           "weight": "400",
-          "sample": "p{这一题已经通过。}",
+          "sample": "p{第一次做对这道题。}",
           "count": 1
         },
         {
@@ -87497,7 +89869,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "puzzles-puzzle-last-step__1440-dark-dark.png",
-      "setupMs": 2033,
+      "setupMs": 1770,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -87687,7 +90059,7 @@
           "lineHeight": "16px",
           "color": "rgb(95, 191, 118)",
           "weight": "400",
-          "sample": "p{这一题已经通过。}",
+          "sample": "p{第一次做对这道题。}",
           "count": 1
         },
         {
@@ -87818,7 +90190,7 @@
       "size": "390",
       "theme": "light",
       "file": "review-review-empty__390-light.png",
-      "setupMs": 843,
+      "setupMs": 864,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -88003,7 +90375,7 @@
       "size": "768",
       "theme": "light",
       "file": "review-review-empty__768-light.png",
-      "setupMs": 780,
+      "setupMs": 819,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -88188,7 +90560,7 @@
       "size": "1024",
       "theme": "light",
       "file": "review-review-empty__1024-light.png",
-      "setupMs": 918,
+      "setupMs": 664,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -88373,7 +90745,7 @@
       "size": "1280",
       "theme": "light",
       "file": "review-review-empty__1280-light.png",
-      "setupMs": 875,
+      "setupMs": 684,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -88558,7 +90930,7 @@
       "size": "1440",
       "theme": "light",
       "file": "review-review-empty__1440-light.png",
-      "setupMs": 764,
+      "setupMs": 776,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -88743,7 +91115,7 @@
       "size": "1920",
       "theme": "light",
       "file": "review-review-empty__1920-light.png",
-      "setupMs": 1238,
+      "setupMs": 1119,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -88928,7 +91300,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "review-review-empty__390-dark-dark.png",
-      "setupMs": 877,
+      "setupMs": 798,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -89113,7 +91485,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "review-review-empty__1440-dark-dark.png",
-      "setupMs": 856,
+      "setupMs": 940,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -89298,7 +91670,7 @@
       "size": "390",
       "theme": "light",
       "file": "review-review-library__390-light.png",
-      "setupMs": 788,
+      "setupMs": 693,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -89486,7 +91858,7 @@
       "size": "768",
       "theme": "light",
       "file": "review-review-library__768-light.png",
-      "setupMs": 705,
+      "setupMs": 635,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -89674,7 +92046,7 @@
       "size": "1024",
       "theme": "light",
       "file": "review-review-library__1024-light.png",
-      "setupMs": 748,
+      "setupMs": 721,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -89862,7 +92234,7 @@
       "size": "1280",
       "theme": "light",
       "file": "review-review-library__1280-light.png",
-      "setupMs": 683,
+      "setupMs": 715,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -90050,7 +92422,7 @@
       "size": "1440",
       "theme": "light",
       "file": "review-review-library__1440-light.png",
-      "setupMs": 862,
+      "setupMs": 1184,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -90238,7 +92610,7 @@
       "size": "1920",
       "theme": "light",
       "file": "review-review-library__1920-light.png",
-      "setupMs": 1190,
+      "setupMs": 950,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -90426,7 +92798,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "review-review-library__390-dark-dark.png",
-      "setupMs": 663,
+      "setupMs": 711,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -90614,7 +92986,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "review-review-library__1440-dark-dark.png",
-      "setupMs": 1001,
+      "setupMs": 977,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -90802,7 +93174,7 @@
       "size": "390",
       "theme": "light",
       "file": "review-review-replay__390-light.png",
-      "setupMs": 1522,
+      "setupMs": 2151,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -91104,7 +93476,7 @@
       "size": "768",
       "theme": "light",
       "file": "review-review-replay__768-light.png",
-      "setupMs": 1525,
+      "setupMs": 2302,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -91406,7 +93778,7 @@
       "size": "1024",
       "theme": "light",
       "file": "review-review-replay__1024-light.png",
-      "setupMs": 2244,
+      "setupMs": 2650,
       "boardDetails": {
         "coordText": {
           "width": 12.33,
@@ -91708,7 +94080,7 @@
       "size": "1280",
       "theme": "light",
       "file": "review-review-replay__1280-light.png",
-      "setupMs": 2555,
+      "setupMs": 1887,
       "boardDetails": {
         "coordText": {
           "width": 14.84,
@@ -92010,7 +94382,7 @@
       "size": "1440",
       "theme": "light",
       "file": "review-review-replay__1440-light.png",
-      "setupMs": 1664,
+      "setupMs": 2151,
       "boardDetails": {
         "coordText": {
           "width": 14.84,
@@ -92312,7 +94684,7 @@
       "size": "1920",
       "theme": "light",
       "file": "review-review-replay__1920-light.png",
-      "setupMs": 1497,
+      "setupMs": 1874,
       "boardDetails": {
         "coordText": {
           "width": 14.84,
@@ -92614,7 +94986,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "review-review-replay__390-dark-dark.png",
-      "setupMs": 2807,
+      "setupMs": 1928,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -92916,7 +95288,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "review-review-replay__1440-dark-dark.png",
-      "setupMs": 1460,
+      "setupMs": 2049,
       "boardDetails": {
         "coordText": {
           "width": 14.84,
@@ -93218,7 +95590,7 @@
       "size": "390",
       "theme": "light",
       "file": "review-review-analysis__390-light.png",
-      "setupMs": 1371,
+      "setupMs": 1664,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -93521,7 +95893,7 @@
       "size": "768",
       "theme": "light",
       "file": "review-review-analysis__768-light.png",
-      "setupMs": 1733,
+      "setupMs": 1994,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -93824,7 +96196,7 @@
       "size": "1024",
       "theme": "light",
       "file": "review-review-analysis__1024-light.png",
-      "setupMs": 2656,
+      "setupMs": 1900,
       "boardDetails": {
         "coordText": {
           "width": 12.33,
@@ -94127,7 +96499,7 @@
       "size": "1280",
       "theme": "light",
       "file": "review-review-analysis__1280-light.png",
-      "setupMs": 2054,
+      "setupMs": 1885,
       "boardDetails": {
         "coordText": {
           "width": 14.84,
@@ -94430,7 +96802,7 @@
       "size": "1440",
       "theme": "light",
       "file": "review-review-analysis__1440-light.png",
-      "setupMs": 2062,
+      "setupMs": 1863,
       "boardDetails": {
         "coordText": {
           "width": 14.84,
@@ -94733,7 +97105,7 @@
       "size": "1920",
       "theme": "light",
       "file": "review-review-analysis__1920-light.png",
-      "setupMs": 1800,
+      "setupMs": 1965,
       "boardDetails": {
         "coordText": {
           "width": 14.84,
@@ -95036,7 +97408,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "review-review-analysis__390-dark-dark.png",
-      "setupMs": 1541,
+      "setupMs": 1646,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -95339,7 +97711,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "review-review-analysis__1440-dark-dark.png",
-      "setupMs": 1769,
+      "setupMs": 1808,
       "boardDetails": {
         "coordText": {
           "width": 14.84,

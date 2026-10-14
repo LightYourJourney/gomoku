@@ -60,9 +60,11 @@ test('残局页做对一题，进度计数 +1 并刷新后仍在', async ({ page
   await gotoPuzzles(page)
 
   await expect(page.getByTestId('puzzle-progress')).toContainText('0 / 15')
-  await page.getByTestId('puzzle-win-h').click()
-  await page.getByTestId('intersection-4-7').click()
-  await expect(page.getByTestId('feedback')).toHaveAttribute('data-ok', 'true')
+  await openPuzzle(page, 'win-h')
+  // 走 `solveWithHints` 而不是点某个写死的坐标：这个文件抬头那句
+  // 「没有一处写死答案坐标」原本是假的——这里和下面那条都点着 `intersection-4-7`，
+  // 而它就是 `win-h` 的成五点（两轴审查抓到）。**改代码，不是改注释。**
+  await solveWithHints(page)
 
   await page.reload()
 
@@ -126,9 +128,7 @@ test('首页给出总进度、继续挑战入口与分类计数', async ({ page 
 test('做对之后「下一题」直接换题，上一题的反馈不跟过来', async ({ page }) => {
   await gotoPuzzles(page)
   await openPuzzle(page, 'win-h')
-
-  await page.getByTestId('intersection-4-7').click()
-  await expect(page.getByTestId('feedback')).toHaveAttribute('data-ok', 'true')
+  await solveWithHints(page)
 
   await page.getByRole('button', { name: '下一题 →' }).click()
 
@@ -202,4 +202,39 @@ test('做到最后一道：给结束状态，也不谎称全部通过', async ({
   await expect(page.getByText(/这是题库里的最后一道/)).toBeVisible()
   await expect(page.getByRole('button', { name: '下一题 →' })).toHaveCount(0)
   await expect(page.getByText(/道题都通过了/)).toHaveCount(0)
+})
+
+/**
+ * 「带着错误反馈点下一题」这条**现场路径**。
+ *
+ * 判错之后 footer 本来是不显示的（出口的闸门是「本次判对 或 此前已通过」），
+ * 所以这条路径只有**重进一道已通过的题**才走得到：那时出口一开始就在，
+ * 而玩家可能先走错一手、再换题。切题必须清干净——错的那条反馈与揭开过的提示
+ * 都是「那一次答题」的状态，不是题目的属性。
+ *
+ * 两轴审查指出：这条现场路径此前没有 e2e（已有那条走的是「返回列表再进另一题」）。
+ */
+test('重进已通过的题、走错一手，再点「下一题」——新题是干净的', async ({ page }) => {
+  await gotoPuzzles(page)
+
+  // 先做对一道，返回列表，再重进它——这时出口一开始就在
+  await openPuzzle(page, 'win-h')
+  await solveWithHints(page)
+  await page.getByRole('button', { name: '← 残局列表' }).click()
+  await openPuzzle(page, 'win-h')
+  await expect(page.getByText('这一题已经通过。')).toBeVisible()
+
+  // 重进之后先要点一级提示，再走错一手
+  await page.getByRole('button', { name: '要提示' }).click()
+  await page.getByTestId('intersection-0-0').click() // 题面第一行是空的
+  await expect(page.getByTestId('feedback')).toHaveAttribute('data-ok', 'false')
+  await expect(page.getByTestId('hint')).toBeVisible()
+
+  await page.getByRole('button', { name: '下一题 →' }).click()
+
+  // 新题上不该有任何上一题留下的东西
+  await expect(page.getByRole('heading', { level: 1, name: '斜向补满' })).toBeVisible()
+  await expect(page.getByTestId('feedback')).toHaveCount(0)
+  await expect(page.getByTestId('hint')).toHaveCount(0)
+  await expect(page.getByTestId('ask-hint')).toHaveText('要提示')
 })

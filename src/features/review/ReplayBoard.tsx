@@ -58,7 +58,7 @@ export function ReplayBoard({ store, onExit, extraPanel }: ReplayBoardProps) {
         />
       </BoardStage>
 
-      <aside className="order-2 space-y-3 px-3 pb-4 lg:order-2 lg:overflow-y-auto lg:border-l lg:border-border lg:px-4 lg:py-4">
+      <aside className="order-2 space-y-3 px-3 pb-4 wide-layout:order-2 wide-layout:overflow-y-auto wide-layout:border-l wide-layout:border-border wide-layout:px-4 wide-layout:py-4">
         <Panel title="回放" bodyClassName="space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-sm text-muted">

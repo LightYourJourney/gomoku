@@ -56,6 +56,55 @@ async function gotoLessonPractice(page: Page): Promise<void> {
   await expect(page.getByTestId('board')).toBeVisible()
 }
 
+/**
+ * Phase 05：768–1023 的**横屏**窗口也走两栏。
+ *
+ * 这一段宽度原先被 `lg:` 卡在纵向堆叠上——棋盘在上一屏、目标说明在下一屏，
+ * 玩家得来回滚。`index.css` 的 `wide-layout` 变体把「≥1024」与
+ * 「≥768 且横屏且高度够」合成同一个条件。
+ *
+ * 两条用例是**一对**，缺一不可：只验前者的话，谁把 `min-height` 那一条删掉
+ * 都不会红，而横屏手机（915×412）会跟着进两栏——那时棋盘被压到 320px 底线以下。
+ */
+test('横屏的小平板走两栏：棋盘与说明同屏', async ({ page }) => {
+  await page.setViewportSize({ width: 900, height: 700 })
+  await gotoPuzzle(page)
+
+  const board = await page.getByTestId('board').boundingBox()
+  const aside = await page.locator('aside').boundingBox()
+  expect(board).not.toBeNull()
+  expect(aside).not.toBeNull()
+
+  // 说明在棋盘**右边**（两栏），不是下面（纵向堆叠）
+  expect(aside!.x).toBeGreaterThanOrEqual(board!.x + board!.width - 1)
+  // 而且棋盘没被挤到最小尺寸以下
+  expect(board!.width).toBeGreaterThanOrEqual(320)
+})
+
+test('横屏**手机**不进两栏——那时整屏只有 412px 高', async ({ page }) => {
+  await page.setViewportSize({ width: 915, height: 412 })
+  await gotoPuzzle(page)
+
+  const board = await page.getByTestId('board').boundingBox()
+  const aside = await page.locator('aside').boundingBox()
+  expect(board).not.toBeNull()
+  expect(aside).not.toBeNull()
+
+  // 纵向堆叠：说明在棋盘**下面**
+  expect(aside!.y).toBeGreaterThanOrEqual(board!.y + board!.height - 1)
+})
+
+test('平板**竖屏**（768×1024）仍是纵向堆叠——竖屏本来就该这样', async ({ page }) => {
+  await page.setViewportSize({ width: 768, height: 1024 })
+  await gotoPuzzle(page)
+
+  const board = await page.getByTestId('board').boundingBox()
+  const aside = await page.locator('aside').boundingBox()
+
+  // 纵向堆叠：说明在棋盘**下面**
+  expect(aside!.y).toBeGreaterThanOrEqual(board!.y + board!.height - 1)
+})
+
 async function gotoPuzzle(page: Page): Promise<void> {
   await page.goto('/')
   await page.getByRole('button', { name: '残局', exact: true }).click()

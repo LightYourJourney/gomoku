@@ -243,3 +243,69 @@ test('触屏点「继续学习」能直接进推荐的课', async ({ page }) => 
 
   await expect(page.getByRole('heading', { name: LESSONS[0]!.steps[0]!.title })).toBeVisible()
 })
+
+/**
+ * Phase 05：残局在窄屏上的两条。
+ *
+ * 与上面教学页那两条同一条纪律——**移动端的布局与命中只有真浏览器说得清**
+ * （`AGENTS.md` 第 2 条），而这两页共用同一套练习组件与外壳，
+ * 教学页验过不等于残局页也对（它们的外层工具栏与侧栏内容都不同）。
+ */
+test('残局页在窄屏上不横向溢出，棋盘是正方形', async ({ page }) => {
+  await page.goto('/')
+  await page.getByRole('button', { name: '残局', exact: true }).click()
+  await expect(page.getByRole('heading', { name: '残局挑战' })).toBeVisible()
+
+  const overflow = await page.evaluate(
+    () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+  )
+  expect(overflow).toBe(0)
+
+  // 列表页本身也要能滚到底、每张卡都在视口内
+  await page.getByTestId('puzzle-win-h').click()
+  await expect(page.getByTestId('board')).toBeVisible()
+
+  const box = await page.getByTestId('board').boundingBox()
+  expect(box).not.toBeNull()
+  // 正方形（四舍五入到整数像素，允许 1px 的取整误差）
+  expect(Math.abs(box!.width - box!.height)).toBeLessThanOrEqual(1)
+  // 完整落在视口宽度内，而且没被挤到最小尺寸以下
+  expect(box!.x).toBeGreaterThanOrEqual(0)
+  expect(box!.x + box!.width).toBeLessThanOrEqual(page.viewportSize()!.width)
+  expect(box!.width).toBeGreaterThanOrEqual(320)
+})
+
+/**
+ * 与上面「学习页的点按」同样**单独一个测试**，不与拖动合在一起
+ * （理由见那一条的注释：两条输入通道混在同一段手势序列里，
+ *  CI 的 Chrome 上第二次不产生 click）。
+ */
+test('残局的棋盘：触摸点按命中正确，判定结果对得上', async ({ page }) => {
+  await page.goto('/')
+  await page.getByRole('button', { name: '残局', exact: true }).click()
+  await page.getByTestId('puzzle-win-h').click()
+  await expect(page.getByTestId('board')).toBeVisible()
+
+  // 坐标从**棋盘上的标记**反解，不写死答案——与 `e2e/puzzles.spec.ts` 同一条纪律
+  const hint = page.getByRole('button', { name: /要提示|再具体一点/ })
+  await hint.click()
+  await hint.click()
+  await hint.click()
+
+  const mark = page.locator('[data-testid^="board-mark-"]').first()
+  await mark.waitFor()
+  const testId = (await mark.getAttribute('data-testid')) ?? ''
+  const match = /board-mark-(\d+)-(\d+)/.exec(testId)
+  expect(match, `棋盘上应该出现解法标记，实际拿到的是「${testId}」`).not.toBeNull()
+  const [, x, y] = match!
+
+  const target = await page.getByTestId(`intersection-${x}-${y}`).boundingBox()
+  expect(target).not.toBeNull()
+  if (target === null) return
+
+  await page.touchscreen.tap(target.x + target.width / 2, target.y + target.height / 2)
+
+  // 点到哪就落在哪：判定为对，而且「对」的标记就画在那一格上
+  await expect(page.getByTestId('feedback')).toHaveAttribute('data-ok', 'true')
+  await expect(page.getByTestId(`board-mark-${x}-${y}`)).toHaveText('对')
+})

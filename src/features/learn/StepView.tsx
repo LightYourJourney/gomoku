@@ -55,7 +55,7 @@ export function StepView({ step, index, total }: StepViewProps) {
         )}
       </BoardStage>
 
-      <aside className="order-2 space-y-3 px-3 pb-4 lg:order-3 lg:overflow-y-auto lg:border-l lg:border-border lg:px-4 lg:py-4">
+      <aside className="order-2 space-y-3 px-3 pb-4 wide-layout:order-3 wide-layout:overflow-y-auto wide-layout:border-l wide-layout:border-border wide-layout:px-4 wide-layout:py-4">
         <Panel title={`讲解 ${index + 1} / ${total}`}>
           {/*
         这一页的 h1 在工具栏上（课名），所以这里只能是 h2——

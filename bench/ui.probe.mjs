@@ -668,20 +668,31 @@ const STATES = [
     },
   },
   {
+    /*
+      Phase 05 复查补的那一档：**某一类恰好全做完、而全局没做完**。
+      `puzzle-list-partial` 拍的是 2 / 3 那一档，看不到分类计数走到 3 / 3 的样子。
+    */
+    id: 'puzzle-category-done',
+    group: 'puzzles',
+    async boot(page) {
+      await bootLearned(
+        page,
+        progress({
+          lastView: 'puzzles',
+          // 「一步获胜」三道全通（3 / 3），全局仍然只有 3 / 15
+          solvedPuzzles: ['win-h', 'win-diag', 'win-vertical'],
+        }),
+      )
+      await page.waitForSelector('[data-testid="puzzle-progress"]:has-text("已通过 3 / 15 题")')
+    },
+  },
+  {
     /* Phase 05：十五道全做完的首页（完成态文案取代主操作） */
     id: 'puzzle-all-done',
     group: 'puzzles',
     async boot(page) {
-      /*
-        题目 id 从**页面上**读，不从源码 import——探针跑在裸 node 下，
-        解析不了没带扩展名的 TS import（`learn-list-all-done` 那儿的注释写了同一件事）。
-        选择器带 `[data-done]`：残局的进度块也用 `puzzle-` 前缀
-        （`puzzle-progress` 等），只有卡片带这个属性。
-      */
       await bootLearned(page, progress({ lastView: 'puzzles' }))
-      const ids = await page.$$eval('[data-testid^="puzzle-"][data-done]', (nodes) =>
-        nodes.map((node) => (node.getAttribute('data-testid') ?? '').replace('puzzle-', '')),
-      )
+      const ids = await readPuzzleIds(page)
       await seedIndexedDb(page, {
         learn: progress({ lastView: 'puzzles', solvedPuzzles: ids }),
         records: [],
@@ -716,9 +727,7 @@ const STATES = [
     group: 'puzzles',
     async boot(page) {
       await bootLearned(page, progress({ lastView: 'puzzles' }))
-      const ids = await page.$$eval('[data-testid^="puzzle-"][data-done]', (nodes) =>
-        nodes.map((node) => (node.getAttribute('data-testid') ?? '').replace('puzzle-', '')),
-      )
+      const ids = await readPuzzleIds(page)
       await seedIndexedDb(page, {
         learn: progress({
           lastView: 'puzzles',
@@ -823,6 +832,20 @@ async function bootLearned(page, learn, extra = {}) {
   await seedIndexedDb(page, { learn, records: extra.records ?? [] })
   await page.reload()
   await waitApp(page)
+}
+
+/**
+ * 残局题目的 id，**从页面上读**，不从源码 import——探针跑在裸 node 下，
+ * 解析不了没带扩展名的 TS import（`learn-list-all-done` 那儿的注释写了同一件事）。
+ * 从 DOM 读还多一层好处：题库换了，这些状态跟着变，而不是拿着手抄的一份假装同步。
+ *
+ * 选择器带 `[data-done]`：残局的进度块也用 `puzzle-` 前缀（`puzzle-progress`、
+ * `puzzle-progress-bar`……），只有卡片带这个属性。
+ */
+async function readPuzzleIds(page) {
+  return page.$$eval('[data-testid^="puzzle-"][data-done]', (nodes) =>
+    nodes.map((node) => (node.getAttribute('data-testid') ?? '').replace('puzzle-', '')),
+  )
 }
 
 // ── 量测 ────────────────────────────────────────────────────────
