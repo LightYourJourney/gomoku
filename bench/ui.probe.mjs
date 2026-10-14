@@ -561,6 +561,55 @@ const STATES = [
     },
   },
   {
+    id: 'learn-practice-correct',
+    group: 'learn',
+    async boot(page) {
+      await openLessonPractice(page)
+      /*
+        点「解」那一格——**坐标从 DOM 里读出来，不写死**。
+        点三次「要提示」之后引擎会把一种解法标在棋盘上（`Board` 的标记带
+        `board-mark-x-y`），这里反解出它的 x/y 再点。写死坐标等于把答案抄进探针，
+        而内容层的题只声明目标、不声明答案（`learn/types.ts`）——
+        抄的那份一旦与题面不符，这张截图会照着错的点拍，还显示「做得对」。
+      */
+      for (let i = 0; i < 3; i++) await page.getByTestId('ask-hint').click()
+      const mark = page.locator('[data-testid^="board-mark-"]').first()
+      await mark.waitFor()
+      const id = await mark.getAttribute('data-testid')
+      const [, x, y] = /^board-mark-(\d+)-(\d+)$/.exec(id ?? '') ?? []
+      await page.getByTestId(`intersection-${x}-${y}`).click()
+      await page.waitForSelector('[data-testid="feedback"][data-ok="true"]')
+    },
+  },
+  {
+    id: 'learn-list-all-done',
+    group: 'learn',
+    async boot(page) {
+      /*
+        八节全做完：任务书 §十一 点名要的那张「已全部完成进度」。
+
+        **课程 id 从页面上读，不从源码 import。** 探针跑在裸 node 下
+        （`yarn ui:probe` 就是 `node bench/ui.probe.mjs`），而 `src/learn/lessons.ts`
+        里是没带扩展名的 TS import，node 解析不了——构建工具那条路在这里不通。
+        从 DOM 读还多一层好处：加了第 9 节课，这张图会跟着变成 9 / 9，
+        而不是拿着手抄的八条假装「全部完成」。
+      */
+      await bootLearned(page, progress({ lastView: 'learn' }))
+      const ids = await page.$$eval('[data-testid^="lesson-"]', (nodes) =>
+        nodes.map((node) => (node.getAttribute('data-testid') ?? '').replace('lesson-', '')),
+      )
+      await seedIndexedDb(page, {
+        learn: progress({ lastView: 'learn', completedLessons: ids }),
+        records: [],
+      })
+      await page.reload()
+      await waitApp(page)
+      await page.waitForSelector(
+        `[data-testid="learn-progress"]:has-text("已完成 ${ids.length} / ${ids.length} 节")`,
+      )
+    },
+  },
+  {
     id: 'puzzle-list',
     group: 'puzzles',
     async boot(page) {
@@ -661,7 +710,9 @@ async function openLessonPractice(page) {
     progress({ lastView: 'learn', lastVisited: { kind: 'lesson', id: 'rules' } }),
   )
   await page.waitForSelector('button:has-text("下一步")')
-  for (let i = 0; i < 3; i++) await page.getByRole('button', { name: '下一步' }).click()
+  // 最后一步的按钮是「进入练习 →」（Phase 04 改的），不是「下一步」
+  for (let i = 0; i < 2; i++) await page.getByRole('button', { name: '下一步' }).click()
+  await page.getByRole('button', { name: '进入练习 →' }).click()
   await page.waitForSelector('[data-testid="board"]')
 }
 

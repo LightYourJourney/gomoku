@@ -48,9 +48,11 @@ async function gotoLearn(page: Page): Promise<void> {
 async function gotoLessonPractice(page: Page): Promise<void> {
   await gotoLearn(page)
   await page.getByTestId('lesson-rules').click()
-  for (let i = 0; i < 3; i++) {
+  // 最后一步的按钮是「进入练习 →」（Phase 04 改的），不是「下一步」
+  for (let i = 0; i < 2; i++) {
     await page.getByRole('button', { name: '下一步' }).click()
   }
+  await page.getByRole('button', { name: '进入练习 →' }).click()
   await expect(page.getByTestId('board')).toBeVisible()
 }
 

@@ -1,7 +1,10 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it } from 'vitest'
+import { parseBoardLines } from '../../lib/board-lines'
+import { solveMove } from '../../learn/hints'
 import { EMPTY_PROGRESS } from '../../persist/progress'
 import { LESSONS } from '../../learn/lessons'
+import type { Lesson } from '../../learn/types'
 import { PUZZLES } from '../../learn/puzzles'
 import { useLearnStore } from '../../store/learnStore'
 import { PuzzleScreen } from '../puzzles/PuzzleScreen'
@@ -13,6 +16,20 @@ beforeEach(() => {
 
 const openLesson = (id: string): void => {
   fireEvent.click(screen.getByTestId(`lesson-${id}`))
+}
+
+/**
+ * 按完讲解的翻页按钮，直到进入练习。
+ *
+ * **最后一步的按钮是「进入练习 →」**（Phase 04 改的）：原先一律写「下一步」，
+ * 可点下去直接跳到练习——动作发生了，按钮却没说实话。所以这里按**标签**点，
+ * 顺带把「最后一步换了文案」这件事也测了。
+ */
+function walkToPractice(lesson: Lesson): void {
+  for (let i = 0; i < lesson.steps.length - 1; i++) {
+    fireEvent.click(screen.getByRole('button', { name: '下一步' }))
+  }
+  fireEvent.click(screen.getByRole('button', { name: '进入练习 →' }))
 }
 
 describe.each([
@@ -78,22 +95,16 @@ describe('LearnScreen —— 课程列表', () => {
     render(<LearnScreen />)
     openLesson('rules')
 
-    const lesson = LESSONS[0]!
-    for (let i = 0; i < lesson.steps.length; i++) {
-      fireEvent.click(screen.getByRole('button', { name: '下一步' }))
-    }
+    walkToPractice(LESSONS[0]!)
 
-    expect(screen.getByText(lesson.practice.prompt)).toBeInTheDocument()
+    expect(screen.getByText(LESSONS[0]!.practice.prompt)).toBeInTheDocument()
   })
 
   it('做完练习后回到列表，那一节已经打勾', async () => {
     render(<LearnScreen />)
     openLesson('rules')
 
-    const lesson = LESSONS[0]!
-    for (let i = 0; i < lesson.steps.length; i++) {
-      fireEvent.click(screen.getByRole('button', { name: '下一步' }))
-    }
+    walkToPractice(LESSONS[0]!)
 
     // 这一节的解法是补满横排四子
     fireEvent.click(screen.getByTestId('intersection-4-7'))
@@ -113,9 +124,7 @@ describe('LearnScreen —— 课程列表', () => {
     openLesson('rules')
 
     const first = LESSONS[0]!
-    for (let i = 0; i < first.steps.length; i++) {
-      fireEvent.click(screen.getByRole('button', { name: '下一步' }))
-    }
+    walkToPractice(first)
     expect(screen.getByText(first.practice.prompt)).toBeInTheDocument()
 
     // 「下一节」只在练习做对之后才出现
@@ -292,5 +301,202 @@ describe('PuzzleScreen —— 残局列表', () => {
     fireEvent.click(screen.getByRole('button', { name: '← 残局列表' }))
 
     expect(screen.getByTestId('puzzle-progress')).toBeInTheDocument()
+  })
+})
+
+/**
+ * Phase 04：分阶段、进度、推荐、步骤导航（任务书 §二 / §三 / §六 / §九）。
+ *
+ * **进度全部来自 store 的真实状态**，所以这些用例的摆法都是「先 setState 造进度，
+ * 再看界面说了什么」——没有一处是断言写死的文案。
+ */
+describe('LearnScreen —— 进度与推荐（Phase 04）', () => {
+  it('进度还没读出来时给占位，而且一个数字都不出现', () => {
+    useLearnStore.setState({ loaded: false })
+    render(<LearnScreen />)
+
+    // 任务书 §三：未加载时要显示加载/占位……
+    expect(screen.getByText('正在读取学习进度…')).toBeInTheDocument()
+    // ……而且**不能**错误地显示「已完成 0 节」——那是在说一件还不知道的事
+    expect(screen.queryByTestId('learn-progress')).not.toBeInTheDocument()
+  })
+
+  it('读出来之后，计数与进度条都来自真实状态', () => {
+    useLearnStore.setState({
+      progress: { ...EMPTY_PROGRESS, completedLessons: ['rules', 'two', 'three'] },
+    })
+    render(<LearnScreen />)
+
+    expect(screen.getByTestId('learn-progress')).toHaveTextContent('已完成 3 / 8 节')
+
+    const bar = screen.getByRole('progressbar')
+    expect(bar).toHaveAttribute('aria-valuenow', '3')
+    expect(bar).toHaveAttribute('aria-valuemin', '0')
+    expect(bar).toHaveAttribute('aria-valuemax', '8')
+  })
+
+  it('推荐的是第一节没做完的课，顶上那颗按钮直接进它', () => {
+    useLearnStore.setState({ progress: { ...EMPTY_PROGRESS, completedLessons: ['rules'] } })
+    render(<LearnScreen />)
+
+    fireEvent.click(screen.getByRole('button', { name: '继续学习：活二与眠二' }))
+
+    expect(screen.getByText(LESSONS[1]!.steps[0]!.title)).toBeInTheDocument()
+  })
+
+  /*
+   * **这里刻意没有「推荐上次停留那一节」的用例。**
+   *
+   * 那条路在这层根本走不到：`lastVisited` 是一节有效的课时，`LearnScreen`
+   * 装载就会把那一节展开（见下面「存在上次停留的课程时，直接展开那一节」），
+   * 列表压根不渲染。`resolveNext` 因此不看 `lastVisited`——
+   * 这条判断连同一个「它是什么都不影响推荐」的用例，记在 `courseOutline.test.ts`。
+   * 写一条测不到的用例，等于给一个不存在的状态写断言。
+   */
+
+  it('八节全做完时给完成状态，不再推荐任何一节', () => {
+    useLearnStore.setState({
+      progress: { ...EMPTY_PROGRESS, completedLessons: LESSONS.map((lesson) => lesson.id) },
+    })
+    render(<LearnScreen />)
+
+    expect(screen.getByText(/八节课都完成了/)).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /继续学习/ })).not.toBeInTheDocument()
+  })
+
+  it('按四段渲染，每段一个二级标题——读屏用户才知道哪些是一类', () => {
+    render(<LearnScreen />)
+
+    for (const title of ['基础入门', '棋型进阶', '攻防策略', '综合实战']) {
+      expect(screen.getByRole('heading', { level: 2, name: title })).toBeInTheDocument()
+    }
+  })
+
+  it('推荐那张卡只做弱标记，不在卡里再放一颗通向同一节课的按钮', () => {
+    useLearnStore.setState({ progress: { ...EMPTY_PROGRESS, completedLessons: ['rules'] } })
+    const { container } = render(<LearnScreen />)
+
+    expect(screen.getByTestId('lesson-two')).toHaveAttribute('data-recommended', 'true')
+    expect(screen.getByTestId('lesson-three')).toHaveAttribute('data-recommended', 'false')
+
+    // 「一屏最多一个 primary」管的是**按钮**：整页只有顶部那颗「继续学习」用实心
+    // accent 底，卡片上的推荐只用边框。（进度条的填充也是 `bg-accent`，
+    // 但它是条不是按钮——所以这里必须限定到 `button`，否则数出来是 2。）
+    expect(container.querySelectorAll('button.bg-accent')).toHaveLength(1)
+  })
+
+  it('列表末尾有去残局挑战的入口，点了就切到残局视图', () => {
+    render(<LearnScreen />)
+
+    fireEvent.click(screen.getByTestId('learn-to-puzzles'))
+
+    expect(useLearnStore.getState().view).toBe('puzzles')
+  })
+
+  it('简介里的节数由内容推出来，不是写死的「八」', () => {
+    render(<LearnScreen />)
+
+    expect(screen.getByText(new RegExp(`^${LESSONS.length} 节课`))).toBeInTheDocument()
+  })
+})
+
+describe('LearnScreen —— 课程详情的步骤导航（Phase 04）', () => {
+  it('第一步的「上一步」是禁用状态，而不是消失', () => {
+    render(<LearnScreen />)
+    openLesson('rules')
+
+    expect(screen.getByRole('button', { name: '上一步' })).toBeDisabled()
+  })
+
+  it('来回翻讲解页，计数跟着走，也不会退到第 0 页之前', () => {
+    render(<LearnScreen />)
+    openLesson('rules')
+
+    const up = screen.getByRole('button', { name: '上一步' })
+    fireEvent.click(up) // 第 0 步上再点一次：被 clamp 住，不该出现 0 / N
+    expect(screen.getByText(`1 / ${LESSONS[0]!.steps.length}`)).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: '下一步' }))
+    expect(screen.getByText(`2 / ${LESSONS[0]!.steps.length}`)).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: '上一步' }))
+    expect(screen.getByText(`1 / ${LESSONS[0]!.steps.length}`)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '上一步' })).toBeDisabled()
+  })
+
+  it('练习态能回到讲解——回到的是最后一页，而且**不算完成**', () => {
+    render(<LearnScreen />)
+    openLesson('rules')
+    walkToPractice(LESSONS[0]!)
+
+    fireEvent.click(screen.getByRole('button', { name: '回到讲解' }))
+
+    const steps = LESSONS[0]!.steps
+    expect(screen.getByText(steps[steps.length - 1]!.title)).toBeInTheDocument()
+    // 任务书 §六 点名：「返回讲解不能意外把课程标为完成」
+    expect(useLearnStore.getState().progress.completedLessons).not.toContain('rules')
+    expect(useLearnStore.getState().isLessonDone('rules')).toBe(false)
+  })
+
+  it('已通过的课可以重新学一遍，完成计数不会因此涨', async () => {
+    useLearnStore.setState({ progress: { ...EMPTY_PROGRESS, completedLessons: ['rules'] } })
+    render(<LearnScreen />)
+
+    openLesson('rules')
+    walkToPractice(LESSONS[0]!)
+    fireEvent.click(screen.getByTestId('intersection-4-7'))
+    await waitFor(() => expect(screen.getByTestId('feedback')).toHaveAttribute('data-ok', 'true'))
+
+    fireEvent.click(screen.getByRole('button', { name: '← 课程列表' }))
+    expect(screen.getByTestId('learn-progress')).toHaveTextContent('已完成 1 / 8 节')
+  })
+})
+
+/**
+ * 任务书 §九：**最后一课完成后引导到残局挑战**。
+ *
+ * 通关那一手由**引擎算出来**，不写死坐标——内容层的题只声明目标、不声明答案
+ * （`learn/types.ts` 的 `PuzzleGoal`），测试也不该反过来把答案抄一遍：
+ * 抄的那份一旦与题面不符，用例会跟着错，而不是发现问题。
+ */
+describe('LearnScreen —— 最后一节的出口（Phase 04）', () => {
+  it('八节课里最后一节通关后，出口通向残局挑战', async () => {
+    const last = LESSONS[LESSONS.length - 1]!
+    useLearnStore.setState({
+      progress: {
+        ...EMPTY_PROGRESS,
+        completedLessons: LESSONS.slice(0, -1).map((lesson) => lesson.id),
+      },
+    })
+
+    render(<LearnScreen />)
+    openLesson(last.id)
+    walkToPractice(last)
+
+    const solution = solveMove(
+      parseBoardLines(last.practice.board.lines),
+      last.practice.player,
+      last.practice.goal,
+      Date.now,
+    )
+    expect(solution).not.toBeNull()
+
+    fireEvent.click(screen.getByTestId(`intersection-${solution!.x}-${solution!.y}`))
+    await waitFor(() => expect(screen.getByTestId('feedback')).toHaveAttribute('data-ok', 'true'))
+
+    fireEvent.click(screen.getByRole('button', { name: /去残局挑战/ }))
+
+    expect(useLearnStore.getState().view).toBe('puzzles')
+  })
+
+  it('不是最后一节时，出口仍然是「下一节 →」', async () => {
+    render(<LearnScreen />)
+    openLesson('rules')
+    walkToPractice(LESSONS[0]!)
+    fireEvent.click(screen.getByTestId('intersection-4-7'))
+    await waitFor(() => expect(screen.getByTestId('feedback')).toHaveAttribute('data-ok', 'true'))
+
+    expect(screen.getByRole('button', { name: '下一节 →' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /去残局挑战/ })).not.toBeInTheDocument()
   })
 })

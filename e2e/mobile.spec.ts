@@ -1,3 +1,4 @@
+import { LESSONS } from '../src/learn/lessons'
 import { expect, test } from '@playwright/test'
 
 /**
@@ -123,9 +124,11 @@ test('学习页在窄屏上不横向溢出，棋盘是正方形', async ({ page 
 
   // 进入练习页，棋盘是新的一处实例，正方形约束得重新验一遍
   await page.getByTestId('lesson-rules').click()
-  for (let i = 0; i < 3; i++) {
+  // 最后一步的按钮写的是「进入练习 →」（Phase 04 改的），不是「下一步」
+  for (let i = 0; i < 2; i++) {
     await page.getByRole('button', { name: '下一步' }).click()
   }
+  await page.getByRole('button', { name: '进入练习 →' }).click()
 
   const box = await page.getByTestId('board').boundingBox()
   expect(box).not.toBeNull()
@@ -144,9 +147,11 @@ async function gotoPracticeBoard(page: import('@playwright/test').Page): Promise
   await page.goto('/')
   await page.getByRole('button', { name: '教学', exact: true }).click()
   await page.getByTestId('lesson-rules').click()
-  for (let i = 0; i < 3; i++) {
+  // 最后一步的按钮写的是「进入练习 →」（Phase 04 改的），不是「下一步」
+  for (let i = 0; i < 2; i++) {
     await page.getByRole('button', { name: '下一步' }).click()
   }
+  await page.getByRole('button', { name: '进入练习 →' }).click()
 }
 
 test('学习页的棋盘：手指拖动不滚页面，也不误落子', async ({ page }) => {
@@ -221,4 +226,20 @@ test('学习页的棋盘：点按命中正确，判定结果对得上', async ({
 
   // 点到哪就落在哪：落点必须是这一手本身，判定结果也得对上
   await expect(page.getByTestId('feedback')).toHaveAttribute('data-ok', 'true')
+})
+
+/**
+ * Phase 04：触屏点顶部那颗「继续学习」。
+ *
+ * 它是列表页**唯一的主操作**（一屏最多一个 `primary`），也是窄屏下最好按的那颗——
+ * 列表一长，第一屏看到的往往就是它。命中区大小由 `Button` 的档位保证，
+ * 这里验的是**真的点得中、点完真的进了那一节**。
+ */
+test('触屏点「继续学习」能直接进推荐的课', async ({ page }) => {
+  await page.goto('/')
+  await page.getByRole('button', { name: '教学', exact: true }).click()
+
+  await page.getByRole('button', { name: /^继续学习：/ }).click()
+
+  await expect(page.getByRole('heading', { name: LESSONS[0]!.steps[0]!.title })).toBeVisible()
 })

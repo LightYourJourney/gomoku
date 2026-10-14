@@ -34,7 +34,7 @@ const DEFAULTS = {
    * 一条**恒真的空检查**（Phase 03 收尾时发现它停在了 after-phase02）。
    * CI 显式传 `--current`，不受这里影响。
    */
-  current: resolve(REPO, 'docs/ui-redesign/screenshots/after-phase03/measurements.json'),
+  current: resolve(REPO, 'docs/ui-redesign/screenshots/after-phase04/measurements.json'),
 }
 
 

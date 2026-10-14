@@ -163,6 +163,9 @@ export function PracticeBoard({ practice, onSolved, footer }: PracticeBoardProps
             </Button>
           )}
           <Button
+            // 文案会变（「要提示」→「再具体一点（1/3）」），所以按文字定位的调用方
+            // 点第二次就选不中了。探针要连点三次，给它一个稳定的抓手。
+            data-testid="ask-hint"
             variant="primary"
             block
             disabled={solved || hintLevel >= HINT_LEVELS}

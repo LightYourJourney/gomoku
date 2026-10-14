@@ -21,11 +21,18 @@ async function gotoLearn(page: Page): Promise<void> {
   await expect(page.getByRole('heading', { name: '互动教学' })).toBeVisible()
 }
 
-/** 翻过全部讲解页，停在练习上。 */
+/**
+ * 翻过全部讲解页，停在练习上。
+ *
+ * **最后一步点的是「进入练习 →」**（Phase 04 改的）：原先一路都写「下一步」，
+ * 可最后那一点下去直接跳到练习——动作发生了，按钮却没说实话。
+ * 所以这里按标签点，顺带把这条文案变化也测了。
+ */
 async function gotoPractice(page: Page, steps: number): Promise<void> {
-  for (let i = 0; i < steps; i++) {
+  for (let i = 0; i < steps - 1; i++) {
     await page.getByRole('button', { name: '下一步' }).click()
   }
+  await page.getByRole('button', { name: '进入练习 →' }).click()
 }
 
 test('从对战页进入课程页，打开一节课并走到练习', async ({ page }) => {

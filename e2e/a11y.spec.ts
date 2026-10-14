@@ -1,3 +1,4 @@
+import { LESSONS } from '../src/learn/lessons'
 import { expect, test } from '@playwright/test'
 
 /**
@@ -280,5 +281,61 @@ test.describe('结果弹窗的焦点', () => {
     await expect
       .poll(() => page.evaluate(() => document.activeElement?.textContent?.trim() ?? null))
       .toBe('重新开始')
+  })
+})
+
+/**
+ * Phase 04：教学页的键盘通路。
+ *
+ * 与上面那条落子用例同一条纪律：**用真键盘 Tab 过去，不调 `.focus()`**——
+ * 程序化定位只能证明「这个元素存在」，证明不了「键盘用户到得了它」。
+ */
+test.describe('键盘操作 · 教学页', () => {
+  test('Tab 就能走到「下一步」，回车翻页；第一步的「上一步」是禁用的', async ({ page }) => {
+    await page.goto('/')
+    await page.getByRole('button', { name: '教学', exact: true }).click()
+    await page.getByTestId('lesson-rules').click()
+
+    // 第 0 步：渲染但禁用——键盘走不到它，这正是判据（不是隐藏，隐藏会让工具栏跳动）
+    await expect(page.getByRole('button', { name: '上一步' })).toBeDisabled()
+
+    let tabs = 0
+    while (tabs < 20) {
+      await page.keyboard.press('Tab')
+      tabs += 1
+      const text = await page.evaluate(() => document.activeElement?.textContent ?? '')
+      if (text.includes('下一步')) break
+    }
+    expect(tabs, '按 Tab 应该能在 20 步之内走到「下一步」').toBeLessThan(20)
+
+    await page.keyboard.press('Enter')
+
+    /*
+      `exact: true` 不能少：讲解面板的标题写的是「讲解 2 / 3」，
+      按子串找会同时命中它和工具栏的计数器（strict mode 直接报两个元素）。
+    */
+    await expect(page.getByText(`2 / ${LESSONS[0]!.steps.length}`, { exact: true })).toBeVisible()
+    // 走到第二步之后，「上一步」就该能用了——Tab 得能摸到它
+    await expect(page.getByRole('button', { name: '上一步' })).toBeEnabled()
+  })
+
+  test('列表页那颗「继续学习」用键盘也能按', async ({ page }) => {
+    await page.goto('/')
+    await page.getByRole('button', { name: '教学', exact: true }).click()
+
+    const cta = page.getByRole('button', { name: /^继续学习：/ })
+    await expect(cta).toBeVisible()
+
+    let tabs = 0
+    while (tabs < 25) {
+      await page.keyboard.press('Tab')
+      tabs += 1
+      const text = await page.evaluate(() => document.activeElement?.textContent ?? '')
+      if (text.startsWith('继续学习：')) break
+    }
+    expect(tabs, '按 Tab 应该能在 25 步之内走到「继续学习」').toBeLessThan(25)
+
+    await page.keyboard.press('Enter')
+    await expect(page.getByRole('heading', { name: LESSONS[0]!.steps[0]!.title })).toBeVisible()
   })
 })
