@@ -1413,11 +1413,11 @@ CDP 往返在高负载下要几百毫秒），所以它读到的是 2 颗子。
 | --- | --- |
 | `yarn lint` | ✔ |
 | `yarn typecheck` | ✔（含 `tsconfig.e2e.json` 与 `tsconfig.bench.json`） |
-| `yarn test` | ✔ 56 文件 / **953 用例**（Phase 02 之后是 912） |
+| `yarn test` | ✔ 57 文件 / **957 用例**（Phase 02 之后是 912；第四轮自审补了 `MoveList` 的 3 条与 `no_move` 边界 1 条） |
 | `yarn build` | ✔ |
 | `yarn e2e` | ✔（**115 条** / 9 个 spec；Phase 02 之后是 103） |
 | `yarn e2e:prod` | ✔ |
-| `yarn gates` | ✔ 0 clones；测试条数棘轮：单测 953 / e2e 115，skip 0 |
+| `yarn gates` | ✔ 0 clones；测试条数棘轮：单测 957 / e2e 115，skip 0 |
 | `yarn ui:probe` | ✔ **七条量化判据全过**（21 → 27 个状态） |
 | `yarn check:coverage` | ✔ 覆盖未缩小（172 条 / 21 个状态，实比控件与标题 3084 条，另有 48 条新增） |
 | `yarn bench:check` | ✔ 断言行 19/19 一致 / 跳过 6 条 / 不变量 29 项一致——**与基线逐条相同** |

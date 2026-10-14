@@ -32,11 +32,18 @@ export interface AiInfo {
   readonly confidence: Confidence
   readonly reason: SearchReason
   /**
-   * AI 最后落在哪。默认层要把它写成「AI 落在 H8」——
+   * AI 最后落在哪。默认层要把它写成「落点 H8」——
    * 任务书 §七 给玩家视图举的例就是「推荐落点：H8」。
    *
    * 用 `Point | null` 而不是 `Point`：`no_move`（棋盘已满）时引擎返回 `move: null`，
    * 那时没有落点可报。硬塞一个假坐标是在编。
+   *
+   * **为什么存一份快照、而不是让面板去读 `game.lastMove`**：两者今天总是相等，
+   * 但语义不同——这里是「**这份分析说的是哪一手**」，`game.lastMove` 是
+   * 「盘上最新那颗子」。前者在 `aiInfo` 被清空时一并失效（所有清空路径都是
+   * 整体 `aiInfo: null`，所以不会出现「面板报着一个已经不在盘上的坐标」）；
+   * 后者则会在 AI 欠着一手、玩家刚悔棋之类的时刻指向别的东西。
+   * 一个字段换掉这层耦合，值这个价。
    */
   readonly move: Point | null
 }

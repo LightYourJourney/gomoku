@@ -86,7 +86,16 @@ function MoveCell({ point, player, highlighted }: MoveCellProps) {
       data-testid={`move-${point.x}-${point.y}`}
       className={cx(
         'inline-flex items-center gap-2 rounded px-1 py-0.5 tabular-nums',
-        highlighted ? 'bg-danger-soft text-danger' : 'text-muted',
+        /*
+         * 最后一手的底色是 **accent**，不是 danger。
+         *
+         * Phase 03 把棋盘上那圈红环换掉时漏了这一处——同一个毛病、同一个 feature：
+         * `--c-danger` 是「认输 / 错误 / 判错反馈」的颜色（`DESIGN_SYSTEM.md` §2.2），
+         * 而「最后一手」只是**列表里的当前项**，正对 §2.2 给 accent 的定义
+         * （「主操作、当前选中项」）。侧栏里一条红杠和原先那圈红环一样扎眼。
+         * 与 `MatchBar` 的行动方高亮（`bg-accent-soft text-accent`）也是同一套说法。
+         */
+        highlighted ? 'bg-accent-soft text-accent' : 'text-muted',
       )}
     >
       <span

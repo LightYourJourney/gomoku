@@ -107,6 +107,18 @@ describe('AiPanel —— 两级信息', () => {
     expect(screen.getByTestId('ai-player-view')).toHaveTextContent(sentence)
   })
 
+  /**
+   * 边界：`no_move` 时引擎返回 `move: null`（棋盘已满），
+   * 那时**不能编一个坐标出来**。上面 `.each` 那张表每档都带着 `move`，
+   * 单独把这一档挑出来测——否则「没有落点」这条路一次都不会被执行。
+   */
+  it('棋盘已满（没有落点）时只说原因，不编坐标出来', () => {
+    setup({ info: { ...INFO, reason: 'no_move', move: null } })
+
+    expect(screen.getByTestId('ai-player-view')).toHaveTextContent('棋盘已满，AI 没有可落子的位置。')
+    expect(screen.queryByTestId('ai-move')).not.toBeInTheDocument()
+  })
+
   it('展开后才说明引擎是怎么跑的', () => {
     setup({ info: INFO })
     openInfo()
