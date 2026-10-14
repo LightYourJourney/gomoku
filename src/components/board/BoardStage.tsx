@@ -28,11 +28,18 @@ export function BoardStage({ children, className }: BoardStageProps) {
   return (
     <section
       className={cx(
-        // `lg:py-2` 而不是 `lg:py-3`：对战页中列的纵向开销直接压棋盘，而棋盘在 ≥1440
-        // 是被高度卡住的（见 `BattleScreen` 的注释）。**这个值只能改在这里**——
-        // 调用方用 `className` 传 `lg:py-2` 是没用的，Tailwind 的同名工具类之间
-        // 没有优先级，谁在生成的 CSS 里靠后谁赢，实测自带的那条会赢。
-        'flex h-[min(calc(100vw-1.5rem),56dvh)] items-center justify-center px-3 py-3 lg:h-auto lg:min-h-0 lg:px-6 lg:py-2',
+        /*
+          窄屏那档给一个**确定高度**（`56dvh`），两栏起就解除、交给 flex 分配——
+          它的条件必须与 `PageShell` 的两栏条件一致（`wide-layout`），否则会出现
+          「已经是两栏了，可棋盘还按 `56dvh` 算」：768–1023 横屏那一档实测只剩
+          256px（900×500），远低于 §8.1 的 320px 底线。
+
+          `wide-layout:py-2` 而不是 `py-3`：对战页中列的纵向开销直接压棋盘，
+          而棋盘在 ≥1440 是被高度卡住的（见 `BattleScreen` 的注释）。
+          **这个值只能改在这里**——调用方用 `className` 传是没用的，
+          Tailwind 的同名工具类之间没有优先级，谁在生成的 CSS 里靠后谁赢。
+        */
+        'flex h-[min(calc(100vw-1.5rem),56dvh)] items-center justify-center px-3 py-3 wide-layout:h-auto wide-layout:min-h-0 wide-layout:px-6 wide-layout:py-2',
         className,
       )}
       style={{ containerType: 'size' }}

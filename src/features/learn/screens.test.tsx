@@ -745,6 +745,64 @@ describe('PuzzleScreen —— 出口（Phase 05）', () => {
     expect(screen.queryByText('第一次做对这道题。')).not.toBeInTheDocument()
   })
 
+  /**
+   * **末题同时是某一类的最后一题**，分类完成提示也要在。
+   *
+   * 提示此前只挂在「还有下一题」那一支上，而题库最后一道（`forced-counter`）
+   * 恰好是「强制获胜路线」的第二道——线性做完十五道的人**永远看不到**
+   * 最后一类通过。走 allDone 分支时它必须还在（唯一的例外是「全部通过」：
+   * 那句话已经蕴含了它）。
+   */
+  it('末题同时是某一类的最后一题时，分类完成提示也在', () => {
+    const last = PUZZLES[PUZZLES.length - 1]!
+    useLearnStore.setState({
+      // 该类两道全通，但全局只有 2 / 15 —— 走的是 allDone 而**不是** allSolved
+      progress: { ...EMPTY_PROGRESS, solvedPuzzles: ['forced-deep', last.id] },
+      loaded: true,
+      view: 'puzzles',
+    })
+    render(<PuzzleScreen />)
+    fireEvent.click(screen.getByTestId(`puzzle-${last.id}`))
+
+    expect(screen.getByText('「强制获胜路线」这一类全部通过了。')).toBeInTheDocument()
+    expect(screen.getByText(/这是题库里的最后一道/)).toBeInTheDocument()
+    expect(screen.queryByText(/道题都通过了/)).not.toBeInTheDocument()
+  })
+
+  it('「再做一次」之后又做对，不再说「第一次做对」', async () => {
+    render(<PuzzleScreen />)
+    fireEvent.click(screen.getByTestId('puzzle-win-h'))
+    fireEvent.click(screen.getByTestId('intersection-4-7'))
+    expect(await screen.findByText('第一次做对这道题。')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: '再做一次' }))
+    fireEvent.click(screen.getByTestId('intersection-4-7'))
+
+    await waitFor(() => expect(screen.getByText('这一题已经通过。')).toBeInTheDocument())
+    expect(screen.queryByText('第一次做对这道题。')).not.toBeInTheDocument()
+  })
+
+  /**
+   * **重进一道已通过的题**时，同屏只能有一颗实心 accent 按钮。
+   *
+   * 那时页脚里的出口（「下一题 →」）已经在了，而棋盘那边的「要提示」默认也是
+   * `primary`——两颗可用的主按钮并排，违反 `DESIGN_SYSTEM.md` §6.1，
+   * 读的人也不知道该按哪颗。（判对之后由 `disabled` 接管，不必再区分。）
+   */
+  it('重进已通过的题：「要提示」不再是实心主色', () => {
+    useLearnStore.setState({
+      progress: { ...EMPTY_PROGRESS, solvedPuzzles: ['win-h'] },
+      loaded: true,
+      view: 'puzzles',
+    })
+    render(<PuzzleScreen />)
+    fireEvent.click(screen.getByTestId('puzzle-win-h'))
+
+    // 这一屏唯一的主操作是出口那一颗
+    expect(screen.getByRole('button', { name: '下一题 →' }).className).toContain('bg-accent')
+    expect(screen.getByTestId('ask-hint').className).not.toContain('bg-accent')
+  })
+
   it('这一类全通了就给分类完成提示', () => {
     // 「一步获胜」三道全通，重进其中一道
     useLearnStore.setState({

@@ -639,16 +639,7 @@ const STATES = [
         progress({ lastView: 'puzzles', lastVisited: { kind: 'puzzle', id: 'win-h' } }),
       )
       await page.waitForSelector('[data-testid="board"]')
-      // 三级提示之后棋盘上会标出解法——**从标记上读坐标，不写死答案**
-      for (let i = 0; i < 3; i++) {
-        await page.getByRole('button', { name: /要提示|再具体一点/ }).click()
-      }
-      const mark = page.locator('[data-testid^="board-mark-"]').first()
-      await mark.waitFor()
-      const testId = await mark.getAttribute('data-testid')
-      const [, x, y] = /board-mark-(\d+)-(\d+)/.exec(testId)
-      await page.getByTestId(`intersection-${x}-${y}`).click()
-      await page.waitForSelector('[data-testid="feedback"][data-ok="true"]')
+      await solveFromHint(page)
     },
   },
   {
@@ -714,9 +705,7 @@ const STATES = [
         progress({ lastView: 'puzzles', lastVisited: { kind: 'puzzle', id: 'win-h' } }),
       )
       await page.waitForSelector('[data-testid="board"]')
-      for (let i = 0; i < 3; i++) {
-        await page.getByRole('button', { name: /要提示|再具体一点/ }).click()
-      }
+      await revealHint(page)
       await page.waitForSelector('[data-testid="hint"]')
       await page.locator('[data-testid^="board-mark-"]').first().waitFor()
     },
@@ -739,16 +728,7 @@ const STATES = [
       await waitApp(page)
       await page.waitForSelector('[data-testid="board"]')
 
-      // 三级提示 → 从标记反解坐标 → 落子（与 `puzzle-correct` 同一套，不写死答案）
-      for (let i = 0; i < 3; i++) {
-        await page.getByRole('button', { name: /要提示|再具体一点/ }).click()
-      }
-      const mark = page.locator('[data-testid^="board-mark-"]').first()
-      await mark.waitFor()
-      const testId = await mark.getAttribute('data-testid')
-      const [, x, y] = /board-mark-(\d+)-(\d+)/.exec(testId)
-      await page.getByTestId(`intersection-${x}-${y}`).click()
-      await page.waitForSelector('[data-testid="feedback"][data-ok="true"]')
+      await solveFromHint(page)
     },
   },
   {
@@ -846,6 +826,29 @@ async function readPuzzleIds(page) {
   return page.$$eval('[data-testid^="puzzle-"][data-done]', (nodes) =>
     nodes.map((node) => (node.getAttribute('data-testid') ?? '').replace('puzzle-', '')),
   )
+}
+
+/** 连点三次「要提示」，把三级提示揭满。 */
+async function revealHint(page) {
+  for (let i = 0; i < 3; i++) {
+    await page.getByRole('button', { name: /要提示|再具体一点/ }).click()
+  }
+}
+
+/**
+ * 揭满三级提示，从**棋盘上的标记**读回解法坐标再落子，等判定为对。
+ *
+ * **不写死任何答案坐标**——那正是这套题库的设计（答案由引擎现场算出来），
+ * 所以剧本只能这么写。三处残局状态共用这一份（此前是逐字抄了两遍 + 一遍半）。
+ */
+async function solveFromHint(page) {
+  await revealHint(page)
+  const mark = page.locator('[data-testid^="board-mark-"]').first()
+  await mark.waitFor()
+  const testId = await mark.getAttribute('data-testid')
+  const [, x, y] = /board-mark-(\d+)-(\d+)/.exec(testId)
+  await page.getByTestId(`intersection-${x}-${y}`).click()
+  await page.waitForSelector('[data-testid="feedback"][data-ok="true"]')
 }
 
 // ── 量测 ────────────────────────────────────────────────────────

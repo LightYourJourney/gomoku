@@ -94,6 +94,25 @@ test('横屏**手机**不进两栏——那时整屏只有 412px 高', async ({ 
   expect(aside!.y).toBeGreaterThanOrEqual(board!.y + board!.height - 1)
 })
 
+/**
+ * 两栏**最低高度**那一档的底线。
+ *
+ * `wide-layout` 的高度门槛是 500（`index.css`），这条就卡在那个边界上——它是唯一
+ * 能抓住「棋盘按 `56dvh` 算小了」的用例：修之前这里量到 **254px**（900×500），
+ * 远低于 `DESIGN_SYSTEM.md` §8.1 的 320px 底线。根因不在阈值，
+ * 而在 `BoardStage` 的 `lg:h-auto` 没跟着换成 `wide-layout`（两栏了，可棋盘还按
+ * 窄屏那档的固定高度算）。
+ */
+test('两栏最低高度那一档，棋盘仍在 320px 之上', async ({ page }) => {
+  await page.setViewportSize({ width: 900, height: 500 })
+  await gotoPuzzle(page)
+
+  const board = await page.getByTestId('board').boundingBox()
+  expect(board).not.toBeNull()
+  expect(board!.width).toBeGreaterThanOrEqual(320)
+  expect(board!.height).toBeGreaterThanOrEqual(320)
+})
+
 test('平板**竖屏**（768×1024）仍是纵向堆叠——竖屏本来就该这样', async ({ page }) => {
   await page.setViewportSize({ width: 768, height: 1024 })
   await gotoPuzzle(page)

@@ -346,6 +346,37 @@ describe('PracticeBoard —— 判题标记（F-UI-12）', () => {
     expect(screen.getAllByTestId(/^board-mark-/)).toHaveLength(2)
   })
 
+  /**
+   * **满级提示之后走「另一头」**——`win-h` 两端都能成五，这是最常见的走法之一。
+   *
+   * 这一条是两轴审查指出的：标记那侧判的是「有解 **且** 还没判对」，文案那侧
+   * 曾经只看前半句。于是走另一头判对之后，棋盘上只剩「对」，而面板还写着
+   * 「棋盘上标出了其中一种解法」——**棋盘上没有那个标记**。
+   * 两处现在共用 `solutionMark` 一个值，这条钉的就是它们不许再分叉。
+   */
+  it('满级提示之后走另一头：判对，而且那句「标出了」跟着消失', () => {
+    setup()
+
+    const hintButton = () => screen.getByRole('button', { name: /提示|再具体一点/ })
+    fireEvent.click(hintButton())
+    fireEvent.click(hintButton())
+    fireEvent.click(hintButton())
+
+    // 提示标出的是两端之一；**故意走另一头**（这一题两端都能成五）
+    const marked = screen.getAllByTestId(/^board-mark-/)[0]!.getAttribute('data-testid')!
+    const other = marked === 'board-mark-4-7' ? 'board-mark-9-7' : 'board-mark-4-7'
+    const [, x, y] = /board-mark-(\d+)-(\d+)/.exec(other)!
+    play(Number(x), Number(y))
+
+    expect(screen.getByTestId('feedback')).toHaveAttribute('data-ok', 'true')
+
+    const marks = screen.getAllByTestId(/^board-mark-/)
+    expect(marks).toHaveLength(1)
+    expect(marks[0]).toHaveTextContent('对')
+
+    expect(screen.queryByText(/棋盘上标出了/)).not.toBeInTheDocument()
+  })
+
   it('走对了就只剩「对」——那时解法点与落子点是同一个，两个标记只会叠在一起', () => {
     setup()
 

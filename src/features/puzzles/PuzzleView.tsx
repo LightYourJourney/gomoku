@@ -24,6 +24,8 @@ export type PuzzleExit =
   | {
       readonly kind: 'allDone'
       readonly run: () => void
+      /** 这一类是不是全通了。**末题也可能是某一类的最后一题**，所以这里也要有。 */
+      readonly categoryDone: boolean
       /**
        * 是不是**真的**全通过了，而不只是「走到了题库的最后一道」。
        *
@@ -103,7 +105,11 @@ export function PuzzleView({ puzzle, exit, onExit }: PuzzleViewProps) {
         footer={
           <div className="space-y-2">
             <p className="text-xs text-good">
-              {alreadySolvedOnEntry ? '这一题已经通过。' : '第一次做对这道题。'}
+              {/*
+                `round > 0` 也要算进去：「再做一次」只重建棋盘（`key` 里带 round），
+                这个快照不会变——第二次做对若还说「第一次做对」，那是**假话**。
+              */}
+              {alreadySolvedOnEntry || round > 0 ? '这一题已经通过。' : '第一次做对这道题。'}
             </p>
 
             {/*
@@ -120,11 +126,20 @@ export function PuzzleView({ puzzle, exit, onExit }: PuzzleViewProps) {
                   这是题库里的最后一道。前面还有没做的，随时回列表接着练。
                 </p>
               )
-            ) : exit.categoryDone ? (
+            ) : null}
+
+            {/*
+              分类完成提示**不挂在「还有下一题」那一支上**。
+              末题恰好也是某一类的最后一题（`forced-counter` 就是），
+              那时走的是 allDone 分支——线性做完十五道的人会**永远看不到**
+              「强制获胜路线」这一类通过了。唯一的例外是「全部通过」：
+              那句话已经蕴含了它，不必再说一遍。
+            */}
+            {exit.categoryDone && !(exit.kind === 'allDone' && exit.allSolved) && (
               <p className="text-xs text-good">
                 「{CATEGORY_LABELS[puzzle.category]}」这一类全部通过了。
               </p>
-            ) : null}
+            )}
 
             {exit.kind === 'next' ? (
               <Button variant="primary" block onClick={exit.run}>

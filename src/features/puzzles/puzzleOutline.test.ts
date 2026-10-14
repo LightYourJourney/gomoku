@@ -14,19 +14,19 @@ const ALL_IDS = PUZZLES.map((puzzle) => puzzle.id)
  */
 describe('继续挑战指向哪一道', () => {
   it('一道都没做过时指向第一道', () => {
-    expect(resolveNextPuzzle(PUZZLES, [])?.id).toBe('win-h')
+    expect(resolveNextPuzzle(PUZZLES, [], null)?.id).toBe('win-h')
   })
 
   it('中途跳着做也不影响：指向第一道没做的，而不是「最后做完的那道之后」', () => {
-    expect(resolveNextPuzzle(PUZZLES, ['win-h', 'block-h', 'vcf-basic'])?.id).toBe('win-diag')
+    expect(resolveNextPuzzle(PUZZLES, ['win-h', 'block-h', 'vcf-basic'], null)?.id).toBe('win-diag')
   })
 
   it('十五道全做完时返回 null', () => {
-    expect(resolveNextPuzzle(PUZZLES, ALL_IDS)).toBeNull()
+    expect(resolveNextPuzzle(PUZZLES, ALL_IDS, null)).toBeNull()
   })
 
   it('进度里混着已经删掉的 id 也不影响——它不参与查找', () => {
-    expect(resolveNextPuzzle(PUZZLES, ['已经删掉的题'])?.id).toBe('win-h')
+    expect(resolveNextPuzzle(PUZZLES, ['已经删掉的题'], null)?.id).toBe('win-h')
   })
 })
 
@@ -51,7 +51,7 @@ describe('继续挑战的偏好', () => {
   })
 
   it('不给偏好时，就是题库里第一道没做的', () => {
-    expect(resolveNextPuzzle(PUZZLES, ['win-h'])?.id).toBe('win-diag')
+    expect(resolveNextPuzzle(PUZZLES, ['win-h'], null)?.id).toBe('win-diag')
     expect(resolveNextPuzzle(PUZZLES, ['win-h'], null)?.id).toBe('win-diag')
   })
 

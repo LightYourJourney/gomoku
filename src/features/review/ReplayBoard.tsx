@@ -5,7 +5,9 @@ import { BoardStage } from '../../components/board/BoardStage'
 import { Button } from '../../components/ui/Button'
 import { Panel } from '../../components/ui/Panel'
 import type { UseBoundStore, StoreApi } from 'zustand'
+import { cx } from '../../lib/cx'
 import type { ReplayStore } from '../../store/replayStore'
+import { SIDE_PANEL_CLASS } from '../shell/PageShell'
 
 export interface ReplayBoardProps {
   readonly store: UseBoundStore<StoreApi<ReplayStore>>
@@ -58,7 +60,7 @@ export function ReplayBoard({ store, onExit, extraPanel }: ReplayBoardProps) {
         />
       </BoardStage>
 
-      <aside className="order-2 space-y-3 px-3 pb-4 wide-layout:order-2 wide-layout:overflow-y-auto wide-layout:border-l wide-layout:border-border wide-layout:px-4 wide-layout:py-4">
+      <aside className={cx('order-2 space-y-3 px-3 pb-4 wide-layout:order-2', SIDE_PANEL_CLASS)}>
         <Panel title="回放" bodyClassName="space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-sm text-muted">

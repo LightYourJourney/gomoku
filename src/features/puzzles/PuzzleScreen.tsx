@@ -73,6 +73,15 @@ export function PuzzleScreen() {
     visit(null)
   }
 
+  /**
+   * 已通过的题数。
+   *
+   * **只数一次**，`allSolved` 也由它推（`done === PUZZLES.length`）——
+   * 此前详情页用 `every(isPuzzleDone)`、列表页用 `filter(...).length`，
+   * 同一个谓词两种数法。它必须定义在两个分支**之前**：详情页那一支要用它。
+   */
+  const done = PUZZLES.filter((entry) => isPuzzleDone(entry.id)).length
+
   if (puzzle !== null) {
     const next = nextPuzzleAfter(PUZZLES, puzzle.id)
     const mine = categoryProgress(PUZZLES, progress.solvedPuzzles).find(
@@ -80,7 +89,7 @@ export function PuzzleScreen() {
     )
     // 题库**不锁顺序**：做到最后一道 ≠ 前面的都做过了。这两个状态得分开，
     // 否则文案会说一句「十五道题都通过了」的假话（Phase 04 的同形缺陷）。
-    const allSolved = PUZZLES.every((entry) => isPuzzleDone(entry.id))
+    const allSolved = done === PUZZLES.length
 
     return (
       <PuzzleView
@@ -93,6 +102,7 @@ export function PuzzleScreen() {
             ? {
                 kind: 'allDone',
                 allSolved,
+                categoryDone: mine !== undefined && mine.done === mine.puzzles.length,
                 total: PUZZLES.length,
                 // 真的全做完了，这条链就到头了：教学 → 残局 → 实战。
                 // 只是走到最后一道的话，出口是**回列表**接前面没做的题。
@@ -120,7 +130,6 @@ export function PuzzleScreen() {
   // 按题库里分类出现的顺序列，一处都不重排——分类表本身已经在 `puzzles.ts` 里
   // 定过顺序了，这里再造一条就是第二个真相。
   const groups = categoryProgress(PUZZLES, progress.solvedPuzzles)
-  const done = PUZZLES.filter((entry) => isPuzzleDone(entry.id)).length
   const nextUp = resolveNextPuzzle(PUZZLES, progress.solvedPuzzles, lastCategory)
 
   return (

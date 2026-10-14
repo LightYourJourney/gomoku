@@ -3,10 +3,12 @@ import { Board } from '../../components/board/Board'
 import { BoardStage } from '../../components/board/BoardStage'
 import { Button } from '../../components/ui/Button'
 import { Panel } from '../../components/ui/Panel'
+import { cx } from '../../lib/cx'
 import { parseBoardLines } from '../../lib/board-lines'
 import { replay } from '../../core/game'
 import { BLACK } from '../../core/types'
 import type { LessonStep } from '../../learn/types'
+import { SIDE_PANEL_CLASS } from '../shell/PageShell'
 
 export interface StepViewProps {
   readonly step: LessonStep
@@ -55,7 +57,7 @@ export function StepView({ step, index, total }: StepViewProps) {
         )}
       </BoardStage>
 
-      <aside className="order-2 space-y-3 px-3 pb-4 wide-layout:order-3 wide-layout:overflow-y-auto wide-layout:border-l wide-layout:border-border wide-layout:px-4 wide-layout:py-4">
+      <aside className={cx('order-2 space-y-3 px-3 pb-4 wide-layout:order-3', SIDE_PANEL_CLASS)}>
         <Panel title={`讲解 ${index + 1} / ${total}`}>
           {/*
         这一页的 h1 在工具栏上（课名），所以这里只能是 h2——

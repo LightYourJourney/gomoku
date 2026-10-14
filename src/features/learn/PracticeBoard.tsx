@@ -4,11 +4,13 @@ import { BoardStage } from '../../components/board/BoardStage'
 import { FeedbackBanner } from '../../components/panels/FeedbackBanner'
 import { Panel } from '../../components/ui/Panel'
 import { Button } from '../../components/ui/Button'
+import { cx } from '../../lib/cx'
 import { parseBoardLines } from '../../lib/board-lines'
 import { goalHint, HINT_LEVELS, solveMove } from '../../learn/hints'
 import type { Practice } from '../../learn/types'
 import { applyToBoard, judgeMove, type Verdict } from '../../learn/verify'
 import type { Point } from '../../core/types'
+import { SIDE_PANEL_CLASS } from '../shell/PageShell'
 
 export interface PracticeBoardProps {
   readonly practice: Practice
@@ -52,6 +54,17 @@ export function PracticeBoard({ practice, onSolved, alreadySolved = false, foote
   const solved = attempt?.verdict.ok === true
   const board = attempt === null ? base : applyToBoard(base, attempt.move, practice.player)
 
+  /*
+    **这一次该显示的解法标记**，标记与下面那句文案共用这一个值。
+
+    两处曾经各判各的：标记看 `solution !== null && !solved`、文案只看前半句，
+    于是「用满提示之后走了**另一头**」——`win-h` 两端都能成五，那是常见走法——
+    会判对、棋盘上只剩「对」，而面板还写着「棋盘上标出了其中一种解法」。
+    上一轮说「绑在同一个变量上就不可能出现」，那次并没有真的绑在同一处；
+    现在只有这一个值，两处不可能再分叉。
+  */
+  const solutionMark = solution !== null && !solved ? solution : null
+
   const marks: BoardMark[] = []
   if (attempt !== null) {
     // 判题标记带明确符号（F-UI-12）：只给 tone 不给 label 时，`Board` 会走
@@ -71,8 +84,8 @@ export function PracticeBoard({ practice, onSolved, alreadySolved = false, foote
     判对时不画：那时解法点必然就是玩家落子的那个点（`solveMove` 与 `judgeMove`
     用的是同一把尺子），画上去只会两个标记叠在一起。
   */
-  if (solution !== null && !solved) {
-    marks.push({ point: solution, label: '解' })
+  if (solutionMark !== null) {
+    marks.push({ point: solutionMark, label: '解' })
   }
 
   const handlePlay = (point: Point): void => {
@@ -153,7 +166,7 @@ export function PracticeBoard({ practice, onSolved, alreadySolved = false, foote
         />
       </BoardStage>
 
-      <aside className="order-2 space-y-3 px-3 pb-4 wide-layout:order-3 wide-layout:overflow-y-auto wide-layout:border-l wide-layout:border-border wide-layout:px-4 wide-layout:py-4">
+      <aside className={cx('order-2 space-y-3 px-3 pb-4 wide-layout:order-3', SIDE_PANEL_CLASS)}>
         <Panel title="练习">
           <p className="text-sm leading-relaxed text-fg">{practice.prompt}</p>
           <p className="mt-2 flex items-center gap-2 text-xs text-faint">
@@ -188,7 +201,13 @@ export function PracticeBoard({ practice, onSolved, alreadySolved = false, foote
             // 文案会变（「要提示」→「再具体一点（1/3）」），所以按文字定位的调用方
             // 点第二次就选不中了。探针要连点三次，给它一个稳定的抓手。
             data-testid="ask-hint"
-            variant="primary"
+            /*
+              **重进一道已通过的题时降一档**：那时出口（「下一题 →」）已经在页脚里，
+              而它是实心 accent——再给「要提示」一颗，同屏就有两颗可用的主按钮，
+              违反 `DESIGN_SYSTEM.md` §6.1「一屏最多一个 primary」，读的人也不知道
+              该按哪颗。（判对之后自然由 `disabled` 接管，不必再区分。）
+            */
+            variant={alreadySolved ? 'default' : 'primary'}
             block
             disabled={solved || hintLevel >= HINT_LEVELS}
             onClick={askHint}
@@ -210,7 +229,7 @@ export function PracticeBoard({ practice, onSolved, alreadySolved = false, foote
               **绑在同一个变量上，这种不一致就不可能发生**（`solveMove` 与 `judgeMove`
               共用一把尺子，所以能算出来就一定标得出来）。
             */}
-            {solution !== null && (
+            {solutionMark !== null && (
               <p className="mt-2 text-xs text-faint">
                 棋盘上标出了其中一种解法。走上去试试——判定看的是棋型，别的走法同样算对。
               </p>

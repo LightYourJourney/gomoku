@@ -1,6 +1,19 @@
 import type { ReactNode } from 'react'
 import { AppHeader } from './AppHeader'
 
+/**
+ * 棋盘型页面右侧那一栏。
+ *
+ * 三个调用点（练习 / 讲解 / 回放）除了排列顺序以外**逐字相同**，而顺序只有两种。
+ * 抽出来不是为了少打字：**断点条件只该有一个定义**——Phase 05 把「≥1024 两栏」
+ * 改成 `wide-layout` 时就有四处类名要一起改，漏一处就是「已经是两栏了，
+ * 可那一栏既不滚、也没有分隔线」。
+ *
+ * **对战页不用它**：它自有三档（`BattleScreen`），断点仍是 `lg`。
+ */
+export const SIDE_PANEL_CLASS =
+  'wide-layout:overflow-y-auto wide-layout:border-l wide-layout:border-border wide-layout:px-4 wide-layout:py-4'
+
 export type PageVariant =
   /** 阅读型：正文是居中限宽的一列。教学 / 残局 / 复盘的列表页。 */
   | 'reading'
