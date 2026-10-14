@@ -119,6 +119,25 @@ test('做完一节课刷新页面，完成标记还在', async ({ page }) => {
   await page.getByRole('button', { name: '← 课程列表' }).click()
   await expect(page.getByTestId('learn-progress')).toContainText('1 / 8')
   await expect(page.getByTestId('lesson-rules')).toHaveAttribute('data-done', 'true')
+
+  /*
+    完成状态必须能被**读屏**拿到——`data-done` 是给测试用的，读屏不认；
+    ✓ 徽标与 `›` 都是 `aria-hidden`。初版把「已完成」放在按钮**外面**，
+    于是浏览模式读得到、**Tab 到按钮时读不到**（子代理审计发现，见 §20.3 第 5 条）。
+
+    这两条断言是一对，缺一不可：
+    描述里有「已完成」= 焦点模式读得到；名称里**没有**它 = 语音控制说
+    「点击基本规则」在完成后依然点得中（名字不随状态漂移）。
+    用 `toHaveAccessibleName/Description` 而不是读 DOM：量的就是无障碍树
+    算出来的那两个字段，与读屏拿到的同源。
+  */
+  const rules = page.getByTestId('lesson-rules')
+  await expect(rules).toHaveAccessibleDescription('已完成')
+  await expect(rules).toHaveAccessibleName(/基本规则/)
+  await expect(rules).not.toHaveAccessibleName(/已完成/)
+
+  // 对照组：没做完的那节课不该冒出「已完成」的描述
+  await expect(page.getByTestId('lesson-two')).not.toHaveAccessibleDescription(/已完成/)
 })
 
 test('残局页做对一题，进度计数 +1 并刷新后仍在', async ({ page }) => {

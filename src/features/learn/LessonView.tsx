@@ -56,7 +56,13 @@ export function LessonView({ lesson, solved, onExit, onSolved, exit }: LessonVie
         于是这节课的页面根本没有一级标题（探针的 `headings` 量得清清楚楚：
         `learn-practice` 整页只有一条 `h2 练习`）。样式一个字没变。
       */}
-      <h1 className="truncate text-sm font-medium text-fg">{lesson.title}</h1>
+      {/*
+        用 §3.2 的「**页面标题**」档（20/28/600，与 `PageHeader` 同一套），
+        不是「强调正文」档。第一版写成 `text-sm font-medium` 时，
+        探针量出来的是 h1 高 **20**、而它下面的讲解小标题高 **24**——
+        **语义层级修对了，视觉层级反而更倒** ✗（两轴评审指出后改）。
+      */}
+      <h1 className="truncate text-xl font-semibold text-fg">{lesson.title}</h1>
           <span className="ml-auto font-mono text-xs tabular-nums text-faint">
             {onPractice ? '练习' : `${step + 1} / ${stepCount}`}
           </span>

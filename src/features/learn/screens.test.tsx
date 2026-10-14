@@ -369,12 +369,25 @@ describe('LearnScreen —— 进度与推荐（Phase 04）', () => {
     expect(screen.queryByRole('button', { name: /继续学习/ })).not.toBeInTheDocument()
   })
 
-  it('已完成的卡片对读屏也说得清状态——✓ 徽标是 aria-hidden，data-done 读屏不认', () => {
+  it('已完成的卡片对读屏也说得清状态——走描述，不走名称', () => {
     useLearnStore.setState({ progress: { ...EMPTY_PROGRESS, completedLessons: ['rules'] } })
     render(<LearnScreen />)
 
-    // 那句话在按钮**外面**：放进按钮会改掉它的可访问名，进而动到覆盖面棘轮的按钮键
-    expect(screen.getByText('已完成：')).toBeInTheDocument()
+    /*
+      初版断的是 `getByText('已完成：')`——那只证明「DOM 里有这句话」，
+      对读屏**拿不拿得到**一个字都没说。实际当时它放在按钮外面，
+      浏览模式读得到、**Tab 到按钮时读不到**（子代理审计发现，见 PHASE_04 §20.3 第 5 条）。
+
+      改成量无障碍树算出来的两个字段，与读屏同源。三条缺一不可：
+      描述里有状态；名称里**没有**它（否则语音控制说「点击基本规则」
+      在完成后就点不中了）；没做完的那节不该有这条描述。
+    */
+    const rules = screen.getByTestId('lesson-rules')
+    expect(rules).toHaveAccessibleDescription('已完成')
+    expect(rules).toHaveAccessibleName(/基本规则/)
+    expect(rules).not.toHaveAccessibleName(/已完成/)
+
+    expect(screen.getByTestId('lesson-two')).not.toHaveAccessibleDescription(/已完成/)
   })
 
   it('课程详情页有一级标题，而且就是课名（讲解页的小标题是二级）', () => {

@@ -135,13 +135,27 @@ export function LearnScreen() {
                     {/*
                       完成状态对读屏也得可读：✓ 徽标是 `aria-hidden`，
                       而 `data-done` 是给测试用的、读屏不认。
-                      这句话放在按钮**外面**——放进按钮会改变它的可访问名
-                      （`✓基本规则…` → `✓（已完成）基本规则…`），
-                      那是覆盖面棘轮的按钮键，没必要为它动基线。
+
+                      **走描述、不走名称**（`aria-describedby` 指过来，而不是把这句话
+                      塞进按钮里）：
+                      - 名称答「这是什么」，描述答「它现在什么样」，本来就是两个字段；
+                      - 塞进按钮会**改写可访问名**，而状态是会变的——语音控制的用户
+                        说「点击基本规则」，在那节课做完之后就点不中了
+                        （WCAG 2.5.3 的反面：名字不该随状态漂移）。
+
+                      初版只把这句话放在按钮**外面**，理由写的是「别动覆盖率的按钮键」——
+                      那是拿门禁的便利换功能：浏览模式读得到，**Tab 到按钮时读不到**。
+                      改由 `aria-describedby` 引用之后两条通路都有了，
+                      按钮的可访问名仍然一个字没变。
                     */}
-                    {finished && <span className="sr-only">已完成：</span>}
+                    {finished && (
+                      <span id={`lesson-done-${entry.id}`} className="sr-only">
+                        已完成
+                      </span>
+                    )}
                     <button
                       type="button"
+                      aria-describedby={finished ? `lesson-done-${entry.id}` : undefined}
                       onClick={() => open(entry.id)}
                       data-testid={`lesson-${entry.id}`}
                       data-done={finished}
