@@ -360,7 +360,12 @@ describe('LearnScreen —— 进度与推荐（Phase 04）', () => {
     })
     render(<LearnScreen />)
 
-    expect(screen.getByText(/八节课都完成了/)).toBeInTheDocument()
+    /*
+      节数按 `LESSONS.length` 断言，**不写死「八」**：
+      这句文案本身也是从 `total` 推出来的，用例跟着内容走才对得上——
+      否则加了第 9 节课，用例会替那句已经撒谎的文案背书。
+    */
+    expect(screen.getByText(new RegExp(`${LESSONS.length} 节课都完成了`))).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /继续学习/ })).not.toBeInTheDocument()
   })
 
@@ -379,10 +384,14 @@ describe('LearnScreen —— 进度与推荐（Phase 04）', () => {
     expect(screen.getByTestId('lesson-two')).toHaveAttribute('data-recommended', 'true')
     expect(screen.getByTestId('lesson-three')).toHaveAttribute('data-recommended', 'false')
 
-    // 「一屏最多一个 primary」管的是**按钮**：整页只有顶部那颗「继续学习」用实心
-    // accent 底，卡片上的推荐只用边框。（进度条的填充也是 `bg-accent`，
-    // 但它是条不是按钮——所以这里必须限定到 `button`，否则数出来是 2。）
+    /*
+      「一屏一个 accent 动作」：整页只有顶部那颗「继续学习」是实心 accent 的**按钮**。
+      进度条的填充也是 `bg-accent`，但它是数据可视化不是可点的东西——
+      `DESIGN_SYSTEM.md` §6.1 把这条写成了明确的例外，所以这里限定到 `button`。
+    */
     expect(container.querySelectorAll('button.bg-accent')).toHaveLength(1)
+    // 残局入口是次要入口，走 `ghost`（`text-muted`），不抢那颗主操作
+    expect(screen.getByTestId('learn-to-puzzles').className).not.toContain('text-accent')
   })
 
   it('列表末尾有去残局挑战的入口，点了就切到残局视图', () => {
@@ -436,6 +445,24 @@ describe('LearnScreen —— 课程详情的步骤导航（Phase 04）', () => {
     // 任务书 §六 点名：「返回讲解不能意外把课程标为完成」
     expect(useLearnStore.getState().progress.completedLessons).not.toContain('rules')
     expect(useLearnStore.getState().isLessonDone('rules')).toBe(false)
+  })
+
+  /**
+   * 两轴评审抓出来的**真行为缺陷**：出口原先只由 `PracticeBoard` **内部**的
+   * 「本次判对了没」把关，于是重进一节已通过的课时，出口一直藏着，
+   * 直到玩家把这道题再做一遍。这与任务书 §九「允许再次进入已经完成的课程」冲突。
+   *
+   * 修法：把进度里那个「此前已通过」也接进闸门（`PracticeBoard` 的 `alreadySolved`）。
+   */
+  it('重进已通过的课时，一次都没做也看得见出口', () => {
+    useLearnStore.setState({ progress: { ...EMPTY_PROGRESS, completedLessons: ['rules'] } })
+
+    render(<LearnScreen />)
+    openLesson('rules')
+    walkToPractice(LESSONS[0]!)
+
+    // 本次会话还没落任何子，但这一节此前已通过 → 出口应当立刻在
+    expect(screen.getByRole('button', { name: '下一节 →' })).toBeInTheDocument()
   })
 
   it('已通过的课可以重新学一遍，完成计数不会因此涨', async () => {

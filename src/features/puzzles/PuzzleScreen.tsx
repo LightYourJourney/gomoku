@@ -154,6 +154,7 @@ function PuzzleView({ puzzle, onExit }: PuzzleViewProps) {
         key={`${puzzle.id}:${round}`}
         practice={puzzle}
         onSolved={handleSolved}
+        alreadySolved={solved}
         footer={
           <div className="space-y-2">
             <p className="text-xs text-good">这一题已经通过。</p>

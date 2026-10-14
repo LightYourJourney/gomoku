@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Button } from '../../components/ui/Button'
 import { PageHeader } from '../../components/ui/PageHeader'
 import { cx } from '../../lib/cx'
 import { LESSONS } from '../../learn/lessons'
@@ -95,7 +96,7 @@ export function LearnScreen() {
         description={`${LESSONS.length} 节课从规则讲到做杀，每节都有一页页的棋盘图解和一道练习。练习的判定看的是棋型而不是固定答案——同一个目标，往往不止一种走法。`}
       />
 
-      <div className="space-y-5">
+      <div className="space-y-6">
         <LessonProgress
           loaded={loaded}
           done={done}
@@ -116,7 +117,7 @@ export function LearnScreen() {
               分组标题是 h2：不分组时读屏用户听到的是「八个并列按钮」，
               分不清哪些是一类的。层级也要对——h1 是「互动教学」。
             */}
-            <h2 id={`stage-${stage.id}`} className="px-1 text-sm font-medium text-muted">
+            <h2 id={`stage-${stage.id}`} className="px-1 text-sm font-semibold text-muted">
               {stage.title}
             </h2>
 
@@ -148,14 +149,17 @@ export function LearnScreen() {
                           足够说明状态，铺色反而让八张卡里五张都在喊。
                           底回到 `surface`——`surface-2` 按 §2.1 不用于大面积背景。
                         */
-                        finished ? 'border-good/40 bg-surface' : 'border-border bg-surface hover:border-border-strong',
+                        finished ? 'border-good/40' : 'border-border hover:border-border-strong',
                         /*
-                          推荐那一张只加**边框**权重，不加字、不用 accent：
-                          accent 留给顶部那颗「继续学习」按钮（一屏一个主操作）。
-                          这里也不加 `aria-*`——它没有任何新信息，
+                          推荐那一张用**底色上一档**加权重：`surface-2` 按 §2.1 正是
+                          「面板内的次级块、悬停底色」那一档，读起来就是「当前这条」。
+                          **不用 accent**（留给顶部那颗「继续学习」），
+                          **也不用 `border-strong`**——按 §2.2 它只属于 hover 描边与开关关闭态，
+                          常态用它是越档（初稿就是这么写的，两轴评审指出后改掉）。
+                          这里也不加 `aria-*`：它没有新信息，
                           「接下来学哪节」已经由顶部那颗按钮说清楚了。
                         */
-                        recommended && 'border-border-strong ring-1 ring-border-strong',
+                        recommended ? 'bg-surface-2' : 'bg-surface',
                       )}
                     >
                       <span
@@ -198,16 +202,23 @@ export function LearnScreen() {
             课程里的每一个概念，在「残局挑战」里都有对应的题目可以练。做题时判定同样
             看棋型，所以想出别的走法一样算对。
           </p>
-          <button
-            type="button"
+          {/*
+            用 `ghost` 档，不手搓：`DESIGN_SYSTEM.md` §6.1 说这一档就是为收编
+            散落的裸 `<button>` 而加的，而手搓的那版**漏了 hover 反馈**；
+            颜色也走 `text-muted` 而不是 `text-accent`——§2.2 的 accent 只给
+            「主操作、当前选中项」，这一条是次要入口，不抢那颗「继续学习」。
+          */}
+          <Button
+            variant="ghost"
+            size="sm"
+            data-testid="learn-to-puzzles"
+            className="mt-2"
             onClick={() => {
               setView('puzzles')
             }}
-            data-testid="learn-to-puzzles"
-            className="mt-2 inline-flex min-h-6 items-center gap-1 text-xs font-medium text-accent underline underline-offset-2 transition active:brightness-95"
           >
             去残局挑战 →
-          </button>
+          </Button>
         </div>
       </div>
     </PageShell>

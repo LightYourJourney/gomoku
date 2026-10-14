@@ -69,9 +69,10 @@ export function LessonProgress({ loaded, done, total, next, onContinue }: Lesson
         />
       </div>
 
+      {/* 节数由 `total` 推出来，不写死「八」——加了第 9 节课这句会撒谎 */}
       {next === null ? (
         <p className="mt-3 text-sm text-good">
-          八节课都完成了。去「残局挑战」把那些棋型再练一遍吧。
+          {total} 节课都完成了。去「残局挑战」把那些棋型再练一遍吧。
         </p>
       ) : (
         <Button variant="primary" block className="mt-3" onClick={onContinue}>

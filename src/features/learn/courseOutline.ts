@@ -25,11 +25,6 @@ export const STAGES: readonly Stage[] = [
   { id: 'combat', title: '综合实战', lessonIds: ['combo', 'vcf'] },
 ]
 
-/** 这节课属于哪一组。认不出来就返回 `null`——**不硬塞一组**。 */
-export function stageOf(lessonId: string): Stage | null {
-  return STAGES.find((stage) => stage.lessonIds.includes(lessonId)) ?? null
-}
-
 /**
  * 「继续学习」指向谁：**第一节还没做完的**；全做完了就是 `allDone`。
  *

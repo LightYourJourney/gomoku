@@ -99,6 +99,7 @@ export function LessonView({ lesson, solved, onExit, onSolved, exit }: LessonVie
           key={lesson.id}
           practice={lesson.practice}
           onSolved={handleSolved}
+          alreadySolved={solved}
           footer={
             exit === undefined ? (
               <Button block onClick={onExit}>
@@ -110,7 +111,7 @@ export function LessonView({ lesson, solved, onExit, onSolved, exit }: LessonVie
               </Button>
             ) : (
               <Button variant="primary" block onClick={exit.run}>
-                八节课都讲完了——去残局挑战 →
+                全部课程讲完了——去残局挑战 →
               </Button>
             )
           }

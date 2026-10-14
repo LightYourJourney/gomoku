@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { LESSONS } from '../../learn/lessons'
 import { EMPTY_PROGRESS, type LearningProgress } from '../../persist/progress'
-import { STAGES, resolveNext, stageOf } from './courseOutline'
+import { STAGES, resolveNext } from './courseOutline'
 
 function progressOf(patch: Partial<LearningProgress>): LearningProgress {
   return { ...EMPTY_PROGRESS, ...patch }
@@ -33,16 +33,6 @@ describe('课程分组表', () => {
       expect(stage.title).not.toBe('')
       expect(stage.lessonIds.length).toBeGreaterThan(0)
     }
-  })
-
-  it('stageOf 认得出每一节课', () => {
-    for (const lesson of LESSONS) {
-      expect(stageOf(lesson.id)).not.toBeNull()
-    }
-  })
-
-  it('stageOf 对不存在的 id 返回 null，而不是硬塞一组', () => {
-    expect(stageOf('not-a-lesson')).toBeNull()
   })
 })
 

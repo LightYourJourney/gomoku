@@ -14,7 +14,16 @@ export interface PracticeBoardProps {
   readonly practice: Practice
   /** 判定通过时回调一次。 */
   readonly onSolved: () => void
-  /** 通过之后额外渲染的内容，例如「下一节」按钮。 */
+  /**
+   * 这道题**此前已经通过**（进度里记着）。
+   *
+   * 与组件内部那个 `solved`（本次会话刚判对的）不是一回事：重进一节已完成的课时，
+   * 内部的 `solved` 是 false——只有它把关的话，「下一节 / 去残局挑战 / 再来一次」
+   * 会一直藏着，直到玩家把这道题**再做一遍**。任务书 §九 要求
+   * 「允许再次进入已经完成的课程」，那就得让出口一开始就在。
+   */
+  readonly alreadySolved?: boolean
+  /** 通过之后（或此前已通过时）额外渲染的内容，例如「下一节」按钮。 */
   readonly footer?: React.ReactNode
 }
 
@@ -30,7 +39,7 @@ export interface PracticeBoardProps {
  * 3. **点位是算出来的**，不是题目里写死的——所以出一道题不必附带答案表，
  *    多解也天然成立。
  */
-export function PracticeBoard({ practice, onSolved, footer }: PracticeBoardProps) {
+export function PracticeBoard({ practice, onSolved, alreadySolved = false, footer }: PracticeBoardProps) {
   const base = useMemo(() => parseBoardLines(practice.board.lines), [practice])
   const [attempt, setAttempt] = useState<{ move: Point; verdict: Verdict } | null>(null)
   const [hintLevel, setHintLevel] = useState(0)
@@ -188,7 +197,12 @@ export function PracticeBoard({ practice, onSolved, footer }: PracticeBoardProps
           </Panel>
         )}
 
-        {solved && footer}
+        {/*
+          出口的闸门是「**本次判对了 或 此前就通过了**」。
+          只写 `solved` 的话，重进已完成的课时看不到任何出口——
+          那正是这个 prop 存在的原因。
+        */}
+        {(solved || alreadySolved) && footer}
       </aside>
     </>
   )
