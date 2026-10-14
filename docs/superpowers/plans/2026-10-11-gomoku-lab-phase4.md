@@ -1,5 +1,9 @@
 # Gomoku Lab Phase 4 实施计划：棋谱持久化、回放与 AI 复盘
 
+> **归档文件**：这是**当时的实施计划**，不是当前状态。文中的路径、符号名与 `- [ ]` 复选框
+> 都停在写作那一刻——**别照着执行，也别当成现状**。当前进度见 `docs/ROADMAP.md`，
+> 实际交付见 `docs/TEST_REPORT.md`。
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** 让一局棋在结束后不消失——存进本地棋谱库，可以随时打开回放每一手，并让引擎用有限预算指出「哪几手下亏了」。

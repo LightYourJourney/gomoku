@@ -1,5 +1,9 @@
 # Gomoku Lab Phase 5 实施计划：打磨、无障碍与发布
 
+> **归档文件**：这是**当时的实施计划**，不是当前状态。文中的路径、符号名与 `- [ ]` 复选框
+> 都停在写作那一刻——**别照着执行，也别当成现状**。当前进度见 `docs/ROADMAP.md`，
+> 实际交付见 `docs/TEST_REPORT.md`。
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** 让 Phase 1–4 已经能用的东西**能被更多人用、也更耐看**——键盘可以下棋、动效与音效完整、移动与平板复核过、错误不白屏、生产构建真的跑过、README 与使用说明是准的。

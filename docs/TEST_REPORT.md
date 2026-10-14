@@ -14,9 +14,9 @@ Phase 4（复盘与分析）、Phase 5（最终打磨）、Phase 5 之后的**�
 
 | 项 | 数量 |
 | --- | --- |
-| 单元 / 组件用例 | **912**（56 个文件） |
-| 端到端用例 | **103**（桌面 87 + 移动触屏 8 + 平板 8），另有生产构建冒烟 5 条（`yarn e2e:prod`） |
-| 界面基线与量测 | `yarn ui:probe`：21 个受控状态 × 视口矩阵 = 172 张截图 + 172 条 DOM 量测，逐张可对照 |
+| 单元 / 组件用例 | **958**（57 个文件） |
+| 端到端用例 | **116**（桌面 100 + 移动触屏 8 + 平板 8，共 8 个 spec 文件），另有生产构建冒烟 5 条（`yarn e2e:prod`） |
+| 界面基线与量测 | `yarn ui:probe`：27 个受控状态 × 视口矩阵 = 220 张截图 + 220 条 DOM 量测，逐张可对照（Phase 02 收尾时是 21 / 172） |
 | 质量门禁 | 本地 pre-push 快档（5 条命令，热跑 30–45 秒，看机器负载）+ CI 全档（4 个 job）+ 四道防退化闸门 + 两把覆盖棘轮，见「〇之十一」 |
 | 基准脚本 | `yarn bench`（引擎，结果见 `docs/AI_ENGINE.md` 的「实测」一节）；`yarn bench:render`（首屏与落子，结果见本文「〇之四、Phase 5 摘要 · 性能实测」） |
 
@@ -55,7 +55,7 @@ Phase 4（复盘与分析）、Phase 5（最终打磨）、Phase 5 之后的**�
 | **快档** | `lint` / `typecheck` / `test` / `build` / `yarn gates`（四道闸门） | 本地 `git push` 自动拦（`.githooks/pre-push`）+ CI 的 `fast` job |
 | **全档** | 上面 + `e2e` + `e2e:prod` + 探针 + 覆盖棘轮 + `bench:check` | 只有 CI |
 
-四道防退化闸门（`yarn gates`）：循环依赖（madge，136 文件零环）、
+四道防退化闸门（`yarn gates`）：循环依赖（madge，138 文件零环）、
 死代码（knip，`knip.jsonc` 里按**符号种类**放行「只被签名引用」那一类并写明理由）、
 重复代码（jscpd，`src/` 排除测试、**阈值 0**、6 个文件显式豁免）、测试条数棘轮。
 
@@ -628,7 +628,7 @@ yarn e2e
 ### 类型检查与构建
 
 ```
-yarn typecheck   # tsc -b && tsc -p tsconfig.e2e.json —— 通过
+yarn typecheck   # tsc -b && tsc -p tsconfig.e2e.json && tsc -p tsconfig.bench.json —— 通过
 yarn build       # 通过，Worker 单独产出 chunk
 ```
 
@@ -1038,7 +1038,11 @@ Phase 1 提交后做了一轮**两轴代码审查**：标准轴（对照 `AGENTS
 
 **存档格式升级会丢弃旧存档。** `SCHEMA_VERSION` 已从 1 升到 2（新增 `resignedBy`）。升级瞬间，旧格式的存档会被 `decodeSession` 判为不合法而丢弃，进行中的对局会凭空消失、回到空盘——**这是静默的**，界面上不会提示。App 尚未发布，实际影响为零；但正式发布之后若再改格式，必须写迁移函数，不能继续用「不匹配就丢弃」这一招。
 
-**首次音效可能被浏览器拦下。** 页面加载后如果第一手音效由 AI 应手触发（而非用户点击），`AudioContext` 会在没有用户手势的情况下创建，Chrome 会挂起它并打印 `The AudioContext was not allowed to start`。影响是这一手没有声音；下一次由点击触发的播放会调用 `resume()` 自愈。彻底的修复（绑定首个 `pointerdown` 预热）排在 Phase 5。
+**首次音效可能被浏览器拦下。** 页面加载后如果第一手音效由 AI 应手触发（而非用户点击），`AudioContext` 会在没有用户手势的情况下创建，Chrome 会挂起它并打印 `The AudioContext was not allowed to start`。影响是这一手没有声音；下一次由点击触发的播放会调用 `resume()` 自愈。
+**彻底的那一步已经落地**（原写「排在 Phase 5」）：`src/lib/sound.ts` 的 `arm(target)`
+在首个 `pointerdown` 上预热并 `resume()`，`BattleScreen` 挂载时调用一次
+（`useEffect(() => sound.arm(window), …)`）。剩下的极端路径只有「AI 先手且全程没有任何用户手势」，
+那条路径下仍然不会有声音——这是「不许自动播放」的必然代价，不是缺陷。
 
 **专家档的深度上限（8 层）从未达到。** 时间预算才是真正的约束，`depth` 只是安全上限。构造基准上最多完成 6 层，真实对局中观察到 7 层。要让它名副其实，得先把单节点成本压下去。
 
@@ -1050,7 +1054,10 @@ Phase 1 提交后做了一轮**两轴代码审查**：标准轴（对照 `AGENTS
 
 **局面评估不识别跨方向的组合形状。** 单点分析有双四 / 四三 / 双活三的加成，整盘评估仍是按线段独立累加的，看不到它们的联动。
 
-**尚无键盘操作。** 棋盘目前只能鼠标 / 触摸操作，排期在 Phase 5。
+**~~尚无键盘操作。~~ 已修（Phase 5 交付）。** 棋盘现在能只用键盘操作：`role="gridcell"` +
+roving `tabIndex`，方向键移动焦点、`Home` / `End` 跳到行首行尾、回车落子
+（`src/components/board/Board.tsx`），`e2e/a11y.spec.ts` 的「只用键盘就能落子」在真实 Chrome 里按真键守住。
+这条留在「已知问题」里划掉，是因为它曾在这里挂了很久——**划掉也是一种记录**。
 
 **残局题只有 15 道，且都是黑先。** 白先、以及需要多手规划才能看出杀机的题目还没出。
 

@@ -36,7 +36,9 @@ components / features   ← 展示层，只做渲染与事件转发
 **`bench/`** —— 基准脚本，跑出文档里的全部性能数字（`yarn bench`，独立于 `yarn test`）。它**不参与应用分层**，但会直接依赖 `ai/` 层（搜索、评估、棋型、难度参数），所以 `ai` 改接口时它要跟着改。
 
 **`learn/`** —— 教学内容。
-`types.ts` 课程与题目的数据形状；`verify.ts` 判定一手棋有没有达成目标；`hints.ts` 求解与三级提示；`lessons.ts` / `puzzles.ts` 是内容本身；`positions.ts` 是被多处内容共用的局面常量（字符画写法见 `lib/board-lines.ts`）。依赖方向 `features → store → learn → ai → core`，单向；`learn` 不得被 `ai`/`core` 反向依赖。
+`types.ts` 课程与题目的数据形状；`verify.ts` 判定一手棋有没有达成目标；`hints.ts` 求解与三级提示；`lessons.ts` / `puzzles.ts` 是内容本身；`positions.ts` 是被多处内容共用的局面常量（字符画写法见 `lib/board-lines.ts`）。依赖方向 `features → learn → ai → core`，单向；`learn` 不得被 `ai`/`core` 反向依赖。
+**`store` 与 `learn` 之间没有依赖**（`src/store/` 只 import `core` / `persist` / `ai`）——
+原先这里写成 `features → store → learn → ai → core` 一条链，把两者串了起来，实际是两条并行的支线。
 
 **共用局面为什么值得单独抽一个文件**：同一个局面会被讲解、练习和题库一起引用（`FOUR_THREE` 就被 5 处用），抄几遍的话改一处必漏几处。但它同时是个陷阱——**两道题共用同一块盘面时，题面很容易照着「我以为的差别」写，而盘面其实一模一样**。第四轮审查抓到过一次，见 `docs/TEST_REPORT.md` 的「二之六」。抽常量之后仍要逐题核对题面描述与盘面是否相符。
 
@@ -92,7 +94,8 @@ GameStore.applyAiResponse：校验 requestId 与 gameVersion，两者都对上�
 ```
 请求提示（只在玩家回合可用，与落子共用同一道门槛）
    ↓
-HintPanel.onAsk → GameStore.requestHint（purpose: 'hint'，固定 800 ms 短预算）
+ControlBar.onHint → GameStore.requestHint（purpose: 'hint'，固定 800 ms 短预算；入口是工具栏上那颗「求提示」，
+`HintPanel` 只负责渲染候选，它的 props 里没有 `onAsk`）
    ↓
 AiEngine.search → Worker.chooseMove（走同一条引擎、同一套过期校验）
    ↓
@@ -211,7 +214,7 @@ Phase 03 之前它是一圈 `--c-danger` 的红环：`danger` 是「认输 / 错
 由 `lib/contrast.test.tsx` 对四种底色逐一守住。它只在棋盘**真的握着 DOM 焦点**时显示（`focus` / `blur` 监听挂在 `<svg>` 上一对，
 不是每格一个——225 个处理器会把每次焦点变化都变成整盘重建）。
 
-**配色有对比度守卫**：`lib/contrast.test.ts` 直接读 `index.css` 的原文，按两套主题逐对核算
+**配色有对比度守卫**：`lib/contrast.test.tsx` 直接读 `index.css` 的原文，按两套主题逐对核算
 WCAG AA 的 4.5:1。`faint` / `good` / `warn` / `accent` 的值就是按它反推出来的，改色前先跑它。
 
 **动效降级不判 `matchMedia`**：`motion.ts` 只返回类名，是否播动画交给 `index.css` 的 `@media (prefers-reduced-motion: reduce)`。用 JS 判有两个坑——用户中途改系统设置时分支不会更新；jsdom 里 `matchMedia` 缺失，靠它判定会让测试与真实行为脱节。

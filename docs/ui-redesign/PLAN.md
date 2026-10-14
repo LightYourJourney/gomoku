@@ -43,7 +43,9 @@
    差异写进该阶段的记录。探针**已经会拒绝覆写 `before/`**（不带 `--out` 直接退出码 2），
    所以这条不靠人记性。
 4. **五条量化判据**（都能从 `measurements.json` 直接判真假，
-   与 `DESIGN_SYSTEM.md` §12 逐条一致，改一处要同步另一处）：
+   与 `DESIGN_SYSTEM.md` §12 逐条一致，改一处要同步另一处）
+   ——这是 **Phase 01 定下的五条**；**Phase 03 又补了两条**（网格线设备像素宽度、最后一手与
+   标记文字的对比度），现在共 **七条**，以 `bench/ui.probe.mjs` 的 `checkCriteria()` 与 §12 为准：
    - `contrastViolations` 全 0；
    - `board.w` 与 `board.h` ≥ 320（全部状态、全部视口）；
    - `boardRatioOfViewport` 在任何 ≥1024 的视口下 ≥ 35%；
@@ -72,7 +74,7 @@
 | 发现 | 内容 | 修法 |
 | --- | --- | --- |
 | F-UI-01 (P0) | 教学 / 残局 / 复盘三页 `lg:grid-rows-[auto_minmax(0,1fr)]` 导致棋盘塌陷 | 删掉这条模板。**已用注入 CSS 在真实浏览器里验证**：学习练习页 169 → 630/736 px（3.7–4.4×），讲解页 330 → 736 px |
-| F-UI-02 (P1) | 对战页 1024–1279 棋盘被固定宽度侧栏压到 35–48% | 侧栏改 `clamp(220px,18vw,300px)` / `clamp(280px,24vw,380px)`。**已试算**：1024 下 362 → 474 px（35.4% → 46.3%），1440 持平，四档均无横向溢出 |
+| F-UI-02 (P1) | 对战页 1024–1279 棋盘被固定宽度侧栏压到 35–48% | 侧栏改 `clamp(220px,18vw,300px)` / `clamp(280px,24vw,380px)`。**已试算**：1024 下 362 → 474 px（35.4% → 46.3%），1440 持平，四档均无横向溢出。**执行时取的是 `clamp(240px,18vw,300px)` / `clamp(300px,24vw,380px)`**（`DESIGN_SYSTEM.md` §10.1 与 `BattleScreen.tsx`；下限抬了 20px），上面那组试算数按旧下限算的 |
 | F-UI-05 (P1) | 布局量级没有 e2e 守护 |
 | F-UI-08 (P2) | 复盘页标题在 390 下一字一行 |
 | F-UI-16 (P2) | 窄屏「标签 —— 值」被拉到整宽两端 |
@@ -364,12 +366,28 @@ ARIA grid、焦点环全在里面。**必须真实浏览器逐项复核。**
 - `src/features/battle/status.ts` + `src/components/panels/StatusPill.tsx`：思考态与「轮到 AI」分开；
 - `src/index.css`：`prefers-reduced-motion` 名单纳入 `animate-spin`；
 - `src/components/ui/Button.tsx` + `AiPanel.tsx` + `HintPanel.tsx`：新增 `text` 档、撑命中区、补 `active` 态；
+  **（已交付）**：`text` 档即现在的 `ghost` 档（`DESIGN_SYSTEM.md` §6.1 的第四档，
+  `sm` 档命中区 24px 有断言），`active:` 态已补进 `Button` / `Switch` / `MatchBar` / `AppHeader` / `Board`；
 - `src/features/review/ReplayBoard.tsx`：把「← 回到棋谱列表」从 `primary` 降为 `default`，
   落实 `DESIGN_SYSTEM.md` §6.1 的「一屏最多一个 `primary`」（现状 `review-replay` 同屏两个，见该节）；
+  **（已交付）**：该按钮现在不带 `variant`（= 默认 `secondary`），那一页唯一的 `primary` 是「开始分析」；
 - `src/ai/types.ts` + `src/ai/search.ts`：`SearchResponse` 补 `plies`（先写会红的测试）；
 - `src/components/panels/SettingsPanel.tsx` + `gameStore.ts`：模式切换护栏；
 - `src/components/panels/AiPanel.tsx`：`win` 的文案按算杀手数分档；
 - `src/components/panels/ResultDialog.tsx` + `BattleScreen.tsx`：恢复终局存档时的存档状态说明。
+
+**执行状态（事后补记，按代码逐条核过）**：这份清单写在 Phase 00，此后有的**已经落地**、
+有的**还没有**，两者混在一起。核过的结果：
+
+- **已落地**：思考态与「轮到 AI」分开（`StatusPill` 的 `busy`——不忙时不转圈）；
+  `text` 档（现名 `ghost`）、命中区、`active` 态；`review-replay` 的 `primary` 降档；
+  模式切换护栏（`SettingsPanel` 的拦截钩子 + `BattleScreen` 的实现）。
+- **未落地**：`prefers-reduced-motion` 名单纳入 `animate-spin`（`index.css` 的名单里没有它，
+  而 `StatusPill` 是全站唯一用 `animate-spin` 的地方——**开了减少动态，那个圈照转**）；
+  `SearchResponse` 补 `plies`（即 F-UI-23）。
+- 其余几条（如弹窗的存档状态说明）**没有逐条核**。
+
+**动手前照代码核一遍，别把这份清单当待办表。**
 
 ### 用户可观察到的变化
 

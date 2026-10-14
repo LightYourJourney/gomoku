@@ -36,7 +36,7 @@ yarn dev          # 开发服务器
 | `yarn bench:render` | 首屏与落子成本的浏览器实测，数字见 [docs/TEST_REPORT.md](docs/TEST_REPORT.md) |
 | `yarn gates` | 四道防退化闸门串跑（`check:cycles` + `check:deadcode` + `check:dupes` + `check:tests`）。**pre-push 钩子跑的就是它**，见 [AGENTS.md](AGENTS.md) |
 | `yarn check:tests` | 测试条数棘轮：单测/e2e 条数与跳过数只许涨不许跌。删用例、加 `.skip` 都会红，要减就显式改 `quality/tests.baseline.json`。e2e 的跳过是**静态扫 spec 文件**数出来的——`playwright --list` 对跳过的用例不打标记，工具这条路走不通 |
-| `yarn check:coverage` | 覆盖棘轮：探针扫到的状态、每行的控件与棋盘，必须是入库基线的**超集**。指向 `docs/ui-redesign/screenshots/after-phase02/measurements.json`；**改了界面之后要在 CI 的 probe job 里跑**（本地单跑它没有新量测可判） |
+| `yarn check:coverage` | 覆盖棘轮：探针扫到的状态、每行的控件与棋盘，必须是入库基线的**超集**。**基线**的来源是 `docs/ui-redesign/screenshots/after-phase02/measurements.json`（写在 `quality/coverage.baseline.json` 的 `source` 里）；脚本每次**读的当前量测**是最近一期 `after-phaseNN`（`quality/coverage.ratchet.mjs` 的默认值，也可用 `--current` 指定）。**改了界面之后要在 CI 的 probe job 里跑**（本地单跑它没有新量测可判） |
 | `yarn check:cycles` | 循环依赖闸门（madge）。**范围只到 `src/`**——`bench/`、`e2e/` 是脚本，循环风险低，但别以为全仓都查过。有环即红并点名环路 |
 | `yarn check:dupes` | 重复代码闸门（jscpd）。范围 `src/`、排除测试、**阈值 0**（零容忍），已接受的 6 个文件显式豁免并在 `TECH_DEBT.md` 写明理由。**它只认逐字相同的克隆**：复制粘贴会红，**改掉标识符的复制不会**——别把它当成「重复实现」检测器 |
 | `yarn check:deadcode` | 死代码闸门（knip）。基线写在 `knip.jsonc` 里，**理由也在里面**——放行的是「只被签名引用的类型导出」整类（见 `TECH_DEBT.md` §1.3 的裁定），真·多余导出照样会红 |
@@ -123,11 +123,13 @@ src/
 ├─ core/       纯规则与对局状态机（零 React、零 DOM）
 ├─ ai/         棋型、评估、搜索与 Worker 适配
 ├─ learn/      课程与题库：目标判定、求解与提示（纯逻辑）
+├─ analysis/   复盘分析：逐手判定与选出最值得讲的一手（纯逻辑）
 ├─ store/      Zustand 状态（对局 / 设置 / 回放 / 分析）
 ├─ persist/    存档与棋谱（IndexedDB，含降级）
 ├─ lib/        主题、音效、动效类名、坐标格式化等无状态工具
 ├─ components/ 展示层（棋盘 / 面板 / 原子组件 / 错误边界）
-└─ features/   按功能组织的容器组件（对战 / 教学 / 残局 / 复盘）
+├─ features/   按功能组织的容器组件（对战 / 教学 / 残局 / 复盘）
+└─ test/       测试专用夹具（如 `boardFromLines`，只被测试引用）
 
 docs/          架构、规则、AI、路线图、测试报告、使用说明与截图
 e2e/           Playwright 端到端测试（桌面 / 移动 / 平板 / 生产构建）
@@ -138,12 +140,14 @@ bench/         引擎基准与渲染探针（不进常规测试套件）
 
 | 项 | 数量 |
 | --- | --- |
-| 单元 / 组件用例 | **912**（56 个文件） |
-| 端到端用例 | **103**（桌面 87 + 移动触屏 8 + 平板 8） |
+| 单元 / 组件用例 | **958**（57 个文件） |
+| 端到端用例 | **116**（桌面 100 + 移动触屏 8 + 平板 8） |
 | 生产构建冒烟 | 5（`yarn e2e:prod`） |
 
 关键实现都有反向验证记录（改坏实现确认用例会红），详见 [docs/TEST_REPORT.md](docs/TEST_REPORT.md)。
-性能数字全部可复跑：`yarn bench`（引擎）与 `yarn bench:render`（首屏 352 ms、落子一手 0.30 ms 中位）。
+性能数字全部可复跑：`yarn bench`（引擎）与 `yarn bench:render`
+（首屏 **188 ms**、落子一手 **0.20 ms** 中位——`TEST_REPORT` 的「HEAD 复跑」那一列；
+更早的首次实测是 352 ms / 0.30 ms，两次都属「保守上界」口径，差的是机器负载不是代码）。
 
 ## 已知限制
 

@@ -1,5 +1,9 @@
 # 质量门禁实施计划
 
+> **归档文件**：这是**当时的实施计划**，不是当前状态。文中的路径、符号名与 `- [ ]` 复选框
+> 都停在写作那一刻——**别照着执行，也别当成现状**。当前进度见 `docs/ROADMAP.md`，
+> 实际交付见 `docs/TEST_REPORT.md`。
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** 让「质量退化」这件事有人替我们盯着——本地 pre-push 跑快档、GitHub Actions 跑全档，加上循环依赖 / 死代码 / 重复代码 / 基准数值四道防退化闸门。

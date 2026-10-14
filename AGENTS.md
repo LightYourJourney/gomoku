@@ -12,9 +12,15 @@ Gomoku Lab 的开发约定。通用工程原则（想清楚再写、保持简单
 
 - **不使用 `enum`**。`tsconfig.app.json` 开了 `erasableSyntaxOnly`，一律用 `as const` 对象加联合类型。
 - **`core` / `ai` / `learn` 的算法部分不得引入 React、DOM、Zustand、localStorage、IndexedDB、Worker**。引擎逻辑本身（`patterns` / `evaluate` / `candidates` / `difficulty` / `search`）与全部 `core` 模块必须是能脱离浏览器直接单测的纯逻辑。
-  - `learn/` 是教学内容层：`types.ts` / `verify.ts` / `hints.ts` / `lessons.ts` / `puzzles.ts` 全是纯逻辑，依赖方向 `features → store → learn → ai → core` 单向，**不得被 `ai`/`core` 反向依赖**。棋盘的字符画解析器住在 `lib/board-lines.ts`（内容与测试共用）。
+  - `learn/` 是教学内容层：`types.ts` / `verify.ts` / `hints.ts` / `lessons.ts` / `puzzles.ts` 全是纯逻辑，依赖方向 `features → learn → ai → core` 单向，**不得被 `ai`/`core` 反向依赖**（`store` 不依赖 `learn`：`src/store/` 只 import `core` / `persist` / `ai`）。棋盘的字符画解析器住在 `lib/board-lines.ts`（内容与测试共用）。
   - **例外**：`ai/worker.ts` 与 `ai/browserEngine.ts`。前者是 Worker 的入口，后者负责创建 Worker——只有这两个文件允许触碰 Worker，且只做消息收发，不含任何搜索逻辑。`ai/engine.ts` 虽然也住在 `ai/` 下，但它连 Worker 都不碰（发送函数是注入进来的），仍是可单测的纯状态机。
-- `Date.now()` 只允许出现在 `ai/search.ts` 的时间预算里，且超时行为必须仍然可以通过 `budgetMs` 参数在测试里强制触发——不要把它改成不可覆盖的常量。
+- **时钟一律可注入。** `Date.now()` 的**调用**只允许出现在 `ai/search.ts` 的时间预算里，
+  且超时行为必须仍然可以通过 `budgetMs` 参数在测试里强制触发——不要把它改成不可覆盖的常量。
+  别处需要时钟就走**参数注入**：`ai/threat.ts` / `ai/search.ts` / `learn/verify.ts` / `learn/hints.ts`
+  的签名都是 `now: () => number`，调用方把 `Date.now` 传进去（见 `features/learn/PracticeBoard.tsx`），
+  测试里换成假时钟。**不要在函数体内直接写 `Date.now()`**——那样时间就固定不住了。
+  （这条原先写的是「只允许出现在 `ai/search.ts`」，比事实更绝对：注入式的用法一直存在，
+  `persist/gameRecords.ts` 与 `features/review/GameLibrary.tsx` 的注释还按旧措辞引用了它。）
 - **`core` 是对局状态的唯一真相**。棋盘与手顺都由 `replay()` 从手顺重建，不要写增量维护的旁路。
 - **状态不可变**。`applyMove` / `undo` / `resign` 返回新对象，不原地修改。
 - **AI 请求必须绑定 `requestId` 与 `gameVersion`**，两道闸门都过才允许落子。任何新增的「可能改变棋局」的异步路径都要走同样的校验。

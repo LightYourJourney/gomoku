@@ -1,5 +1,14 @@
 # Gomoku Lab Phase 3 实施计划：互动教学与残局挑战
 
+> **归档文件**：这是**当时的实施计划**，不是当前状态。文中的路径、符号名与 `- [ ]` 复选框
+> 都停在写作那一刻——**别照着执行，也别当成现状**。当前进度见 `docs/ROADMAP.md`，
+> 实际交付见 `docs/TEST_REPORT.md`。
+
+**本文件的路径漂移**（事后补记，不改正文）：`src/store/navStore.ts` 最终**并进了 `learnStore.ts`**；
+`LessonView.test.tsx` / `FeedbackBanner.test.tsx` / `PuzzleView.test.tsx` 都没有独立存在，
+覆盖落在 `features/learn/screens.test.tsx` 与 `PracticeBoard.test.tsx`，
+`PuzzleView` 成了 `features/puzzles/PuzzleScreen.tsx` 里的内部函数。
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** 让 Gomoku Lab 从「一个能下棋的引擎」变成「一个能教会人下棋的产品」——8 节可交互的课程 + 15 道答案经搜索验证的残局题。

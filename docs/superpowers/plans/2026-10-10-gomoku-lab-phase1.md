@@ -1,5 +1,14 @@
 # Gomoku Lab Phase 1 实施计划
 
+> **归档文件**：这是**当时的实施计划**，不是当前状态。文中的路径、符号名与 `- [ ]` 复选框
+> 都停在写作那一刻——**别照着执行，也别当成现状**。当前进度见 `docs/ROADMAP.md`，
+> 实际交付见 `docs/TEST_REPORT.md`。
+
+**本文件的路径漂移**（事后补记，不改正文）：`src/core/__testutils__.ts` 现已搬到
+`src/test/board-fixtures.ts`；`serialize` / `deserialize` / `save` / `load` 落地时叫
+`encodeSession` / `decodeSession` / `saveSession` / `loadSession`（`src/persist/storage.ts`）；
+`Stone.tsx` / `StatusBar` 分别成了 `StoneDot.tsx` / `StatusPill.tsx`。
+
 > **执行方式**：本会话内直接实现（Native）。任务之间共享 `core` 类型契约，拆给子代理反而要反复同步接口。
 
 **目标**：交付一个规则完全正确、能真实完整对战一局、界面精致的五子棋应用。
