@@ -110,3 +110,19 @@ describe('内容自检 —— 覆盖度', () => {
     expect(new Set(ids).size).toBe(ids.length)
   })
 })
+
+/**
+ * 每节课至少有一页讲解。
+ *
+ * 独立验收时指出来的：`LessonView` 用的是 `steps[step]!`，而 `lastStep = steps.length - 1`——
+ * **0 步的课**会让「回到讲解」把 `undefined` 交给 `StepView`。今天八节课都不是 0 步，
+ * 所以只是理论可达；但内容是可增删的，加一条守卫把它变成**响亮的失败**，
+ * 比留一个「以后可能会崩」的角落便宜。
+ */
+describe('课程内容的形状', () => {
+  it('每节课都至少有一页讲解', () => {
+    for (const lesson of LESSONS) {
+      expect(lesson.steps.length, `${lesson.id} 一页讲解都没有`).toBeGreaterThanOrEqual(1)
+    }
+  })
+})

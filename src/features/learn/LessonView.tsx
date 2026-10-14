@@ -51,7 +51,12 @@ export function LessonView({ lesson, solved, onExit, onSolved, exit }: LessonVie
       toolbar={
         <div className="flex shrink-0 items-center gap-2 border-b border-border px-3 py-2">
           <Button onClick={onExit}>← 课程列表</Button>
-          <span className="truncate text-sm font-medium text-fg">{lesson.title}</span>
+          {/*
+        课名是这一页的**主标题**，用 `h1`。原先它只是个 `span`，
+        于是这节课的页面根本没有一级标题（探针的 `headings` 量得清清楚楚：
+        `learn-practice` 整页只有一条 `h2 练习`）。样式一个字没变。
+      */}
+      <h1 className="truncate text-sm font-medium text-fg">{lesson.title}</h1>
           <span className="ml-auto font-mono text-xs tabular-nums text-faint">
             {onPractice ? '练习' : `${step + 1} / ${stepCount}`}
           </span>
@@ -111,7 +116,7 @@ export function LessonView({ lesson, solved, onExit, onSolved, exit }: LessonVie
               </Button>
             ) : (
               <Button variant="primary" block onClick={exit.run}>
-                全部课程讲完了——去残局挑战 →
+                去残局挑战 →
               </Button>
             )
           }

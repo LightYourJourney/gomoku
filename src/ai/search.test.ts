@@ -570,7 +570,18 @@ describe('analyze 用途', () => {
       '.....BWB.......',
     ])
 
-    const result = ask(board, BLACK, 'easy', { purpose: 'analyze', moveIndex: 5 })
+    /*
+      **`budgetMs` 必须显式放宽。** `easy` 档自带 250 ms 预算，
+      而这条断言要的是「走的是真分析、不是启发式兜底」——机器一忙（比如并行跑着探针），
+      250 ms 用完就翻成 `'heuristic'`，**断言的结果取决于机器负载** ✗。
+      `budgetMs` 本来就是可覆盖的参数（见 `AGENTS.md` 的时钟约定），给它 5 秒，
+      这一条就与负载无关了，而它验的东西一个字没少。
+    */
+    const result = ask(board, BLACK, 'easy', {
+      purpose: 'analyze',
+      moveIndex: 5,
+      budgetMs: 5_000,
+    })
 
     expect(result.moveIndex).toBe(5)
     expect(result.move).not.toBeNull()

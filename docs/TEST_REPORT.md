@@ -14,8 +14,8 @@ Phase 4（复盘与分析）、Phase 5（最终打磨）、Phase 5 之后的**�
 
 | 项 | 数量 |
 | --- | --- |
-| 单元 / 组件用例 | **980**（58 个文件） |
-| 端到端用例 | **119**（桌面 102 + 移动触屏 9 + 平板 8，共 8 个 spec 文件），另有生产构建冒烟 5 条（`yarn e2e:prod`） |
+| 单元 / 组件用例 | **984**（58 个文件） |
+| 端到端用例 | **121**（桌面 104 + 移动触屏 9 + 平板 8，共 8 个 spec 文件），另有生产构建冒烟 5 条（`yarn e2e:prod`） |
 | 界面基线与量测 | `yarn ui:probe`：29 个受控状态 × 视口矩阵 = 236 张截图 + 236 条 DOM 量测，逐张可对照（Phase 03 收尾时是 27 / 220，Phase 02 是 21 / 172） |
 | 质量门禁 | 本地 pre-push 快档（5 条命令，热跑 30–45 秒，看机器负载）+ CI 全档（4 个 job）+ 四道防退化闸门 + 两把覆盖棘轮，见「〇之十一」 |
 | 基准脚本 | `yarn bench`（引擎，结果见 `docs/AI_ENGINE.md` 的「实测」一节）；`yarn bench:render`（首屏与落子，结果见本文「〇之四、Phase 5 摘要 · 性能实测」） |
@@ -1420,11 +1420,11 @@ CDP 往返在高负载下要几百毫秒），所以它读到的是 2 颗子。
 | --- | --- |
 | `yarn lint` | ✔ |
 | `yarn typecheck` | ✔（含 `tsconfig.e2e.json` 与 `tsconfig.bench.json`） |
-| `yarn test` | ✔ 58 文件 / **980 用例**（Phase 02 之后是 912。**轮次按 UI 改版 Phase 03 内部编号**，与本文件别处的全项目轮次不是一套：第四轮自审补了 `MoveList` 3 条与 `no_move` 边界 1 条；第五轮（复核整改批次）删掉那条面板用例、补 1 条 store 用例、把 `MoveList` 那条拆成两条——删的那条不是削弱，不变量搬到了 store 层，净 **+1**） |
+| `yarn test` | ✔ 58 文件 / **984 用例**（Phase 02 之后是 912。**轮次按 UI 改版 Phase 03 内部编号**，与本文件别处的全项目轮次不是一套：第四轮自审补了 `MoveList` 3 条与 `no_move` 边界 1 条；第五轮（复核整改批次）删掉那条面板用例、补 1 条 store 用例、把 `MoveList` 那条拆成两条——删的那条不是削弱，不变量搬到了 store 层，净 **+1**） |
 | `yarn build` | ✔ |
-| `yarn e2e` | ✔（**119 条**；Phase 03 之后是 116。**口径注意**：Playwright 实跑 **8 个 spec 文件**——`prod.spec.ts` 归生产构建通道、被 `playwright.config.ts` 的 `testIgnore` 排除；测试条数棘轮另扫 **9 个** spec 文件。原先这里写「9 个 spec」，把棘轮的口径当成了实跑的口径） |
+| `yarn e2e` | ✔（**121 条**；Phase 03 之后是 116。**口径注意**：Playwright 实跑 **8 个 spec 文件**——`prod.spec.ts` 归生产构建通道、被 `playwright.config.ts` 的 `testIgnore` 排除；测试条数棘轮另扫 **9 个** spec 文件。原先这里写「9 个 spec」，把棘轮的口径当成了实跑的口径） |
 | `yarn e2e:prod` | ✔ |
-| `yarn gates` | ✔ 0 clones；测试条数棘轮：单测 980 / e2e 119，skip 0 |
+| `yarn gates` | ✔ 0 clones；测试条数棘轮：单测 984 / e2e 121，skip 0 |
 | `yarn ui:probe` | ✔ **七条量化判据全过**（21 → 27 → **29** 个状态） |
 | `yarn check:coverage` | ✔ 覆盖未缩小（172 条 / 21 个状态，实比控件与标题 3084 条，另有 **64** 条新增） |
 | `yarn bench:check` | ✔ 断言行 19/19 一致 / 跳过 6 条 / 不变量 29 项一致——**与基线逐条相同** |

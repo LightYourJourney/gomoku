@@ -132,6 +132,14 @@ export function LearnScreen() {
 
                 return (
                   <li key={entry.id}>
+                    {/*
+                      完成状态对读屏也得可读：✓ 徽标是 `aria-hidden`，
+                      而 `data-done` 是给测试用的、读屏不认。
+                      这句话放在按钮**外面**——放进按钮会改变它的可访问名
+                      （`✓基本规则…` → `✓（已完成）基本规则…`），
+                      那是覆盖面棘轮的按钮键，没必要为它动基线。
+                    */}
+                    {finished && <span className="sr-only">已完成：</span>}
                     <button
                       type="button"
                       onClick={() => open(entry.id)}

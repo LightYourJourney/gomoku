@@ -369,6 +369,25 @@ describe('LearnScreen —— 进度与推荐（Phase 04）', () => {
     expect(screen.queryByRole('button', { name: /继续学习/ })).not.toBeInTheDocument()
   })
 
+  it('已完成的卡片对读屏也说得清状态——✓ 徽标是 aria-hidden，data-done 读屏不认', () => {
+    useLearnStore.setState({ progress: { ...EMPTY_PROGRESS, completedLessons: ['rules'] } })
+    render(<LearnScreen />)
+
+    // 那句话在按钮**外面**：放进按钮会改掉它的可访问名，进而动到覆盖面棘轮的按钮键
+    expect(screen.getByText('已完成：')).toBeInTheDocument()
+  })
+
+  it('课程详情页有一级标题，而且就是课名（讲解页的小标题是二级）', () => {
+    render(<LearnScreen />)
+    openLesson('rules')
+
+    expect(screen.getByRole('heading', { level: 1, name: LESSONS[0]!.title })).toBeInTheDocument()
+    // 第 1 页的讲解小标题是 h2——它原先是个 h1，层级会倒着走
+    expect(
+      screen.getByRole('heading', { level: 2, name: LESSONS[0]!.steps[0]!.title }),
+    ).toBeInTheDocument()
+  })
+
   it('按四段渲染，每段一个二级标题——读屏用户才知道哪些是一类', () => {
     render(<LearnScreen />)
 
@@ -525,5 +544,28 @@ describe('LearnScreen —— 最后一节的出口（Phase 04）', () => {
 
     expect(screen.getByRole('button', { name: '下一节 →' })).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /去残局挑战/ })).not.toBeInTheDocument()
+  })
+})
+
+/**
+ * **残局页那个「此前已通过」的调用点**。
+ *
+ * 两轴评审修 `PracticeBoard` 的出口闸门时，课程页与残局页都传了 `alreadySolved`——
+ * 但当时的用例只覆盖了课程页那个。独立验收时被指出：**把 `PuzzleScreen` 那行删掉，
+ * 一条用例都不会红**。这条就是来补这个洞的（删掉那行它必须红）。
+ */
+describe('PuzzleScreen —— 重进已通过的题（Phase 04 验收补）', () => {
+  it('重进一道已通过的题，一次都没做也看得见「再来一次」', () => {
+    useLearnStore.setState({
+      progress: { ...EMPTY_PROGRESS, solvedPuzzles: [PUZZLES[0]!.id] },
+      loaded: true,
+      view: 'puzzles',
+    })
+
+    render(<PuzzleScreen />)
+    fireEvent.click(screen.getByTestId(`puzzle-${PUZZLES[0]!.id}`))
+
+    expect(screen.getByText('这一题已经通过。')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '再来一次' })).toBeInTheDocument()
   })
 })

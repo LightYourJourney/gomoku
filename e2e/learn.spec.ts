@@ -1,3 +1,4 @@
+import { DB_NAME } from '../src/persist/schema'
 import { expect, test, type Page } from '@playwright/test'
 
 /**
@@ -165,4 +166,67 @@ test('点「下一节」换课，从头讲起而不是停在上一课的页码',
 
   // 必须回到讲解的第一页，而不是直接跳到第二课的练习
   await expect(page.getByRole('heading', { name: '活二：两头都能长' })).toBeVisible()
+})
+
+/**
+ * 载入态（任务书 §三）：「未加载时显示加载/占位，不得错误显示『已完成 0 节』」。
+ *
+ * **必须让它稳定地停在载入态**。真实载入只有几毫秒，Playwright 抓不到那一帧——
+ * 写一条「碰运气看它闪不闪」的用例等于没写。做法：把 `indexedDB.open` 对**本应用那个库**
+ * 换成永不兑现的请求（其余库照常放行），`loadProgress()` 就永远悬着，占位一直在。
+ *
+ * 顺带把「占位与读出来之后差不多高、不会把下面的内容整体推下去」也量了——
+ * 那是**布局**声称，只在 jsdom 里断个文本不算验过（`AGENTS.md` 第 2 条）。
+ */
+test('进度没读出来时给占位：不出现任何数字，也不提前推荐', async ({ browser }) => {
+  /*
+    这条要开**两个上下文、两次完整加载**（一个挂住 IndexedDB 看占位，一个正常看真身，
+    再比高度），全量并行跑时 30 s 不够——**这正是我刚在 `tablet.spec` 修过的同一类毛病，
+    自己写新用例时又犯了一次**。给它 60 s。
+  */
+  test.setTimeout(60_000)
+  const stall = async (context: import('@playwright/test').BrowserContext): Promise<void> => {
+    await context.addInitScript((dbName: string) => {
+      const real = indexedDB.open.bind(indexedDB)
+      indexedDB.open = ((name: string, version?: number) =>
+        name === dbName
+          ? // 只挂住这一个库；别的照常。返回一个空壳：调用方只会往上挂回调，不会有人回调它
+            ({} as IDBOpenDBRequest)
+          : real(name, version)) as typeof indexedDB.open
+    }, DB_NAME)
+  }
+
+  const stalled = await browser.newContext()
+  await stall(stalled)
+  const page = await stalled.newPage()
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.goto('/')
+  await page.getByRole('button', { name: '教学', exact: true }).click()
+
+  const placeholder = page.getByTestId('learn-loading')
+  await expect(placeholder).toBeVisible()
+  await expect(placeholder).toHaveAttribute('aria-busy', 'true')
+  // 一个数字都不许出现——那是在说一件还不知道的事
+  await expect(page.getByTestId('learn-progress')).toHaveCount(0)
+  await expect(page.getByText(/已完成/)).toHaveCount(0)
+  // 也还没有推荐：推谁要等进度读出来才知道
+  await expect(page.getByRole('button', { name: /继续学习/ })).toHaveCount(0)
+  const loadingBox = await placeholder.boundingBox()
+  await stalled.close()
+
+  const fresh = await browser.newContext()
+  const loadedPage = await fresh.newPage()
+  await loadedPage.setViewportSize({ width: 1440, height: 900 })
+  await loadedPage.goto('/')
+  await loadedPage.getByRole('button', { name: '教学', exact: true }).click()
+  await expect(loadedPage.getByTestId('learn-progress')).toBeVisible()
+  // 比的是**整块**：learn-progress 只是里头那个 span，拿它比等于拿一行字比一整块
+  const loadedBox = await loadedPage.getByTestId('learn-progress-block').boundingBox()
+  await fresh.close()
+
+  expect(loadingBox).not.toBeNull()
+  expect(loadedBox).not.toBeNull()
+  if (loadingBox === null || loadedBox === null) return
+  // 差在 8px 以内就不会看出跳动
+  expect(Math.abs(loadingBox.height - loadedBox.height)).toBeLessThanOrEqual(8)
 })

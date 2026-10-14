@@ -57,7 +57,11 @@ export function StepView({ step, index, total }: StepViewProps) {
 
       <aside className="order-2 space-y-3 px-3 pb-4 lg:order-3 lg:overflow-y-auto lg:border-l lg:border-border lg:px-4 lg:py-4">
         <Panel title={`讲解 ${index + 1} / ${total}`}>
-          <h1 className="text-base font-semibold text-fg">{step.title}</h1>
+          {/*
+        这一页的 h1 在工具栏上（课名），所以这里只能是 h2——
+        原先它是 h1，于是「讲解 2 / 3」那个 h2 之后又冒出一个 h1（层级倒着走）。
+      */}
+        <h2 className="text-base font-semibold text-fg">{step.title}</h2>
           <p className="mt-2 text-sm leading-relaxed text-muted">{step.body}</p>
         </Panel>
 

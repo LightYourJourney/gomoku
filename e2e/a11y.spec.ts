@@ -319,6 +319,37 @@ test.describe('键盘操作 · 教学页', () => {
     await expect(page.getByRole('button', { name: '上一步' })).toBeEnabled()
   })
 
+  test('进练习之后，用键盘也能回到讲解（回到的是最后一页）', async ({ page }) => {
+    await page.goto('/')
+    await page.getByRole('button', { name: '教学', exact: true }).click()
+    await page.getByTestId('lesson-rules').click()
+
+    // 先翻到练习——这一段别的用例已经覆盖，这里只为走到那个状态
+    for (let i = 0; i < 2; i++) await page.getByRole('button', { name: '下一步' }).click()
+    await page.getByRole('button', { name: '进入练习 →' }).click()
+    await expect(page.getByRole('heading', { name: '练习' })).toBeVisible()
+
+    /*
+      「回到讲解」是**本次新增、任务书 §六 点名**的控件，而 e2e 里此前一次都没点过它
+      （独立验收时发现的：文档声称覆盖了，实际 `grep 回到讲解 e2e/` 是零）。
+      仍然用真键盘 Tab 过去——程序化 `.focus()` 证明不了键盘用户到得了。
+    */
+    let tabs = 0
+    while (tabs < 25) {
+      await page.keyboard.press('Tab')
+      tabs += 1
+      const text = await page.evaluate(() => document.activeElement?.textContent ?? '')
+      if (text.includes('回到讲解')) break
+    }
+    expect(tabs, '按 Tab 应该能在 25 步之内走到「回到讲解」').toBeLessThan(25)
+    await page.keyboard.press('Enter')
+
+    // 回到的是**最后一页**（玩家是从那儿过来的），不是第一页
+    await expect(
+      page.getByText(`${LESSONS[0]!.steps.length} / ${LESSONS[0]!.steps.length}`, { exact: true }),
+    ).toBeVisible()
+  })
+
   test('列表页那颗「继续学习」用键盘也能按', async ({ page }) => {
     await page.goto('/')
     await page.getByRole('button', { name: '教学', exact: true }).click()

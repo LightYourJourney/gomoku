@@ -48,7 +48,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-empty__390-light.png",
-      "setupMs": 654,
+      "setupMs": 1304,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -454,7 +454,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-empty__768-light.png",
-      "setupMs": 661,
+      "setupMs": 1496,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -860,7 +860,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-empty__1024-light.png",
-      "setupMs": 868,
+      "setupMs": 1611,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -1273,7 +1273,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-empty__1280-light.png",
-      "setupMs": 1017,
+      "setupMs": 3233,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -1680,7 +1680,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-empty__1440-light.png",
-      "setupMs": 633,
+      "setupMs": 2711,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -2086,7 +2086,7 @@
       "size": "1280x680",
       "theme": "light",
       "file": "battle-battle-empty__1280x680-light.png",
-      "setupMs": 751,
+      "setupMs": 1822,
       "boardDetails": {
         "coordText": {
           "width": 9.97,
@@ -2499,7 +2499,7 @@
       "size": "1440x700",
       "theme": "light",
       "file": "battle-battle-empty__1440x700-light.png",
-      "setupMs": 838,
+      "setupMs": 846,
       "boardDetails": {
         "coordText": {
           "width": 10.36,
@@ -2911,7 +2911,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-empty__1920-light.png",
-      "setupMs": 1041,
+      "setupMs": 1369,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -3317,7 +3317,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-empty__390-dark-dark.png",
-      "setupMs": 662,
+      "setupMs": 1215,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -3723,7 +3723,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-empty__1440-dark-dark.png",
-      "setupMs": 571,
+      "setupMs": 1314,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -4129,7 +4129,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-midgame__390-light.png",
-      "setupMs": 854,
+      "setupMs": 818,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -4556,7 +4556,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-midgame__768-light.png",
-      "setupMs": 640,
+      "setupMs": 677,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -4983,7 +4983,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-midgame__1024-light.png",
-      "setupMs": 1226,
+      "setupMs": 857,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -5416,7 +5416,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-midgame__1280-light.png",
-      "setupMs": 1079,
+      "setupMs": 1038,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -5843,7 +5843,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-midgame__1440-light.png",
-      "setupMs": 1374,
+      "setupMs": 886,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -6270,7 +6270,7 @@
       "size": "1280x680",
       "theme": "light",
       "file": "battle-battle-midgame__1280x680-light.png",
-      "setupMs": 1122,
+      "setupMs": 675,
       "boardDetails": {
         "coordText": {
           "width": 9.97,
@@ -6703,7 +6703,7 @@
       "size": "1440x700",
       "theme": "light",
       "file": "battle-battle-midgame__1440x700-light.png",
-      "setupMs": 890,
+      "setupMs": 1338,
       "boardDetails": {
         "coordText": {
           "width": 10.36,
@@ -7142,7 +7142,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-midgame__1920-light.png",
-      "setupMs": 706,
+      "setupMs": 1355,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -7569,7 +7569,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-midgame__390-dark-dark.png",
-      "setupMs": 1041,
+      "setupMs": 1062,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -7996,7 +7996,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-midgame__1440-dark-dark.png",
-      "setupMs": 2771,
+      "setupMs": 859,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -8423,7 +8423,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-thinking__390-light.png",
-      "setupMs": 940,
+      "setupMs": 625,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -8848,7 +8848,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-thinking__768-light.png",
-      "setupMs": 904,
+      "setupMs": 720,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -9273,7 +9273,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-thinking__1024-light.png",
-      "setupMs": 1560,
+      "setupMs": 916,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -9705,7 +9705,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-thinking__1280-light.png",
-      "setupMs": 1434,
+      "setupMs": 1565,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -10137,7 +10137,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-thinking__1440-light.png",
-      "setupMs": 1300,
+      "setupMs": 1563,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -10568,7 +10568,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-thinking__1920-light.png",
-      "setupMs": 708,
+      "setupMs": 1291,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -10999,7 +10999,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-thinking__390-dark-dark.png",
-      "setupMs": 499,
+      "setupMs": 1127,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -11424,7 +11424,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-thinking__1440-dark-dark.png",
-      "setupMs": 908,
+      "setupMs": 953,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -11855,7 +11855,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-hint__390-light.png",
-      "setupMs": 1104,
+      "setupMs": 1429,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -12350,7 +12350,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-hint__768-light.png",
-      "setupMs": 1422,
+      "setupMs": 993,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -12845,7 +12845,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-hint__1024-light.png",
-      "setupMs": 846,
+      "setupMs": 1828,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -13346,7 +13346,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-hint__1280-light.png",
-      "setupMs": 871,
+      "setupMs": 1809,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -13841,7 +13841,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-hint__1440-light.png",
-      "setupMs": 851,
+      "setupMs": 3529,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -14336,7 +14336,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-hint__1920-light.png",
-      "setupMs": 789,
+      "setupMs": 4275,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -14831,7 +14831,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-hint__390-dark-dark.png",
-      "setupMs": 642,
+      "setupMs": 1436,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -15326,7 +15326,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-hint__1440-dark-dark.png",
-      "setupMs": 698,
+      "setupMs": 1539,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -15821,7 +15821,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-confirm-restart__390-light.png",
-      "setupMs": 616,
+      "setupMs": 1293,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -16285,7 +16285,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-confirm-restart__768-light.png",
-      "setupMs": 743,
+      "setupMs": 1035,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -16749,7 +16749,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-confirm-restart__1024-light.png",
-      "setupMs": 969,
+      "setupMs": 931,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -17219,7 +17219,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-confirm-restart__1280-light.png",
-      "setupMs": 790,
+      "setupMs": 924,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -17683,7 +17683,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-confirm-restart__1440-light.png",
-      "setupMs": 896,
+      "setupMs": 969,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -18147,7 +18147,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-confirm-restart__1920-light.png",
-      "setupMs": 857,
+      "setupMs": 1094,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -18611,7 +18611,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-confirm-restart__390-dark-dark.png",
-      "setupMs": 692,
+      "setupMs": 926,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -19075,7 +19075,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-confirm-restart__1440-dark-dark.png",
-      "setupMs": 758,
+      "setupMs": 922,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -19539,7 +19539,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-display-settings__390-light.png",
-      "setupMs": 607,
+      "setupMs": 1223,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -19997,7 +19997,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-display-settings__768-light.png",
-      "setupMs": 644,
+      "setupMs": 1205,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -20455,7 +20455,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-display-settings__1024-light.png",
-      "setupMs": 638,
+      "setupMs": 1040,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -20919,7 +20919,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-display-settings__1280-light.png",
-      "setupMs": 869,
+      "setupMs": 1011,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -21377,7 +21377,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-display-settings__1440-light.png",
-      "setupMs": 986,
+      "setupMs": 993,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -21835,7 +21835,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-display-settings__1920-light.png",
-      "setupMs": 2648,
+      "setupMs": 2429,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -22293,7 +22293,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-display-settings__390-dark-dark.png",
-      "setupMs": 835,
+      "setupMs": 1466,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -22751,7 +22751,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-display-settings__1440-dark-dark.png",
-      "setupMs": 793,
+      "setupMs": 2546,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -23209,7 +23209,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-finished__390-light.png",
-      "setupMs": 503,
+      "setupMs": 665,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -23678,7 +23678,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-finished__768-light.png",
-      "setupMs": 489,
+      "setupMs": 839,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -24147,7 +24147,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-finished__1024-light.png",
-      "setupMs": 536,
+      "setupMs": 1077,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -24623,7 +24623,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-finished__1280-light.png",
-      "setupMs": 499,
+      "setupMs": 762,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -25099,7 +25099,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-finished__1440-light.png",
-      "setupMs": 527,
+      "setupMs": 811,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -25574,7 +25574,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-finished__1920-light.png",
-      "setupMs": 615,
+      "setupMs": 1063,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -26049,7 +26049,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-finished__390-dark-dark.png",
-      "setupMs": 561,
+      "setupMs": 1114,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -26518,7 +26518,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-finished__1440-dark-dark.png",
-      "setupMs": 608,
+      "setupMs": 1436,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -26993,7 +26993,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-opening__390-light.png",
-      "setupMs": 510,
+      "setupMs": 1480,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -27413,7 +27413,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-opening__768-light.png",
-      "setupMs": 1167,
+      "setupMs": 1560,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -27833,7 +27833,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-opening__1024-light.png",
-      "setupMs": 690,
+      "setupMs": 1355,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -28260,7 +28260,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-opening__1280-light.png",
-      "setupMs": 850,
+      "setupMs": 2727,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -28681,7 +28681,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-opening__1440-light.png",
-      "setupMs": 1079,
+      "setupMs": 1013,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -29101,7 +29101,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-opening__1920-light.png",
-      "setupMs": 1291,
+      "setupMs": 1288,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -29521,7 +29521,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-opening__390-dark-dark.png",
-      "setupMs": 1513,
+      "setupMs": 923,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -29941,7 +29941,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-opening__1440-dark-dark.png",
-      "setupMs": 1379,
+      "setupMs": 884,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -30361,7 +30361,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-dense-black__390-light.png",
-      "setupMs": 723,
+      "setupMs": 783,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -30788,7 +30788,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-dense-black__768-light.png",
-      "setupMs": 1200,
+      "setupMs": 710,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -31215,7 +31215,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-dense-black__1024-light.png",
-      "setupMs": 758,
+      "setupMs": 867,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -31648,7 +31648,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-dense-black__1280-light.png",
-      "setupMs": 754,
+      "setupMs": 783,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -32075,7 +32075,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-dense-black__1440-light.png",
-      "setupMs": 685,
+      "setupMs": 843,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -32502,7 +32502,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-dense-black__1920-light.png",
-      "setupMs": 622,
+      "setupMs": 870,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -32929,7 +32929,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-dense-black__390-dark-dark.png",
-      "setupMs": 944,
+      "setupMs": 730,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -33356,7 +33356,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-dense-black__1440-dark-dark.png",
-      "setupMs": 905,
+      "setupMs": 739,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -33783,7 +33783,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-dense-white__390-light.png",
-      "setupMs": 767,
+      "setupMs": 701,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -34210,7 +34210,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-dense-white__768-light.png",
-      "setupMs": 1131,
+      "setupMs": 690,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -34637,7 +34637,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-dense-white__1024-light.png",
-      "setupMs": 723,
+      "setupMs": 1174,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -35070,7 +35070,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-dense-white__1280-light.png",
-      "setupMs": 1273,
+      "setupMs": 1438,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -35497,7 +35497,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-dense-white__1440-light.png",
-      "setupMs": 813,
+      "setupMs": 1363,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -35924,7 +35924,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-dense-white__1920-light.png",
-      "setupMs": 812,
+      "setupMs": 1696,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -36351,7 +36351,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-dense-white__390-dark-dark.png",
-      "setupMs": 862,
+      "setupMs": 780,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -36778,7 +36778,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-dense-white__1440-dark-dark.png",
-      "setupMs": 817,
+      "setupMs": 1523,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -37205,7 +37205,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-win-board__390-light.png",
-      "setupMs": 756,
+      "setupMs": 1734,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -37637,7 +37637,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-win-board__768-light.png",
-      "setupMs": 692,
+      "setupMs": 1771,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -38069,7 +38069,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-win-board__1024-light.png",
-      "setupMs": 735,
+      "setupMs": 2156,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -38508,7 +38508,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-win-board__1280-light.png",
-      "setupMs": 833,
+      "setupMs": 2497,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -38947,7 +38947,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-win-board__1440-light.png",
-      "setupMs": 1025,
+      "setupMs": 4436,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -39385,7 +39385,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-win-board__1920-light.png",
-      "setupMs": 766,
+      "setupMs": 3650,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -39823,7 +39823,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-win-board__390-dark-dark.png",
-      "setupMs": 622,
+      "setupMs": 1295,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -40255,7 +40255,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-win-board__1440-dark-dark.png",
-      "setupMs": 740,
+      "setupMs": 1505,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -40693,7 +40693,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-ai-moved__390-light.png",
-      "setupMs": 586,
+      "setupMs": 892,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -41152,7 +41152,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-ai-moved__768-light.png",
-      "setupMs": 742,
+      "setupMs": 863,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -41611,7 +41611,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-ai-moved__1024-light.png",
-      "setupMs": 712,
+      "setupMs": 1395,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -42077,7 +42077,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-ai-moved__1280-light.png",
-      "setupMs": 875,
+      "setupMs": 2564,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -42537,7 +42537,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-ai-moved__1440-light.png",
-      "setupMs": 777,
+      "setupMs": 2462,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -42996,7 +42996,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-ai-moved__1920-light.png",
-      "setupMs": 695,
+      "setupMs": 2456,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -43455,7 +43455,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-ai-moved__390-dark-dark.png",
-      "setupMs": 648,
+      "setupMs": 1510,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -43914,7 +43914,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-ai-moved__1440-dark-dark.png",
-      "setupMs": 640,
+      "setupMs": 1359,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -44373,7 +44373,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-ai-moved-expanded__390-light.png",
-      "setupMs": 659,
+      "setupMs": 1120,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -44848,7 +44848,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-ai-moved-expanded__768-light.png",
-      "setupMs": 720,
+      "setupMs": 1574,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -45323,7 +45323,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-ai-moved-expanded__1024-light.png",
-      "setupMs": 711,
+      "setupMs": 3542,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -45805,7 +45805,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-ai-moved-expanded__1280-light.png",
-      "setupMs": 760,
+      "setupMs": 2256,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -46281,7 +46281,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-ai-moved-expanded__1440-light.png",
-      "setupMs": 840,
+      "setupMs": 2116,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -46763,7 +46763,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-ai-moved-expanded__1920-light.png",
-      "setupMs": 840,
+      "setupMs": 3296,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -47245,7 +47245,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-ai-moved-expanded__390-dark-dark.png",
-      "setupMs": 679,
+      "setupMs": 2728,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -47720,7 +47720,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-ai-moved-expanded__1440-dark-dark.png",
-      "setupMs": 877,
+      "setupMs": 1956,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -48202,7 +48202,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-ai-error__390-light.png",
-      "setupMs": 581,
+      "setupMs": 832,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -48653,7 +48653,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-ai-error__768-light.png",
-      "setupMs": 534,
+      "setupMs": 2078,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -49104,7 +49104,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-ai-error__1024-light.png",
-      "setupMs": 603,
+      "setupMs": 1946,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -49561,7 +49561,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-ai-error__1280-light.png",
-      "setupMs": 737,
+      "setupMs": 2538,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -50018,7 +50018,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-ai-error__1440-light.png",
-      "setupMs": 657,
+      "setupMs": 1931,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -50475,7 +50475,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-ai-error__1920-light.png",
-      "setupMs": 668,
+      "setupMs": 1489,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -50932,7 +50932,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-ai-error__390-dark-dark.png",
-      "setupMs": 607,
+      "setupMs": 1032,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -51383,7 +51383,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-ai-error__1440-dark-dark.png",
-      "setupMs": 697,
+      "setupMs": 1990,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -51840,7 +51840,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-finish-unsaved__390-light.png",
-      "setupMs": 1259,
+      "setupMs": 1682,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -52309,7 +52309,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-finish-unsaved__768-light.png",
-      "setupMs": 1485,
+      "setupMs": 2141,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -52778,7 +52778,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-finish-unsaved__1024-light.png",
-      "setupMs": 2495,
+      "setupMs": 1605,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -53254,7 +53254,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-finish-unsaved__1280-light.png",
-      "setupMs": 1381,
+      "setupMs": 1737,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -53730,7 +53730,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-finish-unsaved__1440-light.png",
-      "setupMs": 1179,
+      "setupMs": 1519,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -54205,7 +54205,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-finish-unsaved__1920-light.png",
-      "setupMs": 1028,
+      "setupMs": 2368,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -54680,7 +54680,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-finish-unsaved__390-dark-dark.png",
-      "setupMs": 1127,
+      "setupMs": 1906,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -55149,7 +55149,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-finish-unsaved__1440-dark-dark.png",
-      "setupMs": 1053,
+      "setupMs": 1866,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -55624,7 +55624,7 @@
       "size": "390",
       "theme": "light",
       "file": "learn-learn-list__390-light.png",
-      "setupMs": 688,
+      "setupMs": 3762,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -55895,7 +55895,7 @@
       "size": "768",
       "theme": "light",
       "file": "learn-learn-list__768-light.png",
-      "setupMs": 740,
+      "setupMs": 1706,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -56166,7 +56166,7 @@
       "size": "1024",
       "theme": "light",
       "file": "learn-learn-list__1024-light.png",
-      "setupMs": 1045,
+      "setupMs": 2492,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -56444,7 +56444,7 @@
       "size": "1280",
       "theme": "light",
       "file": "learn-learn-list__1280-light.png",
-      "setupMs": 1186,
+      "setupMs": 1750,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -56722,7 +56722,7 @@
       "size": "1440",
       "theme": "light",
       "file": "learn-learn-list__1440-light.png",
-      "setupMs": 705,
+      "setupMs": 1831,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -57000,7 +57000,7 @@
       "size": "1920",
       "theme": "light",
       "file": "learn-learn-list__1920-light.png",
-      "setupMs": 1113,
+      "setupMs": 1737,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -57278,7 +57278,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "learn-learn-list__390-dark-dark.png",
-      "setupMs": 655,
+      "setupMs": 1305,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -57549,7 +57549,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "learn-learn-list__1440-dark-dark.png",
-      "setupMs": 647,
+      "setupMs": 1112,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -57827,7 +57827,7 @@
       "size": "390",
       "theme": "light",
       "file": "learn-learn-list-done__390-light.png",
-      "setupMs": 555,
+      "setupMs": 1303,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -57881,7 +57881,8 @@
         "14px": 19,
         "11px": 1,
         "20px": 1,
-        "12px": 28
+        "12px": 28,
+        "16px": 5
       },
       "typeSamples": [
         {
@@ -57891,6 +57892,14 @@
           "weight": "600",
           "sample": "h1{互动教学}",
           "count": 1
+        },
+        {
+          "fontSize": "16px",
+          "lineHeight": "24px",
+          "color": "rgb(28, 25, 23)",
+          "weight": "400",
+          "sample": "span{已完成：}",
+          "count": 5
         },
         {
           "fontSize": "14px",
@@ -58093,7 +58102,7 @@
       "overflowing": [],
       "clipped": [],
       "counts": {
-        "elements": 129,
+        "elements": 134,
         "overflowing": 0,
         "clipped": 0,
         "contrastViolations": 0,
@@ -58106,7 +58115,7 @@
       "size": "768",
       "theme": "light",
       "file": "learn-learn-list-done__768-light.png",
-      "setupMs": 557,
+      "setupMs": 944,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -58160,7 +58169,8 @@
         "14px": 19,
         "11px": 1,
         "20px": 1,
-        "12px": 28
+        "12px": 28,
+        "16px": 5
       },
       "typeSamples": [
         {
@@ -58170,6 +58180,14 @@
           "weight": "600",
           "sample": "h1{互动教学}",
           "count": 1
+        },
+        {
+          "fontSize": "16px",
+          "lineHeight": "24px",
+          "color": "rgb(28, 25, 23)",
+          "weight": "400",
+          "sample": "span{已完成：}",
+          "count": 5
         },
         {
           "fontSize": "14px",
@@ -58372,7 +58390,7 @@
       "overflowing": [],
       "clipped": [],
       "counts": {
-        "elements": 129,
+        "elements": 134,
         "overflowing": 0,
         "clipped": 0,
         "contrastViolations": 0,
@@ -58385,7 +58403,7 @@
       "size": "1024",
       "theme": "light",
       "file": "learn-learn-list-done__1024-light.png",
-      "setupMs": 598,
+      "setupMs": 3072,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -58446,7 +58464,8 @@
         "14px": 19,
         "11px": 1,
         "20px": 1,
-        "12px": 28
+        "12px": 28,
+        "16px": 5
       },
       "typeSamples": [
         {
@@ -58456,6 +58475,14 @@
           "weight": "600",
           "sample": "h1{互动教学}",
           "count": 1
+        },
+        {
+          "fontSize": "16px",
+          "lineHeight": "24px",
+          "color": "rgb(28, 25, 23)",
+          "weight": "400",
+          "sample": "span{已完成：}",
+          "count": 5
         },
         {
           "fontSize": "14px",
@@ -58658,7 +58685,7 @@
       "overflowing": [],
       "clipped": [],
       "counts": {
-        "elements": 129,
+        "elements": 134,
         "overflowing": 0,
         "clipped": 0,
         "contrastViolations": 0,
@@ -58671,7 +58698,7 @@
       "size": "1280",
       "theme": "light",
       "file": "learn-learn-list-done__1280-light.png",
-      "setupMs": 603,
+      "setupMs": 1851,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -58732,7 +58759,8 @@
         "14px": 19,
         "11px": 1,
         "20px": 1,
-        "12px": 28
+        "12px": 28,
+        "16px": 5
       },
       "typeSamples": [
         {
@@ -58742,6 +58770,14 @@
           "weight": "600",
           "sample": "h1{互动教学}",
           "count": 1
+        },
+        {
+          "fontSize": "16px",
+          "lineHeight": "24px",
+          "color": "rgb(28, 25, 23)",
+          "weight": "400",
+          "sample": "span{已完成：}",
+          "count": 5
         },
         {
           "fontSize": "14px",
@@ -58944,7 +58980,7 @@
       "overflowing": [],
       "clipped": [],
       "counts": {
-        "elements": 129,
+        "elements": 134,
         "overflowing": 0,
         "clipped": 0,
         "contrastViolations": 0,
@@ -58957,7 +58993,7 @@
       "size": "1440",
       "theme": "light",
       "file": "learn-learn-list-done__1440-light.png",
-      "setupMs": 700,
+      "setupMs": 1924,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -59018,7 +59054,8 @@
         "14px": 19,
         "11px": 1,
         "20px": 1,
-        "12px": 28
+        "12px": 28,
+        "16px": 5
       },
       "typeSamples": [
         {
@@ -59028,6 +59065,14 @@
           "weight": "600",
           "sample": "h1{互动教学}",
           "count": 1
+        },
+        {
+          "fontSize": "16px",
+          "lineHeight": "24px",
+          "color": "rgb(28, 25, 23)",
+          "weight": "400",
+          "sample": "span{已完成：}",
+          "count": 5
         },
         {
           "fontSize": "14px",
@@ -59230,7 +59275,7 @@
       "overflowing": [],
       "clipped": [],
       "counts": {
-        "elements": 129,
+        "elements": 134,
         "overflowing": 0,
         "clipped": 0,
         "contrastViolations": 0,
@@ -59243,7 +59288,7 @@
       "size": "1920",
       "theme": "light",
       "file": "learn-learn-list-done__1920-light.png",
-      "setupMs": 675,
+      "setupMs": 2103,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -59304,7 +59349,8 @@
         "14px": 19,
         "11px": 1,
         "20px": 1,
-        "12px": 28
+        "12px": 28,
+        "16px": 5
       },
       "typeSamples": [
         {
@@ -59314,6 +59360,14 @@
           "weight": "600",
           "sample": "h1{互动教学}",
           "count": 1
+        },
+        {
+          "fontSize": "16px",
+          "lineHeight": "24px",
+          "color": "rgb(28, 25, 23)",
+          "weight": "400",
+          "sample": "span{已完成：}",
+          "count": 5
         },
         {
           "fontSize": "14px",
@@ -59516,7 +59570,7 @@
       "overflowing": [],
       "clipped": [],
       "counts": {
-        "elements": 129,
+        "elements": 134,
         "overflowing": 0,
         "clipped": 0,
         "contrastViolations": 0,
@@ -59529,7 +59583,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "learn-learn-list-done__390-dark-dark.png",
-      "setupMs": 818,
+      "setupMs": 2185,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -59583,7 +59637,8 @@
         "14px": 19,
         "11px": 1,
         "20px": 1,
-        "12px": 28
+        "12px": 28,
+        "16px": 5
       },
       "typeSamples": [
         {
@@ -59593,6 +59648,14 @@
           "weight": "600",
           "sample": "h1{互动教学}",
           "count": 1
+        },
+        {
+          "fontSize": "16px",
+          "lineHeight": "24px",
+          "color": "rgb(236, 232, 227)",
+          "weight": "400",
+          "sample": "span{已完成：}",
+          "count": 5
         },
         {
           "fontSize": "14px",
@@ -59795,7 +59858,7 @@
       "overflowing": [],
       "clipped": [],
       "counts": {
-        "elements": 128,
+        "elements": 133,
         "overflowing": 0,
         "clipped": 0,
         "contrastViolations": 0,
@@ -59808,7 +59871,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "learn-learn-list-done__1440-dark-dark.png",
-      "setupMs": 948,
+      "setupMs": 3162,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -59869,7 +59932,8 @@
         "14px": 19,
         "11px": 1,
         "20px": 1,
-        "12px": 28
+        "12px": 28,
+        "16px": 5
       },
       "typeSamples": [
         {
@@ -59879,6 +59943,14 @@
           "weight": "600",
           "sample": "h1{互动教学}",
           "count": 1
+        },
+        {
+          "fontSize": "16px",
+          "lineHeight": "24px",
+          "color": "rgb(236, 232, 227)",
+          "weight": "400",
+          "sample": "span{已完成：}",
+          "count": 5
         },
         {
           "fontSize": "14px",
@@ -60081,7 +60153,7 @@
       "overflowing": [],
       "clipped": [],
       "counts": {
-        "elements": 128,
+        "elements": 133,
         "overflowing": 0,
         "clipped": 0,
         "contrastViolations": 0,
@@ -60094,7 +60166,7 @@
       "size": "390",
       "theme": "light",
       "file": "learn-learn-diagram__390-light.png",
-      "setupMs": 1324,
+      "setupMs": 3015,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -60176,7 +60248,7 @@
           "lineHeight": "24px",
           "color": "rgb(28, 25, 23)",
           "weight": "600",
-          "sample": "h1{五个连成一线就赢}",
+          "sample": "h2{五个连成一线就赢}",
           "count": 1
         },
         {
@@ -60317,13 +60389,19 @@
       ],
       "headings": [
         {
+          "level": "h1",
+          "text": "基本规则",
+          "top": 130,
+          "h": 20
+        },
+        {
           "level": "h2",
           "text": "讲解 2 / 3",
           "top": 543,
           "h": 20
         },
         {
-          "level": "h1",
+          "level": "h2",
           "text": "五个连成一线就赢",
           "top": 584,
           "h": 24
@@ -60362,7 +60440,7 @@
       "size": "768",
       "theme": "light",
       "file": "learn-learn-diagram__768-light.png",
-      "setupMs": 2239,
+      "setupMs": 3439,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -60444,7 +60522,7 @@
           "lineHeight": "24px",
           "color": "rgb(28, 25, 23)",
           "weight": "600",
-          "sample": "h1{五个连成一线就赢}",
+          "sample": "h2{五个连成一线就赢}",
           "count": 1
         },
         {
@@ -60585,13 +60663,19 @@
       ],
       "headings": [
         {
+          "level": "h1",
+          "text": "基本规则",
+          "top": 86,
+          "h": 20
+        },
+        {
           "level": "h2",
           "text": "讲解 2 / 3",
           "top": 637,
           "h": 20
         },
         {
-          "level": "h1",
+          "level": "h2",
           "text": "五个连成一线就赢",
           "top": 678,
           "h": 24
@@ -60630,7 +60714,7 @@
       "size": "1024",
       "theme": "light",
       "file": "learn-learn-diagram__1024-light.png",
-      "setupMs": 917,
+      "setupMs": 1506,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -60712,7 +60796,7 @@
           "lineHeight": "24px",
           "color": "rgb(28, 25, 23)",
           "weight": "600",
-          "sample": "h1{五个连成一线就赢}",
+          "sample": "h2{五个连成一线就赢}",
           "count": 1
         },
         {
@@ -60853,13 +60937,19 @@
       ],
       "headings": [
         {
+          "level": "h1",
+          "text": "基本规则",
+          "top": 86,
+          "h": 20
+        },
+        {
           "level": "h2",
           "text": "讲解 2 / 3",
           "top": 149,
           "h": 20
         },
         {
-          "level": "h1",
+          "level": "h2",
           "text": "五个连成一线就赢",
           "top": 190,
           "h": 24
@@ -60898,7 +60988,7 @@
       "size": "1280",
       "theme": "light",
       "file": "learn-learn-diagram__1280-light.png",
-      "setupMs": 898,
+      "setupMs": 1416,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -60980,7 +61070,7 @@
           "lineHeight": "24px",
           "color": "rgb(28, 25, 23)",
           "weight": "600",
-          "sample": "h1{五个连成一线就赢}",
+          "sample": "h2{五个连成一线就赢}",
           "count": 1
         },
         {
@@ -61121,13 +61211,19 @@
       ],
       "headings": [
         {
+          "level": "h1",
+          "text": "基本规则",
+          "top": 86,
+          "h": 20
+        },
+        {
           "level": "h2",
           "text": "讲解 2 / 3",
           "top": 149,
           "h": 20
         },
         {
-          "level": "h1",
+          "level": "h2",
           "text": "五个连成一线就赢",
           "top": 190,
           "h": 24
@@ -61166,7 +61262,7 @@
       "size": "1440",
       "theme": "light",
       "file": "learn-learn-diagram__1440-light.png",
-      "setupMs": 832,
+      "setupMs": 1224,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -61248,7 +61344,7 @@
           "lineHeight": "24px",
           "color": "rgb(28, 25, 23)",
           "weight": "600",
-          "sample": "h1{五个连成一线就赢}",
+          "sample": "h2{五个连成一线就赢}",
           "count": 1
         },
         {
@@ -61389,13 +61485,19 @@
       ],
       "headings": [
         {
+          "level": "h1",
+          "text": "基本规则",
+          "top": 86,
+          "h": 20
+        },
+        {
           "level": "h2",
           "text": "讲解 2 / 3",
           "top": 149,
           "h": 20
         },
         {
-          "level": "h1",
+          "level": "h2",
           "text": "五个连成一线就赢",
           "top": 190,
           "h": 24
@@ -61434,7 +61536,7 @@
       "size": "1920",
       "theme": "light",
       "file": "learn-learn-diagram__1920-light.png",
-      "setupMs": 777,
+      "setupMs": 1431,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -61516,7 +61618,7 @@
           "lineHeight": "24px",
           "color": "rgb(28, 25, 23)",
           "weight": "600",
-          "sample": "h1{五个连成一线就赢}",
+          "sample": "h2{五个连成一线就赢}",
           "count": 1
         },
         {
@@ -61657,13 +61759,19 @@
       ],
       "headings": [
         {
+          "level": "h1",
+          "text": "基本规则",
+          "top": 86,
+          "h": 20
+        },
+        {
           "level": "h2",
           "text": "讲解 2 / 3",
           "top": 149,
           "h": 20
         },
         {
-          "level": "h1",
+          "level": "h2",
           "text": "五个连成一线就赢",
           "top": 190,
           "h": 24
@@ -61702,7 +61810,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "learn-learn-diagram__390-dark-dark.png",
-      "setupMs": 729,
+      "setupMs": 1598,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -61784,7 +61892,7 @@
           "lineHeight": "24px",
           "color": "rgb(236, 232, 227)",
           "weight": "600",
-          "sample": "h1{五个连成一线就赢}",
+          "sample": "h2{五个连成一线就赢}",
           "count": 1
         },
         {
@@ -61925,13 +62033,19 @@
       ],
       "headings": [
         {
+          "level": "h1",
+          "text": "基本规则",
+          "top": 130,
+          "h": 20
+        },
+        {
           "level": "h2",
           "text": "讲解 2 / 3",
           "top": 543,
           "h": 20
         },
         {
-          "level": "h1",
+          "level": "h2",
           "text": "五个连成一线就赢",
           "top": 584,
           "h": 24
@@ -61970,7 +62084,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "learn-learn-diagram__1440-dark-dark.png",
-      "setupMs": 823,
+      "setupMs": 3159,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -62052,7 +62166,7 @@
           "lineHeight": "24px",
           "color": "rgb(236, 232, 227)",
           "weight": "600",
-          "sample": "h1{五个连成一线就赢}",
+          "sample": "h2{五个连成一线就赢}",
           "count": 1
         },
         {
@@ -62193,13 +62307,19 @@
       ],
       "headings": [
         {
+          "level": "h1",
+          "text": "基本规则",
+          "top": 86,
+          "h": 20
+        },
+        {
           "level": "h2",
           "text": "讲解 2 / 3",
           "top": 149,
           "h": 20
         },
         {
-          "level": "h1",
+          "level": "h2",
           "text": "五个连成一线就赢",
           "top": 190,
           "h": 24
@@ -62238,7 +62358,7 @@
       "size": "390",
       "theme": "light",
       "file": "learn-learn-practice__390-light.png",
-      "setupMs": 868,
+      "setupMs": 2937,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -62446,6 +62566,12 @@
       ],
       "headings": [
         {
+          "level": "h1",
+          "text": "基本规则",
+          "top": 130,
+          "h": 20
+        },
+        {
           "level": "h2",
           "text": "练习",
           "top": 543,
@@ -62477,7 +62603,7 @@
       "size": "768",
       "theme": "light",
       "file": "learn-learn-practice__768-light.png",
-      "setupMs": 807,
+      "setupMs": 2281,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -62685,6 +62811,12 @@
       ],
       "headings": [
         {
+          "level": "h1",
+          "text": "基本规则",
+          "top": 86,
+          "h": 20
+        },
+        {
           "level": "h2",
           "text": "练习",
           "top": 637,
@@ -62716,7 +62848,7 @@
       "size": "1024",
       "theme": "light",
       "file": "learn-learn-practice__1024-light.png",
-      "setupMs": 904,
+      "setupMs": 2207,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -62924,6 +63056,12 @@
       ],
       "headings": [
         {
+          "level": "h1",
+          "text": "基本规则",
+          "top": 86,
+          "h": 20
+        },
+        {
           "level": "h2",
           "text": "练习",
           "top": 149,
@@ -62955,7 +63093,7 @@
       "size": "1280",
       "theme": "light",
       "file": "learn-learn-practice__1280-light.png",
-      "setupMs": 842,
+      "setupMs": 1999,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -63157,6 +63295,12 @@
       ],
       "headings": [
         {
+          "level": "h1",
+          "text": "基本规则",
+          "top": 86,
+          "h": 20
+        },
+        {
           "level": "h2",
           "text": "练习",
           "top": 149,
@@ -63188,7 +63332,7 @@
       "size": "1440",
       "theme": "light",
       "file": "learn-learn-practice__1440-light.png",
-      "setupMs": 1107,
+      "setupMs": 3422,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -63390,6 +63534,12 @@
       ],
       "headings": [
         {
+          "level": "h1",
+          "text": "基本规则",
+          "top": 86,
+          "h": 20
+        },
+        {
           "level": "h2",
           "text": "练习",
           "top": 149,
@@ -63421,7 +63571,7 @@
       "size": "1920",
       "theme": "light",
       "file": "learn-learn-practice__1920-light.png",
-      "setupMs": 1001,
+      "setupMs": 3495,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -63623,6 +63773,12 @@
       ],
       "headings": [
         {
+          "level": "h1",
+          "text": "基本规则",
+          "top": 86,
+          "h": 20
+        },
+        {
           "level": "h2",
           "text": "练习",
           "top": 149,
@@ -63654,7 +63810,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "learn-learn-practice__390-dark-dark.png",
-      "setupMs": 826,
+      "setupMs": 2351,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -63862,6 +64018,12 @@
       ],
       "headings": [
         {
+          "level": "h1",
+          "text": "基本规则",
+          "top": 130,
+          "h": 20
+        },
+        {
           "level": "h2",
           "text": "练习",
           "top": 543,
@@ -63893,7 +64055,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "learn-learn-practice__1440-dark-dark.png",
-      "setupMs": 920,
+      "setupMs": 1344,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -64095,6 +64257,12 @@
       ],
       "headings": [
         {
+          "level": "h1",
+          "text": "基本规则",
+          "top": 86,
+          "h": 20
+        },
+        {
           "level": "h2",
           "text": "练习",
           "top": 149,
@@ -64126,7 +64294,7 @@
       "size": "390",
       "theme": "light",
       "file": "learn-learn-practice-wrong__390-light.png",
-      "setupMs": 799,
+      "setupMs": 1396,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -64370,6 +64538,12 @@
       ],
       "headings": [
         {
+          "level": "h1",
+          "text": "基本规则",
+          "top": 130,
+          "h": 20
+        },
+        {
           "level": "h2",
           "text": "练习",
           "top": 543,
@@ -64402,7 +64576,7 @@
       "size": "768",
       "theme": "light",
       "file": "learn-learn-practice-wrong__768-light.png",
-      "setupMs": 1020,
+      "setupMs": 3771,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -64646,6 +64820,12 @@
       ],
       "headings": [
         {
+          "level": "h1",
+          "text": "基本规则",
+          "top": 86,
+          "h": 20
+        },
+        {
           "level": "h2",
           "text": "练习",
           "top": 637,
@@ -64678,7 +64858,7 @@
       "size": "1024",
       "theme": "light",
       "file": "learn-learn-practice-wrong__1024-light.png",
-      "setupMs": 1692,
+      "setupMs": 5209,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -64922,6 +65102,12 @@
       ],
       "headings": [
         {
+          "level": "h1",
+          "text": "基本规则",
+          "top": 86,
+          "h": 20
+        },
+        {
           "level": "h2",
           "text": "练习",
           "top": 149,
@@ -64954,7 +65140,7 @@
       "size": "1280",
       "theme": "light",
       "file": "learn-learn-practice-wrong__1280-light.png",
-      "setupMs": 1515,
+      "setupMs": 2175,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -65198,6 +65384,12 @@
       ],
       "headings": [
         {
+          "level": "h1",
+          "text": "基本规则",
+          "top": 86,
+          "h": 20
+        },
+        {
           "level": "h2",
           "text": "练习",
           "top": 149,
@@ -65230,7 +65422,7 @@
       "size": "1440",
       "theme": "light",
       "file": "learn-learn-practice-wrong__1440-light.png",
-      "setupMs": 1457,
+      "setupMs": 1887,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -65474,6 +65666,12 @@
       ],
       "headings": [
         {
+          "level": "h1",
+          "text": "基本规则",
+          "top": 86,
+          "h": 20
+        },
+        {
           "level": "h2",
           "text": "练习",
           "top": 149,
@@ -65506,7 +65704,7 @@
       "size": "1920",
       "theme": "light",
       "file": "learn-learn-practice-wrong__1920-light.png",
-      "setupMs": 1262,
+      "setupMs": 3553,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -65750,6 +65948,12 @@
       ],
       "headings": [
         {
+          "level": "h1",
+          "text": "基本规则",
+          "top": 86,
+          "h": 20
+        },
+        {
           "level": "h2",
           "text": "练习",
           "top": 149,
@@ -65782,7 +65986,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "learn-learn-practice-wrong__390-dark-dark.png",
-      "setupMs": 1134,
+      "setupMs": 2089,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -66026,6 +66230,12 @@
       ],
       "headings": [
         {
+          "level": "h1",
+          "text": "基本规则",
+          "top": 130,
+          "h": 20
+        },
+        {
           "level": "h2",
           "text": "练习",
           "top": 543,
@@ -66058,7 +66268,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "learn-learn-practice-wrong__1440-dark-dark.png",
-      "setupMs": 1251,
+      "setupMs": 2269,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -66302,6 +66512,12 @@
       ],
       "headings": [
         {
+          "level": "h1",
+          "text": "基本规则",
+          "top": 86,
+          "h": 20
+        },
+        {
           "level": "h2",
           "text": "练习",
           "top": 149,
@@ -66334,7 +66550,7 @@
       "size": "390",
       "theme": "light",
       "file": "learn-learn-practice-correct__390-light.png",
-      "setupMs": 1053,
+      "setupMs": 1952,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -66586,6 +66802,12 @@
       ],
       "headings": [
         {
+          "level": "h1",
+          "text": "基本规则",
+          "top": 130,
+          "h": 20
+        },
+        {
           "level": "h2",
           "text": "练习",
           "top": 543,
@@ -66624,7 +66846,7 @@
       "size": "768",
       "theme": "light",
       "file": "learn-learn-practice-correct__768-light.png",
-      "setupMs": 1346,
+      "setupMs": 1932,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -66876,6 +67098,12 @@
       ],
       "headings": [
         {
+          "level": "h1",
+          "text": "基本规则",
+          "top": 86,
+          "h": 20
+        },
+        {
           "level": "h2",
           "text": "练习",
           "top": 637,
@@ -66914,7 +67142,7 @@
       "size": "1024",
       "theme": "light",
       "file": "learn-learn-practice-correct__1024-light.png",
-      "setupMs": 1304,
+      "setupMs": 3311,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -67166,6 +67394,12 @@
       ],
       "headings": [
         {
+          "level": "h1",
+          "text": "基本规则",
+          "top": 86,
+          "h": 20
+        },
+        {
           "level": "h2",
           "text": "练习",
           "top": 149,
@@ -67204,7 +67438,7 @@
       "size": "1280",
       "theme": "light",
       "file": "learn-learn-practice-correct__1280-light.png",
-      "setupMs": 1340,
+      "setupMs": 2169,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -67456,6 +67690,12 @@
       ],
       "headings": [
         {
+          "level": "h1",
+          "text": "基本规则",
+          "top": 86,
+          "h": 20
+        },
+        {
           "level": "h2",
           "text": "练习",
           "top": 149,
@@ -67494,7 +67734,7 @@
       "size": "1440",
       "theme": "light",
       "file": "learn-learn-practice-correct__1440-light.png",
-      "setupMs": 1094,
+      "setupMs": 1838,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -67746,6 +67986,12 @@
       ],
       "headings": [
         {
+          "level": "h1",
+          "text": "基本规则",
+          "top": 86,
+          "h": 20
+        },
+        {
           "level": "h2",
           "text": "练习",
           "top": 149,
@@ -67784,7 +68030,7 @@
       "size": "1920",
       "theme": "light",
       "file": "learn-learn-practice-correct__1920-light.png",
-      "setupMs": 1104,
+      "setupMs": 3822,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -68036,6 +68282,12 @@
       ],
       "headings": [
         {
+          "level": "h1",
+          "text": "基本规则",
+          "top": 86,
+          "h": 20
+        },
+        {
           "level": "h2",
           "text": "练习",
           "top": 149,
@@ -68074,7 +68326,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "learn-learn-practice-correct__390-dark-dark.png",
-      "setupMs": 1108,
+      "setupMs": 2091,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -68326,6 +68578,12 @@
       ],
       "headings": [
         {
+          "level": "h1",
+          "text": "基本规则",
+          "top": 130,
+          "h": 20
+        },
+        {
           "level": "h2",
           "text": "练习",
           "top": 543,
@@ -68364,7 +68622,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "learn-learn-practice-correct__1440-dark-dark.png",
-      "setupMs": 1060,
+      "setupMs": 2143,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -68616,6 +68874,12 @@
       ],
       "headings": [
         {
+          "level": "h1",
+          "text": "基本规则",
+          "top": 86,
+          "h": 20
+        },
+        {
           "level": "h2",
           "text": "练习",
           "top": 149,
@@ -68654,7 +68918,7 @@
       "size": "390",
       "theme": "light",
       "file": "learn-learn-list-all-done__390-light.png",
-      "setupMs": 853,
+      "setupMs": 2359,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -68708,7 +68972,8 @@
         "14px": 19,
         "11px": 1,
         "20px": 1,
-        "12px": 28
+        "12px": 28,
+        "16px": 8
       },
       "typeSamples": [
         {
@@ -68718,6 +68983,14 @@
           "weight": "600",
           "sample": "h1{互动教学}",
           "count": 1
+        },
+        {
+          "fontSize": "16px",
+          "lineHeight": "24px",
+          "color": "rgb(28, 25, 23)",
+          "weight": "400",
+          "sample": "span{已完成：}",
+          "count": 8
         },
         {
           "fontSize": "14px",
@@ -68905,7 +69178,7 @@
       "overflowing": [],
       "clipped": [],
       "counts": {
-        "elements": 129,
+        "elements": 137,
         "overflowing": 0,
         "clipped": 0,
         "contrastViolations": 0,
@@ -68918,7 +69191,7 @@
       "size": "768",
       "theme": "light",
       "file": "learn-learn-list-all-done__768-light.png",
-      "setupMs": 1267,
+      "setupMs": 3008,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -68972,7 +69245,8 @@
         "14px": 19,
         "11px": 1,
         "20px": 1,
-        "12px": 28
+        "12px": 28,
+        "16px": 8
       },
       "typeSamples": [
         {
@@ -68982,6 +69256,14 @@
           "weight": "600",
           "sample": "h1{互动教学}",
           "count": 1
+        },
+        {
+          "fontSize": "16px",
+          "lineHeight": "24px",
+          "color": "rgb(28, 25, 23)",
+          "weight": "400",
+          "sample": "span{已完成：}",
+          "count": 8
         },
         {
           "fontSize": "14px",
@@ -69169,7 +69451,7 @@
       "overflowing": [],
       "clipped": [],
       "counts": {
-        "elements": 129,
+        "elements": 137,
         "overflowing": 0,
         "clipped": 0,
         "contrastViolations": 0,
@@ -69182,7 +69464,7 @@
       "size": "1024",
       "theme": "light",
       "file": "learn-learn-list-all-done__1024-light.png",
-      "setupMs": 1018,
+      "setupMs": 3068,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -69203,7 +69485,7 @@
       },
       "document": {
         "scrollWidth": 1024,
-        "scrollHeight": 900,
+        "scrollHeight": 953,
         "horizontalOverflow": false,
         "bodyScrollHeight": 900
       },
@@ -69243,7 +69525,8 @@
         "14px": 19,
         "11px": 1,
         "20px": 1,
-        "12px": 28
+        "12px": 28,
+        "16px": 8
       },
       "typeSamples": [
         {
@@ -69253,6 +69536,14 @@
           "weight": "600",
           "sample": "h1{互动教学}",
           "count": 1
+        },
+        {
+          "fontSize": "16px",
+          "lineHeight": "24px",
+          "color": "rgb(28, 25, 23)",
+          "weight": "400",
+          "sample": "span{已完成：}",
+          "count": 8
         },
         {
           "fontSize": "14px",
@@ -69440,7 +69731,7 @@
       "overflowing": [],
       "clipped": [],
       "counts": {
-        "elements": 129,
+        "elements": 137,
         "overflowing": 0,
         "clipped": 0,
         "contrastViolations": 0,
@@ -69453,7 +69744,7 @@
       "size": "1280",
       "theme": "light",
       "file": "learn-learn-list-all-done__1280-light.png",
-      "setupMs": 877,
+      "setupMs": 1798,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -69474,7 +69765,7 @@
       },
       "document": {
         "scrollWidth": 1280,
-        "scrollHeight": 900,
+        "scrollHeight": 953,
         "horizontalOverflow": false,
         "bodyScrollHeight": 900
       },
@@ -69514,7 +69805,8 @@
         "14px": 19,
         "11px": 1,
         "20px": 1,
-        "12px": 28
+        "12px": 28,
+        "16px": 8
       },
       "typeSamples": [
         {
@@ -69524,6 +69816,14 @@
           "weight": "600",
           "sample": "h1{互动教学}",
           "count": 1
+        },
+        {
+          "fontSize": "16px",
+          "lineHeight": "24px",
+          "color": "rgb(28, 25, 23)",
+          "weight": "400",
+          "sample": "span{已完成：}",
+          "count": 8
         },
         {
           "fontSize": "14px",
@@ -69711,7 +70011,7 @@
       "overflowing": [],
       "clipped": [],
       "counts": {
-        "elements": 129,
+        "elements": 137,
         "overflowing": 0,
         "clipped": 0,
         "contrastViolations": 0,
@@ -69724,7 +70024,7 @@
       "size": "1440",
       "theme": "light",
       "file": "learn-learn-list-all-done__1440-light.png",
-      "setupMs": 881,
+      "setupMs": 1058,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -69745,7 +70045,7 @@
       },
       "document": {
         "scrollWidth": 1440,
-        "scrollHeight": 900,
+        "scrollHeight": 953,
         "horizontalOverflow": false,
         "bodyScrollHeight": 900
       },
@@ -69785,7 +70085,8 @@
         "14px": 19,
         "11px": 1,
         "20px": 1,
-        "12px": 28
+        "12px": 28,
+        "16px": 8
       },
       "typeSamples": [
         {
@@ -69795,6 +70096,14 @@
           "weight": "600",
           "sample": "h1{互动教学}",
           "count": 1
+        },
+        {
+          "fontSize": "16px",
+          "lineHeight": "24px",
+          "color": "rgb(28, 25, 23)",
+          "weight": "400",
+          "sample": "span{已完成：}",
+          "count": 8
         },
         {
           "fontSize": "14px",
@@ -69982,7 +70291,7 @@
       "overflowing": [],
       "clipped": [],
       "counts": {
-        "elements": 129,
+        "elements": 137,
         "overflowing": 0,
         "clipped": 0,
         "contrastViolations": 0,
@@ -69995,7 +70304,7 @@
       "size": "1920",
       "theme": "light",
       "file": "learn-learn-list-all-done__1920-light.png",
-      "setupMs": 860,
+      "setupMs": 1294,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -70016,7 +70325,7 @@
       },
       "document": {
         "scrollWidth": 1920,
-        "scrollHeight": 900,
+        "scrollHeight": 953,
         "horizontalOverflow": false,
         "bodyScrollHeight": 900
       },
@@ -70056,7 +70365,8 @@
         "14px": 19,
         "11px": 1,
         "20px": 1,
-        "12px": 28
+        "12px": 28,
+        "16px": 8
       },
       "typeSamples": [
         {
@@ -70066,6 +70376,14 @@
           "weight": "600",
           "sample": "h1{互动教学}",
           "count": 1
+        },
+        {
+          "fontSize": "16px",
+          "lineHeight": "24px",
+          "color": "rgb(28, 25, 23)",
+          "weight": "400",
+          "sample": "span{已完成：}",
+          "count": 8
         },
         {
           "fontSize": "14px",
@@ -70253,7 +70571,7 @@
       "overflowing": [],
       "clipped": [],
       "counts": {
-        "elements": 129,
+        "elements": 137,
         "overflowing": 0,
         "clipped": 0,
         "contrastViolations": 0,
@@ -70266,7 +70584,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "learn-learn-list-all-done__390-dark-dark.png",
-      "setupMs": 868,
+      "setupMs": 1245,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -70320,7 +70638,8 @@
         "14px": 19,
         "11px": 1,
         "20px": 1,
-        "12px": 28
+        "12px": 28,
+        "16px": 8
       },
       "typeSamples": [
         {
@@ -70330,6 +70649,14 @@
           "weight": "600",
           "sample": "h1{互动教学}",
           "count": 1
+        },
+        {
+          "fontSize": "16px",
+          "lineHeight": "24px",
+          "color": "rgb(236, 232, 227)",
+          "weight": "400",
+          "sample": "span{已完成：}",
+          "count": 8
         },
         {
           "fontSize": "14px",
@@ -70517,7 +70844,7 @@
       "overflowing": [],
       "clipped": [],
       "counts": {
-        "elements": 128,
+        "elements": 136,
         "overflowing": 0,
         "clipped": 0,
         "contrastViolations": 0,
@@ -70530,7 +70857,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "learn-learn-list-all-done__1440-dark-dark.png",
-      "setupMs": 829,
+      "setupMs": 1483,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -70551,7 +70878,7 @@
       },
       "document": {
         "scrollWidth": 1440,
-        "scrollHeight": 900,
+        "scrollHeight": 953,
         "horizontalOverflow": false,
         "bodyScrollHeight": 900
       },
@@ -70591,7 +70918,8 @@
         "14px": 19,
         "11px": 1,
         "20px": 1,
-        "12px": 28
+        "12px": 28,
+        "16px": 8
       },
       "typeSamples": [
         {
@@ -70601,6 +70929,14 @@
           "weight": "600",
           "sample": "h1{互动教学}",
           "count": 1
+        },
+        {
+          "fontSize": "16px",
+          "lineHeight": "24px",
+          "color": "rgb(236, 232, 227)",
+          "weight": "400",
+          "sample": "span{已完成：}",
+          "count": 8
         },
         {
           "fontSize": "14px",
@@ -70788,7 +71124,7 @@
       "overflowing": [],
       "clipped": [],
       "counts": {
-        "elements": 128,
+        "elements": 136,
         "overflowing": 0,
         "clipped": 0,
         "contrastViolations": 0,
@@ -70801,7 +71137,7 @@
       "size": "390",
       "theme": "light",
       "file": "puzzles-puzzle-list__390-light.png",
-      "setupMs": 634,
+      "setupMs": 898,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -71151,7 +71487,7 @@
       "size": "768",
       "theme": "light",
       "file": "puzzles-puzzle-list__768-light.png",
-      "setupMs": 550,
+      "setupMs": 1134,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -71501,7 +71837,7 @@
       "size": "1024",
       "theme": "light",
       "file": "puzzles-puzzle-list__1024-light.png",
-      "setupMs": 880,
+      "setupMs": 1025,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -71858,7 +72194,7 @@
       "size": "1280",
       "theme": "light",
       "file": "puzzles-puzzle-list__1280-light.png",
-      "setupMs": 552,
+      "setupMs": 1213,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -72215,7 +72551,7 @@
       "size": "1440",
       "theme": "light",
       "file": "puzzles-puzzle-list__1440-light.png",
-      "setupMs": 569,
+      "setupMs": 1121,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -72572,7 +72908,7 @@
       "size": "1920",
       "theme": "light",
       "file": "puzzles-puzzle-list__1920-light.png",
-      "setupMs": 582,
+      "setupMs": 1073,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -72929,7 +73265,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "puzzles-puzzle-list__390-dark-dark.png",
-      "setupMs": 529,
+      "setupMs": 1870,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -73279,7 +73615,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "puzzles-puzzle-list__1440-dark-dark.png",
-      "setupMs": 874,
+      "setupMs": 2310,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -73636,7 +73972,7 @@
       "size": "390",
       "theme": "light",
       "file": "puzzles-puzzle-wrong__390-light.png",
-      "setupMs": 728,
+      "setupMs": 2037,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -73905,7 +74241,7 @@
       "size": "768",
       "theme": "light",
       "file": "puzzles-puzzle-wrong__768-light.png",
-      "setupMs": 1111,
+      "setupMs": 1368,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -74174,7 +74510,7 @@
       "size": "1024",
       "theme": "light",
       "file": "puzzles-puzzle-wrong__1024-light.png",
-      "setupMs": 1402,
+      "setupMs": 2054,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -74443,7 +74779,7 @@
       "size": "1280",
       "theme": "light",
       "file": "puzzles-puzzle-wrong__1280-light.png",
-      "setupMs": 1340,
+      "setupMs": 2271,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -74712,7 +75048,7 @@
       "size": "1440",
       "theme": "light",
       "file": "puzzles-puzzle-wrong__1440-light.png",
-      "setupMs": 1005,
+      "setupMs": 2372,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -74981,7 +75317,7 @@
       "size": "1920",
       "theme": "light",
       "file": "puzzles-puzzle-wrong__1920-light.png",
-      "setupMs": 1129,
+      "setupMs": 2154,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -75250,7 +75586,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "puzzles-puzzle-wrong__390-dark-dark.png",
-      "setupMs": 1048,
+      "setupMs": 1803,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -75519,7 +75855,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "puzzles-puzzle-wrong__1440-dark-dark.png",
-      "setupMs": 978,
+      "setupMs": 2905,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -75788,7 +76124,7 @@
       "size": "390",
       "theme": "light",
       "file": "puzzles-puzzle-correct__390-light.png",
-      "setupMs": 1123,
+      "setupMs": 4190,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -76079,7 +76415,7 @@
       "size": "768",
       "theme": "light",
       "file": "puzzles-puzzle-correct__768-light.png",
-      "setupMs": 3270,
+      "setupMs": 2091,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -76370,7 +76706,7 @@
       "size": "1024",
       "theme": "light",
       "file": "puzzles-puzzle-correct__1024-light.png",
-      "setupMs": 2115,
+      "setupMs": 1295,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -76661,7 +76997,7 @@
       "size": "1280",
       "theme": "light",
       "file": "puzzles-puzzle-correct__1280-light.png",
-      "setupMs": 1418,
+      "setupMs": 1387,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -76952,7 +77288,7 @@
       "size": "1440",
       "theme": "light",
       "file": "puzzles-puzzle-correct__1440-light.png",
-      "setupMs": 1733,
+      "setupMs": 1545,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -77243,7 +77579,7 @@
       "size": "1920",
       "theme": "light",
       "file": "puzzles-puzzle-correct__1920-light.png",
-      "setupMs": 1299,
+      "setupMs": 1660,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -77534,7 +77870,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "puzzles-puzzle-correct__390-dark-dark.png",
-      "setupMs": 1231,
+      "setupMs": 1382,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -77825,7 +78161,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "puzzles-puzzle-correct__1440-dark-dark.png",
-      "setupMs": 1330,
+      "setupMs": 1349,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -78116,7 +78452,7 @@
       "size": "390",
       "theme": "light",
       "file": "review-review-empty__390-light.png",
-      "setupMs": 956,
+      "setupMs": 650,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -78301,7 +78637,7 @@
       "size": "768",
       "theme": "light",
       "file": "review-review-empty__768-light.png",
-      "setupMs": 711,
+      "setupMs": 897,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -78486,7 +78822,7 @@
       "size": "1024",
       "theme": "light",
       "file": "review-review-empty__1024-light.png",
-      "setupMs": 632,
+      "setupMs": 733,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -78671,7 +79007,7 @@
       "size": "1280",
       "theme": "light",
       "file": "review-review-empty__1280-light.png",
-      "setupMs": 1240,
+      "setupMs": 631,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -78856,7 +79192,7 @@
       "size": "1440",
       "theme": "light",
       "file": "review-review-empty__1440-light.png",
-      "setupMs": 702,
+      "setupMs": 650,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -79041,7 +79377,7 @@
       "size": "1920",
       "theme": "light",
       "file": "review-review-empty__1920-light.png",
-      "setupMs": 603,
+      "setupMs": 814,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -79226,7 +79562,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "review-review-empty__390-dark-dark.png",
-      "setupMs": 459,
+      "setupMs": 795,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -79411,7 +79747,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "review-review-empty__1440-dark-dark.png",
-      "setupMs": 547,
+      "setupMs": 1407,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -79596,7 +79932,7 @@
       "size": "390",
       "theme": "light",
       "file": "review-review-library__390-light.png",
-      "setupMs": 535,
+      "setupMs": 2453,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -79784,7 +80120,7 @@
       "size": "768",
       "theme": "light",
       "file": "review-review-library__768-light.png",
-      "setupMs": 488,
+      "setupMs": 1036,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -79972,7 +80308,7 @@
       "size": "1024",
       "theme": "light",
       "file": "review-review-library__1024-light.png",
-      "setupMs": 527,
+      "setupMs": 739,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -80160,7 +80496,7 @@
       "size": "1280",
       "theme": "light",
       "file": "review-review-library__1280-light.png",
-      "setupMs": 488,
+      "setupMs": 842,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -80348,7 +80684,7 @@
       "size": "1440",
       "theme": "light",
       "file": "review-review-library__1440-light.png",
-      "setupMs": 504,
+      "setupMs": 818,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -80536,7 +80872,7 @@
       "size": "1920",
       "theme": "light",
       "file": "review-review-library__1920-light.png",
-      "setupMs": 554,
+      "setupMs": 1105,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -80724,7 +81060,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "review-review-library__390-dark-dark.png",
-      "setupMs": 476,
+      "setupMs": 1076,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -80912,7 +81248,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "review-review-library__1440-dark-dark.png",
-      "setupMs": 793,
+      "setupMs": 884,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -81100,7 +81436,7 @@
       "size": "390",
       "theme": "light",
       "file": "review-review-replay__390-light.png",
-      "setupMs": 1462,
+      "setupMs": 1501,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -81402,7 +81738,7 @@
       "size": "768",
       "theme": "light",
       "file": "review-review-replay__768-light.png",
-      "setupMs": 1785,
+      "setupMs": 1731,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -81704,7 +82040,7 @@
       "size": "1024",
       "theme": "light",
       "file": "review-review-replay__1024-light.png",
-      "setupMs": 1766,
+      "setupMs": 1460,
       "boardDetails": {
         "coordText": {
           "width": 12.33,
@@ -82006,7 +82342,7 @@
       "size": "1280",
       "theme": "light",
       "file": "review-review-replay__1280-light.png",
-      "setupMs": 2666,
+      "setupMs": 1708,
       "boardDetails": {
         "coordText": {
           "width": 14.84,
@@ -82308,7 +82644,7 @@
       "size": "1440",
       "theme": "light",
       "file": "review-review-replay__1440-light.png",
-      "setupMs": 1565,
+      "setupMs": 2731,
       "boardDetails": {
         "coordText": {
           "width": 14.84,
@@ -82610,7 +82946,7 @@
       "size": "1920",
       "theme": "light",
       "file": "review-review-replay__1920-light.png",
-      "setupMs": 1401,
+      "setupMs": 5033,
       "boardDetails": {
         "coordText": {
           "width": 14.84,
@@ -82912,7 +83248,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "review-review-replay__390-dark-dark.png",
-      "setupMs": 1124,
+      "setupMs": 4039,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -83214,7 +83550,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "review-review-replay__1440-dark-dark.png",
-      "setupMs": 1359,
+      "setupMs": 3063,
       "boardDetails": {
         "coordText": {
           "width": 14.84,
@@ -83516,7 +83852,7 @@
       "size": "390",
       "theme": "light",
       "file": "review-review-analysis__390-light.png",
-      "setupMs": 1662,
+      "setupMs": 2727,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -83819,7 +84155,7 @@
       "size": "768",
       "theme": "light",
       "file": "review-review-analysis__768-light.png",
-      "setupMs": 1541,
+      "setupMs": 2552,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -84122,7 +84458,7 @@
       "size": "1024",
       "theme": "light",
       "file": "review-review-analysis__1024-light.png",
-      "setupMs": 2283,
+      "setupMs": 2420,
       "boardDetails": {
         "coordText": {
           "width": 12.33,
@@ -84425,7 +84761,7 @@
       "size": "1280",
       "theme": "light",
       "file": "review-review-analysis__1280-light.png",
-      "setupMs": 1428,
+      "setupMs": 3873,
       "boardDetails": {
         "coordText": {
           "width": 14.84,
@@ -84728,7 +85064,7 @@
       "size": "1440",
       "theme": "light",
       "file": "review-review-analysis__1440-light.png",
-      "setupMs": 1366,
+      "setupMs": 3359,
       "boardDetails": {
         "coordText": {
           "width": 14.84,
@@ -85031,7 +85367,7 @@
       "size": "1920",
       "theme": "light",
       "file": "review-review-analysis__1920-light.png",
-      "setupMs": 1618,
+      "setupMs": 3657,
       "boardDetails": {
         "coordText": {
           "width": 14.84,
@@ -85334,7 +85670,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "review-review-analysis__390-dark-dark.png",
-      "setupMs": 1388,
+      "setupMs": 1880,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -85637,7 +85973,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "review-review-analysis__1440-dark-dark.png",
-      "setupMs": 2101,
+      "setupMs": 2038,
       "boardDetails": {
         "coordText": {
           "width": 14.84,

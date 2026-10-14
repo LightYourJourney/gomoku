@@ -34,6 +34,7 @@ export function LessonProgress({ loaded, done, total, next, onContinue }: Lesson
     return (
       <section
         aria-busy="true"
+        data-testid="learn-loading"
         className="rounded-xl border border-border bg-surface px-4 py-3"
       >
         <p className="text-xs text-faint">正在读取学习进度…</p>
@@ -46,7 +47,7 @@ export function LessonProgress({ loaded, done, total, next, onContinue }: Lesson
   const percent = total === 0 ? 0 : Math.round((done / total) * 100)
 
   return (
-    <section className="rounded-xl border border-border bg-surface px-4 py-3">
+    <section data-testid="learn-progress-block" className="rounded-xl border border-border bg-surface px-4 py-3">
       <div className="flex items-baseline justify-between gap-3">
         <span data-testid="learn-progress" className="text-xs text-muted">
           已完成 {done} / {total} 节
