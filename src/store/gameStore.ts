@@ -32,20 +32,23 @@ export interface AiInfo {
   readonly confidence: Confidence
   readonly reason: SearchReason
   /**
-   * AI 最后落在哪。默认层要把它写成「落点 H8」——
+   * AI 落在哪。默认层要把它写成「落点 H8」——
    * 任务书 §七 给玩家视图举的例就是「推荐落点：H8」。
    *
-   * 用 `Point | null` 而不是 `Point`：`no_move`（棋盘已满）时引擎返回 `move: null`，
-   * 那时没有落点可报。硬塞一个假坐标是在编。
+   * **类型是 `Point`，不是 `Point | null`**：引擎确实会在 `no_move`（棋盘已满）时
+   * 返回 `move: null`，但 `requestAiMove` 在**写 `aiInfo` 之前**就把这一档挡掉了
+   * （`aiThinking` 归零后直接返回，整个 `aiInfo` 保持原样）。所以这里永远拿得到坐标，
+   * 面板不必编一个、也不必防一个不会发生的 null。钉住这条不变量的用例在
+   * `gameStore.test.ts` 的「引擎给出 move: null……不写 aiInfo」——闸门一旦被删，
+   * 那里会红，而不是等到界面上多出一个假坐标。
    *
-   * **为什么存一份快照、而不是让面板去读 `game.lastMove`**：两者今天总是相等，
-   * 但语义不同——这里是「**这份分析说的是哪一手**」，`game.lastMove` 是
-   * 「盘上最新那颗子」。前者在 `aiInfo` 被清空时一并失效（所有清空路径都是
-   * 整体 `aiInfo: null`，所以不会出现「面板报着一个已经不在盘上的坐标」）；
-   * 后者则会在 AI 欠着一手、玩家刚悔棋之类的时刻指向别的东西。
+   * **为什么存一份快照、而不是让面板去读 `game.lastMove`**：两者**会分叉**——
+   * `playHuman` 不清 `aiInfo`，所以玩家一落子，`game.lastMove` 就是玩家那一手，
+   * 而这份分析说的仍是 AI 的那一手；照着 `lastMove` 渲染，面板会给 AI 的分析
+   * 贴上玩家的坐标。AI 欠着一手、玩家刚悔棋之类的时刻也一样。
    * 一个字段换掉这层耦合，值这个价。
    */
-  readonly move: Point | null
+  readonly move: Point
 }
 
 export interface GameStore {

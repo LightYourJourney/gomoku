@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest'
-import { createBoard } from '../core/board'
+import { createBoard, idx, pointFromIdx } from '../core/board'
 import { BLACK, WHITE, type Board, type Player } from '../core/types'
 import { boardFromLines, nearlyFullBoard } from '../test/board-fixtures'
+import { isWinningPoint } from './patterns'
 import { chooseMove, searchBoard } from './search'
 import type { Difficulty, SearchRequest, SearchResponse } from './types'
 
@@ -616,12 +617,16 @@ describe('局面评分的视角', () => {
   /**
    * **`reason: 'win'` 不等于「棋盘上出现了五连」。**
    *
-   * 它有两个来源（`search.ts`）：`:463` 这一步直接成五；`:490` 的 `findForcedWin`
-   * （算杀 / VCT）——`allowThrees` 打开时**首手可以只是活三**。
+   * 它有两个来源（`search.ts`）：`:463` 这一步直接成五；`:481` 的 `findForcedWin`
+   * （算杀）返回的**取胜链首手**——首手不必成五。
    *
    * 这条断言是给界面看的：对战页的 AI 面板把 `win` 写成一句人话，
    * 初稿写的是「AI 补成了五子，直接取胜」——对下面这个局面（黑活三、全场没有四）
    * 是**假话**。界面改文案前先看这里。
+   *
+   * 走的是哪条算杀路径、代价如何，权威表述在 `docs/AI_ENGINE.md` 的
+   * 「算杀（VCF / VCT）」一节，这里不复述——本阶段初稿正是在五处复述它、
+   * 五处一起写错，指向比复述便宜。
    */
   it('活三也返回 win——那时棋盘上一颗五连都没有', () => {
     const board = boardFromLines(['...............', '...............', '...BBB.........'])
@@ -629,6 +634,28 @@ describe('局面评分的视角', () => {
     const result = ask(board, BLACK, 'medium')
 
     expect(result.reason).toBe('win')
+    expect(result.move).not.toBeNull()
+
+    /*
+     * 界面文案依赖的事实：**成五点出现在落子之后，不在这一手上**。
+     *
+     * 所以量的是「0 → >0」这个增量：落子前一个成五点都没有，落子后有了——
+     * 那就意味着这一手本身没成五，五连在下一手。
+     *
+     * 不能写成 `expect(isWinningPoint(board, result.move, BLACK)).toBe(false)`：
+     * 这个盘面上黑棋本来就没有四，**任何**落点都不是成五点，那条断言恒真、
+     * 一个 bug 也测不出来（它上一版正是这个写法）。两侧都断言，才是在测增量。
+     */
+    const winPoints = (candidate: Board) =>
+      candidate.filter((cell, i) => cell === 0 && isWinningPoint(candidate, pointFromIdx(i), BLACK))
+
+    // `board` 是 `Uint8Array`：`[...board]` 会摊成 `number[]`，得用 `slice()`
+    const after = board.slice()
+    after[idx(result.move!.x, result.move!.y)] = BLACK
+
+    expect(winPoints(board)).toHaveLength(0)
+    expect(winPoints(after).length).toBeGreaterThan(0)
+
     // 盘面上黑子最多连了 3 颗，一个五连都没有
     expect(board.filter((cell) => cell === BLACK)).toHaveLength(3)
   })

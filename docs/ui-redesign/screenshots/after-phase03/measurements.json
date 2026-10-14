@@ -46,7 +46,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-empty__390-light.png",
-      "setupMs": 1078,
+      "setupMs": 3362,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -452,7 +452,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-empty__768-light.png",
-      "setupMs": 790,
+      "setupMs": 2028,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -858,7 +858,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-empty__1024-light.png",
-      "setupMs": 825,
+      "setupMs": 1556,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -1271,7 +1271,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-empty__1280-light.png",
-      "setupMs": 1327,
+      "setupMs": 1612,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -1678,7 +1678,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-empty__1440-light.png",
-      "setupMs": 1046,
+      "setupMs": 1444,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -2084,7 +2084,7 @@
       "size": "1280x680",
       "theme": "light",
       "file": "battle-battle-empty__1280x680-light.png",
-      "setupMs": 1230,
+      "setupMs": 1066,
       "boardDetails": {
         "coordText": {
           "width": 9.97,
@@ -2497,7 +2497,7 @@
       "size": "1440x700",
       "theme": "light",
       "file": "battle-battle-empty__1440x700-light.png",
-      "setupMs": 1101,
+      "setupMs": 1467,
       "boardDetails": {
         "coordText": {
           "width": 10.36,
@@ -2909,7 +2909,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-empty__1920-light.png",
-      "setupMs": 749,
+      "setupMs": 3286,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -3315,7 +3315,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-empty__390-dark-dark.png",
-      "setupMs": 723,
+      "setupMs": 1860,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -3721,7 +3721,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-empty__1440-dark-dark.png",
-      "setupMs": 1109,
+      "setupMs": 2187,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -4127,7 +4127,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-midgame__390-light.png",
-      "setupMs": 732,
+      "setupMs": 1237,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -4299,7 +4299,7 @@
           "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span{· 黑}",
-          "count": 1
+          "count": 2
         },
         {
           "fontSize": "12px",
@@ -4332,14 +4332,6 @@
           "weight": "400",
           "sample": "span[move-7-7]{H8}",
           "count": 29
-        },
-        {
-          "fontSize": "12px",
-          "lineHeight": "16px",
-          "color": "rgb(184, 65, 44)",
-          "weight": "400",
-          "sample": "span[move-7-10]{H5}",
-          "count": 1
         },
         {
           "fontSize": "11px",
@@ -4562,7 +4554,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-midgame__768-light.png",
-      "setupMs": 1249,
+      "setupMs": 1362,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -4734,7 +4726,7 @@
           "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span{· 黑}",
-          "count": 1
+          "count": 2
         },
         {
           "fontSize": "12px",
@@ -4767,14 +4759,6 @@
           "weight": "400",
           "sample": "span[move-7-7]{H8}",
           "count": 29
-        },
-        {
-          "fontSize": "12px",
-          "lineHeight": "16px",
-          "color": "rgb(184, 65, 44)",
-          "weight": "400",
-          "sample": "span[move-7-10]{H5}",
-          "count": 1
         },
         {
           "fontSize": "11px",
@@ -4997,7 +4981,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-midgame__1024-light.png",
-      "setupMs": 777,
+      "setupMs": 1826,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -5175,7 +5159,7 @@
           "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span{· 黑}",
-          "count": 1
+          "count": 2
         },
         {
           "fontSize": "12px",
@@ -5208,14 +5192,6 @@
           "weight": "400",
           "sample": "span[move-7-7]{H8}",
           "count": 29
-        },
-        {
-          "fontSize": "12px",
-          "lineHeight": "16px",
-          "color": "rgb(184, 65, 44)",
-          "weight": "400",
-          "sample": "span[move-7-10]{H5}",
-          "count": 1
         },
         {
           "fontSize": "11px",
@@ -5438,7 +5414,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-midgame__1280-light.png",
-      "setupMs": 768,
+      "setupMs": 3810,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -5616,7 +5592,7 @@
           "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span{· 黑}",
-          "count": 1
+          "count": 2
         },
         {
           "fontSize": "12px",
@@ -5649,14 +5625,6 @@
           "weight": "400",
           "sample": "span[move-7-7]{H8}",
           "count": 29
-        },
-        {
-          "fontSize": "12px",
-          "lineHeight": "16px",
-          "color": "rgb(184, 65, 44)",
-          "weight": "400",
-          "sample": "span[move-7-10]{H5}",
-          "count": 1
         },
         {
           "fontSize": "11px",
@@ -5873,7 +5841,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-midgame__1440-light.png",
-      "setupMs": 823,
+      "setupMs": 4556,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -6075,7 +6043,7 @@
           "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span{· 黑}",
-          "count": 1
+          "count": 2
         },
         {
           "fontSize": "12px",
@@ -6084,14 +6052,6 @@
           "weight": "400",
           "sample": "span[move-7-7]{H8}",
           "count": 29
-        },
-        {
-          "fontSize": "12px",
-          "lineHeight": "16px",
-          "color": "rgb(184, 65, 44)",
-          "weight": "400",
-          "sample": "span[move-7-10]{H5}",
-          "count": 1
         },
         {
           "fontSize": "11px",
@@ -6308,7 +6268,7 @@
       "size": "1280x680",
       "theme": "light",
       "file": "battle-battle-midgame__1280x680-light.png",
-      "setupMs": 805,
+      "setupMs": 1352,
       "boardDetails": {
         "coordText": {
           "width": 9.97,
@@ -6486,7 +6446,7 @@
           "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span{· 黑}",
-          "count": 1
+          "count": 2
         },
         {
           "fontSize": "12px",
@@ -6519,14 +6479,6 @@
           "weight": "400",
           "sample": "span[move-7-7]{H8}",
           "count": 29
-        },
-        {
-          "fontSize": "12px",
-          "lineHeight": "16px",
-          "color": "rgb(184, 65, 44)",
-          "weight": "400",
-          "sample": "span[move-7-10]{H5}",
-          "count": 1
         },
         {
           "fontSize": "11px",
@@ -6749,7 +6701,7 @@
       "size": "1440x700",
       "theme": "light",
       "file": "battle-battle-midgame__1440x700-light.png",
-      "setupMs": 1465,
+      "setupMs": 1284,
       "boardDetails": {
         "coordText": {
           "width": 10.36,
@@ -6957,7 +6909,7 @@
           "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span{· 黑}",
-          "count": 1
+          "count": 2
         },
         {
           "fontSize": "12px",
@@ -6966,14 +6918,6 @@
           "weight": "400",
           "sample": "span[move-7-7]{H8}",
           "count": 29
-        },
-        {
-          "fontSize": "12px",
-          "lineHeight": "16px",
-          "color": "rgb(184, 65, 44)",
-          "weight": "400",
-          "sample": "span[move-7-10]{H5}",
-          "count": 1
         },
         {
           "fontSize": "11px",
@@ -7196,7 +7140,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-midgame__1920-light.png",
-      "setupMs": 757,
+      "setupMs": 2386,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -7398,7 +7342,7 @@
           "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span{· 黑}",
-          "count": 1
+          "count": 2
         },
         {
           "fontSize": "12px",
@@ -7407,14 +7351,6 @@
           "weight": "400",
           "sample": "span[move-7-7]{H8}",
           "count": 29
-        },
-        {
-          "fontSize": "12px",
-          "lineHeight": "16px",
-          "color": "rgb(184, 65, 44)",
-          "weight": "400",
-          "sample": "span[move-7-10]{H5}",
-          "count": 1
         },
         {
           "fontSize": "11px",
@@ -7631,7 +7567,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-midgame__390-dark-dark.png",
-      "setupMs": 483,
+      "setupMs": 1233,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -7803,7 +7739,7 @@
           "color": "rgb(82, 179, 156)",
           "weight": "400",
           "sample": "span{· 黑}",
-          "count": 1
+          "count": 2
         },
         {
           "fontSize": "12px",
@@ -7836,14 +7772,6 @@
           "weight": "400",
           "sample": "span[move-7-7]{H8}",
           "count": 29
-        },
-        {
-          "fontSize": "12px",
-          "lineHeight": "16px",
-          "color": "rgb(226, 114, 91)",
-          "weight": "400",
-          "sample": "span[move-7-10]{H5}",
-          "count": 1
         },
         {
           "fontSize": "11px",
@@ -8066,7 +7994,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-midgame__1440-dark-dark.png",
-      "setupMs": 669,
+      "setupMs": 2653,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -8268,7 +8196,7 @@
           "color": "rgb(82, 179, 156)",
           "weight": "400",
           "sample": "span{· 黑}",
-          "count": 1
+          "count": 2
         },
         {
           "fontSize": "12px",
@@ -8277,14 +8205,6 @@
           "weight": "400",
           "sample": "span[move-7-7]{H8}",
           "count": 29
-        },
-        {
-          "fontSize": "12px",
-          "lineHeight": "16px",
-          "color": "rgb(226, 114, 91)",
-          "weight": "400",
-          "sample": "span[move-7-10]{H5}",
-          "count": 1
         },
         {
           "fontSize": "11px",
@@ -8501,7 +8421,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-thinking__390-light.png",
-      "setupMs": 834,
+      "setupMs": 2187,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -8685,7 +8605,7 @@
           "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span{专家}",
-          "count": 1
+          "count": 2
         },
         {
           "fontSize": "12px",
@@ -8702,14 +8622,6 @@
           "weight": "500",
           "sample": "span{人机对战}",
           "count": 5
-        },
-        {
-          "fontSize": "12px",
-          "lineHeight": "16px",
-          "color": "rgb(184, 65, 44)",
-          "weight": "400",
-          "sample": "span[move-10-11]{K4}",
-          "count": 1
         },
         {
           "fontSize": "12px",
@@ -8934,7 +8846,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-thinking__768-light.png",
-      "setupMs": 1170,
+      "setupMs": 2985,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -9118,7 +9030,7 @@
           "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span{专家}",
-          "count": 1
+          "count": 2
         },
         {
           "fontSize": "12px",
@@ -9135,14 +9047,6 @@
           "weight": "500",
           "sample": "span{人机对战}",
           "count": 5
-        },
-        {
-          "fontSize": "12px",
-          "lineHeight": "16px",
-          "color": "rgb(184, 65, 44)",
-          "weight": "400",
-          "sample": "span[move-10-11]{K4}",
-          "count": 1
         },
         {
           "fontSize": "12px",
@@ -9367,7 +9271,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-thinking__1024-light.png",
-      "setupMs": 700,
+      "setupMs": 3666,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -9558,7 +9462,7 @@
           "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span{专家}",
-          "count": 1
+          "count": 2
         },
         {
           "fontSize": "12px",
@@ -9575,14 +9479,6 @@
           "weight": "500",
           "sample": "span{人机对战}",
           "count": 5
-        },
-        {
-          "fontSize": "12px",
-          "lineHeight": "16px",
-          "color": "rgb(184, 65, 44)",
-          "weight": "400",
-          "sample": "span[move-10-11]{K4}",
-          "count": 1
         },
         {
           "fontSize": "12px",
@@ -9807,7 +9703,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-thinking__1280-light.png",
-      "setupMs": 1059,
+      "setupMs": 2239,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -9998,7 +9894,7 @@
           "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span{专家}",
-          "count": 1
+          "count": 2
         },
         {
           "fontSize": "12px",
@@ -10015,14 +9911,6 @@
           "weight": "500",
           "sample": "span{人机对战}",
           "count": 5
-        },
-        {
-          "fontSize": "12px",
-          "lineHeight": "16px",
-          "color": "rgb(184, 65, 44)",
-          "weight": "400",
-          "sample": "span[move-10-11]{K4}",
-          "count": 1
         },
         {
           "fontSize": "12px",
@@ -10247,7 +10135,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-thinking__1440-light.png",
-      "setupMs": 714,
+      "setupMs": 2816,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -10453,15 +10341,7 @@
           "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span{专家}",
-          "count": 1
-        },
-        {
-          "fontSize": "12px",
-          "lineHeight": "16px",
-          "color": "rgb(184, 65, 44)",
-          "weight": "400",
-          "sample": "span[move-10-11]{K4}",
-          "count": 1
+          "count": 2
         },
         {
           "fontSize": "12px",
@@ -10686,7 +10566,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-thinking__1920-light.png",
-      "setupMs": 872,
+      "setupMs": 3454,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -10892,15 +10772,7 @@
           "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span{专家}",
-          "count": 1
-        },
-        {
-          "fontSize": "12px",
-          "lineHeight": "16px",
-          "color": "rgb(184, 65, 44)",
-          "weight": "400",
-          "sample": "span[move-10-11]{K4}",
-          "count": 1
+          "count": 2
         },
         {
           "fontSize": "12px",
@@ -11125,7 +10997,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-thinking__390-dark-dark.png",
-      "setupMs": 596,
+      "setupMs": 1688,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -11309,7 +11181,7 @@
           "color": "rgb(82, 179, 156)",
           "weight": "400",
           "sample": "span{专家}",
-          "count": 1
+          "count": 2
         },
         {
           "fontSize": "12px",
@@ -11326,14 +11198,6 @@
           "weight": "500",
           "sample": "span{人机对战}",
           "count": 5
-        },
-        {
-          "fontSize": "12px",
-          "lineHeight": "16px",
-          "color": "rgb(226, 114, 91)",
-          "weight": "400",
-          "sample": "span[move-10-11]{K4}",
-          "count": 1
         },
         {
           "fontSize": "12px",
@@ -11558,7 +11422,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-thinking__1440-dark-dark.png",
-      "setupMs": 1414,
+      "setupMs": 1637,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -11764,15 +11628,7 @@
           "color": "rgb(82, 179, 156)",
           "weight": "400",
           "sample": "span{专家}",
-          "count": 1
-        },
-        {
-          "fontSize": "12px",
-          "lineHeight": "16px",
-          "color": "rgb(226, 114, 91)",
-          "weight": "400",
-          "sample": "span[move-10-11]{K4}",
-          "count": 1
+          "count": 2
         },
         {
           "fontSize": "12px",
@@ -11997,7 +11853,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-hint__390-light.png",
-      "setupMs": 1148,
+      "setupMs": 1791,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -12175,7 +12031,7 @@
           "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span{· 黑}",
-          "count": 2
+          "count": 3
         },
         {
           "fontSize": "12px",
@@ -12248,14 +12104,6 @@
           "weight": "400",
           "sample": "p[hint-confidence]{结论：精确}",
           "count": 30
-        },
-        {
-          "fontSize": "12px",
-          "lineHeight": "16px",
-          "color": "rgb(184, 65, 44)",
-          "weight": "400",
-          "sample": "span[move-7-10]{H5}",
-          "count": 1
         },
         {
           "fontSize": "11px",
@@ -12500,7 +12348,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-hint__768-light.png",
-      "setupMs": 838,
+      "setupMs": 1809,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -12678,7 +12526,7 @@
           "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span{· 黑}",
-          "count": 2
+          "count": 3
         },
         {
           "fontSize": "12px",
@@ -12751,14 +12599,6 @@
           "weight": "400",
           "sample": "p[hint-confidence]{结论：精确}",
           "count": 30
-        },
-        {
-          "fontSize": "12px",
-          "lineHeight": "16px",
-          "color": "rgb(184, 65, 44)",
-          "weight": "400",
-          "sample": "span[move-7-10]{H5}",
-          "count": 1
         },
         {
           "fontSize": "11px",
@@ -13003,7 +12843,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-hint__1024-light.png",
-      "setupMs": 764,
+      "setupMs": 1203,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -13187,7 +13027,7 @@
           "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span{· 黑}",
-          "count": 2
+          "count": 3
         },
         {
           "fontSize": "12px",
@@ -13260,14 +13100,6 @@
           "weight": "400",
           "sample": "p[hint-confidence]{结论：精确}",
           "count": 30
-        },
-        {
-          "fontSize": "12px",
-          "lineHeight": "16px",
-          "color": "rgb(184, 65, 44)",
-          "weight": "400",
-          "sample": "span[move-7-10]{H5}",
-          "count": 1
         },
         {
           "fontSize": "11px",
@@ -13512,7 +13344,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-hint__1280-light.png",
-      "setupMs": 847,
+      "setupMs": 1265,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -13696,7 +13528,7 @@
           "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span{· 黑}",
-          "count": 2
+          "count": 3
         },
         {
           "fontSize": "12px",
@@ -13769,14 +13601,6 @@
           "weight": "400",
           "sample": "p[hint-confidence]{结论：精确}",
           "count": 30
-        },
-        {
-          "fontSize": "12px",
-          "lineHeight": "16px",
-          "color": "rgb(184, 65, 44)",
-          "weight": "400",
-          "sample": "span[move-7-10]{H5}",
-          "count": 1
         },
         {
           "fontSize": "11px",
@@ -14015,7 +13839,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-hint__1440-light.png",
-      "setupMs": 781,
+      "setupMs": 3987,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -14223,7 +14047,7 @@
           "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span{· 黑}",
-          "count": 2
+          "count": 3
         },
         {
           "fontSize": "12px",
@@ -14272,14 +14096,6 @@
           "weight": "400",
           "sample": "p[hint-confidence]{结论：精确}",
           "count": 30
-        },
-        {
-          "fontSize": "12px",
-          "lineHeight": "16px",
-          "color": "rgb(184, 65, 44)",
-          "weight": "400",
-          "sample": "span[move-7-10]{H5}",
-          "count": 1
         },
         {
           "fontSize": "11px",
@@ -14518,7 +14334,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-hint__1920-light.png",
-      "setupMs": 921,
+      "setupMs": 2380,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -14726,7 +14542,7 @@
           "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span{· 黑}",
-          "count": 2
+          "count": 3
         },
         {
           "fontSize": "12px",
@@ -14775,14 +14591,6 @@
           "weight": "400",
           "sample": "p[hint-confidence]{结论：精确}",
           "count": 30
-        },
-        {
-          "fontSize": "12px",
-          "lineHeight": "16px",
-          "color": "rgb(184, 65, 44)",
-          "weight": "400",
-          "sample": "span[move-7-10]{H5}",
-          "count": 1
         },
         {
           "fontSize": "11px",
@@ -15021,7 +14829,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-hint__390-dark-dark.png",
-      "setupMs": 670,
+      "setupMs": 1578,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -15199,7 +15007,7 @@
           "color": "rgb(82, 179, 156)",
           "weight": "400",
           "sample": "span{· 黑}",
-          "count": 2
+          "count": 3
         },
         {
           "fontSize": "12px",
@@ -15272,14 +15080,6 @@
           "weight": "400",
           "sample": "p[hint-confidence]{结论：精确}",
           "count": 30
-        },
-        {
-          "fontSize": "12px",
-          "lineHeight": "16px",
-          "color": "rgb(226, 114, 91)",
-          "weight": "400",
-          "sample": "span[move-7-10]{H5}",
-          "count": 1
         },
         {
           "fontSize": "11px",
@@ -15524,7 +15324,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-hint__1440-dark-dark.png",
-      "setupMs": 817,
+      "setupMs": 3021,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -15732,7 +15532,7 @@
           "color": "rgb(82, 179, 156)",
           "weight": "400",
           "sample": "span{· 黑}",
-          "count": 2
+          "count": 3
         },
         {
           "fontSize": "12px",
@@ -15781,14 +15581,6 @@
           "weight": "400",
           "sample": "p[hint-confidence]{结论：精确}",
           "count": 30
-        },
-        {
-          "fontSize": "12px",
-          "lineHeight": "16px",
-          "color": "rgb(226, 114, 91)",
-          "weight": "400",
-          "sample": "span[move-7-10]{H5}",
-          "count": 1
         },
         {
           "fontSize": "11px",
@@ -16027,7 +15819,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-confirm-restart__390-light.png",
-      "setupMs": 621,
+      "setupMs": 2402,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -16216,7 +16008,7 @@
           "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span{· 黑}",
-          "count": 1
+          "count": 2
         },
         {
           "fontSize": "12px",
@@ -16249,14 +16041,6 @@
           "weight": "400",
           "sample": "span[move-7-7]{H8}",
           "count": 29
-        },
-        {
-          "fontSize": "12px",
-          "lineHeight": "16px",
-          "color": "rgb(184, 65, 44)",
-          "weight": "400",
-          "sample": "span[move-7-10]{H5}",
-          "count": 1
         },
         {
           "fontSize": "11px",
@@ -16499,7 +16283,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-confirm-restart__768-light.png",
-      "setupMs": 685,
+      "setupMs": 3367,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -16688,7 +16472,7 @@
           "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span{· 黑}",
-          "count": 1
+          "count": 2
         },
         {
           "fontSize": "12px",
@@ -16721,14 +16505,6 @@
           "weight": "400",
           "sample": "span[move-7-7]{H8}",
           "count": 29
-        },
-        {
-          "fontSize": "12px",
-          "lineHeight": "16px",
-          "color": "rgb(184, 65, 44)",
-          "weight": "400",
-          "sample": "span[move-7-10]{H5}",
-          "count": 1
         },
         {
           "fontSize": "11px",
@@ -16971,7 +16747,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-confirm-restart__1024-light.png",
-      "setupMs": 714,
+      "setupMs": 4588,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -17166,7 +16942,7 @@
           "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span{· 黑}",
-          "count": 1
+          "count": 2
         },
         {
           "fontSize": "12px",
@@ -17199,14 +16975,6 @@
           "weight": "400",
           "sample": "span[move-7-7]{H8}",
           "count": 29
-        },
-        {
-          "fontSize": "12px",
-          "lineHeight": "16px",
-          "color": "rgb(184, 65, 44)",
-          "weight": "400",
-          "sample": "span[move-7-10]{H5}",
-          "count": 1
         },
         {
           "fontSize": "11px",
@@ -17449,7 +17217,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-confirm-restart__1280-light.png",
-      "setupMs": 678,
+      "setupMs": 4747,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -17644,7 +17412,7 @@
           "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span{· 黑}",
-          "count": 1
+          "count": 2
         },
         {
           "fontSize": "12px",
@@ -17677,14 +17445,6 @@
           "weight": "400",
           "sample": "span[move-7-7]{H8}",
           "count": 29
-        },
-        {
-          "fontSize": "12px",
-          "lineHeight": "16px",
-          "color": "rgb(184, 65, 44)",
-          "weight": "400",
-          "sample": "span[move-7-10]{H5}",
-          "count": 1
         },
         {
           "fontSize": "11px",
@@ -17921,7 +17681,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-confirm-restart__1440-light.png",
-      "setupMs": 635,
+      "setupMs": 3963,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -18140,7 +17900,7 @@
           "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span{· 黑}",
-          "count": 1
+          "count": 2
         },
         {
           "fontSize": "12px",
@@ -18149,14 +17909,6 @@
           "weight": "400",
           "sample": "span[move-7-7]{H8}",
           "count": 29
-        },
-        {
-          "fontSize": "12px",
-          "lineHeight": "16px",
-          "color": "rgb(184, 65, 44)",
-          "weight": "400",
-          "sample": "span[move-7-10]{H5}",
-          "count": 1
         },
         {
           "fontSize": "11px",
@@ -18393,7 +18145,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-confirm-restart__1920-light.png",
-      "setupMs": 646,
+      "setupMs": 2280,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -18612,7 +18364,7 @@
           "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span{· 黑}",
-          "count": 1
+          "count": 2
         },
         {
           "fontSize": "12px",
@@ -18621,14 +18373,6 @@
           "weight": "400",
           "sample": "span[move-7-7]{H8}",
           "count": 29
-        },
-        {
-          "fontSize": "12px",
-          "lineHeight": "16px",
-          "color": "rgb(184, 65, 44)",
-          "weight": "400",
-          "sample": "span[move-7-10]{H5}",
-          "count": 1
         },
         {
           "fontSize": "11px",
@@ -18865,7 +18609,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-confirm-restart__390-dark-dark.png",
-      "setupMs": 564,
+      "setupMs": 5999,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -19054,7 +18798,7 @@
           "color": "rgb(82, 179, 156)",
           "weight": "400",
           "sample": "span{· 黑}",
-          "count": 1
+          "count": 2
         },
         {
           "fontSize": "12px",
@@ -19087,14 +18831,6 @@
           "weight": "400",
           "sample": "span[move-7-7]{H8}",
           "count": 29
-        },
-        {
-          "fontSize": "12px",
-          "lineHeight": "16px",
-          "color": "rgb(226, 114, 91)",
-          "weight": "400",
-          "sample": "span[move-7-10]{H5}",
-          "count": 1
         },
         {
           "fontSize": "11px",
@@ -19337,7 +19073,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-confirm-restart__1440-dark-dark.png",
-      "setupMs": 710,
+      "setupMs": 2648,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -19556,7 +19292,7 @@
           "color": "rgb(82, 179, 156)",
           "weight": "400",
           "sample": "span{· 黑}",
-          "count": 1
+          "count": 2
         },
         {
           "fontSize": "12px",
@@ -19565,14 +19301,6 @@
           "weight": "400",
           "sample": "span[move-7-7]{H8}",
           "count": 29
-        },
-        {
-          "fontSize": "12px",
-          "lineHeight": "16px",
-          "color": "rgb(226, 114, 91)",
-          "weight": "400",
-          "sample": "span[move-7-10]{H5}",
-          "count": 1
         },
         {
           "fontSize": "11px",
@@ -19809,7 +19537,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-display-settings__390-light.png",
-      "setupMs": 737,
+      "setupMs": 1427,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -19989,7 +19717,7 @@
           "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span{· 黑}",
-          "count": 1
+          "count": 2
         },
         {
           "fontSize": "12px",
@@ -20022,14 +19750,6 @@
           "weight": "400",
           "sample": "span[move-7-7]{H8}",
           "count": 29
-        },
-        {
-          "fontSize": "12px",
-          "lineHeight": "16px",
-          "color": "rgb(184, 65, 44)",
-          "weight": "400",
-          "sample": "span[move-7-10]{H5}",
-          "count": 1
         },
         {
           "fontSize": "11px",
@@ -20275,7 +19995,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-display-settings__768-light.png",
-      "setupMs": 761,
+      "setupMs": 3251,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -20455,7 +20175,7 @@
           "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span{· 黑}",
-          "count": 1
+          "count": 2
         },
         {
           "fontSize": "12px",
@@ -20488,14 +20208,6 @@
           "weight": "400",
           "sample": "span[move-7-7]{H8}",
           "count": 29
-        },
-        {
-          "fontSize": "12px",
-          "lineHeight": "16px",
-          "color": "rgb(184, 65, 44)",
-          "weight": "400",
-          "sample": "span[move-7-10]{H5}",
-          "count": 1
         },
         {
           "fontSize": "11px",
@@ -20741,7 +20453,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-display-settings__1024-light.png",
-      "setupMs": 731,
+      "setupMs": 3890,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -20927,7 +20639,7 @@
           "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span{· 黑}",
-          "count": 1
+          "count": 2
         },
         {
           "fontSize": "12px",
@@ -20960,14 +20672,6 @@
           "weight": "400",
           "sample": "span[move-7-7]{H8}",
           "count": 29
-        },
-        {
-          "fontSize": "12px",
-          "lineHeight": "16px",
-          "color": "rgb(184, 65, 44)",
-          "weight": "400",
-          "sample": "span[move-7-10]{H5}",
-          "count": 1
         },
         {
           "fontSize": "11px",
@@ -21213,7 +20917,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-display-settings__1280-light.png",
-      "setupMs": 755,
+      "setupMs": 4174,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -21399,7 +21103,7 @@
           "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span{· 黑}",
-          "count": 1
+          "count": 2
         },
         {
           "fontSize": "12px",
@@ -21432,14 +21136,6 @@
           "weight": "400",
           "sample": "span[move-7-7]{H8}",
           "count": 29
-        },
-        {
-          "fontSize": "12px",
-          "lineHeight": "16px",
-          "color": "rgb(184, 65, 44)",
-          "weight": "400",
-          "sample": "span[move-7-10]{H5}",
-          "count": 1
         },
         {
           "fontSize": "11px",
@@ -21679,7 +21375,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-display-settings__1440-light.png",
-      "setupMs": 748,
+      "setupMs": 3668,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -21889,7 +21585,7 @@
           "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span{· 黑}",
-          "count": 1
+          "count": 2
         },
         {
           "fontSize": "12px",
@@ -21898,14 +21594,6 @@
           "weight": "400",
           "sample": "span[move-7-7]{H8}",
           "count": 29
-        },
-        {
-          "fontSize": "12px",
-          "lineHeight": "16px",
-          "color": "rgb(184, 65, 44)",
-          "weight": "400",
-          "sample": "span[move-7-10]{H5}",
-          "count": 1
         },
         {
           "fontSize": "11px",
@@ -22145,7 +21833,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-display-settings__1920-light.png",
-      "setupMs": 946,
+      "setupMs": 2716,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -22355,7 +22043,7 @@
           "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span{· 黑}",
-          "count": 1
+          "count": 2
         },
         {
           "fontSize": "12px",
@@ -22364,14 +22052,6 @@
           "weight": "400",
           "sample": "span[move-7-7]{H8}",
           "count": 29
-        },
-        {
-          "fontSize": "12px",
-          "lineHeight": "16px",
-          "color": "rgb(184, 65, 44)",
-          "weight": "400",
-          "sample": "span[move-7-10]{H5}",
-          "count": 1
         },
         {
           "fontSize": "11px",
@@ -22611,7 +22291,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-display-settings__390-dark-dark.png",
-      "setupMs": 1149,
+      "setupMs": 2349,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -22791,7 +22471,7 @@
           "color": "rgb(82, 179, 156)",
           "weight": "400",
           "sample": "span{· 黑}",
-          "count": 1
+          "count": 2
         },
         {
           "fontSize": "12px",
@@ -22824,14 +22504,6 @@
           "weight": "400",
           "sample": "span[move-7-7]{H8}",
           "count": 29
-        },
-        {
-          "fontSize": "12px",
-          "lineHeight": "16px",
-          "color": "rgb(226, 114, 91)",
-          "weight": "400",
-          "sample": "span[move-7-10]{H5}",
-          "count": 1
         },
         {
           "fontSize": "11px",
@@ -23077,7 +22749,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-display-settings__1440-dark-dark.png",
-      "setupMs": 824,
+      "setupMs": 4456,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -23287,7 +22959,7 @@
           "color": "rgb(82, 179, 156)",
           "weight": "400",
           "sample": "span{· 黑}",
-          "count": 1
+          "count": 2
         },
         {
           "fontSize": "12px",
@@ -23296,14 +22968,6 @@
           "weight": "400",
           "sample": "span[move-7-7]{H8}",
           "count": 29
-        },
-        {
-          "fontSize": "12px",
-          "lineHeight": "16px",
-          "color": "rgb(226, 114, 91)",
-          "weight": "400",
-          "sample": "span[move-7-10]{H5}",
-          "count": 1
         },
         {
           "fontSize": "11px",
@@ -23543,7 +23207,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-finished__390-light.png",
-      "setupMs": 566,
+      "setupMs": 2251,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -23764,7 +23428,7 @@
         {
           "fontSize": "12px",
           "lineHeight": "16px",
-          "color": "rgb(184, 65, 44)",
+          "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span[move-7-11]{H4}",
           "count": 1
@@ -24012,7 +23676,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-finished__768-light.png",
-      "setupMs": 507,
+      "setupMs": 1898,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -24233,7 +23897,7 @@
         {
           "fontSize": "12px",
           "lineHeight": "16px",
-          "color": "rgb(184, 65, 44)",
+          "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span[move-7-11]{H4}",
           "count": 1
@@ -24481,7 +24145,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-finished__1024-light.png",
-      "setupMs": 446,
+      "setupMs": 2633,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -24709,7 +24373,7 @@
         {
           "fontSize": "12px",
           "lineHeight": "16px",
-          "color": "rgb(184, 65, 44)",
+          "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span[move-7-11]{H4}",
           "count": 1
@@ -24957,7 +24621,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-finished__1280-light.png",
-      "setupMs": 435,
+      "setupMs": 8382,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -25185,7 +24849,7 @@
         {
           "fontSize": "12px",
           "lineHeight": "16px",
-          "color": "rgb(184, 65, 44)",
+          "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span[move-7-11]{H4}",
           "count": 1
@@ -25433,7 +25097,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-finished__1440-light.png",
-      "setupMs": 536,
+      "setupMs": 8058,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -25660,7 +25324,7 @@
         {
           "fontSize": "12px",
           "lineHeight": "16px",
-          "color": "rgb(184, 65, 44)",
+          "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span[move-7-11]{H4}",
           "count": 1
@@ -25908,7 +25572,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-finished__1920-light.png",
-      "setupMs": 559,
+      "setupMs": 7281,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -26135,7 +25799,7 @@
         {
           "fontSize": "12px",
           "lineHeight": "16px",
-          "color": "rgb(184, 65, 44)",
+          "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span[move-7-11]{H4}",
           "count": 1
@@ -26383,7 +26047,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-finished__390-dark-dark.png",
-      "setupMs": 501,
+      "setupMs": 2921,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -26604,7 +26268,7 @@
         {
           "fontSize": "12px",
           "lineHeight": "16px",
-          "color": "rgb(226, 114, 91)",
+          "color": "rgb(82, 179, 156)",
           "weight": "400",
           "sample": "span[move-7-11]{H4}",
           "count": 1
@@ -26852,7 +26516,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-finished__1440-dark-dark.png",
-      "setupMs": 578,
+      "setupMs": 5061,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -27079,7 +26743,7 @@
         {
           "fontSize": "12px",
           "lineHeight": "16px",
-          "color": "rgb(226, 114, 91)",
+          "color": "rgb(82, 179, 156)",
           "weight": "400",
           "sample": "span[move-7-11]{H4}",
           "count": 1
@@ -27327,7 +26991,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-opening__390-light.png",
-      "setupMs": 451,
+      "setupMs": 5294,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -27492,7 +27156,7 @@
           "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span{· 黑}",
-          "count": 1
+          "count": 2
         },
         {
           "fontSize": "12px",
@@ -27525,14 +27189,6 @@
           "weight": "400",
           "sample": "span[move-7-7]{H8}",
           "count": 5
-        },
-        {
-          "fontSize": "12px",
-          "lineHeight": "16px",
-          "color": "rgb(184, 65, 44)",
-          "weight": "400",
-          "sample": "span[move-9-9]{J6}",
-          "count": 1
         },
         {
           "fontSize": "11px",
@@ -27755,7 +27411,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-opening__768-light.png",
-      "setupMs": 484,
+      "setupMs": 3878,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -27920,7 +27576,7 @@
           "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span{· 黑}",
-          "count": 1
+          "count": 2
         },
         {
           "fontSize": "12px",
@@ -27953,14 +27609,6 @@
           "weight": "400",
           "sample": "span[move-7-7]{H8}",
           "count": 5
-        },
-        {
-          "fontSize": "12px",
-          "lineHeight": "16px",
-          "color": "rgb(184, 65, 44)",
-          "weight": "400",
-          "sample": "span[move-9-9]{J6}",
-          "count": 1
         },
         {
           "fontSize": "11px",
@@ -28183,7 +27831,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-opening__1024-light.png",
-      "setupMs": 539,
+      "setupMs": 5710,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -28355,7 +28003,7 @@
           "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span{· 黑}",
-          "count": 1
+          "count": 2
         },
         {
           "fontSize": "12px",
@@ -28388,14 +28036,6 @@
           "weight": "400",
           "sample": "span[move-7-7]{H8}",
           "count": 5
-        },
-        {
-          "fontSize": "12px",
-          "lineHeight": "16px",
-          "color": "rgb(184, 65, 44)",
-          "weight": "400",
-          "sample": "span[move-9-9]{J6}",
-          "count": 1
         },
         {
           "fontSize": "11px",
@@ -28618,7 +28258,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-opening__1280-light.png",
-      "setupMs": 485,
+      "setupMs": 5884,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -28790,7 +28430,7 @@
           "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span{· 黑}",
-          "count": 1
+          "count": 2
         },
         {
           "fontSize": "12px",
@@ -28823,14 +28463,6 @@
           "weight": "400",
           "sample": "span[move-7-7]{H8}",
           "count": 5
-        },
-        {
-          "fontSize": "12px",
-          "lineHeight": "16px",
-          "color": "rgb(184, 65, 44)",
-          "weight": "400",
-          "sample": "span[move-9-9]{J6}",
-          "count": 1
         },
         {
           "fontSize": "11px",
@@ -29047,7 +28679,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-opening__1440-light.png",
-      "setupMs": 548,
+      "setupMs": 8869,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -29242,7 +28874,7 @@
           "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span{· 黑}",
-          "count": 1
+          "count": 2
         },
         {
           "fontSize": "12px",
@@ -29251,14 +28883,6 @@
           "weight": "400",
           "sample": "span[move-7-7]{H8}",
           "count": 5
-        },
-        {
-          "fontSize": "12px",
-          "lineHeight": "16px",
-          "color": "rgb(184, 65, 44)",
-          "weight": "400",
-          "sample": "span[move-9-9]{J6}",
-          "count": 1
         },
         {
           "fontSize": "11px",
@@ -29475,7 +29099,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-opening__1920-light.png",
-      "setupMs": 536,
+      "setupMs": 5633,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -29670,7 +29294,7 @@
           "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span{· 黑}",
-          "count": 1
+          "count": 2
         },
         {
           "fontSize": "12px",
@@ -29679,14 +29303,6 @@
           "weight": "400",
           "sample": "span[move-7-7]{H8}",
           "count": 5
-        },
-        {
-          "fontSize": "12px",
-          "lineHeight": "16px",
-          "color": "rgb(184, 65, 44)",
-          "weight": "400",
-          "sample": "span[move-9-9]{J6}",
-          "count": 1
         },
         {
           "fontSize": "11px",
@@ -29903,7 +29519,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-opening__390-dark-dark.png",
-      "setupMs": 430,
+      "setupMs": 3961,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -30068,7 +29684,7 @@
           "color": "rgb(82, 179, 156)",
           "weight": "400",
           "sample": "span{· 黑}",
-          "count": 1
+          "count": 2
         },
         {
           "fontSize": "12px",
@@ -30101,14 +29717,6 @@
           "weight": "400",
           "sample": "span[move-7-7]{H8}",
           "count": 5
-        },
-        {
-          "fontSize": "12px",
-          "lineHeight": "16px",
-          "color": "rgb(226, 114, 91)",
-          "weight": "400",
-          "sample": "span[move-9-9]{J6}",
-          "count": 1
         },
         {
           "fontSize": "11px",
@@ -30331,7 +29939,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-opening__1440-dark-dark.png",
-      "setupMs": 550,
+      "setupMs": 6475,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -30526,7 +30134,7 @@
           "color": "rgb(82, 179, 156)",
           "weight": "400",
           "sample": "span{· 黑}",
-          "count": 1
+          "count": 2
         },
         {
           "fontSize": "12px",
@@ -30535,14 +30143,6 @@
           "weight": "400",
           "sample": "span[move-7-7]{H8}",
           "count": 5
-        },
-        {
-          "fontSize": "12px",
-          "lineHeight": "16px",
-          "color": "rgb(226, 114, 91)",
-          "weight": "400",
-          "sample": "span[move-9-9]{J6}",
-          "count": 1
         },
         {
           "fontSize": "11px",
@@ -30759,7 +30359,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-dense-black__390-light.png",
-      "setupMs": 483,
+      "setupMs": 3376,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -30931,7 +30531,7 @@
           "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span{· 黑}",
-          "count": 1
+          "count": 2
         },
         {
           "fontSize": "12px",
@@ -30964,14 +30564,6 @@
           "weight": "400",
           "sample": "span[move-5-2]{F13}",
           "count": 47
-        },
-        {
-          "fontSize": "12px",
-          "lineHeight": "16px",
-          "color": "rgb(184, 65, 44)",
-          "weight": "400",
-          "sample": "span[move-3-11]{D4}",
-          "count": 1
         },
         {
           "fontSize": "11px",
@@ -31194,7 +30786,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-dense-black__768-light.png",
-      "setupMs": 533,
+      "setupMs": 2953,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -31366,7 +30958,7 @@
           "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span{· 黑}",
-          "count": 1
+          "count": 2
         },
         {
           "fontSize": "12px",
@@ -31399,14 +30991,6 @@
           "weight": "400",
           "sample": "span[move-5-2]{F13}",
           "count": 47
-        },
-        {
-          "fontSize": "12px",
-          "lineHeight": "16px",
-          "color": "rgb(184, 65, 44)",
-          "weight": "400",
-          "sample": "span[move-3-11]{D4}",
-          "count": 1
         },
         {
           "fontSize": "11px",
@@ -31629,7 +31213,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-dense-black__1024-light.png",
-      "setupMs": 541,
+      "setupMs": 7844,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -31807,7 +31391,7 @@
           "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span{· 黑}",
-          "count": 1
+          "count": 2
         },
         {
           "fontSize": "12px",
@@ -31840,14 +31424,6 @@
           "weight": "400",
           "sample": "span[move-5-2]{F13}",
           "count": 47
-        },
-        {
-          "fontSize": "12px",
-          "lineHeight": "16px",
-          "color": "rgb(184, 65, 44)",
-          "weight": "400",
-          "sample": "span[move-3-11]{D4}",
-          "count": 1
         },
         {
           "fontSize": "11px",
@@ -32070,7 +31646,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-dense-black__1280-light.png",
-      "setupMs": 555,
+      "setupMs": 4685,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -32248,7 +31824,7 @@
           "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span{· 黑}",
-          "count": 1
+          "count": 2
         },
         {
           "fontSize": "12px",
@@ -32281,14 +31857,6 @@
           "weight": "400",
           "sample": "span[move-5-2]{F13}",
           "count": 47
-        },
-        {
-          "fontSize": "12px",
-          "lineHeight": "16px",
-          "color": "rgb(184, 65, 44)",
-          "weight": "400",
-          "sample": "span[move-3-11]{D4}",
-          "count": 1
         },
         {
           "fontSize": "11px",
@@ -32505,7 +32073,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-dense-black__1440-light.png",
-      "setupMs": 517,
+      "setupMs": 3527,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -32707,7 +32275,7 @@
           "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span{· 黑}",
-          "count": 1
+          "count": 2
         },
         {
           "fontSize": "12px",
@@ -32716,14 +32284,6 @@
           "weight": "400",
           "sample": "span[move-5-2]{F13}",
           "count": 47
-        },
-        {
-          "fontSize": "12px",
-          "lineHeight": "16px",
-          "color": "rgb(184, 65, 44)",
-          "weight": "400",
-          "sample": "span[move-3-11]{D4}",
-          "count": 1
         },
         {
           "fontSize": "11px",
@@ -32940,7 +32500,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-dense-black__1920-light.png",
-      "setupMs": 583,
+      "setupMs": 2531,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -33142,7 +32702,7 @@
           "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span{· 黑}",
-          "count": 1
+          "count": 2
         },
         {
           "fontSize": "12px",
@@ -33151,14 +32711,6 @@
           "weight": "400",
           "sample": "span[move-5-2]{F13}",
           "count": 47
-        },
-        {
-          "fontSize": "12px",
-          "lineHeight": "16px",
-          "color": "rgb(184, 65, 44)",
-          "weight": "400",
-          "sample": "span[move-3-11]{D4}",
-          "count": 1
         },
         {
           "fontSize": "11px",
@@ -33375,7 +32927,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-dense-black__390-dark-dark.png",
-      "setupMs": 473,
+      "setupMs": 3738,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -33547,7 +33099,7 @@
           "color": "rgb(82, 179, 156)",
           "weight": "400",
           "sample": "span{· 黑}",
-          "count": 1
+          "count": 2
         },
         {
           "fontSize": "12px",
@@ -33580,14 +33132,6 @@
           "weight": "400",
           "sample": "span[move-5-2]{F13}",
           "count": 47
-        },
-        {
-          "fontSize": "12px",
-          "lineHeight": "16px",
-          "color": "rgb(226, 114, 91)",
-          "weight": "400",
-          "sample": "span[move-3-11]{D4}",
-          "count": 1
         },
         {
           "fontSize": "11px",
@@ -33810,7 +33354,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-dense-black__1440-dark-dark.png",
-      "setupMs": 627,
+      "setupMs": 5269,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -34012,7 +33556,7 @@
           "color": "rgb(82, 179, 156)",
           "weight": "400",
           "sample": "span{· 黑}",
-          "count": 1
+          "count": 2
         },
         {
           "fontSize": "12px",
@@ -34021,14 +33565,6 @@
           "weight": "400",
           "sample": "span[move-5-2]{F13}",
           "count": 47
-        },
-        {
-          "fontSize": "12px",
-          "lineHeight": "16px",
-          "color": "rgb(226, 114, 91)",
-          "weight": "400",
-          "sample": "span[move-3-11]{D4}",
-          "count": 1
         },
         {
           "fontSize": "11px",
@@ -34245,7 +33781,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-dense-white__390-light.png",
-      "setupMs": 504,
+      "setupMs": 2577,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -34417,7 +33953,7 @@
           "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span{· 黑}",
-          "count": 1
+          "count": 2
         },
         {
           "fontSize": "12px",
@@ -34450,14 +33986,6 @@
           "weight": "400",
           "sample": "span[move-0-1]{A14}",
           "count": 47
-        },
-        {
-          "fontSize": "12px",
-          "lineHeight": "16px",
-          "color": "rgb(184, 65, 44)",
-          "weight": "400",
-          "sample": "span[move-8-12]{I3}",
-          "count": 1
         },
         {
           "fontSize": "11px",
@@ -34680,7 +34208,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-dense-white__768-light.png",
-      "setupMs": 518,
+      "setupMs": 1235,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -34852,7 +34380,7 @@
           "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span{· 黑}",
-          "count": 1
+          "count": 2
         },
         {
           "fontSize": "12px",
@@ -34885,14 +34413,6 @@
           "weight": "400",
           "sample": "span[move-0-1]{A14}",
           "count": 47
-        },
-        {
-          "fontSize": "12px",
-          "lineHeight": "16px",
-          "color": "rgb(184, 65, 44)",
-          "weight": "400",
-          "sample": "span[move-8-12]{I3}",
-          "count": 1
         },
         {
           "fontSize": "11px",
@@ -35115,7 +34635,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-dense-white__1024-light.png",
-      "setupMs": 546,
+      "setupMs": 1801,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -35293,7 +34813,7 @@
           "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span{· 黑}",
-          "count": 1
+          "count": 2
         },
         {
           "fontSize": "12px",
@@ -35326,14 +34846,6 @@
           "weight": "400",
           "sample": "span[move-0-1]{A14}",
           "count": 47
-        },
-        {
-          "fontSize": "12px",
-          "lineHeight": "16px",
-          "color": "rgb(184, 65, 44)",
-          "weight": "400",
-          "sample": "span[move-8-12]{I3}",
-          "count": 1
         },
         {
           "fontSize": "11px",
@@ -35556,7 +35068,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-dense-white__1280-light.png",
-      "setupMs": 508,
+      "setupMs": 3925,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -35734,7 +35246,7 @@
           "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span{· 黑}",
-          "count": 1
+          "count": 2
         },
         {
           "fontSize": "12px",
@@ -35767,14 +35279,6 @@
           "weight": "400",
           "sample": "span[move-0-1]{A14}",
           "count": 47
-        },
-        {
-          "fontSize": "12px",
-          "lineHeight": "16px",
-          "color": "rgb(184, 65, 44)",
-          "weight": "400",
-          "sample": "span[move-8-12]{I3}",
-          "count": 1
         },
         {
           "fontSize": "11px",
@@ -35991,7 +35495,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-dense-white__1440-light.png",
-      "setupMs": 527,
+      "setupMs": 5069,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -36193,7 +35697,7 @@
           "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span{· 黑}",
-          "count": 1
+          "count": 2
         },
         {
           "fontSize": "12px",
@@ -36202,14 +35706,6 @@
           "weight": "400",
           "sample": "span[move-0-1]{A14}",
           "count": 47
-        },
-        {
-          "fontSize": "12px",
-          "lineHeight": "16px",
-          "color": "rgb(184, 65, 44)",
-          "weight": "400",
-          "sample": "span[move-8-12]{I3}",
-          "count": 1
         },
         {
           "fontSize": "11px",
@@ -36426,7 +35922,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-dense-white__1920-light.png",
-      "setupMs": 583,
+      "setupMs": 4666,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -36628,7 +36124,7 @@
           "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span{· 黑}",
-          "count": 1
+          "count": 2
         },
         {
           "fontSize": "12px",
@@ -36637,14 +36133,6 @@
           "weight": "400",
           "sample": "span[move-0-1]{A14}",
           "count": 47
-        },
-        {
-          "fontSize": "12px",
-          "lineHeight": "16px",
-          "color": "rgb(184, 65, 44)",
-          "weight": "400",
-          "sample": "span[move-8-12]{I3}",
-          "count": 1
         },
         {
           "fontSize": "11px",
@@ -36861,7 +36349,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-dense-white__390-dark-dark.png",
-      "setupMs": 519,
+      "setupMs": 2726,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -37033,7 +36521,7 @@
           "color": "rgb(82, 179, 156)",
           "weight": "400",
           "sample": "span{· 黑}",
-          "count": 1
+          "count": 2
         },
         {
           "fontSize": "12px",
@@ -37066,14 +36554,6 @@
           "weight": "400",
           "sample": "span[move-0-1]{A14}",
           "count": 47
-        },
-        {
-          "fontSize": "12px",
-          "lineHeight": "16px",
-          "color": "rgb(226, 114, 91)",
-          "weight": "400",
-          "sample": "span[move-8-12]{I3}",
-          "count": 1
         },
         {
           "fontSize": "11px",
@@ -37296,7 +36776,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-dense-white__1440-dark-dark.png",
-      "setupMs": 546,
+      "setupMs": 3844,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -37498,7 +36978,7 @@
           "color": "rgb(82, 179, 156)",
           "weight": "400",
           "sample": "span{· 黑}",
-          "count": 1
+          "count": 2
         },
         {
           "fontSize": "12px",
@@ -37507,14 +36987,6 @@
           "weight": "400",
           "sample": "span[move-0-1]{A14}",
           "count": 47
-        },
-        {
-          "fontSize": "12px",
-          "lineHeight": "16px",
-          "color": "rgb(226, 114, 91)",
-          "weight": "400",
-          "sample": "span[move-8-12]{I3}",
-          "count": 1
         },
         {
           "fontSize": "11px",
@@ -37731,7 +37203,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-win-board__390-light.png",
-      "setupMs": 579,
+      "setupMs": 2049,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -37935,7 +37407,7 @@
         {
           "fontSize": "12px",
           "lineHeight": "16px",
-          "color": "rgb(184, 65, 44)",
+          "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span[move-7-11]{H4}",
           "count": 1
@@ -38163,7 +37635,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-win-board__768-light.png",
-      "setupMs": 643,
+      "setupMs": 1885,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -38367,7 +37839,7 @@
         {
           "fontSize": "12px",
           "lineHeight": "16px",
-          "color": "rgb(184, 65, 44)",
+          "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span[move-7-11]{H4}",
           "count": 1
@@ -38595,7 +38067,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-win-board__1024-light.png",
-      "setupMs": 636,
+      "setupMs": 1305,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -38806,7 +38278,7 @@
         {
           "fontSize": "12px",
           "lineHeight": "16px",
-          "color": "rgb(184, 65, 44)",
+          "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span[move-7-11]{H4}",
           "count": 1
@@ -39034,7 +38506,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-win-board__1280-light.png",
-      "setupMs": 710,
+      "setupMs": 3371,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -39245,7 +38717,7 @@
         {
           "fontSize": "12px",
           "lineHeight": "16px",
-          "color": "rgb(184, 65, 44)",
+          "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span[move-7-11]{H4}",
           "count": 1
@@ -39473,7 +38945,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-win-board__1440-light.png",
-      "setupMs": 782,
+      "setupMs": 3293,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -39683,7 +39155,7 @@
         {
           "fontSize": "12px",
           "lineHeight": "16px",
-          "color": "rgb(184, 65, 44)",
+          "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span[move-7-11]{H4}",
           "count": 1
@@ -39911,7 +39383,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-win-board__1920-light.png",
-      "setupMs": 647,
+      "setupMs": 4771,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -40121,7 +39593,7 @@
         {
           "fontSize": "12px",
           "lineHeight": "16px",
-          "color": "rgb(184, 65, 44)",
+          "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span[move-7-11]{H4}",
           "count": 1
@@ -40349,7 +39821,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-win-board__390-dark-dark.png",
-      "setupMs": 577,
+      "setupMs": 5405,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -40553,7 +40025,7 @@
         {
           "fontSize": "12px",
           "lineHeight": "16px",
-          "color": "rgb(226, 114, 91)",
+          "color": "rgb(82, 179, 156)",
           "weight": "400",
           "sample": "span[move-7-11]{H4}",
           "count": 1
@@ -40781,7 +40253,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-win-board__1440-dark-dark.png",
-      "setupMs": 676,
+      "setupMs": 4617,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -40991,7 +40463,7 @@
         {
           "fontSize": "12px",
           "lineHeight": "16px",
-          "color": "rgb(226, 114, 91)",
+          "color": "rgb(82, 179, 156)",
           "weight": "400",
           "sample": "span[move-7-11]{H4}",
           "count": 1
@@ -41219,7 +40691,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-ai-moved__390-light.png",
-      "setupMs": 496,
+      "setupMs": 3960,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -41400,7 +40872,7 @@
           "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span{· 白}",
-          "count": 1
+          "count": 2
         },
         {
           "fontSize": "12px",
@@ -41441,14 +40913,6 @@
           "weight": "400",
           "sample": "span[move-7-7]{H8}",
           "count": 6
-        },
-        {
-          "fontSize": "12px",
-          "lineHeight": "16px",
-          "color": "rgb(184, 65, 44)",
-          "weight": "400",
-          "sample": "span[move-7-6]{H9}",
-          "count": 1
         },
         {
           "fontSize": "12px",
@@ -41686,7 +41150,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-ai-moved__768-light.png",
-      "setupMs": 560,
+      "setupMs": 2937,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -41867,7 +41331,7 @@
           "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span{· 白}",
-          "count": 1
+          "count": 2
         },
         {
           "fontSize": "12px",
@@ -41908,14 +41372,6 @@
           "weight": "400",
           "sample": "span[move-7-7]{H8}",
           "count": 6
-        },
-        {
-          "fontSize": "12px",
-          "lineHeight": "16px",
-          "color": "rgb(184, 65, 44)",
-          "weight": "400",
-          "sample": "span[move-7-6]{H9}",
-          "count": 1
         },
         {
           "fontSize": "12px",
@@ -42153,7 +41609,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-ai-moved__1024-light.png",
-      "setupMs": 616,
+      "setupMs": 3482,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -42341,7 +41797,7 @@
           "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span{· 白}",
-          "count": 1
+          "count": 2
         },
         {
           "fontSize": "12px",
@@ -42382,14 +41838,6 @@
           "weight": "400",
           "sample": "span[move-7-7]{H8}",
           "count": 6
-        },
-        {
-          "fontSize": "12px",
-          "lineHeight": "16px",
-          "color": "rgb(184, 65, 44)",
-          "weight": "400",
-          "sample": "span[move-7-6]{H9}",
-          "count": 1
         },
         {
           "fontSize": "12px",
@@ -42627,7 +42075,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-ai-moved__1280-light.png",
-      "setupMs": 606,
+      "setupMs": 2334,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -42815,7 +42263,7 @@
           "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span{· 白}",
-          "count": 1
+          "count": 2
         },
         {
           "fontSize": "12px",
@@ -42856,14 +42304,6 @@
           "weight": "400",
           "sample": "span[move-7-7]{H8}",
           "count": 6
-        },
-        {
-          "fontSize": "12px",
-          "lineHeight": "16px",
-          "color": "rgb(184, 65, 44)",
-          "weight": "400",
-          "sample": "span[move-7-6]{H9}",
-          "count": 1
         },
         {
           "fontSize": "12px",
@@ -43095,7 +42535,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-ai-moved__1440-light.png",
-      "setupMs": 625,
+      "setupMs": 2609,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -43290,7 +42730,7 @@
           "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span{· 白}",
-          "count": 1
+          "count": 2
         },
         {
           "fontSize": "12px",
@@ -43323,14 +42763,6 @@
           "weight": "400",
           "sample": "span[move-7-7]{H8}",
           "count": 6
-        },
-        {
-          "fontSize": "12px",
-          "lineHeight": "16px",
-          "color": "rgb(184, 65, 44)",
-          "weight": "400",
-          "sample": "span[move-7-6]{H9}",
-          "count": 1
         },
         {
           "fontSize": "12px",
@@ -43562,7 +42994,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-ai-moved__1920-light.png",
-      "setupMs": 640,
+      "setupMs": 1201,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -43757,7 +43189,7 @@
           "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span{· 白}",
-          "count": 1
+          "count": 2
         },
         {
           "fontSize": "12px",
@@ -43790,14 +43222,6 @@
           "weight": "400",
           "sample": "span[move-7-7]{H8}",
           "count": 6
-        },
-        {
-          "fontSize": "12px",
-          "lineHeight": "16px",
-          "color": "rgb(184, 65, 44)",
-          "weight": "400",
-          "sample": "span[move-7-6]{H9}",
-          "count": 1
         },
         {
           "fontSize": "12px",
@@ -44029,7 +43453,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-ai-moved__390-dark-dark.png",
-      "setupMs": 541,
+      "setupMs": 6794,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -44210,7 +43634,7 @@
           "color": "rgb(82, 179, 156)",
           "weight": "400",
           "sample": "span{· 白}",
-          "count": 1
+          "count": 2
         },
         {
           "fontSize": "12px",
@@ -44251,14 +43675,6 @@
           "weight": "400",
           "sample": "span[move-7-7]{H8}",
           "count": 6
-        },
-        {
-          "fontSize": "12px",
-          "lineHeight": "16px",
-          "color": "rgb(226, 114, 91)",
-          "weight": "400",
-          "sample": "span[move-7-6]{H9}",
-          "count": 1
         },
         {
           "fontSize": "12px",
@@ -44496,7 +43912,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-ai-moved__1440-dark-dark.png",
-      "setupMs": 643,
+      "setupMs": 9618,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -44691,7 +44107,7 @@
           "color": "rgb(82, 179, 156)",
           "weight": "400",
           "sample": "span{· 白}",
-          "count": 1
+          "count": 2
         },
         {
           "fontSize": "12px",
@@ -44724,14 +44140,6 @@
           "weight": "400",
           "sample": "span[move-7-7]{H8}",
           "count": 6
-        },
-        {
-          "fontSize": "12px",
-          "lineHeight": "16px",
-          "color": "rgb(226, 114, 91)",
-          "weight": "400",
-          "sample": "span[move-7-6]{H9}",
-          "count": 1
         },
         {
           "fontSize": "12px",
@@ -44963,7 +44371,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-ai-moved-expanded__390-light.png",
-      "setupMs": 614,
+      "setupMs": 16727,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -45144,7 +44552,7 @@
           "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span{· 白}",
-          "count": 1
+          "count": 2
         },
         {
           "fontSize": "12px",
@@ -45201,14 +44609,6 @@
           "weight": "400",
           "sample": "span[move-7-7]{H8}",
           "count": 6
-        },
-        {
-          "fontSize": "12px",
-          "lineHeight": "16px",
-          "color": "rgb(184, 65, 44)",
-          "weight": "400",
-          "sample": "span[move-7-6]{H9}",
-          "count": 1
         },
         {
           "fontSize": "12px",
@@ -45446,7 +44846,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-ai-moved-expanded__768-light.png",
-      "setupMs": 566,
+      "setupMs": 11205,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -45627,7 +45027,7 @@
           "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span{· 白}",
-          "count": 1
+          "count": 2
         },
         {
           "fontSize": "12px",
@@ -45684,14 +45084,6 @@
           "weight": "400",
           "sample": "span[move-7-7]{H8}",
           "count": 6
-        },
-        {
-          "fontSize": "12px",
-          "lineHeight": "16px",
-          "color": "rgb(184, 65, 44)",
-          "weight": "400",
-          "sample": "span[move-7-6]{H9}",
-          "count": 1
         },
         {
           "fontSize": "12px",
@@ -45929,7 +45321,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-ai-moved-expanded__1024-light.png",
-      "setupMs": 802,
+      "setupMs": 10678,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -46117,7 +45509,7 @@
           "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span{· 白}",
-          "count": 1
+          "count": 2
         },
         {
           "fontSize": "12px",
@@ -46174,14 +45566,6 @@
           "weight": "400",
           "sample": "span[move-7-7]{H8}",
           "count": 6
-        },
-        {
-          "fontSize": "12px",
-          "lineHeight": "16px",
-          "color": "rgb(184, 65, 44)",
-          "weight": "400",
-          "sample": "span[move-7-6]{H9}",
-          "count": 1
         },
         {
           "fontSize": "12px",
@@ -46419,7 +45803,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-ai-moved-expanded__1280-light.png",
-      "setupMs": 744,
+      "setupMs": 8891,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -46607,7 +45991,7 @@
           "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span{· 白}",
-          "count": 1
+          "count": 2
         },
         {
           "fontSize": "12px",
@@ -46664,14 +46048,6 @@
           "weight": "400",
           "sample": "span[move-7-7]{H8}",
           "count": 6
-        },
-        {
-          "fontSize": "12px",
-          "lineHeight": "16px",
-          "color": "rgb(184, 65, 44)",
-          "weight": "400",
-          "sample": "span[move-7-6]{H9}",
-          "count": 1
         },
         {
           "fontSize": "12px",
@@ -46903,7 +46279,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-ai-moved-expanded__1440-light.png",
-      "setupMs": 790,
+      "setupMs": 11660,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -47105,7 +46481,7 @@
           "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span{· 白}",
-          "count": 1
+          "count": 2
         },
         {
           "fontSize": "12px",
@@ -47154,14 +46530,6 @@
           "weight": "400",
           "sample": "span[move-7-7]{H8}",
           "count": 6
-        },
-        {
-          "fontSize": "12px",
-          "lineHeight": "16px",
-          "color": "rgb(184, 65, 44)",
-          "weight": "400",
-          "sample": "span[move-7-6]{H9}",
-          "count": 1
         },
         {
           "fontSize": "12px",
@@ -47393,7 +46761,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-ai-moved-expanded__1920-light.png",
-      "setupMs": 757,
+      "setupMs": 11049,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -47595,7 +46963,7 @@
           "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span{· 白}",
-          "count": 1
+          "count": 2
         },
         {
           "fontSize": "12px",
@@ -47644,14 +47012,6 @@
           "weight": "400",
           "sample": "span[move-7-7]{H8}",
           "count": 6
-        },
-        {
-          "fontSize": "12px",
-          "lineHeight": "16px",
-          "color": "rgb(184, 65, 44)",
-          "weight": "400",
-          "sample": "span[move-7-6]{H9}",
-          "count": 1
         },
         {
           "fontSize": "12px",
@@ -47883,7 +47243,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-ai-moved-expanded__390-dark-dark.png",
-      "setupMs": 668,
+      "setupMs": 6046,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -48064,7 +47424,7 @@
           "color": "rgb(82, 179, 156)",
           "weight": "400",
           "sample": "span{· 白}",
-          "count": 1
+          "count": 2
         },
         {
           "fontSize": "12px",
@@ -48121,14 +47481,6 @@
           "weight": "400",
           "sample": "span[move-7-7]{H8}",
           "count": 6
-        },
-        {
-          "fontSize": "12px",
-          "lineHeight": "16px",
-          "color": "rgb(226, 114, 91)",
-          "weight": "400",
-          "sample": "span[move-7-6]{H9}",
-          "count": 1
         },
         {
           "fontSize": "12px",
@@ -48366,7 +47718,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-ai-moved-expanded__1440-dark-dark.png",
-      "setupMs": 701,
+      "setupMs": 11691,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -48568,7 +47920,7 @@
           "color": "rgb(82, 179, 156)",
           "weight": "400",
           "sample": "span{· 白}",
-          "count": 1
+          "count": 2
         },
         {
           "fontSize": "12px",
@@ -48617,14 +47969,6 @@
           "weight": "400",
           "sample": "span[move-7-7]{H8}",
           "count": 6
-        },
-        {
-          "fontSize": "12px",
-          "lineHeight": "16px",
-          "color": "rgb(226, 114, 91)",
-          "weight": "400",
-          "sample": "span[move-7-6]{H9}",
-          "count": 1
         },
         {
           "fontSize": "12px",
@@ -48856,7 +48200,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-ai-error__390-light.png",
-      "setupMs": 464,
+      "setupMs": 5441,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -49044,7 +48388,7 @@
           "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span{初级}",
-          "count": 1
+          "count": 2
         },
         {
           "fontSize": "12px",
@@ -49068,7 +48412,7 @@
           "color": "rgb(184, 65, 44)",
           "weight": "400",
           "sample": "p{审计用 Worker 桩：AI 引擎异常}",
-          "count": 2
+          "count": 1
         },
         {
           "fontSize": "12px",
@@ -49307,7 +48651,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-ai-error__768-light.png",
-      "setupMs": 559,
+      "setupMs": 7161,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -49495,7 +48839,7 @@
           "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span{初级}",
-          "count": 1
+          "count": 2
         },
         {
           "fontSize": "12px",
@@ -49519,7 +48863,7 @@
           "color": "rgb(184, 65, 44)",
           "weight": "400",
           "sample": "p{审计用 Worker 桩：AI 引擎异常}",
-          "count": 2
+          "count": 1
         },
         {
           "fontSize": "12px",
@@ -49758,7 +49102,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-ai-error__1024-light.png",
-      "setupMs": 547,
+      "setupMs": 7604,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -49952,7 +49296,7 @@
           "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span{初级}",
-          "count": 1
+          "count": 2
         },
         {
           "fontSize": "12px",
@@ -49976,7 +49320,7 @@
           "color": "rgb(184, 65, 44)",
           "weight": "400",
           "sample": "p{审计用 Worker 桩：AI 引擎异常}",
-          "count": 2
+          "count": 1
         },
         {
           "fontSize": "12px",
@@ -50215,7 +49559,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-ai-error__1280-light.png",
-      "setupMs": 589,
+      "setupMs": 4325,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -50409,7 +49753,7 @@
           "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span{初级}",
-          "count": 1
+          "count": 2
         },
         {
           "fontSize": "12px",
@@ -50433,7 +49777,7 @@
           "color": "rgb(184, 65, 44)",
           "weight": "400",
           "sample": "p{审计用 Worker 桩：AI 引擎异常}",
-          "count": 2
+          "count": 1
         },
         {
           "fontSize": "12px",
@@ -50672,7 +50016,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-ai-error__1440-light.png",
-      "setupMs": 648,
+      "setupMs": 1712,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -50882,7 +50226,7 @@
           "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span{初级}",
-          "count": 1
+          "count": 2
         },
         {
           "fontSize": "12px",
@@ -50890,7 +50234,7 @@
           "color": "rgb(184, 65, 44)",
           "weight": "400",
           "sample": "p{审计用 Worker 桩：AI 引擎异常}",
-          "count": 2
+          "count": 1
         },
         {
           "fontSize": "12px",
@@ -51129,7 +50473,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-ai-error__1920-light.png",
-      "setupMs": 713,
+      "setupMs": 1913,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -51339,7 +50683,7 @@
           "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span{初级}",
-          "count": 1
+          "count": 2
         },
         {
           "fontSize": "12px",
@@ -51347,7 +50691,7 @@
           "color": "rgb(184, 65, 44)",
           "weight": "400",
           "sample": "p{审计用 Worker 桩：AI 引擎异常}",
-          "count": 2
+          "count": 1
         },
         {
           "fontSize": "12px",
@@ -51586,7 +50930,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-ai-error__390-dark-dark.png",
-      "setupMs": 702,
+      "setupMs": 2436,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -51774,7 +51118,7 @@
           "color": "rgb(82, 179, 156)",
           "weight": "400",
           "sample": "span{初级}",
-          "count": 1
+          "count": 2
         },
         {
           "fontSize": "12px",
@@ -51798,7 +51142,7 @@
           "color": "rgb(226, 114, 91)",
           "weight": "400",
           "sample": "p{审计用 Worker 桩：AI 引擎异常}",
-          "count": 2
+          "count": 1
         },
         {
           "fontSize": "12px",
@@ -52037,7 +51381,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-ai-error__1440-dark-dark.png",
-      "setupMs": 827,
+      "setupMs": 4958,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -52247,7 +51591,7 @@
           "color": "rgb(82, 179, 156)",
           "weight": "400",
           "sample": "span{初级}",
-          "count": 1
+          "count": 2
         },
         {
           "fontSize": "12px",
@@ -52255,7 +51599,7 @@
           "color": "rgb(226, 114, 91)",
           "weight": "400",
           "sample": "p{审计用 Worker 桩：AI 引擎异常}",
-          "count": 2
+          "count": 1
         },
         {
           "fontSize": "12px",
@@ -52494,7 +51838,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-finish-unsaved__390-light.png",
-      "setupMs": 820,
+      "setupMs": 3102,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -52715,7 +52059,7 @@
         {
           "fontSize": "12px",
           "lineHeight": "16px",
-          "color": "rgb(184, 65, 44)",
+          "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span[move-7-11]{H4}",
           "count": 1
@@ -52963,7 +52307,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-finish-unsaved__768-light.png",
-      "setupMs": 779,
+      "setupMs": 2186,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -53184,7 +52528,7 @@
         {
           "fontSize": "12px",
           "lineHeight": "16px",
-          "color": "rgb(184, 65, 44)",
+          "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span[move-7-11]{H4}",
           "count": 1
@@ -53432,7 +52776,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-finish-unsaved__1024-light.png",
-      "setupMs": 815,
+      "setupMs": 1763,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -53660,7 +53004,7 @@
         {
           "fontSize": "12px",
           "lineHeight": "16px",
-          "color": "rgb(184, 65, 44)",
+          "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span[move-7-11]{H4}",
           "count": 1
@@ -53908,7 +53252,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-finish-unsaved__1280-light.png",
-      "setupMs": 985,
+      "setupMs": 2482,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -54136,7 +53480,7 @@
         {
           "fontSize": "12px",
           "lineHeight": "16px",
-          "color": "rgb(184, 65, 44)",
+          "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span[move-7-11]{H4}",
           "count": 1
@@ -54384,7 +53728,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-finish-unsaved__1440-light.png",
-      "setupMs": 1932,
+      "setupMs": 5357,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -54611,7 +53955,7 @@
         {
           "fontSize": "12px",
           "lineHeight": "16px",
-          "color": "rgb(184, 65, 44)",
+          "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span[move-7-11]{H4}",
           "count": 1
@@ -54859,7 +54203,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-finish-unsaved__1920-light.png",
-      "setupMs": 891,
+      "setupMs": 6081,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -55086,7 +54430,7 @@
         {
           "fontSize": "12px",
           "lineHeight": "16px",
-          "color": "rgb(184, 65, 44)",
+          "color": "rgb(44, 119, 104)",
           "weight": "400",
           "sample": "span[move-7-11]{H4}",
           "count": 1
@@ -55334,7 +54678,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-finish-unsaved__390-dark-dark.png",
-      "setupMs": 700,
+      "setupMs": 4934,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -55555,7 +54899,7 @@
         {
           "fontSize": "12px",
           "lineHeight": "16px",
-          "color": "rgb(226, 114, 91)",
+          "color": "rgb(82, 179, 156)",
           "weight": "400",
           "sample": "span[move-7-11]{H4}",
           "count": 1
@@ -55803,7 +55147,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-finish-unsaved__1440-dark-dark.png",
-      "setupMs": 742,
+      "setupMs": 6630,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -56030,7 +55374,7 @@
         {
           "fontSize": "12px",
           "lineHeight": "16px",
-          "color": "rgb(226, 114, 91)",
+          "color": "rgb(82, 179, 156)",
           "weight": "400",
           "sample": "span[move-7-11]{H4}",
           "count": 1
@@ -56278,7 +55622,7 @@
       "size": "390",
       "theme": "light",
       "file": "learn-learn-list__390-light.png",
-      "setupMs": 564,
+      "setupMs": 3716,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -56487,7 +55831,7 @@
       "size": "768",
       "theme": "light",
       "file": "learn-learn-list__768-light.png",
-      "setupMs": 540,
+      "setupMs": 1644,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -56696,7 +56040,7 @@
       "size": "1024",
       "theme": "light",
       "file": "learn-learn-list__1024-light.png",
-      "setupMs": 607,
+      "setupMs": 2470,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -56905,7 +56249,7 @@
       "size": "1280",
       "theme": "light",
       "file": "learn-learn-list__1280-light.png",
-      "setupMs": 558,
+      "setupMs": 2876,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -57114,7 +56458,7 @@
       "size": "1440",
       "theme": "light",
       "file": "learn-learn-list__1440-light.png",
-      "setupMs": 591,
+      "setupMs": 2464,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -57323,7 +56667,7 @@
       "size": "1920",
       "theme": "light",
       "file": "learn-learn-list__1920-light.png",
-      "setupMs": 599,
+      "setupMs": 4705,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -57532,7 +56876,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "learn-learn-list__390-dark-dark.png",
-      "setupMs": 556,
+      "setupMs": 1904,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -57741,7 +57085,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "learn-learn-list__1440-dark-dark.png",
-      "setupMs": 690,
+      "setupMs": 2017,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -57950,7 +57294,7 @@
       "size": "390",
       "theme": "light",
       "file": "learn-learn-list-done__390-light.png",
-      "setupMs": 548,
+      "setupMs": 2913,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -58167,7 +57511,7 @@
       "size": "768",
       "theme": "light",
       "file": "learn-learn-list-done__768-light.png",
-      "setupMs": 993,
+      "setupMs": 3904,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -58384,7 +57728,7 @@
       "size": "1024",
       "theme": "light",
       "file": "learn-learn-list-done__1024-light.png",
-      "setupMs": 582,
+      "setupMs": 2134,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -58601,7 +57945,7 @@
       "size": "1280",
       "theme": "light",
       "file": "learn-learn-list-done__1280-light.png",
-      "setupMs": 608,
+      "setupMs": 2267,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -58818,7 +58162,7 @@
       "size": "1440",
       "theme": "light",
       "file": "learn-learn-list-done__1440-light.png",
-      "setupMs": 571,
+      "setupMs": 2396,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -59035,7 +58379,7 @@
       "size": "1920",
       "theme": "light",
       "file": "learn-learn-list-done__1920-light.png",
-      "setupMs": 585,
+      "setupMs": 2477,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -59252,7 +58596,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "learn-learn-list-done__390-dark-dark.png",
-      "setupMs": 612,
+      "setupMs": 2052,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -59469,7 +58813,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "learn-learn-list-done__1440-dark-dark.png",
-      "setupMs": 584,
+      "setupMs": 3225,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -59686,7 +59030,7 @@
       "size": "390",
       "theme": "light",
       "file": "learn-learn-diagram__390-light.png",
-      "setupMs": 673,
+      "setupMs": 1897,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -59947,7 +59291,7 @@
       "size": "768",
       "theme": "light",
       "file": "learn-learn-diagram__768-light.png",
-      "setupMs": 660,
+      "setupMs": 1899,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -60208,7 +59552,7 @@
       "size": "1024",
       "theme": "light",
       "file": "learn-learn-diagram__1024-light.png",
-      "setupMs": 841,
+      "setupMs": 3603,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -60469,7 +59813,7 @@
       "size": "1280",
       "theme": "light",
       "file": "learn-learn-diagram__1280-light.png",
-      "setupMs": 855,
+      "setupMs": 2024,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -60730,7 +60074,7 @@
       "size": "1440",
       "theme": "light",
       "file": "learn-learn-diagram__1440-light.png",
-      "setupMs": 809,
+      "setupMs": 1536,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -60991,7 +60335,7 @@
       "size": "1920",
       "theme": "light",
       "file": "learn-learn-diagram__1920-light.png",
-      "setupMs": 737,
+      "setupMs": 2364,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -61252,7 +60596,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "learn-learn-diagram__390-dark-dark.png",
-      "setupMs": 646,
+      "setupMs": 2924,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -61513,7 +60857,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "learn-learn-diagram__1440-dark-dark.png",
-      "setupMs": 653,
+      "setupMs": 5398,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -61774,7 +61118,7 @@
       "size": "390",
       "theme": "light",
       "file": "learn-learn-practice__390-light.png",
-      "setupMs": 644,
+      "setupMs": 2048,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -62006,7 +61350,7 @@
       "size": "768",
       "theme": "light",
       "file": "learn-learn-practice__768-light.png",
-      "setupMs": 703,
+      "setupMs": 1602,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -62238,7 +61582,7 @@
       "size": "1024",
       "theme": "light",
       "file": "learn-learn-practice__1024-light.png",
-      "setupMs": 877,
+      "setupMs": 1344,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -62470,7 +61814,7 @@
       "size": "1280",
       "theme": "light",
       "file": "learn-learn-practice__1280-light.png",
-      "setupMs": 798,
+      "setupMs": 1500,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -62696,7 +62040,7 @@
       "size": "1440",
       "theme": "light",
       "file": "learn-learn-practice__1440-light.png",
-      "setupMs": 829,
+      "setupMs": 2532,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -62922,7 +62266,7 @@
       "size": "1920",
       "theme": "light",
       "file": "learn-learn-practice__1920-light.png",
-      "setupMs": 738,
+      "setupMs": 1483,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -63148,7 +62492,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "learn-learn-practice__390-dark-dark.png",
-      "setupMs": 685,
+      "setupMs": 1081,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -63380,7 +62724,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "learn-learn-practice__1440-dark-dark.png",
-      "setupMs": 806,
+      "setupMs": 2723,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -63606,7 +62950,7 @@
       "size": "390",
       "theme": "light",
       "file": "learn-learn-practice-wrong__390-light.png",
-      "setupMs": 810,
+      "setupMs": 2420,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -63875,7 +63219,7 @@
       "size": "768",
       "theme": "light",
       "file": "learn-learn-practice-wrong__768-light.png",
-      "setupMs": 855,
+      "setupMs": 4766,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -64144,7 +63488,7 @@
       "size": "1024",
       "theme": "light",
       "file": "learn-learn-practice-wrong__1024-light.png",
-      "setupMs": 877,
+      "setupMs": 4952,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -64413,7 +63757,7 @@
       "size": "1280",
       "theme": "light",
       "file": "learn-learn-practice-wrong__1280-light.png",
-      "setupMs": 867,
+      "setupMs": 2301,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -64682,7 +64026,7 @@
       "size": "1440",
       "theme": "light",
       "file": "learn-learn-practice-wrong__1440-light.png",
-      "setupMs": 847,
+      "setupMs": 2466,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -64951,7 +64295,7 @@
       "size": "1920",
       "theme": "light",
       "file": "learn-learn-practice-wrong__1920-light.png",
-      "setupMs": 884,
+      "setupMs": 4517,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -65220,7 +64564,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "learn-learn-practice-wrong__390-dark-dark.png",
-      "setupMs": 764,
+      "setupMs": 4210,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -65489,7 +64833,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "learn-learn-practice-wrong__1440-dark-dark.png",
-      "setupMs": 874,
+      "setupMs": 2528,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -65758,7 +65102,7 @@
       "size": "390",
       "theme": "light",
       "file": "puzzles-puzzle-list__390-light.png",
-      "setupMs": 521,
+      "setupMs": 7019,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -66108,7 +65452,7 @@
       "size": "768",
       "theme": "light",
       "file": "puzzles-puzzle-list__768-light.png",
-      "setupMs": 557,
+      "setupMs": 7256,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -66458,7 +65802,7 @@
       "size": "1024",
       "theme": "light",
       "file": "puzzles-puzzle-list__1024-light.png",
-      "setupMs": 601,
+      "setupMs": 4026,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -66815,7 +66159,7 @@
       "size": "1280",
       "theme": "light",
       "file": "puzzles-puzzle-list__1280-light.png",
-      "setupMs": 526,
+      "setupMs": 11516,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -67172,7 +66516,7 @@
       "size": "1440",
       "theme": "light",
       "file": "puzzles-puzzle-list__1440-light.png",
-      "setupMs": 732,
+      "setupMs": 6222,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -67529,7 +66873,7 @@
       "size": "1920",
       "theme": "light",
       "file": "puzzles-puzzle-list__1920-light.png",
-      "setupMs": 625,
+      "setupMs": 4051,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -67886,7 +67230,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "puzzles-puzzle-list__390-dark-dark.png",
-      "setupMs": 570,
+      "setupMs": 3476,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -68236,7 +67580,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "puzzles-puzzle-list__1440-dark-dark.png",
-      "setupMs": 587,
+      "setupMs": 5185,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -68593,7 +67937,7 @@
       "size": "390",
       "theme": "light",
       "file": "puzzles-puzzle-wrong__390-light.png",
-      "setupMs": 730,
+      "setupMs": 5215,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -68862,7 +68206,7 @@
       "size": "768",
       "theme": "light",
       "file": "puzzles-puzzle-wrong__768-light.png",
-      "setupMs": 791,
+      "setupMs": 8139,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -69131,7 +68475,7 @@
       "size": "1024",
       "theme": "light",
       "file": "puzzles-puzzle-wrong__1024-light.png",
-      "setupMs": 954,
+      "setupMs": 5060,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -69400,7 +68744,7 @@
       "size": "1280",
       "theme": "light",
       "file": "puzzles-puzzle-wrong__1280-light.png",
-      "setupMs": 1002,
+      "setupMs": 7336,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -69669,7 +69013,7 @@
       "size": "1440",
       "theme": "light",
       "file": "puzzles-puzzle-wrong__1440-light.png",
-      "setupMs": 1058,
+      "setupMs": 6829,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -69938,7 +69282,7 @@
       "size": "1920",
       "theme": "light",
       "file": "puzzles-puzzle-wrong__1920-light.png",
-      "setupMs": 1295,
+      "setupMs": 2802,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -70207,7 +69551,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "puzzles-puzzle-wrong__390-dark-dark.png",
-      "setupMs": 998,
+      "setupMs": 1033,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -70476,7 +69820,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "puzzles-puzzle-wrong__1440-dark-dark.png",
-      "setupMs": 987,
+      "setupMs": 2978,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -70745,7 +70089,7 @@
       "size": "390",
       "theme": "light",
       "file": "puzzles-puzzle-correct__390-light.png",
-      "setupMs": 936,
+      "setupMs": 1785,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -71036,7 +70380,7 @@
       "size": "768",
       "theme": "light",
       "file": "puzzles-puzzle-correct__768-light.png",
-      "setupMs": 980,
+      "setupMs": 3759,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -71327,7 +70671,7 @@
       "size": "1024",
       "theme": "light",
       "file": "puzzles-puzzle-correct__1024-light.png",
-      "setupMs": 898,
+      "setupMs": 4619,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -71618,7 +70962,7 @@
       "size": "1280",
       "theme": "light",
       "file": "puzzles-puzzle-correct__1280-light.png",
-      "setupMs": 1200,
+      "setupMs": 2055,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -71909,7 +71253,7 @@
       "size": "1440",
       "theme": "light",
       "file": "puzzles-puzzle-correct__1440-light.png",
-      "setupMs": 1017,
+      "setupMs": 1447,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -72200,7 +71544,7 @@
       "size": "1920",
       "theme": "light",
       "file": "puzzles-puzzle-correct__1920-light.png",
-      "setupMs": 956,
+      "setupMs": 1649,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -72491,7 +71835,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "puzzles-puzzle-correct__390-dark-dark.png",
-      "setupMs": 809,
+      "setupMs": 4160,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -72782,7 +72126,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "puzzles-puzzle-correct__1440-dark-dark.png",
-      "setupMs": 993,
+      "setupMs": 2035,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -73073,7 +72417,7 @@
       "size": "390",
       "theme": "light",
       "file": "review-review-empty__390-light.png",
-      "setupMs": 570,
+      "setupMs": 1552,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -73258,7 +72602,7 @@
       "size": "768",
       "theme": "light",
       "file": "review-review-empty__768-light.png",
-      "setupMs": 885,
+      "setupMs": 1388,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -73443,7 +72787,7 @@
       "size": "1024",
       "theme": "light",
       "file": "review-review-empty__1024-light.png",
-      "setupMs": 629,
+      "setupMs": 1037,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -73628,7 +72972,7 @@
       "size": "1280",
       "theme": "light",
       "file": "review-review-empty__1280-light.png",
-      "setupMs": 536,
+      "setupMs": 1546,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -73813,7 +73157,7 @@
       "size": "1440",
       "theme": "light",
       "file": "review-review-empty__1440-light.png",
-      "setupMs": 661,
+      "setupMs": 1492,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -73998,7 +73342,7 @@
       "size": "1920",
       "theme": "light",
       "file": "review-review-empty__1920-light.png",
-      "setupMs": 604,
+      "setupMs": 2418,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -74183,7 +73527,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "review-review-empty__390-dark-dark.png",
-      "setupMs": 527,
+      "setupMs": 1479,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -74368,7 +73712,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "review-review-empty__1440-dark-dark.png",
-      "setupMs": 551,
+      "setupMs": 2153,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -74553,7 +73897,7 @@
       "size": "390",
       "theme": "light",
       "file": "review-review-library__390-light.png",
-      "setupMs": 502,
+      "setupMs": 4250,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -74741,7 +74085,7 @@
       "size": "768",
       "theme": "light",
       "file": "review-review-library__768-light.png",
-      "setupMs": 556,
+      "setupMs": 5932,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -74929,7 +74273,7 @@
       "size": "1024",
       "theme": "light",
       "file": "review-review-library__1024-light.png",
-      "setupMs": 590,
+      "setupMs": 3405,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -75117,7 +74461,7 @@
       "size": "1280",
       "theme": "light",
       "file": "review-review-library__1280-light.png",
-      "setupMs": 656,
+      "setupMs": 2201,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -75305,7 +74649,7 @@
       "size": "1440",
       "theme": "light",
       "file": "review-review-library__1440-light.png",
-      "setupMs": 572,
+      "setupMs": 3444,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -75493,7 +74837,7 @@
       "size": "1920",
       "theme": "light",
       "file": "review-review-library__1920-light.png",
-      "setupMs": 564,
+      "setupMs": 2873,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -75681,7 +75025,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "review-review-library__390-dark-dark.png",
-      "setupMs": 626,
+      "setupMs": 5851,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -75869,7 +75213,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "review-review-library__1440-dark-dark.png",
-      "setupMs": 524,
+      "setupMs": 6256,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -76057,7 +75401,7 @@
       "size": "390",
       "theme": "light",
       "file": "review-review-replay__390-light.png",
-      "setupMs": 1086,
+      "setupMs": 10218,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -76359,7 +75703,7 @@
       "size": "768",
       "theme": "light",
       "file": "review-review-replay__768-light.png",
-      "setupMs": 1044,
+      "setupMs": 7813,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -76661,7 +76005,7 @@
       "size": "1024",
       "theme": "light",
       "file": "review-review-replay__1024-light.png",
-      "setupMs": 1150,
+      "setupMs": 11315,
       "boardDetails": {
         "coordText": {
           "width": 12.33,
@@ -76963,7 +76307,7 @@
       "size": "1280",
       "theme": "light",
       "file": "review-review-replay__1280-light.png",
-      "setupMs": 1167,
+      "setupMs": 11680,
       "boardDetails": {
         "coordText": {
           "width": 14.84,
@@ -77265,7 +76609,7 @@
       "size": "1440",
       "theme": "light",
       "file": "review-review-replay__1440-light.png",
-      "setupMs": 1091,
+      "setupMs": 13993,
       "boardDetails": {
         "coordText": {
           "width": 14.84,
@@ -77567,7 +76911,7 @@
       "size": "1920",
       "theme": "light",
       "file": "review-review-replay__1920-light.png",
-      "setupMs": 1122,
+      "setupMs": 9319,
       "boardDetails": {
         "coordText": {
           "width": 14.84,
@@ -77869,7 +77213,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "review-review-replay__390-dark-dark.png",
-      "setupMs": 1065,
+      "setupMs": 6321,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -78171,7 +77515,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "review-review-replay__1440-dark-dark.png",
-      "setupMs": 1291,
+      "setupMs": 8998,
       "boardDetails": {
         "coordText": {
           "width": 14.84,
@@ -78473,7 +77817,7 @@
       "size": "390",
       "theme": "light",
       "file": "review-review-analysis__390-light.png",
-      "setupMs": 1134,
+      "setupMs": 10786,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -78776,7 +78120,7 @@
       "size": "768",
       "theme": "light",
       "file": "review-review-analysis__768-light.png",
-      "setupMs": 1176,
+      "setupMs": 8504,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -79079,7 +78423,7 @@
       "size": "1024",
       "theme": "light",
       "file": "review-review-analysis__1024-light.png",
-      "setupMs": 1342,
+      "setupMs": 6994,
       "boardDetails": {
         "coordText": {
           "width": 12.33,
@@ -79382,7 +78726,7 @@
       "size": "1280",
       "theme": "light",
       "file": "review-review-analysis__1280-light.png",
-      "setupMs": 1257,
+      "setupMs": 7305,
       "boardDetails": {
         "coordText": {
           "width": 14.84,
@@ -79685,7 +79029,7 @@
       "size": "1440",
       "theme": "light",
       "file": "review-review-analysis__1440-light.png",
-      "setupMs": 1249,
+      "setupMs": 8229,
       "boardDetails": {
         "coordText": {
           "width": 14.84,
@@ -79988,7 +79332,7 @@
       "size": "1920",
       "theme": "light",
       "file": "review-review-analysis__1920-light.png",
-      "setupMs": 1299,
+      "setupMs": 13982,
       "boardDetails": {
         "coordText": {
           "width": 14.84,
@@ -80291,7 +79635,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "review-review-analysis__390-dark-dark.png",
-      "setupMs": 1161,
+      "setupMs": 6707,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -80594,7 +79938,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "review-review-analysis__1440-dark-dark.png",
-      "setupMs": 1236,
+      "setupMs": 8091,
       "boardDetails": {
         "coordText": {
           "width": 14.84,

@@ -95,7 +95,7 @@ describe('AiPanel —— 两级信息', () => {
   })
 
   it.each([
-    ['win', 'AI 看到一条连成五子的必胜路线，走了它的第一步。'],
+    ['win', 'AI 算出一条连成五子的必胜路线，走了这条路线上的下一手。'],
     ['block', 'AI 在防守：你下一手能连成五子，它先堵住。'],
     ['opening', '开局第一手，AI 占了天元。'],
     ['search', 'AI 完整搜索后选了这一手。'],
@@ -107,17 +107,21 @@ describe('AiPanel —— 两级信息', () => {
     expect(screen.getByTestId('ai-player-view')).toHaveTextContent(sentence)
   })
 
-  /**
-   * 边界：`no_move` 时引擎返回 `move: null`（棋盘已满），
-   * 那时**不能编一个坐标出来**。上面 `.each` 那张表每档都带着 `move`，
-   * 单独把这一档挑出来测——否则「没有落点」这条路一次都不会被执行。
+  /*
+   * 这里**删掉**过一条用例：「棋盘已满（没有落点）时只说原因，不编坐标出来」——
+   * 它给 `AiInfo.move` 传 `null` 来测面板的空分支。
+   *
+   * 那个 `null` **到不了面板**：`requestAiMove` 在写 `aiInfo` 之前就把 `no_move`
+   * 挡掉了（`gameStore.ts` 的那道闸门），所以 `AiInfo.move` 的类型已经是 `Point`，
+   * 面板也没有空分支了。留住那条用例等于给一个不可能发生的输入写断言。
+   *
+   * 不变量本身没丢——它搬到了它真正的归属地：`gameStore.test.ts` 的
+   * 「引擎给出 move: null（无棋可走）时不写 aiInfo」。那里一红，就说明闸门没了。
+   *
+   * 顺带一提：上面 `.each` 表里 `no_move` 那一行也是同一个道理——它测的是
+   * 「六档一张表、每档都有一句人话」（映射完整性），不代表应用会出现
+   * 「`no_move` 还带着落点」这个组合。真的不会。
    */
-  it('棋盘已满（没有落点）时只说原因，不编坐标出来', () => {
-    setup({ info: { ...INFO, reason: 'no_move', move: null } })
-
-    expect(screen.getByTestId('ai-player-view')).toHaveTextContent('棋盘已满，AI 没有可落子的位置。')
-    expect(screen.queryByTestId('ai-move')).not.toBeInTheDocument()
-  })
 
   it('展开后才说明引擎是怎么跑的', () => {
     setup({ info: INFO })

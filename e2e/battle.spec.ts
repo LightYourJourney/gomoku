@@ -48,6 +48,60 @@ test('人机对战：玩家落子后 AI 自动应手', async ({ page }) => {
   await expect(page.getByTestId('stone-7-7')).not.toHaveAttribute('data-last', 'true')
 })
 
+/**
+ * 棋谱里高亮的是**最后一手**，用的是 `accent` 而不是 `danger`。
+ *
+ * **在真浏览器里读算出来的颜色**，不断言类名：类名一改样式表就不作数了，
+ * 而这条要求的实质是「侧栏里不准再出现一条朱砂红」（任务书 §四）。
+ * jsdom 这边比不了——它不解析样式表，`getComputedStyle` 拿不到 `var()` 的值。
+ */
+test('棋谱高亮的最后一手是 accent 色，不是 danger 色', async ({ page }) => {
+  await page.goto('/')
+  await page.getByTestId('intersection-7-7').click()
+  await expect(page.getByTestId(/^stone-/)).toHaveCount(2)
+
+  const measured = await page.evaluate(() => {
+    /*
+     * 用一个探针元素把 token 归一成浏览器算出来的 `rgb()`——
+     * 省得在这里猜 token 是 hex 还是 oklch，也省得把颜色写死。
+     */
+    const probe = document.createElement('div')
+    document.body.appendChild(probe)
+    const read = (token: string): string => {
+      probe.style.backgroundColor = `var(${token})`
+      return getComputedStyle(probe).backgroundColor
+    }
+    const accentSoft = read('--c-accent-soft')
+    const accent = read('--c-accent')
+    const dangerSoft = read('--c-danger-soft')
+    probe.remove()
+
+    const cells = Array.from(document.querySelectorAll<HTMLElement>('[data-testid^="move-"]'))
+    return {
+      accentSoft,
+      accent,
+      dangerSoft,
+      cells: cells.map((cell) => {
+        const style = getComputedStyle(cell)
+        return { id: cell.getAttribute('data-testid'), bg: style.backgroundColor, fg: style.color }
+      }),
+    }
+  })
+
+  // 双方各一手
+  expect(measured.cells).toHaveLength(2)
+
+  const highlighted = measured.cells.filter((cell) => cell.bg === measured.accentSoft)
+  expect(highlighted).toHaveLength(1)
+  expect(highlighted[0]?.fg).toBe(measured.accent)
+
+  // 高亮跟的是「最后一手」：刚才是 AI 应的手，不是玩家那第一手
+  expect(highlighted[0]?.id).not.toBe('move-7-7')
+
+  // 一条朱砂红都不能有——这正是 Phase 03 整改掉的那个毛病
+  expect(measured.cells.filter((cell) => cell.bg === measured.dangerSoft)).toHaveLength(0)
+})
+
 test('落子位置与点击的交叉点一致', async ({ page }) => {
   await page.goto('/')
 
@@ -630,7 +684,22 @@ test.describe('AI 面板的两级信息', () => {
   test('展开状态在离开页面再回来之后不保留', async ({ page }) => {
     await playUntilAiAnalysed(page)
 
-    await page.getByRole('button', { name: 'AI 引擎的技术详情' }).click()
+    /*
+     * 先把「面板已就绪」断言出来，再点。
+     *
+     * 冷启动首跑时这条用例在下面那个 `.click()` 上 30s 超时红过一次
+     * （随后串行 3/3、并行 4/4 全过，复现不了）。30s 是 Playwright 的**可点性**
+     * 检查在超时——元素可见、属性也对，但要么被别的元素挡着、要么一直在动；
+     * `.toHaveAttribute` 不查可点性，所以前面那些断言全绿也说明不了什么。
+     *
+     * 这里改不掉那个未知的成因，但能把「30 秒后一句 `Test timeout`」
+     * 换成一句指得出是哪个按钮没就绪的失败。失败时 trace 会留下，能直接看是谁挡的。
+     */
+    const infoButton = page.getByRole('button', { name: 'AI 引擎的技术详情' })
+    await expect(infoButton).toBeVisible()
+    await expect(infoButton).toHaveAttribute('aria-expanded', 'false')
+
+    await infoButton.click()
     await expect(page.getByText(/Negamax/)).toBeVisible()
 
     // 切到教学页再回来：BattleScreen 重新挂载，store 里的分析结果还在

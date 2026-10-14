@@ -216,6 +216,26 @@ describe('AI 应手', () => {
     })
   })
 
+  /*
+   * `no_move`（棋盘已满）这一档**到不了面板**：`requestAiMove` 在写 `aiInfo` 之前
+   * 就把它挡掉了。`AiInfo.move` 因此能声明成 `Point` 而不是 `Point | null`，
+   * 面板也不必防一个不会发生的 null（判据：AiPanel 里那条 `info.move !== null` 分支
+   * 是纸面防御，已删）。
+   *
+   * 这条用例钉住的是那道闸门本身。闸门被删掉时，这里会红——
+   * 而不是等到界面上真的冒出一个编出来的坐标。
+   */
+  it('引擎给出 move: null（无棋可走）时不写 aiInfo', () => {
+    state().playHuman({ x: 7, y: 7 })
+    engine.reply(null, { reason: 'no_move' })
+
+    return engine.flush().then(() => {
+      expect(state().aiInfo).toBeNull()
+      // 但也不能把对局卡在「AI 思考中」
+      expect(state().aiThinking).toBe(false)
+    })
+  })
+
   it('引擎报错时给出提示，并且不把对局卡在思考状态', () => {
     state().playHuman({ x: 7, y: 7 })
     engine.fail(new Error('Worker 挂了'))
