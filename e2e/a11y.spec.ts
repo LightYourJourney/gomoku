@@ -88,28 +88,41 @@ async function holdAiInThinking(page: import('@playwright/test').Page): Promise<
 }
 
 /**
- * 按 Tab 走进棋盘，直到焦点落在某一格上。
+ * 按 Tab 直到焦点落到满足 `hit` 的控件上，返回按了几次；找不到返回 `limit + 1`。
  *
- * 用**真键盘**而不是程序化 `.focus()`——这是使用说明里写给玩家的入口，也是 SVG
- * 元素 Tab 可达性唯一会被验到的地方。
+ * 用**真键盘**而不是程序化 `.focus()`——那是使用说明里写给玩家的入口，
+ * 程序化聚焦证明不了键盘用户到得了。
  *
- * 抽出来是因为它在本文件里出现了两次（思考期间那条、思考结束后那条），连魔数 `12`
- * 和那句失败提示都是逐字重复的。`FINDINGS.md` §10.3 裁定过「e2e 之间的小重复不值得
- * 抽跨 spec 的共享文件」——那是**跨文件**的取舍，同一个文件内部没有这个成本。
+ * 这个走法在本文件里已经出现了**六处**，只有谓词、上限和那句失败提示不同。
+ * `FINDINGS.md` §10.3 裁定过「e2e 之间的小重复不值得抽跨 spec 的共享文件」——
+ * 那是**跨文件**的取舍，同一个文件内部没有这个成本，所以它住在这里。
+ *
+ * 焦点元素的 `textContent` 取 `trim()` 后返回：按钮上常有无障碍用的前后空白，
+ * 不 trim 的话 `startsWith` 会莫名其妙地判假。
  */
+async function tabUntil(
+  page: import('@playwright/test').Page,
+  limit: number,
+  hit: (focus: { readonly text: string; readonly role: string | null }) => boolean,
+): Promise<number> {
+  for (let tabs = 1; tabs <= limit; tabs += 1) {
+    await page.keyboard.press('Tab')
+    const focus = await page.evaluate(() => ({
+      text: (document.activeElement?.textContent ?? '').trim(),
+      // 没有 activeElement 时也要给 `null`，不能漏成 `undefined`——签名里只有两种值
+      role: document.activeElement?.getAttribute('role') ?? null,
+    }))
+    if (hit(focus)) return tabs
+  }
+  return limit + 1
+}
+
+/** 按 Tab 走进棋盘，直到焦点落在某一格上。 */
 async function tabIntoBoard(page: import('@playwright/test').Page): Promise<void> {
   await expect(page.getByRole('gridcell', { name: 'H8 空位' })).toHaveCount(1)
 
-  let tabs = 0
-  while (tabs < 12) {
-    await page.keyboard.press('Tab')
-    tabs += 1
-    const onCell = await page.evaluate(
-      () => document.activeElement?.getAttribute('role') === 'gridcell',
-    )
-    if (onCell) break
-  }
-  expect(tabs, '按 Tab 应该能在 12 步之内进到棋盘里').toBeLessThan(12)
+  const tabs = await tabUntil(page, 12, (focus) => focus.role === 'gridcell')
+  expect(tabs, '按 Tab 应该能在 12 步之内进到棋盘里').toBeLessThanOrEqual(12)
 }
 
 test.describe('键盘操作', () => {
@@ -299,14 +312,8 @@ test.describe('键盘操作 · 教学页', () => {
     // 第 0 步：渲染但禁用——键盘走不到它，这正是判据（不是隐藏，隐藏会让工具栏跳动）
     await expect(page.getByRole('button', { name: '上一步' })).toBeDisabled()
 
-    let tabs = 0
-    while (tabs < 20) {
-      await page.keyboard.press('Tab')
-      tabs += 1
-      const text = await page.evaluate(() => document.activeElement?.textContent ?? '')
-      if (text.includes('下一步')) break
-    }
-    expect(tabs, '按 Tab 应该能在 20 步之内走到「下一步」').toBeLessThan(20)
+    const tabs = await tabUntil(page, 20, (focus) => focus.text.includes('下一步'))
+    expect(tabs, '按 Tab 应该能在 20 步之内走到「下一步」').toBeLessThanOrEqual(20)
 
     await page.keyboard.press('Enter')
 
@@ -334,14 +341,8 @@ test.describe('键盘操作 · 教学页', () => {
       （独立验收时发现的：文档声称覆盖了，实际 `grep 回到讲解 e2e/` 是零）。
       仍然用真键盘 Tab 过去——程序化 `.focus()` 证明不了键盘用户到得了。
     */
-    let tabs = 0
-    while (tabs < 25) {
-      await page.keyboard.press('Tab')
-      tabs += 1
-      const text = await page.evaluate(() => document.activeElement?.textContent ?? '')
-      if (text.includes('回到讲解')) break
-    }
-    expect(tabs, '按 Tab 应该能在 25 步之内走到「回到讲解」').toBeLessThan(25)
+    const tabs = await tabUntil(page, 25, (focus) => focus.text.includes('回到讲解'))
+    expect(tabs, '按 Tab 应该能在 25 步之内走到「回到讲解」').toBeLessThanOrEqual(25)
     await page.keyboard.press('Enter')
 
     // 回到的是**最后一页**（玩家是从那儿过来的），不是第一页
@@ -357,14 +358,8 @@ test.describe('键盘操作 · 教学页', () => {
     const cta = page.getByRole('button', { name: /^继续学习：/ })
     await expect(cta).toBeVisible()
 
-    let tabs = 0
-    while (tabs < 25) {
-      await page.keyboard.press('Tab')
-      tabs += 1
-      const text = await page.evaluate(() => document.activeElement?.textContent ?? '')
-      if (text.startsWith('继续学习：')) break
-    }
-    expect(tabs, '按 Tab 应该能在 25 步之内走到「继续学习」').toBeLessThan(25)
+    const tabs = await tabUntil(page, 25, (focus) => focus.text.startsWith('继续学习：'))
+    expect(tabs, '按 Tab 应该能在 25 步之内走到「继续学习」').toBeLessThanOrEqual(25)
 
     await page.keyboard.press('Enter')
     await expect(page.getByRole('heading', { name: LESSONS[0]!.steps[0]!.title })).toBeVisible()
@@ -389,14 +384,8 @@ test.describe('键盘操作 · 残局', () => {
     const cta = page.getByRole('button', { name: /^继续挑战：/ })
     await expect(cta).toBeVisible()
 
-    let tabs = 0
-    while (tabs < 30) {
-      await page.keyboard.press('Tab')
-      tabs += 1
-      const text = await page.evaluate(() => document.activeElement?.textContent ?? '')
-      if (text.startsWith('继续挑战：')) break
-    }
-    expect(tabs, '按 Tab 应该能在 30 步之内走到「继续挑战」').toBeLessThan(30)
+    const tabs = await tabUntil(page, 30, (focus) => focus.text.startsWith('继续挑战：'))
+    expect(tabs, '按 Tab 应该能在 30 步之内走到「继续挑战」').toBeLessThanOrEqual(30)
 
     await page.keyboard.press('Enter')
     await expect(page.getByRole('heading', { level: 1, name: '横向补满' })).toBeVisible()
@@ -419,14 +408,8 @@ test.describe('键盘操作 · 残局', () => {
     await page.getByTestId(`intersection-${match![1]}-${match![2]}`).click()
     await expect(page.getByTestId('feedback')).toHaveAttribute('data-ok', 'true')
 
-    let tabs = 0
-    while (tabs < 30) {
-      await page.keyboard.press('Tab')
-      tabs += 1
-      const text = await page.evaluate(() => document.activeElement?.textContent ?? '')
-      if (text.includes('下一题')) break
-    }
-    expect(tabs, '按 Tab 应该能在 30 步之内走到「下一题」').toBeLessThan(30)
+    const tabs = await tabUntil(page, 30, (focus) => focus.text.includes('下一题'))
+    expect(tabs, '按 Tab 应该能在 30 步之内走到「下一题」').toBeLessThanOrEqual(30)
 
     await page.keyboard.press('Enter')
     await expect(page.getByRole('heading', { level: 1, name: '斜向补满' })).toBeVisible()

@@ -20,7 +20,8 @@
  * `wide-layout` 解除固定高度，而对战页的容器条件仍是 `lg:`，768–1023 横屏下
  * 前者命中、后者不命中，`h-auto` 的 `container-type: size` 容器拿不到确定高度，
  * **棋盘塌成 0×0**（`e2e/layout.spec.ts`「对战页在 768–1023 横屏」钉着这一格）。
- * 收回单列也不合规：那一档的固定高度算下来只有 264px，低于 §8.1 的 320px。
+ * 收回单列也不合规：那一档的固定高是 `min(100vw−1.5rem, 56dvh)` 减 `py-3` 的
+ * 24px——900×500 下即 `280 − 24 = 256px`，低于 §8.1 的 320px。
  */
 @custom-variant wide-layout {
   @media (min-width: 1024px), (min-width: 768px) and (orientation: landscape) and (min-height: 500px) {

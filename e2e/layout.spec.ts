@@ -124,16 +124,32 @@ test('两栏最低高度那一档，棋盘仍在 320px 之上', async ({ page })
  * `100cqh` 没有确定值，棋盘会塌。
  *
  * 三个页面在同一条路径上，只验其中一个就会漏掉另外两个。
+ *
+ * 四个角各测一次，而不是只钉一个点：这条带子的**宽高两维都在变**，
+ * 而塌陷是「`wide-layout` 命中、`lg` 不命中」造成的——只要还在这条带子里
+ * 就该成立，没有理由只在其中一点成立。四个角分别是：
+ *
+ * - **768×500**：宽度与高度的**双重下限**（`wide-layout` 横屏那支要 ≥768 且 ≥500）
+ * - **800×600**：带内最窄的常规窗口，侧栏 `clamp` 取到下限 300px，棋盘列最窄
+ * - **900×500**：高度下限那一档，修复前实测 0×0 的就是它（保留这条证据链）
+ * - **1023×800**：宽度上限，再宽 1px 就归 `lg` 管了
  */
-test('对战页在 768–1023 横屏：棋盘不塌', async ({ page }) => {
-  await page.setViewportSize({ width: 900, height: 500 })
-  await page.goto('/')
-  await expect(page.getByTestId('board')).toBeVisible()
+for (const [width, height] of [
+  [768, 500],
+  [800, 600],
+  [900, 500],
+  [1023, 800],
+] as const) {
+  test(`对战页 @${width}×${height}（768–1023 横屏）：棋盘不塌`, async ({ page }) => {
+    await page.setViewportSize({ width, height })
+    await page.goto('/')
+    await expect(page.getByTestId('board')).toBeVisible()
 
-  const box = await boardBox(page)
-  expect(box.width, `棋盘只有 ${box.width}px 宽`).toBeGreaterThanOrEqual(MIN_BOARD)
-  expect(Math.abs(box.width - box.height)).toBeLessThan(1)
-})
+    const box = await boardBox(page)
+    expect(box.width, `棋盘只有 ${box.width}px 宽`).toBeGreaterThanOrEqual(MIN_BOARD)
+    expect(Math.abs(box.width - box.height)).toBeLessThan(1)
+  })
+}
 
 test('平板**竖屏**（768×1024）仍是纵向堆叠——竖屏本来就该这样', async ({ page }) => {
   await page.setViewportSize({ width: 768, height: 1024 })
