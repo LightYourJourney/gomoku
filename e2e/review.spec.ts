@@ -131,3 +131,94 @@ test('分析：逐手跑完并给出结论，标注引擎出处', async ({ page 
   // 至少给出一条结论，且带引擎推荐坐标
   await expect(page.getByTestId(/^verdict-/).first()).toContainText('引擎推荐')
 })
+
+test('空状态那颗「开始一局对战」真的切到对战页', async ({ page }) => {
+  await page.goto('/')
+  await page.getByRole('button', { name: '复盘', exact: true }).click()
+
+  // 全新会话（beforeEach 清过库）→ 空状态
+  await expect(page.getByText('还没有保存的对局')).toBeVisible()
+  await page.getByRole('button', { name: '开始一局对战' }).click()
+
+  // 真的落在对战页上：状态条与棋盘都在，而不是只换了个界面外观
+  await expect(page.getByTestId('status-pill')).toBeVisible()
+  await expect(page.getByTestId('board')).toBeVisible()
+})
+
+/** 开一局、打完、进复盘、点开第一条。四条新用例开头都是这套，抽出来。 */
+async function openFirstRecord(page: Page): Promise<void> {
+  await page.goto('/')
+  await playNineMoveWin(page)
+  await page.getByRole('button', { name: '看看棋盘' }).click()
+  await gotoReview(page)
+  await page.getByTestId(/^record-/).first().click()
+  await expect(page.getByTestId('move-counter')).toHaveText('0 / 9')
+}
+
+test('时间轴：拖到任意一手，棋盘与两个计数一起走', async ({ page }) => {
+  await openFirstRecord(page)
+
+  const slider = page.getByRole('slider', { name: '回放手数' })
+  await expect(slider).toHaveValue('0')
+
+  await slider.fill('5')
+  await expect(page.getByTestId('move-counter')).toHaveText('5 / 9')
+  await expect(page.getByTestId('timeline-counter')).toHaveText('5 / 9 手')
+  // **棋盘也要跟着走**——只改数字不算数
+  await expect(page.getByTestId(/^board-mark-/)).toHaveCount(5)
+
+  // 边界：到终局
+  await slider.fill('9')
+  await expect(page.getByTestId('move-counter')).toHaveText('9 / 9')
+  await expect(page.getByTestId(/^board-mark-/)).toHaveCount(9)
+
+  // 两个跳跃按钮
+  await page.getByRole('button', { name: '开局' }).click()
+  await expect(page.getByTestId('move-counter')).toHaveText('0 / 9')
+  await page.getByRole('button', { name: '终局' }).click()
+  await expect(page.getByTestId('move-counter')).toHaveText('9 / 9')
+})
+
+test('播放速度：切到快速后，按新间隔走完', async ({ page }) => {
+  await openFirstRecord(page)
+
+  // 默认标准档
+  await expect(page.getByTestId('replay-speed-normal')).toHaveAttribute('aria-pressed', 'true')
+
+  await page.getByTestId('replay-speed-fast').click()
+  await expect(page.getByTestId('replay-speed-fast')).toHaveAttribute('aria-pressed', 'true')
+  await expect(page.getByTestId('replay-speed-normal')).toHaveAttribute('aria-pressed', 'false')
+
+  await page.getByRole('button', { name: '自动播放' }).click()
+  await expect(page.getByRole('button', { name: '暂停' })).toBeVisible()
+
+  // 快速档 400ms/手：9 手 3.6 秒。给到 8 秒，比标准档（8.1 秒）短，
+  // 所以这条**能区分**两档——若速度没生效，标准档跑不完。
+  await expect(page.getByTestId('move-counter')).toHaveText('9 / 9', { timeout: 8_000 })
+  // 到尾自动停：按钮弹回「自动播放」
+  await expect(page.getByRole('button', { name: '自动播放' })).toBeVisible()
+})
+
+test('点分析结论里的关键手：棋盘跳到那一手，卡片高亮', async ({ page }) => {
+  test.setTimeout(90_000)
+  await openFirstRecord(page)
+
+  await page.getByRole('button', { name: '开始分析' }).click()
+  await expect(page.getByTestId('analysis-progress')).toContainText('9 / 9', { timeout: 60_000 })
+
+  const first = page.getByTestId(/^verdict-/).first()
+  await expect(first).toContainText('第')
+
+  // 从卡片自己写的「第 N 手」里取出 N——**这就是 off-by-one 的判据**：
+  // 卡片上是 1-based，游标是「已看到第几手」，第 N 手之后就该是 N。
+  const label = (await first.textContent()) ?? ''
+  const moveNo = Number(/第\s*(\d+)\s*手/.exec(label)?.[1])
+  expect(moveNo, `没能从「${label}」里读出第几手`).toBeGreaterThan(0)
+
+  await first.click()
+
+  await expect(page.getByTestId('move-counter')).toHaveText(`${moveNo} / 9`)
+  await expect(first).toHaveAttribute('data-selected', 'true')
+  // 棋盘真的落到那一手：编号数 = N
+  await expect(page.getByTestId(/^board-mark-/)).toHaveCount(moveNo)
+})

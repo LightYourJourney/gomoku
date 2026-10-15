@@ -46,7 +46,7 @@ function resignRecord(): RecordInput {
 
 beforeEach(async () => {
   // 逐条清库，互不串场
-  const records = await indexedDbGameRecords.list()
+  const { records } = await indexedDbGameRecords.list()
   for (const record of records) {
     await indexedDbGameRecords.delete(record.seq)
   }
@@ -70,8 +70,8 @@ describe('棋谱库 —— IndexedDB', () => {
 
     expect(second.seq).toBeGreaterThan(first.seq)
 
-    const list = await indexedDbGameRecords.list()
-    expect(list.map((record) => record.seq)).toEqual([second.seq, first.seq])
+    const { records } = await indexedDbGameRecords.list()
+    expect(records.map((record) => record.seq)).toEqual([second.seq, first.seq])
   })
 
   it('认输局的 winner 是认输方的对手', async () => {
@@ -104,7 +104,7 @@ describe('棋谱库 —— IndexedDB', () => {
     await indexedDbGameRecords.delete(saved.seq)
 
     expect(await indexedDbGameRecords.get(saved.seq)).toBeNull()
-    expect(await indexedDbGameRecords.list()).toHaveLength(0)
+    expect((await indexedDbGameRecords.list()).records).toHaveLength(0)
   })
 })
 
@@ -140,7 +140,7 @@ describe('棋谱库 —— 损坏数据', () => {
     const memory = memoryGameRecords()
     await memory.put(winRecord())
 
-    const list = await memory.list()
+    const { records: list } = await memory.list()
     expect(list).toHaveLength(1) // 合法数据照常读回
   })
 })
@@ -228,7 +228,7 @@ describe('saveGameReplacing：替换而不是留下两条', () => {
 
     expect(result.persisted).toBe(true)
     expect(await indexedDbGameRecords.get(first.seq)).toBeNull()
-    expect(await indexedDbGameRecords.list()).toHaveLength(1)
+    expect((await indexedDbGameRecords.list()).records).toHaveLength(1)
   })
 
   it('没有 replacesSeq 但内容相同的旧条也会被替换（刷新后重新终局的路径）', async () => {
@@ -236,7 +236,7 @@ describe('saveGameReplacing：替换而不是留下两条', () => {
     // 模拟「刷新后 recordedSeq 丢了」：不知道旧 seq，但手顺一样
     const again = await saveGameReplacing(winRecord(), null)
 
-    expect(await indexedDbGameRecords.list()).toHaveLength(1)
+    expect((await indexedDbGameRecords.list()).records).toHaveLength(1)
     expect(again.record.seq).not.toBe(first.seq)
   })
 

@@ -46,7 +46,7 @@ function threeMoveRecord(): ReplayRecord {
 
 describe('GameLibrary', () => {
   it('空库显示引导文案', async () => {
-    render(<GameLibrary storage={memoryGameRecords()} onOpen={vi.fn()} />)
+    render(<GameLibrary storage={memoryGameRecords()} onOpen={vi.fn()} onStartBattle={vi.fn()} />)
 
     expect(await screen.findByText('还没有保存的对局')).toBeInTheDocument()
   })
@@ -56,7 +56,7 @@ describe('GameLibrary', () => {
     await storage.put(nineMoveRecord())
     const second = (await storage.put(threeMoveRecord())).record
     const onOpen = vi.fn()
-    render(<GameLibrary storage={storage} onOpen={onOpen} />)
+    render(<GameLibrary storage={storage} onOpen={onOpen} onStartBattle={vi.fn()} />)
 
     const items = await screen.findAllByTestId(/^record-/)
     expect(items).toHaveLength(2)
@@ -70,7 +70,7 @@ describe('GameLibrary', () => {
   it('每条显示模式与手数', async () => {
     const storage = memoryGameRecords()
     await storage.put(nineMoveRecord())
-    render(<GameLibrary storage={storage} onOpen={vi.fn()} />)
+    render(<GameLibrary storage={storage} onOpen={vi.fn()} onStartBattle={vi.fn()} />)
 
     const item = (await screen.findAllByTestId(/^record-/))[0]!
     expect(within(item).getByText(/人机|双人/)).toBeInTheDocument()
@@ -84,7 +84,7 @@ describe('GameLibrary', () => {
   it('人机局标出难度档', async () => {
     const storage = memoryGameRecords()
     await storage.put(nineMoveRecord()) // difficulty: 'easy'
-    render(<GameLibrary storage={storage} onOpen={vi.fn()} />)
+    render(<GameLibrary storage={storage} onOpen={vi.fn()} onStartBattle={vi.fn()} />)
 
     const item = (await screen.findAllByTestId(/^record-/))[0]!
     expect(within(item).getByText(/人机 · 初级 · 9 手/)).toBeInTheDocument()
@@ -96,7 +96,7 @@ describe('GameLibrary', () => {
   it('双人局不标难度——那时没有 AI 难度可标', async () => {
     const storage = memoryGameRecords()
     await storage.put({ ...nineMoveRecord(), seq: 2, mode: 'pvp' } as GameRecord)
-    render(<GameLibrary storage={storage} onOpen={vi.fn()} />)
+    render(<GameLibrary storage={storage} onOpen={vi.fn()} onStartBattle={vi.fn()} />)
 
     const item = (await screen.findAllByTestId(/^record-/))[0]!
     expect(within(item).getByText(/双人 · 9 手/)).toBeInTheDocument()
@@ -237,6 +237,68 @@ describe('ReviewScreen 三段流转', () => {
   })
 })
 
+describe('ReviewScreen —— 本阶段新增的几处（Phase 06）', () => {
+  it('详情页有一级标题——此前整页只有 h2', async () => {
+    const storage = memoryGameRecords()
+    await storage.put(nineMoveRecord())
+    render(<ReviewScreen storage={storage} engine={idleEngine()} />)
+    fireEvent.click((await screen.findAllByTestId(/^record-/))[0]!)
+
+    await screen.findByTestId('move-counter')
+
+    // FINDINGS 的标题表记着这条：复盘回放页「只有 h2 回放 / h2 引擎分析，没有 h1」
+    const h1 = screen.getByRole('heading', { level: 1 })
+    expect(h1).toHaveTextContent('棋谱回放')
+    // 而且**只有**一个一级标题
+    expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1)
+  })
+
+  it('空状态的「开始一局对战」真的会切页面', async () => {
+    // 任务书 §二 的原话：「不得渲染只有外观、没有实际效果的按钮」
+    const onStartBattle = vi.fn()
+    render(
+      <GameLibrary
+        storage={memoryGameRecords()}
+        onOpen={vi.fn()}
+        onStartBattle={onStartBattle}
+      />,
+    )
+
+    fireEvent.click(await screen.findByRole('button', { name: '开始一局对战' }))
+
+    expect(onStartBattle).toHaveBeenCalledTimes(1)
+  })
+
+  it('回放棋盘上当前手那一枚编号半径更大，其余保持原样', async () => {
+    const storage = memoryGameRecords()
+    await storage.put(nineMoveRecord())
+    render(<ReviewScreen storage={storage} engine={idleEngine()} />)
+    fireEvent.click((await screen.findAllByTestId(/^record-/))[0]!)
+
+    await screen.findByTestId('move-counter')
+    // 点击前必须先停在 0——否则下面分不清是「走多了」还是「一开就没归零」
+    expect(screen.getByTestId('move-counter')).toHaveTextContent('0 / 9')
+
+    // `data-testid` 挂在标记的 `<g>` 上，半径在它里面那个 `<circle>` 上
+    const radii = () =>
+      screen
+        .getAllByTestId(/^board-mark-/)
+        .map((mark) => mark.querySelector('circle')?.getAttribute('r'))
+
+    fireEvent.click(screen.getByRole('button', { name: '下一步' }))
+
+    // 先把游标钉死，再谈半径——否则半径不对时分不清是"标错了"还是"没走到"
+    expect(screen.getByTestId('move-counter')).toHaveTextContent('1 / 9')
+    // 走到第 1 手：那一枚该是 0.32，还没有第 2 枚
+    expect(radii()).toEqual(['0.32'])
+
+    fireEvent.click(screen.getByRole('button', { name: '下一步' }))
+
+    // 走到第 2 手：新的那枚是 0.32，上一枚退回 0.26
+    expect(radii()).toEqual(['0.26', '0.32'])
+  })
+})
+
 /** 永不 resolve 的引擎：让「分析中」状态稳定可断言。 */
 function idleEngine(): AiEngine {
   return {
@@ -337,23 +399,45 @@ function scriptedEngine(): AiEngine {
   }
 }
 
-describe('GameLibrary —— 读取失败', () => {
-  /**
-   * `GameLibrary.tsx:35-37` 在 `list()` reject 时退成空列表。
-   * 这里注入一个**一定会失败**的存储来钉住它——不能用 `memoryGameRecords()`，
-   * 它的 `list()` 恒 resolve，永远走不到这条分支。
+describe('GameLibrary —— 读不出棋谱时如实说明', () => {
+  /*
+   * 这一组原先注入的是一个**会 reject** 的假存储，钉的是「list() 失败就退成空库」。
+   *
+   * 那条路径在生产里**不可达**——`indexedDbGameRecords` 的每一步失败都落内存兜底、
+   * 绝不向上抛，没有任何一个 `list()` 会 reject。于是它守着一个虚构的分支，
+   * 而真实的两种「下过棋却看不到」一个都没测到。
+   *
+   * 现在 `list()` 把这两件事分开报：`degraded`（存储不可用）与
+   * `skipped`（读到了但没通过校验）。下面钉的就是界面怎么把它们说出来。
    */
-  const failingStorage: GameRecordsStorage = {
-    list: () => Promise.reject(new Error('棋谱库坏了')),
+  const skippingStorage: GameRecordsStorage = {
+    list: () => Promise.resolve({ records: [], degraded: false, skipped: 2 }),
     get: () => Promise.resolve(null),
-    put: () => Promise.reject(new Error('棋谱库坏了')),
+    put: () => Promise.reject(new Error('测试里用不到')),
     delete: () => Promise.resolve(),
   }
 
-  it('list() 失败时退成空库文案，不白屏也不一直转圈', async () => {
-    render(<GameLibrary storage={failingStorage} onOpen={vi.fn()} />)
+  it('存储降级时明说，而不是假装用户没下过棋', async () => {
+    render(
+      <GameLibrary
+        storage={memoryGameRecords(true)}
+        onOpen={vi.fn()}
+        onStartBattle={vi.fn()}
+      />,
+    )
 
+    // 空状态的标题还在（探针等的就是它），下面多一句如实的说明
     expect(await screen.findByText('还没有保存的对局')).toBeInTheDocument()
+    expect(screen.getByTestId('library-degraded')).toBeInTheDocument()
     expect(screen.queryByText('正在读取棋谱…')).not.toBeInTheDocument()
+  })
+
+  it('有记录被跳过时给出条数', async () => {
+    render(
+      <GameLibrary storage={skippingStorage} onOpen={vi.fn()} onStartBattle={vi.fn()} />,
+    )
+
+    const notice = await screen.findByTestId('library-skipped')
+    expect(notice).toHaveTextContent('2')
   })
 })

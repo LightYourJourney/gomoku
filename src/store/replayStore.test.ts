@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi, afterEach } from 'vitest'
 import type { UseBoundStore, StoreApi } from 'zustand'
 import { BLACK, WHITE, type Point } from '../core/types'
 import { resign } from '../core/game'
-import { createReplayStore, REPLAY_STEP_MS, type ReplayStore } from './replayStore'
+import { createReplayStore, REPLAY_SPEEDS, REPLAY_STEP_MS, type ReplayStore } from './replayStore'
 import type { GameRecord } from '../persist/gameRecords'
 type ReplayRecord = Omit<GameRecord, 'seq' | 'schemaVersion'>
 
@@ -185,12 +185,32 @@ describe('回放器 —— 自动播放', () => {
 
   it('到尾自动停', () => {
     store.getState().open(winRecord() as unknown as GameRecord)
-    store.getState().goTo(9)
+    /*
+     * 从**差两格到尾**的位置开播。
+     *
+     * 这里原先写的是 `goTo(9)`——在终局上按播放。加了「终局不启动」之后，
+     * `play()` 直接返回、根本没过定时器，这条用例会**继续绿着**
+     * 却再也测不到它名字说的事。挪到 7 才是真的在测「播着播着到头了」。
+     */
+    store.getState().goTo(7)
     store.getState().play()
+    expect(store.getState().playing).toBe(true)
 
     vi.advanceTimersByTime(REPLAY_STEP_MS * 3)
 
     expect(store.getState().playing).toBe(false)
+    expect(store.getState().cursor).toBe(9)
+  })
+
+  it('已在终局时 play 不启动——按钮不会先变「暂停」再自己弹回来', () => {
+    store.getState().open(winRecord() as unknown as GameRecord)
+    store.getState().goTo(9)
+    store.getState().play()
+
+    // 原先这里会先把 playing 置真，等第一个 tick 才发现 hasNext 为假
+    expect(store.getState().playing).toBe(false)
+
+    vi.advanceTimersByTime(REPLAY_STEP_MS * 3)
     expect(store.getState().cursor).toBe(9)
   })
 
@@ -224,5 +244,94 @@ describe('回放器 —— 自动播放', () => {
 
     vi.advanceTimersByTime(REPLAY_STEP_MS * 3)
     expect(store.getState().position.version).toBe(0)
+  })
+})
+
+describe('回放器 —— 播放速度', () => {
+  beforeEach(() => {
+    vi.useFakeTimers()
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  it('标准档就是原来的 REPLAY_STEP_MS，不是另抄的一个数', () => {
+    // 这条防的是「改了常量、忘了档位表」——同一个数字只许有一处来源
+    expect(REPLAY_SPEEDS.normal).toBe(REPLAY_STEP_MS)
+  })
+
+  it('slow / fast 各按自己的间隔推进', () => {
+    store.getState().open(winRecord() as unknown as GameRecord)
+    store.getState().setSpeed('fast')
+    store.getState().play()
+
+    vi.advanceTimersByTime(REPLAY_SPEEDS.fast)
+    expect(store.getState().cursor).toBe(1)
+
+    store.getState().setSpeed('slow')
+    vi.advanceTimersByTime(REPLAY_SPEEDS.slow)
+    expect(store.getState().cursor).toBe(2)
+  })
+
+  it('播放中改速度之后，定时器只剩一个——不生成并行的第二个', () => {
+    store.getState().open(winRecord() as unknown as GameRecord)
+    store.getState().play()
+    expect(vi.getTimerCount()).toBe(1)
+
+    /*
+     * **数个数**，而不是「推进一格看游标加了几」。
+     *
+     * 后者看着更像在测行为，其实抓不住：反向验证时把 `startTimer()` 里的
+     * `stopTimer()` 撤掉，旧表的下一次触发落在推进窗口之外，**那条用例照样绿**。
+     * 任务书 §六 的原话是「不允许生成多个并行计时器」——断言就该直指这个。
+     */
+    store.getState().setSpeed('fast')
+    expect(vi.getTimerCount()).toBe(1)
+
+    store.getState().setSpeed('slow')
+    expect(vi.getTimerCount()).toBe(1)
+
+    store.getState().pause()
+    expect(vi.getTimerCount()).toBe(0)
+  })
+
+  it('没打开记录时也能选速度，开下一局时沿用', () => {
+    store.getState().setSpeed('fast')
+    store.getState().open(winRecord() as unknown as GameRecord)
+
+    expect(store.getState().speed).toBe('fast')
+  })
+})
+
+describe('回放器 —— 手动定位会暂停', () => {
+  beforeEach(() => {
+    vi.useFakeTimers()
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  it('播放中 goTo：停在这一手，不再自己往前走', () => {
+    store.getState().open(winRecord() as unknown as GameRecord)
+    store.getState().play()
+    store.getState().goTo(4)
+
+    expect(store.getState().playing).toBe(false)
+
+    vi.advanceTimersByTime(REPLAY_STEP_MS * 3)
+    expect(store.getState().cursor).toBe(4)
+  })
+
+  it('播放中 stepNext 与 stepPrev 同样暂停', () => {
+    store.getState().open(winRecord() as unknown as GameRecord)
+    store.getState().play()
+    store.getState().stepNext()
+    expect(store.getState().playing).toBe(false)
+
+    store.getState().play()
+    store.getState().stepPrev()
+    expect(store.getState().playing).toBe(false)
   })
 })

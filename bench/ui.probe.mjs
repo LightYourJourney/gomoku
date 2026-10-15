@@ -772,6 +772,56 @@ const STATES = [
       })
     },
   },
+  {
+    id: 'review-replay-start',
+    group: 'review',
+    async boot(page) {
+      await bootLearned(page, progress({ lastView: 'review' }), { records: RECORDS })
+      await page.getByTestId('record-1').click()
+      // 开局那一帧：空盘、时间轴在最左、「开局」与「上一步」都是禁用的
+      await page.waitForSelector('[data-testid="move-counter"]:has-text("0 / 9")')
+    },
+  },
+  {
+    id: 'review-replay-mid',
+    group: 'review',
+    async boot(page) {
+      await bootLearned(page, progress({ lastView: 'review' }), { records: RECORDS })
+      await page.getByTestId('record-1').click()
+      // 中盘：用**时间轴**定位，不再一路点「下一步」——顺带让这条状态
+      // 走一遍新控件，图里也就能看到滑块停在中间的样子
+      await page.getByLabel('回放手数').fill('4')
+      await page.waitForSelector('[data-testid="move-counter"]:has-text("4 / 9")')
+    },
+  },
+  {
+    id: 'review-analyzing',
+    group: 'review',
+    async boot(page) {
+      await bootLearned(page, progress({ lastView: 'review' }), { records: RECORDS })
+      await page.getByTestId('record-1').click()
+      await stepReplayToEnd(page, BLACK_WINS.length)
+      await page.getByRole('button', { name: '开始分析' }).click()
+      // 点在「开始分析」之后**立刻**取这一帧：进度行一出现就说明在跑
+      await page.waitForSelector('[data-testid="analysis-progress"]')
+    },
+  },
+  {
+    id: 'review-verdict-selected',
+    group: 'review',
+    async boot(page) {
+      await bootLearned(page, progress({ lastView: 'review' }), { records: RECORDS })
+      await page.getByTestId('record-1').click()
+      await stepReplayToEnd(page, BLACK_WINS.length)
+      await page.getByRole('button', { name: '开始分析' }).click()
+      await page.waitForSelector('[data-testid="analysis-progress"]:has-text("已完成 9 / 9 手")', {
+        timeout: 90_000,
+      })
+      // 点第一条结论：棋盘跳到那一手、卡片高亮——就是「点击关键手之后」那一帧
+      await page.getByTestId(/^verdict-/).first().click()
+      await page.waitForSelector('[data-testid^="verdict-"][data-selected="true"]')
+    },
+  },
 ]
 
 /** 走到回放终局。`下一步` 到末手会自动禁用，所以按手数点即可。 */

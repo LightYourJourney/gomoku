@@ -50,9 +50,29 @@ export interface PutResult {
   readonly persisted: boolean
 }
 
+/**
+ * 一次列取的结果。
+ *
+ * 后两个字段是**给界面「如实说明」用的**：`list()` 从不 reject（任何一步失败都落
+ * 内存兜底），所以"用户没下过棋"与"棋谱读不出来"在返回值上**长得一样**——
+ * 不额外带信号的话，界面只能二选一地撒谎。它们对应两种**不同**的失败：
+ *
+ * - `degraded`：**底层不可用**（隐私模式、被占用、配额），这批数据来自内存兜底。
+ * - `skipped`：**库读到了，但有记录没通过校验**被丢掉（`parseRecord` 返回 `null`）。
+ *
+ * 两者不会同时非零——走兜底时压根没读库。
+ */
+export interface GameRecordList {
+  readonly records: readonly GameRecord[]
+  /** 底层不可用，数据来自内存兜底：本次会话能看能列，刷新就没了。 */
+  readonly degraded: boolean
+  /** 读出来了、但没通过校验而被丢掉的条数。 */
+  readonly skipped: number
+}
+
 /** 存取接口。`review` 页面依赖这个形状而不是具体实现，测试可以注入假存储。 */
 export interface GameRecordsStorage {
-  list(): Promise<readonly GameRecord[]>
+  list(): Promise<GameRecordList>
   get(seq: number): Promise<GameRecord | null>
   put(record: GameRecordInput): Promise<PutResult>
   delete(seq: number): Promise<void>
@@ -124,13 +144,21 @@ function parseRecord(value: unknown): GameRecord | null {
  * 真正的降级语义（全局摘掉 indexedDB 后 `indexedDbGameRecords` 自己落进来）
  * 由下面的单例负责。
  */
-export function memoryGameRecords(): GameRecordsStorage {
+export function memoryGameRecords(degraded = false): GameRecordsStorage {
   const bySeq = new Map<number, GameRecord>()
   let nextSeq = 1
 
   return {
     async list() {
-      return [...bySeq.values()].sort((a, b) => b.seq - a.seq)
+      return {
+        records: [...bySeq.values()].sort((a, b) => b.seq - a.seq),
+        // 降级与否**是调用者的处境，不是这个类的固有属性**：单独用它的时候
+        // （测试里到处都是），它代表的是「一个能用的存储」；只有
+        // `fallbackToMemory()` 拿它当兜底时，才算降级。
+        degraded,
+        // 进出的校验是同一套，这里不会有读得出来却过不了校验的记录。
+        skipped: 0,
+      }
     },
     async get(seq) {
       return bySeq.get(seq) ?? null
@@ -170,7 +198,8 @@ export async function saveGameReplacing(
 
   let target = replacesSeq
   if (target === null) {
-    const existing = await indexedDbGameRecords.list()
+    // 这里只关心记录本身，降级与跳过两个信号在这条路径上没有意义
+    const { records: existing } = await indexedDbGameRecords.list()
     const sameGame = existing.find(
       (record) =>
         record.seq !== saved.record.seq &&
@@ -245,7 +274,8 @@ function openDatabase(): Promise<IDBDatabase> {
 
 /** 任何一步失败都退到内存态，并让本次调用照常完成——绝不向上抛。 */
 function fallbackToMemory(): GameRecordsStorage {
-  if (memoryFallback === null) memoryFallback = memoryGameRecords()
+  // 传 true：从这里拿到的一定是**降级**的那份，界面要能说出来。
+  if (memoryFallback === null) memoryFallback = memoryGameRecords(true)
   return memoryFallback
 }
 
@@ -293,10 +323,15 @@ export const indexedDbGameRecords: GameRecordsStorage = {
   async list() {
     try {
       const raw = await withStore<unknown[]>('readonly', (store) => store.getAll())
-      return raw
-        .map((entry) => parseRecord(entry))
-        .filter((record): record is GameRecord => record !== null)
-        .sort((a, b) => b.seq - a.seq)
+      const parsed = raw.map((entry) => parseRecord(entry))
+      const records = parsed.filter((record): record is GameRecord => record !== null)
+      return {
+        records: records.sort((a, b) => b.seq - a.seq),
+        degraded: false,
+        // 数一下有多少条**读出来了但没通过校验**——那是「下过棋却看不到」
+        // 的另一半原因，不能让它悄悄消失。
+        skipped: parsed.length - records.length,
+      }
     } catch {
       return fallbackToMemory().list()
     }

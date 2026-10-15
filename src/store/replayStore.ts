@@ -3,8 +3,30 @@ import { replay, resign as resignGame, type GameState } from '../core/game'
 import { BLACK } from '../core/types'
 import type { GameRecord } from '../persist/gameRecords'
 
-/** 自动播放的步进间隔。 */
+/**
+ * 自动播放的默认步进间隔（= 「标准」档）。
+ *
+ * **这个常量不能删**：`replayStore.test.ts` / `review.test.tsx` / `e2e/review.spec.ts`
+ * 三处 import 它，其中 e2e 那处还派生了等待时长（`REPLAY_DWELL_MS`）。
+ * 档位表里引用它，而不是另抄一个 900——同一个数字只许出现一次。
+ */
 export const REPLAY_STEP_MS = 900
+
+/** 三档播放速度（毫秒／手）。间隔是设计选择：900 是原有值，另两档取明显的快慢差。 */
+export const REPLAY_SPEEDS = {
+  slow: 1400,
+  normal: REPLAY_STEP_MS,
+  fast: 400,
+} as const
+
+export type ReplaySpeed = keyof typeof REPLAY_SPEEDS
+
+/** 界面上给这三档的名字。顺序即展示顺序。 */
+export const REPLAY_SPEED_LABELS: Record<ReplaySpeed, string> = {
+  slow: '慢速',
+  normal: '标准',
+  fast: '快速',
+}
 
 /** 回放器持有完整记录（含 seq）——分析管线要按 seq 做缓存键。 */
 export type ReplayRecord = GameRecord
@@ -14,6 +36,7 @@ export interface ReplayStore {
   /** 当前看到第几手（0 = 空盘，moves.length = 终局）。 */
   readonly cursor: number
   readonly playing: boolean
+  readonly speed: ReplaySpeed
   /**
    * 派生局面：`replay(record.moves.slice(0, cursor))`；
    * **cursor === moves.length 且 record.resignedBy 非空时再套一层 resign**。
@@ -25,12 +48,15 @@ export interface ReplayStore {
 
   open(record: GameRecord): void
   close(): void
+  /** 手动定位：会**暂停自动播放**（你接管了，我就停）。 */
   stepPrev(): void
   stepNext(): void
-  /** clamp 到 [0, moves.length]。 */
+  /** clamp 到 [0, moves.length]。同样会暂停。 */
   goTo(index: number): void
   play(): void
   pause(): void
+  /** 播放中改速度会**重建**定时器，不会留下并行的第二个。 */
+  setSpeed(speed: ReplaySpeed): void
 }
 
 /** position 是纯派生：由 record + cursor 算出，绝不增量维护。 */
@@ -42,12 +68,18 @@ function derivePosition(record: ReplayRecord, cursor: number): GameState {
   return replayed
 }
 
-function deriveState(record: ReplayRecord | null, cursor: number, playing: boolean) {
+function deriveState(
+  record: ReplayRecord | null,
+  cursor: number,
+  playing: boolean,
+  speed: ReplaySpeed,
+) {
   if (record === null) {
     return {
       record: null,
       cursor: 0,
       playing: false,
+      speed,
       position: replay([], BLACK),
       hasPrev: false,
       hasNext: false,
@@ -59,6 +91,7 @@ function deriveState(record: ReplayRecord | null, cursor: number, playing: boole
     record,
     cursor,
     playing,
+    speed,
     position: derivePosition(record, cursor),
     hasPrev: cursor > 0,
     hasNext: cursor < total,
@@ -76,69 +109,125 @@ export function createReplayStore(): UseBoundStore<StoreApi<ReplayStore>> {
   }
 
   return create<ReplayStore>()((set, get) => {
-    // record + cursor + playing 之外的字段全部派生；set 时整体重算，
-    // 不存在「改了游标忘了重算局面」这类裂缝。
-    function commit(patch: { cursor?: number; playing?: boolean }) {
-      const current = get()
-      const record = current.record
-      if (record === null) return
+    /**
+     * **起表的地方只有这一处**，而且进来先停旧的。
+     *
+     * 于是「改速度忘了清旧定时器」这类缺陷在结构上不存在：调用方要么没起，
+     * 要么起的必然是唯一那个。改速度、开播、从暂停恢复，走的都是它。
+     */
+    function startTimer(stepMs: number) {
+      stopTimer()
+      timer = setInterval(() => {
+        const state = get()
+        // 到尾（或记录已关）自动停——这是任务书 §六 点名的「到达结尾自动停止」
+        if (state.record === null || !state.hasNext) {
+          stopTimer()
+          commit({ playing: false })
+          return
+        }
+        advance()
+      }, stepMs)
+    }
 
-      const cursor = patch.cursor ?? current.cursor
-      const playing = patch.playing ?? current.playing
-      set(deriveState(record, cursor, playing))
+    /**
+     * 定时器专用的「推进一格」。**它不碰 `playing`。**
+     *
+     * 与下面公开的 `stepNext` 分家是必须的：`stepNext` 现在会暂停
+     * （手动定位的规则），定时器若调它就等于第一个 tick 把自己停掉，
+     * 自动播放只走一手。两件事长得像，语义不同。
+     */
+    function advance() {
+      const { record, cursor } = get()
+      if (record === null || cursor >= record.moves.length) return
+      commit({ cursor: cursor + 1 })
+    }
+
+    // record + cursor + playing + speed 之外的字段全部派生；set 时整体重算，
+    // 不存在「改了游标忘了重算局面」这类裂缝。
+    function commit(patch: {
+      cursor?: number
+      playing?: boolean
+      speed?: ReplaySpeed
+    }) {
+      const current = get()
+      set(
+        deriveState(
+          current.record,
+          patch.cursor ?? current.cursor,
+          patch.playing ?? current.playing,
+          patch.speed ?? current.speed,
+        ),
+      )
+    }
+
+    /** 手动定位的统一前奏：停表 + 退出播放态。三个公开定位方法都从它开始。 */
+    function takeOver() {
+      stopTimer()
     }
 
     return {
-      ...deriveState(null, 0, false),
+      ...deriveState(null, 0, false, 'normal'),
 
       open(record) {
         stopTimer()
-        set(deriveState(record, 0, false))
+        set(deriveState(record, 0, false, get().speed))
       },
 
       close() {
         stopTimer()
-        set(deriveState(null, 0, false))
+        set(deriveState(null, 0, false, get().speed))
       },
 
+      /*
+       * 边界时是**真·空操作**：一个字段都不动，连 `position` 的引用都保持原样。
+       * 「接管」在前一步之前发生，不在越界尝试上——那时按钮本来就是禁用的，
+       * 走到这里只可能是程序调用，没有谁需要被停下来。
+       * （回归验证：早先把 `stopTimer()` 提到边界判断之前并补一次
+       * `commit({ playing: false })`，`position` 每次都是新对象，
+       * 「到尾后再 stepNext 是空操作」那条用例当场抓住了它。）
+       */
       stepPrev() {
         const { cursor } = get()
-        if (cursor > 0) commit({ cursor: cursor - 1 })
+        if (cursor <= 0) return
+        takeOver()
+        commit({ cursor: cursor - 1, playing: false })
       },
 
       stepNext() {
         const { record, cursor } = get()
         if (record === null || cursor >= record.moves.length) return
-        commit({ cursor: cursor + 1 })
+        takeOver()
+        commit({ cursor: cursor + 1, playing: false })
       },
 
       goTo(index) {
+        takeOver()
         const { record } = get()
         if (record === null) return
         const clamped = Math.max(0, Math.min(index, record.moves.length))
-        commit({ cursor: clamped })
+        commit({ cursor: clamped, playing: false })
       },
 
       play() {
-        const { record, playing } = get()
-        if (record === null || playing) return
+        const { record, playing, hasNext, speed } = get()
+        // 已经在终局就别摆出「正在播放」的样子——原先是先置 playing、
+        // 等第一个 tick 才发现到头，于是按钮先变「暂停」再自己弹回来。
+        if (record === null || playing || !hasNext) return
 
         commit({ playing: true })
-        timer = setInterval(() => {
-          const state = get()
-          if (state.record === null || !state.hasNext) {
-            // 到尾（或记录已关）自动停
-            stopTimer()
-            commit({ playing: false })
-            return
-          }
-          state.stepNext()
-        }, REPLAY_STEP_MS)
+        startTimer(REPLAY_SPEEDS[speed])
       },
 
       pause() {
         stopTimer()
         commit({ playing: false })
+      },
+
+      setSpeed(speed) {
+        const { playing } = get()
+        commit({ speed })
+        // 播放中改速度必须重建定时器，否则旧 interval 会继续按旧间隔跑
+        if (playing) startTimer(REPLAY_SPEEDS[speed])
       },
     }
   })

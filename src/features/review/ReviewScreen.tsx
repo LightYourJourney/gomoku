@@ -7,10 +7,12 @@ import { DIFFICULTY_LABELS } from '../../ai/difficulty'
 import { ENGINE_VERSION } from '../../ai/version'
 import { formatPoint } from '../../lib/coords'
 import { buildSummary, verdictLabel } from '../../analysis/analyze'
+import { cx } from '../../lib/cx'
 import { Button } from '../../components/ui/Button'
 import { Panel } from '../../components/ui/Panel'
 import { PageShell } from '../shell/PageShell'
 import type { AiEngine } from '../../ai/engine'
+import { useLearnStore } from '../../store/learnStore'
 import { GameLibrary } from './GameLibrary'
 import { ReplayBoard } from './ReplayBoard'
 
@@ -39,6 +41,10 @@ export function ReviewScreen({ storage, engine, stores }: ReviewScreenProps) {
   const [ownAnalysis] = useState(createAnalysisStore)
   const replay = stores?.replay ?? ownReplay
   const analysis = stores?.analysis ?? ownAnalysis
+
+  // 空状态那颗「开始一局对战」要真的切页面，所以得够得着导航。
+  // 与 `PuzzleScreen` 同法：页面自己连 store，不让展示组件去连。
+  const setView = useLearnStore((state) => state.setView)
 
   // 离开复盘页就停掉分析：结果不再有人看，继续跑没有意义。
   // 注意 `stop()` 只能**丢弃结果**——引擎没有取消接口，已经发出去的那一次
@@ -72,6 +78,14 @@ export function ReviewScreen({ storage, engine, stores }: ReviewScreenProps) {
         toolbar={
           <div className="flex shrink-0 items-center gap-2 border-b border-border px-3 py-2">
             <Button onClick={closeRecord}>← 棋谱列表</Button>
+            {/*
+              这一页此前**整页没有一级标题**（`FINDINGS.md` 的标题表记着：
+              只有 `h2 回放` 与 `h2 引擎分析`）。教学练习页与残局详情页
+              在 Phase 04/05 都修过同一个毛病，这里是第三处。
+              叫「棋谱回放」而不是「回放」——右栏已经有一个 `Panel title="回放"`
+              会渲染成 `h2`，一模一样的两级标题谁也说不清哪个是哪个。
+            */}
+            <h1 className="truncate text-xl font-semibold text-fg">棋谱回放</h1>
           </div>
         }
       >
@@ -86,7 +100,11 @@ export function ReviewScreen({ storage, engine, stores }: ReviewScreenProps) {
 
   return (
     <PageShell>
-      <GameLibrary storage={storage} onOpen={openRecord} />
+      <GameLibrary
+        storage={storage}
+        onOpen={openRecord}
+        onStartBattle={() => setView('battle')}
+      />
     </PageShell>
   )
 }
@@ -106,7 +124,8 @@ interface AnalysisPanelProps {
  */
 function AnalysisPanel({ store, engine, replay }: AnalysisPanelProps) {
   const state = useAnalysis(store)
-  const record = replay.getState().record
+  // 订阅整个回放状态：游标一动，选中态与「当前手」那行都要跟着变。
+  const { record, cursor } = useReplay(replay)
 
   if (record === null) return null
 
@@ -121,11 +140,30 @@ function AnalysisPanel({ store, engine, replay }: AnalysisPanelProps) {
     store.getState().start({ record: current, engine, difficulty, budgetMs })
   }
 
+  /*
+   * **结论属于哪一局**。
+   *
+   * `stop()` 会把 `target` 置空却**不动 `verdicts` 与 `total`**，于是换到另一局
+   * 之后，面板会拿上一局的结论与计数继续渲染（`AnalysisPanel` 原先只判
+   * `record === null`，不判这一层）。`target` 里带着 `seq`，比一下就知道——
+   * 不相等就按「还没分析过」渲染。零新状态、零 store 改动。
+   */
+  const belongsToThisGame = state.target !== null && state.target.seq === record.seq
+  const verdicts = belongsToThisGame ? [...state.verdicts.values()] : []
+  const total = belongsToThisGame ? state.total : 0
+
   // 榜单必须走 buildSummary：它保证「loss 为 0 的手（含与引擎一致）不进榜」。
   // 曾经这里自己 sort + slice，于是 analyze.ts 里那条过滤落在死代码上，
   // 界面照样把「与引擎一致」排进前三行。
-  const verdicts = [...state.verdicts.values()]
   const topLosses = buildSummary(verdicts).topLosses
+
+  /*
+   * 「当前选中」**不新增状态**：它就是游标所指的那一手。
+   * 手动走步走到同一手，高亮也一样亮——不可能出现「棋盘在第 5 手、
+   * 面板说选中第 7 手」。cursor = 0（空盘）时没有当前手，`-1` 不匹配任何下标。
+   */
+  const selectedMoveIndex = cursor - 1
+  const currentVerdict = belongsToThisGame ? state.verdicts.get(selectedMoveIndex) : undefined
 
   return (
     <Panel title="引擎分析" bodyClassName="space-y-3">
@@ -133,7 +171,20 @@ function AnalysisPanel({ store, engine, replay }: AnalysisPanelProps) {
       <p data-testid="analysis-source" className="text-xs text-faint">
         {DIFFICULTY_LABELS[difficulty]} · {budgetMs}ms · 引擎 {ENGINE_VERSION}
       </p>
-      {!state.running && verdicts.length === 0 ? (
+      {state.error !== null && state.running === false ? (
+        /*
+         * 分析失败要**说出来**。原先 `error` 只是躺在 store 里没人渲染，
+         * 失败之后界面静默退回「开始分析」按钮——与「从没分析过」长得一模一样。
+         */
+        <>
+          <p data-testid="analysis-error" className="text-xs text-warn">
+            这次分析没跑完：{state.error}
+          </p>
+          <Button block variant="primary" onClick={start}>
+            重新分析
+          </Button>
+        </>
+      ) : !state.running && verdicts.length === 0 ? (
         <>
           <p className="text-xs text-faint">
             逐手跑一遍引擎，找出与引擎首选差得最多的几手。分析只读，不会改动棋谱。
@@ -144,28 +195,71 @@ function AnalysisPanel({ store, engine, replay }: AnalysisPanelProps) {
         </>
       ) : state.running ? (
         <p className="text-xs text-muted">
-          分析中… <span data-testid="analysis-progress">{state.verdicts.size} / {state.total}</span>
+          分析中…{' '}
+          <span data-testid="analysis-progress">
+            {verdicts.length} / {total}
+          </span>
         </p>
       ) : (
         <div className="space-y-2">
           <p data-testid="analysis-progress" className="text-xs text-faint">
-            已完成 {state.verdicts.size} / {state.total} 手
+            已完成 {verdicts.length} / {total} 手
           </p>
-          {topLosses.map((verdict) => (
-            <div key={verdict.moveIndex} data-testid={`verdict-${verdict.moveIndex}`} className="rounded-lg border border-border p-2">
-              <div className="flex items-baseline justify-between text-xs">
-                <span className="text-muted">第 {verdict.moveIndex + 1} 手</span>
-                <span className="text-fg">{verdictLabel(verdict)}</span>
-              </div>
-              <div className="mt-1 font-mono text-xs text-faint">
-                实际 {formatPoint(verdict.move)} · 引擎推荐 {formatPoint(verdict.engineMove)}
-              </div>
-              <div className="mt-1 text-xs text-faint">
-                深度 {verdict.engineDepth} · 节点 {verdict.engineNodes} ·{' '}
-                {verdict.confidence === 'exact' ? '搜索完成' : '预算内未搜完（启发式）'}
-              </div>
-            </div>
-          ))}
+
+          {cursor > 0 && (
+            <p data-testid="analysis-current" className="text-xs text-muted">
+              当前第 {cursor} 手：
+              {currentVerdict === undefined
+                ? '与引擎一致，没有亏损。'
+                : verdictLabel(currentVerdict)}
+            </p>
+          )}
+
+          {topLosses.map((verdict) => {
+            const selected = verdict.moveIndex === selectedMoveIndex
+            return (
+              <button
+                key={verdict.moveIndex}
+                type="button"
+                data-testid={`verdict-${verdict.moveIndex}`}
+                data-selected={selected}
+                /*
+                 * 跳转就是这一行。`moveIndex` 是**零基**的着法序号，
+                 * 而 `goTo` 的游标语义是「已看到第几手」——第 17 手之后
+                 * 即 cursor = 17 = moveIndex + 1，两者恰好对齐，不需要补丁。
+                 */
+                onClick={() => replay.getState().goTo(verdict.moveIndex + 1)}
+                /*
+                 * 选中**只改边框，不改底色**。
+                 *
+                 * 第一版写的是 `border-accent bg-accent-soft`——探针当场报了 16 处
+                 * 对比度违规：卡片里那两行是 `text-faint`，铺上 `accent-soft` 之后
+                 * 浅色掉到 4.49:1（判据要 4.5）、深色只有 3.91:1。
+                 * **换底色却不换文字色**，正是下面否决「给当前手换 tone」的同一条理由，
+                 * 结果在另一处又踩了一次。边框变强调色已经够「适度突出」，
+                 * 而它一个像素的对比度都不动。
+                 */
+                className={cx(
+                  'w-full rounded-lg border p-2 text-left transition',
+                  selected ? 'border-accent' : 'border-border hover:border-border-strong',
+                )}
+              >
+                <div className="flex items-baseline justify-between text-xs">
+                  <span className={selected ? 'text-accent' : 'text-muted'}>
+                    第 {verdict.moveIndex + 1} 手
+                  </span>
+                  <span className="text-fg">{verdictLabel(verdict)}</span>
+                </div>
+                <div className="mt-1 font-mono text-xs text-faint">
+                  实际 {formatPoint(verdict.move)} · 引擎推荐 {formatPoint(verdict.engineMove)}
+                </div>
+                <div className="mt-1 text-xs text-faint">
+                  深度 {verdict.engineDepth} · 节点 {verdict.engineNodes} ·{' '}
+                  {verdict.confidence === 'exact' ? '搜索完成' : '预算内未搜完（启发式）'}
+                </div>
+              </button>
+            )
+          })}
         </div>
       )}
     </Panel>
@@ -173,5 +267,9 @@ function AnalysisPanel({ store, engine, replay }: AnalysisPanelProps) {
 }
 
 function useAnalysis(store: ReturnType<typeof createAnalysisStore>) {
+  return useStore(store)
+}
+
+function useReplay(store: ReturnType<typeof createReplayStore>) {
   return useStore(store)
 }
