@@ -113,6 +113,28 @@ test('两栏最低高度那一档，棋盘仍在 320px 之上', async ({ page })
   expect(board!.height).toBeGreaterThanOrEqual(320)
 })
 
+/**
+ * **对战页也要走通这一档**（Phase 05 验收补）。
+ *
+ * 上面三条都走 `gotoPuzzle`；「棋盘尺寸预算」那组固定 `height: 900`，768 那档是
+ * **竖屏**，`wide-layout` 不生效。于是「768–1023 横屏」×「对战页」这个格子里
+ * 一条用例都没有——而对战页的棋盘容器给的偏偏是 `lg:flex-1`：`lg:` 是
+ * `min-width: 1024`，**在这一档不生效**，可 `BoardStage` 自己的解除条件已经换成
+ * `wide-layout`。两边条件不一致时，`h-auto` 的 `container-type: size` 容器里
+ * `100cqh` 没有确定值，棋盘会塌。
+ *
+ * 三个页面在同一条路径上，只验其中一个就会漏掉另外两个。
+ */
+test('对战页在 768–1023 横屏：棋盘不塌', async ({ page }) => {
+  await page.setViewportSize({ width: 900, height: 500 })
+  await page.goto('/')
+  await expect(page.getByTestId('board')).toBeVisible()
+
+  const box = await boardBox(page)
+  expect(box.width, `棋盘只有 ${box.width}px 宽`).toBeGreaterThanOrEqual(MIN_BOARD)
+  expect(Math.abs(box.width - box.height)).toBeLessThan(1)
+})
+
 test('平板**竖屏**（768×1024）仍是纵向堆叠——竖屏本来就该这样', async ({ page }) => {
   await page.setViewportSize({ width: 768, height: 1024 })
   await gotoPuzzle(page)

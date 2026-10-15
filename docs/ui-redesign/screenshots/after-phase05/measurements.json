@@ -53,7 +53,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-empty__390-light.png",
-      "setupMs": 1975,
+      "setupMs": 1262,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -459,7 +459,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-empty__768-light.png",
-      "setupMs": 2868,
+      "setupMs": 747,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -865,7 +865,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-empty__1024-light.png",
-      "setupMs": 2499,
+      "setupMs": 866,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -1278,7 +1278,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-empty__1280-light.png",
-      "setupMs": 2654,
+      "setupMs": 818,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -1685,7 +1685,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-empty__1440-light.png",
-      "setupMs": 2341,
+      "setupMs": 817,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -2091,7 +2091,7 @@
       "size": "1280x680",
       "theme": "light",
       "file": "battle-battle-empty__1280x680-light.png",
-      "setupMs": 1923,
+      "setupMs": 749,
       "boardDetails": {
         "coordText": {
           "width": 9.97,
@@ -2504,7 +2504,7 @@
       "size": "1440x700",
       "theme": "light",
       "file": "battle-battle-empty__1440x700-light.png",
-      "setupMs": 1942,
+      "setupMs": 891,
       "boardDetails": {
         "coordText": {
           "width": 10.36,
@@ -2916,7 +2916,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-empty__1920-light.png",
-      "setupMs": 911,
+      "setupMs": 2055,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -3322,7 +3322,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-empty__390-dark-dark.png",
-      "setupMs": 788,
+      "setupMs": 1300,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -3728,7 +3728,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-empty__1440-dark-dark.png",
-      "setupMs": 982,
+      "setupMs": 1304,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -4134,7 +4134,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-midgame__390-light.png",
-      "setupMs": 766,
+      "setupMs": 2233,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -4561,7 +4561,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-midgame__768-light.png",
-      "setupMs": 704,
+      "setupMs": 1354,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -4988,7 +4988,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-midgame__1024-light.png",
-      "setupMs": 951,
+      "setupMs": 1252,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -5421,7 +5421,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-midgame__1280-light.png",
-      "setupMs": 1338,
+      "setupMs": 1058,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -5848,7 +5848,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-midgame__1440-light.png",
-      "setupMs": 1828,
+      "setupMs": 980,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -6275,7 +6275,7 @@
       "size": "1280x680",
       "theme": "light",
       "file": "battle-battle-midgame__1280x680-light.png",
-      "setupMs": 990,
+      "setupMs": 828,
       "boardDetails": {
         "coordText": {
           "width": 9.97,
@@ -6708,7 +6708,7 @@
       "size": "1440x700",
       "theme": "light",
       "file": "battle-battle-midgame__1440x700-light.png",
-      "setupMs": 1077,
+      "setupMs": 750,
       "boardDetails": {
         "coordText": {
           "width": 10.36,
@@ -7147,7 +7147,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-midgame__1920-light.png",
-      "setupMs": 615,
+      "setupMs": 839,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -7574,7 +7574,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-midgame__390-dark-dark.png",
-      "setupMs": 598,
+      "setupMs": 734,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -8001,7 +8001,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-midgame__1440-dark-dark.png",
-      "setupMs": 1133,
+      "setupMs": 873,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -8428,7 +8428,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-thinking__390-light.png",
-      "setupMs": 778,
+      "setupMs": 767,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -8853,7 +8853,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-thinking__768-light.png",
-      "setupMs": 811,
+      "setupMs": 995,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -9278,7 +9278,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-thinking__1024-light.png",
-      "setupMs": 679,
+      "setupMs": 1169,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -9710,7 +9710,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-thinking__1280-light.png",
-      "setupMs": 1211,
+      "setupMs": 953,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -10142,7 +10142,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-thinking__1440-light.png",
-      "setupMs": 1052,
+      "setupMs": 901,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -10573,7 +10573,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-thinking__1920-light.png",
-      "setupMs": 849,
+      "setupMs": 791,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -11004,7 +11004,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-thinking__390-dark-dark.png",
-      "setupMs": 1178,
+      "setupMs": 730,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -11429,7 +11429,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-thinking__1440-dark-dark.png",
-      "setupMs": 2468,
+      "setupMs": 1177,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -11860,7 +11860,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-hint__390-light.png",
-      "setupMs": 2824,
+      "setupMs": 1474,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -12355,7 +12355,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-hint__768-light.png",
-      "setupMs": 2792,
+      "setupMs": 978,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -12850,7 +12850,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-hint__1024-light.png",
-      "setupMs": 1869,
+      "setupMs": 1864,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -13351,7 +13351,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-hint__1280-light.png",
-      "setupMs": 1309,
+      "setupMs": 1148,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -13846,7 +13846,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-hint__1440-light.png",
-      "setupMs": 1147,
+      "setupMs": 1493,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -14341,7 +14341,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-hint__1920-light.png",
-      "setupMs": 1027,
+      "setupMs": 1275,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -14836,7 +14836,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-hint__390-dark-dark.png",
-      "setupMs": 1396,
+      "setupMs": 1018,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -15331,7 +15331,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-hint__1440-dark-dark.png",
-      "setupMs": 1131,
+      "setupMs": 1232,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -15826,7 +15826,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-confirm-restart__390-light.png",
-      "setupMs": 789,
+      "setupMs": 1043,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -16290,7 +16290,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-confirm-restart__768-light.png",
-      "setupMs": 1042,
+      "setupMs": 1142,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -16754,7 +16754,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-confirm-restart__1024-light.png",
-      "setupMs": 2171,
+      "setupMs": 1043,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -17224,7 +17224,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-confirm-restart__1280-light.png",
-      "setupMs": 1144,
+      "setupMs": 2221,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -17688,7 +17688,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-confirm-restart__1440-light.png",
-      "setupMs": 984,
+      "setupMs": 2632,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -18152,7 +18152,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-confirm-restart__1920-light.png",
-      "setupMs": 1221,
+      "setupMs": 1826,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -18616,7 +18616,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-confirm-restart__390-dark-dark.png",
-      "setupMs": 1108,
+      "setupMs": 1800,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -19080,7 +19080,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-confirm-restart__1440-dark-dark.png",
-      "setupMs": 778,
+      "setupMs": 1668,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -19544,7 +19544,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-display-settings__390-light.png",
-      "setupMs": 707,
+      "setupMs": 1013,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -20002,7 +20002,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-display-settings__768-light.png",
-      "setupMs": 884,
+      "setupMs": 870,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -20460,7 +20460,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-display-settings__1024-light.png",
-      "setupMs": 798,
+      "setupMs": 835,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -20924,7 +20924,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-display-settings__1280-light.png",
-      "setupMs": 1766,
+      "setupMs": 1137,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -21382,7 +21382,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-display-settings__1440-light.png",
-      "setupMs": 1043,
+      "setupMs": 1122,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -21840,7 +21840,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-display-settings__1920-light.png",
-      "setupMs": 1311,
+      "setupMs": 1048,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -22298,7 +22298,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-display-settings__390-dark-dark.png",
-      "setupMs": 650,
+      "setupMs": 680,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -22756,7 +22756,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-display-settings__1440-dark-dark.png",
-      "setupMs": 1226,
+      "setupMs": 932,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -23214,7 +23214,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-finished__390-light.png",
-      "setupMs": 746,
+      "setupMs": 581,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -23683,7 +23683,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-finished__768-light.png",
-      "setupMs": 676,
+      "setupMs": 706,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -24152,7 +24152,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-finished__1024-light.png",
-      "setupMs": 1171,
+      "setupMs": 610,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -24628,7 +24628,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-finished__1280-light.png",
-      "setupMs": 783,
+      "setupMs": 659,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -25104,7 +25104,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-finished__1440-light.png",
-      "setupMs": 578,
+      "setupMs": 647,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -25579,7 +25579,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-finished__1920-light.png",
-      "setupMs": 743,
+      "setupMs": 848,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -26054,7 +26054,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-finished__390-dark-dark.png",
-      "setupMs": 1119,
+      "setupMs": 710,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -26523,7 +26523,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-finished__1440-dark-dark.png",
-      "setupMs": 737,
+      "setupMs": 699,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -26998,7 +26998,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-opening__390-light.png",
-      "setupMs": 609,
+      "setupMs": 887,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -27418,7 +27418,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-opening__768-light.png",
-      "setupMs": 1382,
+      "setupMs": 705,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -27838,7 +27838,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-opening__1024-light.png",
-      "setupMs": 1280,
+      "setupMs": 834,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -28265,7 +28265,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-opening__1280-light.png",
-      "setupMs": 950,
+      "setupMs": 931,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -28686,7 +28686,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-opening__1440-light.png",
-      "setupMs": 921,
+      "setupMs": 1170,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -29106,7 +29106,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-opening__1920-light.png",
-      "setupMs": 1504,
+      "setupMs": 1447,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -29526,7 +29526,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-opening__390-dark-dark.png",
-      "setupMs": 970,
+      "setupMs": 863,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -29946,7 +29946,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-opening__1440-dark-dark.png",
-      "setupMs": 1123,
+      "setupMs": 890,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -30366,7 +30366,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-dense-black__390-light.png",
-      "setupMs": 646,
+      "setupMs": 807,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -30793,7 +30793,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-dense-black__768-light.png",
-      "setupMs": 637,
+      "setupMs": 981,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -31220,7 +31220,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-dense-black__1024-light.png",
-      "setupMs": 868,
+      "setupMs": 1354,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -31653,7 +31653,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-dense-black__1280-light.png",
-      "setupMs": 1077,
+      "setupMs": 922,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -32080,7 +32080,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-dense-black__1440-light.png",
-      "setupMs": 770,
+      "setupMs": 796,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -32507,7 +32507,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-dense-black__1920-light.png",
-      "setupMs": 675,
+      "setupMs": 1029,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -32934,7 +32934,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-dense-black__390-dark-dark.png",
-      "setupMs": 553,
+      "setupMs": 637,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -33361,7 +33361,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-dense-black__1440-dark-dark.png",
-      "setupMs": 690,
+      "setupMs": 928,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -33788,7 +33788,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-dense-white__390-light.png",
-      "setupMs": 510,
+      "setupMs": 767,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -34215,7 +34215,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-dense-white__768-light.png",
-      "setupMs": 542,
+      "setupMs": 1095,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -34642,7 +34642,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-dense-white__1024-light.png",
-      "setupMs": 702,
+      "setupMs": 2282,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -35075,7 +35075,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-dense-white__1280-light.png",
-      "setupMs": 822,
+      "setupMs": 4051,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -35502,7 +35502,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-dense-white__1440-light.png",
-      "setupMs": 710,
+      "setupMs": 1578,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -35929,7 +35929,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-dense-white__1920-light.png",
-      "setupMs": 683,
+      "setupMs": 1772,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -36356,7 +36356,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-dense-white__390-dark-dark.png",
-      "setupMs": 712,
+      "setupMs": 729,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -36783,7 +36783,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-dense-white__1440-dark-dark.png",
-      "setupMs": 860,
+      "setupMs": 1026,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -37210,7 +37210,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-win-board__390-light.png",
-      "setupMs": 810,
+      "setupMs": 1031,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -37642,7 +37642,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-win-board__768-light.png",
-      "setupMs": 1238,
+      "setupMs": 981,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -38074,7 +38074,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-win-board__1024-light.png",
-      "setupMs": 1111,
+      "setupMs": 995,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -38513,7 +38513,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-win-board__1280-light.png",
-      "setupMs": 1114,
+      "setupMs": 1181,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -38952,7 +38952,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-win-board__1440-light.png",
-      "setupMs": 870,
+      "setupMs": 1298,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -39390,7 +39390,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-win-board__1920-light.png",
-      "setupMs": 1021,
+      "setupMs": 1517,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -39828,7 +39828,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-win-board__390-dark-dark.png",
-      "setupMs": 1013,
+      "setupMs": 1022,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -40260,7 +40260,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-win-board__1440-dark-dark.png",
-      "setupMs": 927,
+      "setupMs": 1158,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -40698,7 +40698,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-ai-moved__390-light.png",
-      "setupMs": 1119,
+      "setupMs": 825,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -41157,7 +41157,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-ai-moved__768-light.png",
-      "setupMs": 796,
+      "setupMs": 770,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -41616,7 +41616,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-ai-moved__1024-light.png",
-      "setupMs": 650,
+      "setupMs": 724,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -42082,7 +42082,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-ai-moved__1280-light.png",
-      "setupMs": 779,
+      "setupMs": 927,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -42542,7 +42542,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-ai-moved__1440-light.png",
-      "setupMs": 784,
+      "setupMs": 945,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -43001,7 +43001,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-ai-moved__1920-light.png",
-      "setupMs": 829,
+      "setupMs": 1216,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -43460,7 +43460,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-ai-moved__390-dark-dark.png",
-      "setupMs": 633,
+      "setupMs": 850,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -43919,7 +43919,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-ai-moved__1440-dark-dark.png",
-      "setupMs": 768,
+      "setupMs": 840,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -44378,7 +44378,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-ai-moved-expanded__390-light.png",
-      "setupMs": 741,
+      "setupMs": 843,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -44853,7 +44853,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-ai-moved-expanded__768-light.png",
-      "setupMs": 862,
+      "setupMs": 923,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -45328,7 +45328,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-ai-moved-expanded__1024-light.png",
-      "setupMs": 831,
+      "setupMs": 992,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -45810,7 +45810,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-ai-moved-expanded__1280-light.png",
-      "setupMs": 970,
+      "setupMs": 905,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -46286,7 +46286,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-ai-moved-expanded__1440-light.png",
-      "setupMs": 1110,
+      "setupMs": 951,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -46768,7 +46768,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-ai-moved-expanded__1920-light.png",
-      "setupMs": 996,
+      "setupMs": 1341,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -47250,7 +47250,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-ai-moved-expanded__390-dark-dark.png",
-      "setupMs": 811,
+      "setupMs": 897,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -47725,7 +47725,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-ai-moved-expanded__1440-dark-dark.png",
-      "setupMs": 1089,
+      "setupMs": 1030,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -48207,7 +48207,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-ai-error__390-light.png",
-      "setupMs": 1957,
+      "setupMs": 668,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -48658,7 +48658,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-ai-error__768-light.png",
-      "setupMs": 1246,
+      "setupMs": 781,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -49109,7 +49109,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-ai-error__1024-light.png",
-      "setupMs": 919,
+      "setupMs": 886,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -49566,7 +49566,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-ai-error__1280-light.png",
-      "setupMs": 1329,
+      "setupMs": 772,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -50023,7 +50023,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-ai-error__1440-light.png",
-      "setupMs": 1386,
+      "setupMs": 1157,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -50480,7 +50480,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-ai-error__1920-light.png",
-      "setupMs": 1307,
+      "setupMs": 1374,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -50937,7 +50937,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-ai-error__390-dark-dark.png",
-      "setupMs": 757,
+      "setupMs": 908,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -51388,7 +51388,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-ai-error__1440-dark-dark.png",
-      "setupMs": 926,
+      "setupMs": 1336,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -51845,7 +51845,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-finish-unsaved__390-light.png",
-      "setupMs": 1058,
+      "setupMs": 1415,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -52314,7 +52314,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-finish-unsaved__768-light.png",
-      "setupMs": 1242,
+      "setupMs": 1222,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -52783,7 +52783,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-finish-unsaved__1024-light.png",
-      "setupMs": 894,
+      "setupMs": 1362,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -53259,7 +53259,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-finish-unsaved__1280-light.png",
-      "setupMs": 817,
+      "setupMs": 1217,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -53735,7 +53735,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-finish-unsaved__1440-light.png",
-      "setupMs": 889,
+      "setupMs": 1006,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -54210,7 +54210,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-finish-unsaved__1920-light.png",
-      "setupMs": 827,
+      "setupMs": 969,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -54685,7 +54685,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-finish-unsaved__390-dark-dark.png",
-      "setupMs": 947,
+      "setupMs": 839,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -55154,7 +55154,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-finish-unsaved__1440-dark-dark.png",
-      "setupMs": 932,
+      "setupMs": 1003,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -55629,7 +55629,7 @@
       "size": "390",
       "theme": "light",
       "file": "learn-learn-list__390-light.png",
-      "setupMs": 680,
+      "setupMs": 917,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -55900,7 +55900,7 @@
       "size": "768",
       "theme": "light",
       "file": "learn-learn-list__768-light.png",
-      "setupMs": 703,
+      "setupMs": 801,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -56171,7 +56171,7 @@
       "size": "1024",
       "theme": "light",
       "file": "learn-learn-list__1024-light.png",
-      "setupMs": 567,
+      "setupMs": 756,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -56449,7 +56449,7 @@
       "size": "1280",
       "theme": "light",
       "file": "learn-learn-list__1280-light.png",
-      "setupMs": 606,
+      "setupMs": 763,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -56727,7 +56727,7 @@
       "size": "1440",
       "theme": "light",
       "file": "learn-learn-list__1440-light.png",
-      "setupMs": 620,
+      "setupMs": 692,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -57005,7 +57005,7 @@
       "size": "1920",
       "theme": "light",
       "file": "learn-learn-list__1920-light.png",
-      "setupMs": 704,
+      "setupMs": 796,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -57283,7 +57283,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "learn-learn-list__390-dark-dark.png",
-      "setupMs": 575,
+      "setupMs": 831,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -57554,7 +57554,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "learn-learn-list__1440-dark-dark.png",
-      "setupMs": 733,
+      "setupMs": 871,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -57832,7 +57832,7 @@
       "size": "390",
       "theme": "light",
       "file": "learn-learn-list-done__390-light.png",
-      "setupMs": 652,
+      "setupMs": 1040,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -58120,7 +58120,7 @@
       "size": "768",
       "theme": "light",
       "file": "learn-learn-list-done__768-light.png",
-      "setupMs": 970,
+      "setupMs": 823,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -58408,7 +58408,7 @@
       "size": "1024",
       "theme": "light",
       "file": "learn-learn-list-done__1024-light.png",
-      "setupMs": 923,
+      "setupMs": 947,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -58703,7 +58703,7 @@
       "size": "1280",
       "theme": "light",
       "file": "learn-learn-list-done__1280-light.png",
-      "setupMs": 948,
+      "setupMs": 875,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -58998,7 +58998,7 @@
       "size": "1440",
       "theme": "light",
       "file": "learn-learn-list-done__1440-light.png",
-      "setupMs": 1162,
+      "setupMs": 623,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -59293,7 +59293,7 @@
       "size": "1920",
       "theme": "light",
       "file": "learn-learn-list-done__1920-light.png",
-      "setupMs": 643,
+      "setupMs": 702,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -59588,7 +59588,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "learn-learn-list-done__390-dark-dark.png",
-      "setupMs": 905,
+      "setupMs": 615,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -59876,7 +59876,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "learn-learn-list-done__1440-dark-dark.png",
-      "setupMs": 1163,
+      "setupMs": 899,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -60171,7 +60171,7 @@
       "size": "390",
       "theme": "light",
       "file": "learn-learn-diagram__390-light.png",
-      "setupMs": 1714,
+      "setupMs": 1234,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -60460,7 +60460,7 @@
       "size": "768",
       "theme": "light",
       "file": "learn-learn-diagram__768-light.png",
-      "setupMs": 1550,
+      "setupMs": 1125,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -60743,7 +60743,7 @@
       "size": "1024",
       "theme": "light",
       "file": "learn-learn-diagram__1024-light.png",
-      "setupMs": 1407,
+      "setupMs": 1562,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -61026,7 +61026,7 @@
       "size": "1280",
       "theme": "light",
       "file": "learn-learn-diagram__1280-light.png",
-      "setupMs": 1282,
+      "setupMs": 1435,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -61309,7 +61309,7 @@
       "size": "1440",
       "theme": "light",
       "file": "learn-learn-diagram__1440-light.png",
-      "setupMs": 1036,
+      "setupMs": 1135,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -61592,7 +61592,7 @@
       "size": "1920",
       "theme": "light",
       "file": "learn-learn-diagram__1920-light.png",
-      "setupMs": 973,
+      "setupMs": 1026,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -61875,7 +61875,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "learn-learn-diagram__390-dark-dark.png",
-      "setupMs": 836,
+      "setupMs": 1081,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -62164,7 +62164,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "learn-learn-diagram__1440-dark-dark.png",
-      "setupMs": 863,
+      "setupMs": 1104,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -62447,7 +62447,7 @@
       "size": "390",
       "theme": "light",
       "file": "learn-learn-practice__390-light.png",
-      "setupMs": 1217,
+      "setupMs": 1064,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -62701,7 +62701,7 @@
       "size": "768",
       "theme": "light",
       "file": "learn-learn-practice__768-light.png",
-      "setupMs": 1395,
+      "setupMs": 2849,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -62955,7 +62955,7 @@
       "size": "1024",
       "theme": "light",
       "file": "learn-learn-practice__1024-light.png",
-      "setupMs": 1577,
+      "setupMs": 2268,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -63209,7 +63209,7 @@
       "size": "1280",
       "theme": "light",
       "file": "learn-learn-practice__1280-light.png",
-      "setupMs": 2631,
+      "setupMs": 2354,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -63457,7 +63457,7 @@
       "size": "1440",
       "theme": "light",
       "file": "learn-learn-practice__1440-light.png",
-      "setupMs": 2016,
+      "setupMs": 3209,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -63705,7 +63705,7 @@
       "size": "1920",
       "theme": "light",
       "file": "learn-learn-practice__1920-light.png",
-      "setupMs": 1600,
+      "setupMs": 1986,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -63953,7 +63953,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "learn-learn-practice__390-dark-dark.png",
-      "setupMs": 1209,
+      "setupMs": 1474,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -64207,7 +64207,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "learn-learn-practice__1440-dark-dark.png",
-      "setupMs": 1538,
+      "setupMs": 1196,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -64455,7 +64455,7 @@
       "size": "390",
       "theme": "light",
       "file": "learn-learn-practice-wrong__390-light.png",
-      "setupMs": 1441,
+      "setupMs": 1199,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -64746,7 +64746,7 @@
       "size": "768",
       "theme": "light",
       "file": "learn-learn-practice-wrong__768-light.png",
-      "setupMs": 1134,
+      "setupMs": 1718,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -65037,7 +65037,7 @@
       "size": "1024",
       "theme": "light",
       "file": "learn-learn-practice-wrong__1024-light.png",
-      "setupMs": 1431,
+      "setupMs": 1294,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -65328,7 +65328,7 @@
       "size": "1280",
       "theme": "light",
       "file": "learn-learn-practice-wrong__1280-light.png",
-      "setupMs": 1287,
+      "setupMs": 1386,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -65619,7 +65619,7 @@
       "size": "1440",
       "theme": "light",
       "file": "learn-learn-practice-wrong__1440-light.png",
-      "setupMs": 1209,
+      "setupMs": 1329,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -65910,7 +65910,7 @@
       "size": "1920",
       "theme": "light",
       "file": "learn-learn-practice-wrong__1920-light.png",
-      "setupMs": 1120,
+      "setupMs": 1205,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -66201,7 +66201,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "learn-learn-practice-wrong__390-dark-dark.png",
-      "setupMs": 1684,
+      "setupMs": 1037,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -66492,7 +66492,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "learn-learn-practice-wrong__1440-dark-dark.png",
-      "setupMs": 1388,
+      "setupMs": 1087,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -66783,7 +66783,7 @@
       "size": "390",
       "theme": "light",
       "file": "learn-learn-practice-correct__390-light.png",
-      "setupMs": 2051,
+      "setupMs": 1268,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -66800,9 +66800,9 @@
       },
       "document": {
         "scrollWidth": 390,
-        "scrollHeight": 1012,
+        "scrollHeight": 972,
         "horizontalOverflow": false,
-        "bodyScrollHeight": 1012
+        "bodyScrollHeight": 972
       },
       "regions": {
         "header": {
@@ -66815,14 +66815,14 @@
           "x": 0,
           "y": 168,
           "w": 390,
-          "h": 816
+          "h": 776
         },
         "asides": [
           {
             "x": 0,
             "y": 534,
             "w": 390,
-            "h": 450
+            "h": 410
           }
         ],
         "mainGridTemplate": "none"
@@ -66868,7 +66868,7 @@
         "14px": 12,
         "11px": 1,
         "20px": 1,
-        "12px": 7,
+        "12px": 6,
         "0.5px": 1
       },
       "typeSamples": [
@@ -66910,7 +66910,7 @@
           "color": "rgb(28, 25, 23)",
           "weight": "500",
           "sample": "button{← 课程列表}",
-          "count": 2
+          "count": 3
         },
         {
           "fontSize": "14px",
@@ -66933,8 +66933,8 @@
           "lineHeight": "20px",
           "color": "rgb(255, 255, 255)",
           "weight": "500",
-          "sample": "button[ask-hint]{再具体一点（3/3）}",
-          "count": 2
+          "sample": "button{下一节 →}",
+          "count": 1
         },
         {
           "fontSize": "12px",
@@ -66942,7 +66942,7 @@
           "color": "rgb(115, 106, 97)",
           "weight": "400",
           "sample": "span{练习}",
-          "count": 4
+          "count": 3
         },
         {
           "fontSize": "12px",
@@ -67075,7 +67075,7 @@
       "overflowing": [],
       "clipped": [],
       "counts": {
-        "elements": 409,
+        "elements": 408,
         "overflowing": 0,
         "clipped": 0,
         "contrastViolations": 0,
@@ -67088,7 +67088,7 @@
       "size": "768",
       "theme": "light",
       "file": "learn-learn-practice-correct__768-light.png",
-      "setupMs": 1441,
+      "setupMs": 1375,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -67105,9 +67105,9 @@
       },
       "document": {
         "scrollWidth": 768,
-        "scrollHeight": 1048,
+        "scrollHeight": 1024,
         "horizontalOverflow": false,
-        "bodyScrollHeight": 1048
+        "bodyScrollHeight": 1024
       },
       "regions": {
         "header": {
@@ -67120,14 +67120,14 @@
           "x": 0,
           "y": 124,
           "w": 768,
-          "h": 896
+          "h": 872
         },
         "asides": [
           {
             "x": 0,
             "y": 628,
             "w": 768,
-            "h": 392
+            "h": 368
           }
         ],
         "mainGridTemplate": "none"
@@ -67173,7 +67173,7 @@
         "14px": 12,
         "11px": 1,
         "20px": 1,
-        "12px": 7,
+        "12px": 6,
         "0.5px": 1
       },
       "typeSamples": [
@@ -67215,7 +67215,7 @@
           "color": "rgb(28, 25, 23)",
           "weight": "500",
           "sample": "button{← 课程列表}",
-          "count": 2
+          "count": 3
         },
         {
           "fontSize": "14px",
@@ -67238,8 +67238,8 @@
           "lineHeight": "20px",
           "color": "rgb(255, 255, 255)",
           "weight": "500",
-          "sample": "button[ask-hint]{再具体一点（3/3）}",
-          "count": 2
+          "sample": "button{下一节 →}",
+          "count": 1
         },
         {
           "fontSize": "12px",
@@ -67247,7 +67247,7 @@
           "color": "rgb(115, 106, 97)",
           "weight": "400",
           "sample": "span{练习}",
-          "count": 4
+          "count": 3
         },
         {
           "fontSize": "12px",
@@ -67380,7 +67380,7 @@
       "overflowing": [],
       "clipped": [],
       "counts": {
-        "elements": 409,
+        "elements": 408,
         "overflowing": 0,
         "clipped": 0,
         "contrastViolations": 0,
@@ -67393,7 +67393,7 @@
       "size": "1024",
       "theme": "light",
       "file": "learn-learn-practice-correct__1024-light.png",
-      "setupMs": 1610,
+      "setupMs": 1618,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -67478,7 +67478,7 @@
         "14px": 12,
         "11px": 1,
         "20px": 1,
-        "12px": 7,
+        "12px": 6,
         "0.5px": 1
       },
       "typeSamples": [
@@ -67520,7 +67520,7 @@
           "color": "rgb(28, 25, 23)",
           "weight": "500",
           "sample": "button{← 课程列表}",
-          "count": 2
+          "count": 3
         },
         {
           "fontSize": "14px",
@@ -67543,8 +67543,8 @@
           "lineHeight": "20px",
           "color": "rgb(255, 255, 255)",
           "weight": "500",
-          "sample": "button[ask-hint]{再具体一点（3/3）}",
-          "count": 2
+          "sample": "button{下一节 →}",
+          "count": 1
         },
         {
           "fontSize": "12px",
@@ -67552,7 +67552,7 @@
           "color": "rgb(115, 106, 97)",
           "weight": "400",
           "sample": "span{练习}",
-          "count": 4
+          "count": 3
         },
         {
           "fontSize": "12px",
@@ -67685,7 +67685,7 @@
       "overflowing": [],
       "clipped": [],
       "counts": {
-        "elements": 409,
+        "elements": 408,
         "overflowing": 0,
         "clipped": 0,
         "contrastViolations": 0,
@@ -67698,7 +67698,7 @@
       "size": "1280",
       "theme": "light",
       "file": "learn-learn-practice-correct__1280-light.png",
-      "setupMs": 1276,
+      "setupMs": 1674,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -67783,7 +67783,7 @@
         "14px": 12,
         "11px": 1,
         "20px": 1,
-        "12px": 7,
+        "12px": 6,
         "0.5px": 1
       },
       "typeSamples": [
@@ -67825,7 +67825,7 @@
           "color": "rgb(28, 25, 23)",
           "weight": "500",
           "sample": "button{← 课程列表}",
-          "count": 2
+          "count": 3
         },
         {
           "fontSize": "14px",
@@ -67848,8 +67848,8 @@
           "lineHeight": "20px",
           "color": "rgb(255, 255, 255)",
           "weight": "500",
-          "sample": "button[ask-hint]{再具体一点（3/3）}",
-          "count": 2
+          "sample": "button{下一节 →}",
+          "count": 1
         },
         {
           "fontSize": "12px",
@@ -67857,7 +67857,7 @@
           "color": "rgb(115, 106, 97)",
           "weight": "400",
           "sample": "span{练习}",
-          "count": 4
+          "count": 3
         },
         {
           "fontSize": "12px",
@@ -67990,7 +67990,7 @@
       "overflowing": [],
       "clipped": [],
       "counts": {
-        "elements": 409,
+        "elements": 408,
         "overflowing": 0,
         "clipped": 0,
         "contrastViolations": 0,
@@ -68003,7 +68003,7 @@
       "size": "1440",
       "theme": "light",
       "file": "learn-learn-practice-correct__1440-light.png",
-      "setupMs": 1102,
+      "setupMs": 2117,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -68088,7 +68088,7 @@
         "14px": 12,
         "11px": 1,
         "20px": 1,
-        "12px": 7,
+        "12px": 6,
         "0.5px": 1
       },
       "typeSamples": [
@@ -68130,7 +68130,7 @@
           "color": "rgb(28, 25, 23)",
           "weight": "500",
           "sample": "button{← 课程列表}",
-          "count": 2
+          "count": 3
         },
         {
           "fontSize": "14px",
@@ -68153,8 +68153,8 @@
           "lineHeight": "20px",
           "color": "rgb(255, 255, 255)",
           "weight": "500",
-          "sample": "button[ask-hint]{再具体一点（3/3）}",
-          "count": 2
+          "sample": "button{下一节 →}",
+          "count": 1
         },
         {
           "fontSize": "12px",
@@ -68162,7 +68162,7 @@
           "color": "rgb(115, 106, 97)",
           "weight": "400",
           "sample": "span{练习}",
-          "count": 4
+          "count": 3
         },
         {
           "fontSize": "12px",
@@ -68295,7 +68295,7 @@
       "overflowing": [],
       "clipped": [],
       "counts": {
-        "elements": 409,
+        "elements": 408,
         "overflowing": 0,
         "clipped": 0,
         "contrastViolations": 0,
@@ -68308,7 +68308,7 @@
       "size": "1920",
       "theme": "light",
       "file": "learn-learn-practice-correct__1920-light.png",
-      "setupMs": 1160,
+      "setupMs": 2680,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -68393,7 +68393,7 @@
         "14px": 12,
         "11px": 1,
         "20px": 1,
-        "12px": 7,
+        "12px": 6,
         "0.5px": 1
       },
       "typeSamples": [
@@ -68435,7 +68435,7 @@
           "color": "rgb(28, 25, 23)",
           "weight": "500",
           "sample": "button{← 课程列表}",
-          "count": 2
+          "count": 3
         },
         {
           "fontSize": "14px",
@@ -68458,8 +68458,8 @@
           "lineHeight": "20px",
           "color": "rgb(255, 255, 255)",
           "weight": "500",
-          "sample": "button[ask-hint]{再具体一点（3/3）}",
-          "count": 2
+          "sample": "button{下一节 →}",
+          "count": 1
         },
         {
           "fontSize": "12px",
@@ -68467,7 +68467,7 @@
           "color": "rgb(115, 106, 97)",
           "weight": "400",
           "sample": "span{练习}",
-          "count": 4
+          "count": 3
         },
         {
           "fontSize": "12px",
@@ -68600,7 +68600,7 @@
       "overflowing": [],
       "clipped": [],
       "counts": {
-        "elements": 409,
+        "elements": 408,
         "overflowing": 0,
         "clipped": 0,
         "contrastViolations": 0,
@@ -68613,7 +68613,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "learn-learn-practice-correct__390-dark-dark.png",
-      "setupMs": 996,
+      "setupMs": 1744,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -68630,9 +68630,9 @@
       },
       "document": {
         "scrollWidth": 390,
-        "scrollHeight": 1012,
+        "scrollHeight": 972,
         "horizontalOverflow": false,
-        "bodyScrollHeight": 1012
+        "bodyScrollHeight": 972
       },
       "regions": {
         "header": {
@@ -68645,14 +68645,14 @@
           "x": 0,
           "y": 168,
           "w": 390,
-          "h": 816
+          "h": 776
         },
         "asides": [
           {
             "x": 0,
             "y": 534,
             "w": 390,
-            "h": 450
+            "h": 410
           }
         ],
         "mainGridTemplate": "none"
@@ -68698,7 +68698,7 @@
         "14px": 12,
         "11px": 1,
         "20px": 1,
-        "12px": 7,
+        "12px": 6,
         "0.5px": 1
       },
       "typeSamples": [
@@ -68740,7 +68740,7 @@
           "color": "rgb(236, 232, 227)",
           "weight": "500",
           "sample": "button{← 课程列表}",
-          "count": 2
+          "count": 3
         },
         {
           "fontSize": "14px",
@@ -68763,8 +68763,8 @@
           "lineHeight": "20px",
           "color": "rgb(7, 33, 27)",
           "weight": "500",
-          "sample": "button[ask-hint]{再具体一点（3/3）}",
-          "count": 2
+          "sample": "button{下一节 →}",
+          "count": 1
         },
         {
           "fontSize": "12px",
@@ -68772,7 +68772,7 @@
           "color": "rgb(132, 138, 149)",
           "weight": "400",
           "sample": "span{练习}",
-          "count": 4
+          "count": 3
         },
         {
           "fontSize": "12px",
@@ -68905,7 +68905,7 @@
       "overflowing": [],
       "clipped": [],
       "counts": {
-        "elements": 408,
+        "elements": 407,
         "overflowing": 0,
         "clipped": 0,
         "contrastViolations": 0,
@@ -68918,7 +68918,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "learn-learn-practice-correct__1440-dark-dark.png",
-      "setupMs": 1143,
+      "setupMs": 2011,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -69003,7 +69003,7 @@
         "14px": 12,
         "11px": 1,
         "20px": 1,
-        "12px": 7,
+        "12px": 6,
         "0.5px": 1
       },
       "typeSamples": [
@@ -69045,7 +69045,7 @@
           "color": "rgb(236, 232, 227)",
           "weight": "500",
           "sample": "button{← 课程列表}",
-          "count": 2
+          "count": 3
         },
         {
           "fontSize": "14px",
@@ -69068,8 +69068,8 @@
           "lineHeight": "20px",
           "color": "rgb(7, 33, 27)",
           "weight": "500",
-          "sample": "button[ask-hint]{再具体一点（3/3）}",
-          "count": 2
+          "sample": "button{下一节 →}",
+          "count": 1
         },
         {
           "fontSize": "12px",
@@ -69077,7 +69077,7 @@
           "color": "rgb(132, 138, 149)",
           "weight": "400",
           "sample": "span{练习}",
-          "count": 4
+          "count": 3
         },
         {
           "fontSize": "12px",
@@ -69210,7 +69210,7 @@
       "overflowing": [],
       "clipped": [],
       "counts": {
-        "elements": 408,
+        "elements": 407,
         "overflowing": 0,
         "clipped": 0,
         "contrastViolations": 0,
@@ -69223,7 +69223,7 @@
       "size": "390",
       "theme": "light",
       "file": "learn-learn-list-all-done__390-light.png",
-      "setupMs": 773,
+      "setupMs": 1256,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -69496,7 +69496,7 @@
       "size": "768",
       "theme": "light",
       "file": "learn-learn-list-all-done__768-light.png",
-      "setupMs": 819,
+      "setupMs": 1198,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -69769,7 +69769,7 @@
       "size": "1024",
       "theme": "light",
       "file": "learn-learn-list-all-done__1024-light.png",
-      "setupMs": 938,
+      "setupMs": 1220,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -70049,7 +70049,7 @@
       "size": "1280",
       "theme": "light",
       "file": "learn-learn-list-all-done__1280-light.png",
-      "setupMs": 825,
+      "setupMs": 1714,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -70329,7 +70329,7 @@
       "size": "1440",
       "theme": "light",
       "file": "learn-learn-list-all-done__1440-light.png",
-      "setupMs": 939,
+      "setupMs": 1838,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -70609,7 +70609,7 @@
       "size": "1920",
       "theme": "light",
       "file": "learn-learn-list-all-done__1920-light.png",
-      "setupMs": 966,
+      "setupMs": 1808,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -70889,7 +70889,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "learn-learn-list-all-done__390-dark-dark.png",
-      "setupMs": 823,
+      "setupMs": 1514,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -71162,7 +71162,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "learn-learn-list-all-done__1440-dark-dark.png",
-      "setupMs": 968,
+      "setupMs": 1850,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -71442,7 +71442,7 @@
       "size": "390",
       "theme": "light",
       "file": "puzzles-puzzle-list__390-light.png",
-      "setupMs": 646,
+      "setupMs": 1152,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -71717,7 +71717,7 @@
       "size": "768",
       "theme": "light",
       "file": "puzzles-puzzle-list__768-light.png",
-      "setupMs": 724,
+      "setupMs": 1066,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -71992,7 +71992,7 @@
       "size": "1024",
       "theme": "light",
       "file": "puzzles-puzzle-list__1024-light.png",
-      "setupMs": 621,
+      "setupMs": 2052,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -72274,7 +72274,7 @@
       "size": "1280",
       "theme": "light",
       "file": "puzzles-puzzle-list__1280-light.png",
-      "setupMs": 1328,
+      "setupMs": 1255,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -72556,7 +72556,7 @@
       "size": "1440",
       "theme": "light",
       "file": "puzzles-puzzle-list__1440-light.png",
-      "setupMs": 2420,
+      "setupMs": 1122,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -72838,7 +72838,7 @@
       "size": "1920",
       "theme": "light",
       "file": "puzzles-puzzle-list__1920-light.png",
-      "setupMs": 990,
+      "setupMs": 789,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -73120,7 +73120,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "puzzles-puzzle-list__390-dark-dark.png",
-      "setupMs": 1304,
+      "setupMs": 643,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -73395,7 +73395,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "puzzles-puzzle-list__1440-dark-dark.png",
-      "setupMs": 1714,
+      "setupMs": 645,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -73677,7 +73677,7 @@
       "size": "390",
       "theme": "light",
       "file": "puzzles-puzzle-wrong__390-light.png",
-      "setupMs": 1184,
+      "setupMs": 896,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -73961,7 +73961,7 @@
       "size": "768",
       "theme": "light",
       "file": "puzzles-puzzle-wrong__768-light.png",
-      "setupMs": 898,
+      "setupMs": 1029,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -74245,7 +74245,7 @@
       "size": "1024",
       "theme": "light",
       "file": "puzzles-puzzle-wrong__1024-light.png",
-      "setupMs": 912,
+      "setupMs": 1637,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -74529,7 +74529,7 @@
       "size": "1280",
       "theme": "light",
       "file": "puzzles-puzzle-wrong__1280-light.png",
-      "setupMs": 809,
+      "setupMs": 1269,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -74813,7 +74813,7 @@
       "size": "1440",
       "theme": "light",
       "file": "puzzles-puzzle-wrong__1440-light.png",
-      "setupMs": 900,
+      "setupMs": 1267,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -75097,7 +75097,7 @@
       "size": "1920",
       "theme": "light",
       "file": "puzzles-puzzle-wrong__1920-light.png",
-      "setupMs": 871,
+      "setupMs": 1541,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -75381,7 +75381,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "puzzles-puzzle-wrong__390-dark-dark.png",
-      "setupMs": 745,
+      "setupMs": 2361,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -75665,7 +75665,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "puzzles-puzzle-wrong__1440-dark-dark.png",
-      "setupMs": 890,
+      "setupMs": 1601,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -75949,7 +75949,7 @@
       "size": "390",
       "theme": "light",
       "file": "puzzles-puzzle-correct__390-light.png",
-      "setupMs": 966,
+      "setupMs": 1537,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -75966,9 +75966,9 @@
       },
       "document": {
         "scrollWidth": 390,
-        "scrollHeight": 1040,
+        "scrollHeight": 1000,
         "horizontalOverflow": false,
-        "bodyScrollHeight": 1040
+        "bodyScrollHeight": 1000
       },
       "regions": {
         "header": {
@@ -75981,14 +75981,14 @@
           "x": 0,
           "y": 168,
           "w": 390,
-          "h": 844
+          "h": 804
         },
         "asides": [
           {
             "x": 0,
             "y": 534,
             "w": 390,
-            "h": 478
+            "h": 438
           }
         ],
         "mainGridTemplate": "none"
@@ -76034,7 +76034,7 @@
         "14px": 12,
         "11px": 1,
         "20px": 1,
-        "12px": 8,
+        "12px": 7,
         "0.5px": 1
       },
       "typeSamples": [
@@ -76076,7 +76076,7 @@
           "color": "rgb(28, 25, 23)",
           "weight": "500",
           "sample": "button{← 残局列表}",
-          "count": 2
+          "count": 3
         },
         {
           "fontSize": "14px",
@@ -76099,8 +76099,8 @@
           "lineHeight": "20px",
           "color": "rgb(255, 255, 255)",
           "weight": "500",
-          "sample": "button[ask-hint]{再具体一点（3/3）}",
-          "count": 2
+          "sample": "button{下一题 →}",
+          "count": 1
         },
         {
           "fontSize": "12px",
@@ -76108,7 +76108,7 @@
           "color": "rgb(115, 106, 97)",
           "weight": "400",
           "sample": "span{一步获胜}",
-          "count": 4
+          "count": 3
         },
         {
           "fontSize": "12px",
@@ -76249,7 +76249,7 @@
       "overflowing": [],
       "clipped": [],
       "counts": {
-        "elements": 411,
+        "elements": 410,
         "overflowing": 0,
         "clipped": 0,
         "contrastViolations": 0,
@@ -76262,7 +76262,7 @@
       "size": "768",
       "theme": "light",
       "file": "puzzles-puzzle-correct__768-light.png",
-      "setupMs": 896,
+      "setupMs": 2417,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -76279,9 +76279,9 @@
       },
       "document": {
         "scrollWidth": 768,
-        "scrollHeight": 1118,
+        "scrollHeight": 1094,
         "horizontalOverflow": false,
-        "bodyScrollHeight": 1118
+        "bodyScrollHeight": 1094
       },
       "regions": {
         "header": {
@@ -76294,14 +76294,14 @@
           "x": 0,
           "y": 124,
           "w": 768,
-          "h": 966
+          "h": 942
         },
         "asides": [
           {
             "x": 0,
             "y": 628,
             "w": 768,
-            "h": 462
+            "h": 438
           }
         ],
         "mainGridTemplate": "none"
@@ -76347,7 +76347,7 @@
         "14px": 12,
         "11px": 1,
         "20px": 1,
-        "12px": 8,
+        "12px": 7,
         "0.5px": 1
       },
       "typeSamples": [
@@ -76389,7 +76389,7 @@
           "color": "rgb(28, 25, 23)",
           "weight": "500",
           "sample": "button{← 残局列表}",
-          "count": 2
+          "count": 3
         },
         {
           "fontSize": "14px",
@@ -76412,8 +76412,8 @@
           "lineHeight": "20px",
           "color": "rgb(255, 255, 255)",
           "weight": "500",
-          "sample": "button[ask-hint]{再具体一点（3/3）}",
-          "count": 2
+          "sample": "button{下一题 →}",
+          "count": 1
         },
         {
           "fontSize": "12px",
@@ -76421,7 +76421,7 @@
           "color": "rgb(115, 106, 97)",
           "weight": "400",
           "sample": "span{一步获胜}",
-          "count": 4
+          "count": 3
         },
         {
           "fontSize": "12px",
@@ -76562,7 +76562,7 @@
       "overflowing": [],
       "clipped": [],
       "counts": {
-        "elements": 411,
+        "elements": 410,
         "overflowing": 0,
         "clipped": 0,
         "contrastViolations": 0,
@@ -76575,7 +76575,7 @@
       "size": "1024",
       "theme": "light",
       "file": "puzzles-puzzle-correct__1024-light.png",
-      "setupMs": 928,
+      "setupMs": 1230,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -76660,7 +76660,7 @@
         "14px": 12,
         "11px": 1,
         "20px": 1,
-        "12px": 8,
+        "12px": 7,
         "0.5px": 1
       },
       "typeSamples": [
@@ -76702,7 +76702,7 @@
           "color": "rgb(28, 25, 23)",
           "weight": "500",
           "sample": "button{← 残局列表}",
-          "count": 2
+          "count": 3
         },
         {
           "fontSize": "14px",
@@ -76725,8 +76725,8 @@
           "lineHeight": "20px",
           "color": "rgb(255, 255, 255)",
           "weight": "500",
-          "sample": "button[ask-hint]{再具体一点（3/3）}",
-          "count": 2
+          "sample": "button{下一题 →}",
+          "count": 1
         },
         {
           "fontSize": "12px",
@@ -76734,7 +76734,7 @@
           "color": "rgb(115, 106, 97)",
           "weight": "400",
           "sample": "span{一步获胜}",
-          "count": 4
+          "count": 3
         },
         {
           "fontSize": "12px",
@@ -76875,7 +76875,7 @@
       "overflowing": [],
       "clipped": [],
       "counts": {
-        "elements": 411,
+        "elements": 410,
         "overflowing": 0,
         "clipped": 0,
         "contrastViolations": 0,
@@ -76888,7 +76888,7 @@
       "size": "1280",
       "theme": "light",
       "file": "puzzles-puzzle-correct__1280-light.png",
-      "setupMs": 1157,
+      "setupMs": 1161,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -76973,7 +76973,7 @@
         "14px": 12,
         "11px": 1,
         "20px": 1,
-        "12px": 8,
+        "12px": 7,
         "0.5px": 1
       },
       "typeSamples": [
@@ -77015,7 +77015,7 @@
           "color": "rgb(28, 25, 23)",
           "weight": "500",
           "sample": "button{← 残局列表}",
-          "count": 2
+          "count": 3
         },
         {
           "fontSize": "14px",
@@ -77038,8 +77038,8 @@
           "lineHeight": "20px",
           "color": "rgb(255, 255, 255)",
           "weight": "500",
-          "sample": "button[ask-hint]{再具体一点（3/3）}",
-          "count": 2
+          "sample": "button{下一题 →}",
+          "count": 1
         },
         {
           "fontSize": "12px",
@@ -77047,7 +77047,7 @@
           "color": "rgb(115, 106, 97)",
           "weight": "400",
           "sample": "span{一步获胜}",
-          "count": 4
+          "count": 3
         },
         {
           "fontSize": "12px",
@@ -77188,7 +77188,7 @@
       "overflowing": [],
       "clipped": [],
       "counts": {
-        "elements": 411,
+        "elements": 410,
         "overflowing": 0,
         "clipped": 0,
         "contrastViolations": 0,
@@ -77201,7 +77201,7 @@
       "size": "1440",
       "theme": "light",
       "file": "puzzles-puzzle-correct__1440-light.png",
-      "setupMs": 1204,
+      "setupMs": 1391,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -77286,7 +77286,7 @@
         "14px": 12,
         "11px": 1,
         "20px": 1,
-        "12px": 8,
+        "12px": 7,
         "0.5px": 1
       },
       "typeSamples": [
@@ -77328,7 +77328,7 @@
           "color": "rgb(28, 25, 23)",
           "weight": "500",
           "sample": "button{← 残局列表}",
-          "count": 2
+          "count": 3
         },
         {
           "fontSize": "14px",
@@ -77351,8 +77351,8 @@
           "lineHeight": "20px",
           "color": "rgb(255, 255, 255)",
           "weight": "500",
-          "sample": "button[ask-hint]{再具体一点（3/3）}",
-          "count": 2
+          "sample": "button{下一题 →}",
+          "count": 1
         },
         {
           "fontSize": "12px",
@@ -77360,7 +77360,7 @@
           "color": "rgb(115, 106, 97)",
           "weight": "400",
           "sample": "span{一步获胜}",
-          "count": 4
+          "count": 3
         },
         {
           "fontSize": "12px",
@@ -77501,7 +77501,7 @@
       "overflowing": [],
       "clipped": [],
       "counts": {
-        "elements": 411,
+        "elements": 410,
         "overflowing": 0,
         "clipped": 0,
         "contrastViolations": 0,
@@ -77514,7 +77514,7 @@
       "size": "1920",
       "theme": "light",
       "file": "puzzles-puzzle-correct__1920-light.png",
-      "setupMs": 1242,
+      "setupMs": 1412,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -77599,7 +77599,7 @@
         "14px": 12,
         "11px": 1,
         "20px": 1,
-        "12px": 8,
+        "12px": 7,
         "0.5px": 1
       },
       "typeSamples": [
@@ -77641,7 +77641,7 @@
           "color": "rgb(28, 25, 23)",
           "weight": "500",
           "sample": "button{← 残局列表}",
-          "count": 2
+          "count": 3
         },
         {
           "fontSize": "14px",
@@ -77664,8 +77664,8 @@
           "lineHeight": "20px",
           "color": "rgb(255, 255, 255)",
           "weight": "500",
-          "sample": "button[ask-hint]{再具体一点（3/3）}",
-          "count": 2
+          "sample": "button{下一题 →}",
+          "count": 1
         },
         {
           "fontSize": "12px",
@@ -77673,7 +77673,7 @@
           "color": "rgb(115, 106, 97)",
           "weight": "400",
           "sample": "span{一步获胜}",
-          "count": 4
+          "count": 3
         },
         {
           "fontSize": "12px",
@@ -77814,7 +77814,7 @@
       "overflowing": [],
       "clipped": [],
       "counts": {
-        "elements": 411,
+        "elements": 410,
         "overflowing": 0,
         "clipped": 0,
         "contrastViolations": 0,
@@ -77827,7 +77827,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "puzzles-puzzle-correct__390-dark-dark.png",
-      "setupMs": 1033,
+      "setupMs": 2144,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -77844,9 +77844,9 @@
       },
       "document": {
         "scrollWidth": 390,
-        "scrollHeight": 1040,
+        "scrollHeight": 1000,
         "horizontalOverflow": false,
-        "bodyScrollHeight": 1040
+        "bodyScrollHeight": 1000
       },
       "regions": {
         "header": {
@@ -77859,14 +77859,14 @@
           "x": 0,
           "y": 168,
           "w": 390,
-          "h": 844
+          "h": 804
         },
         "asides": [
           {
             "x": 0,
             "y": 534,
             "w": 390,
-            "h": 478
+            "h": 438
           }
         ],
         "mainGridTemplate": "none"
@@ -77912,7 +77912,7 @@
         "14px": 12,
         "11px": 1,
         "20px": 1,
-        "12px": 8,
+        "12px": 7,
         "0.5px": 1
       },
       "typeSamples": [
@@ -77954,7 +77954,7 @@
           "color": "rgb(236, 232, 227)",
           "weight": "500",
           "sample": "button{← 残局列表}",
-          "count": 2
+          "count": 3
         },
         {
           "fontSize": "14px",
@@ -77977,8 +77977,8 @@
           "lineHeight": "20px",
           "color": "rgb(7, 33, 27)",
           "weight": "500",
-          "sample": "button[ask-hint]{再具体一点（3/3）}",
-          "count": 2
+          "sample": "button{下一题 →}",
+          "count": 1
         },
         {
           "fontSize": "12px",
@@ -77986,7 +77986,7 @@
           "color": "rgb(132, 138, 149)",
           "weight": "400",
           "sample": "span{一步获胜}",
-          "count": 4
+          "count": 3
         },
         {
           "fontSize": "12px",
@@ -78127,7 +78127,7 @@
       "overflowing": [],
       "clipped": [],
       "counts": {
-        "elements": 410,
+        "elements": 409,
         "overflowing": 0,
         "clipped": 0,
         "contrastViolations": 0,
@@ -78140,7 +78140,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "puzzles-puzzle-correct__1440-dark-dark.png",
-      "setupMs": 1181,
+      "setupMs": 3516,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -78225,7 +78225,7 @@
         "14px": 12,
         "11px": 1,
         "20px": 1,
-        "12px": 8,
+        "12px": 7,
         "0.5px": 1
       },
       "typeSamples": [
@@ -78267,7 +78267,7 @@
           "color": "rgb(236, 232, 227)",
           "weight": "500",
           "sample": "button{← 残局列表}",
-          "count": 2
+          "count": 3
         },
         {
           "fontSize": "14px",
@@ -78290,8 +78290,8 @@
           "lineHeight": "20px",
           "color": "rgb(7, 33, 27)",
           "weight": "500",
-          "sample": "button[ask-hint]{再具体一点（3/3）}",
-          "count": 2
+          "sample": "button{下一题 →}",
+          "count": 1
         },
         {
           "fontSize": "12px",
@@ -78299,7 +78299,7 @@
           "color": "rgb(132, 138, 149)",
           "weight": "400",
           "sample": "span{一步获胜}",
-          "count": 4
+          "count": 3
         },
         {
           "fontSize": "12px",
@@ -78440,7 +78440,7 @@
       "overflowing": [],
       "clipped": [],
       "counts": {
-        "elements": 410,
+        "elements": 409,
         "overflowing": 0,
         "clipped": 0,
         "contrastViolations": 0,
@@ -78453,7 +78453,7 @@
       "size": "390",
       "theme": "light",
       "file": "puzzles-puzzle-list-partial__390-light.png",
-      "setupMs": 642,
+      "setupMs": 1211,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -78745,7 +78745,7 @@
       "size": "768",
       "theme": "light",
       "file": "puzzles-puzzle-list-partial__768-light.png",
-      "setupMs": 634,
+      "setupMs": 2416,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -79037,7 +79037,7 @@
       "size": "1024",
       "theme": "light",
       "file": "puzzles-puzzle-list-partial__1024-light.png",
-      "setupMs": 616,
+      "setupMs": 5860,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -79336,7 +79336,7 @@
       "size": "1280",
       "theme": "light",
       "file": "puzzles-puzzle-list-partial__1280-light.png",
-      "setupMs": 676,
+      "setupMs": 3548,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -79635,7 +79635,7 @@
       "size": "1440",
       "theme": "light",
       "file": "puzzles-puzzle-list-partial__1440-light.png",
-      "setupMs": 733,
+      "setupMs": 1810,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -79934,7 +79934,7 @@
       "size": "1920",
       "theme": "light",
       "file": "puzzles-puzzle-list-partial__1920-light.png",
-      "setupMs": 884,
+      "setupMs": 1356,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -80233,7 +80233,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "puzzles-puzzle-list-partial__390-dark-dark.png",
-      "setupMs": 686,
+      "setupMs": 2400,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -80525,7 +80525,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "puzzles-puzzle-list-partial__1440-dark-dark.png",
-      "setupMs": 917,
+      "setupMs": 1976,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -80824,7 +80824,7 @@
       "size": "390",
       "theme": "light",
       "file": "puzzles-puzzle-category-done__390-light.png",
-      "setupMs": 734,
+      "setupMs": 1571,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -81116,7 +81116,7 @@
       "size": "768",
       "theme": "light",
       "file": "puzzles-puzzle-category-done__768-light.png",
-      "setupMs": 686,
+      "setupMs": 1271,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -81408,7 +81408,7 @@
       "size": "1024",
       "theme": "light",
       "file": "puzzles-puzzle-category-done__1024-light.png",
-      "setupMs": 845,
+      "setupMs": 1587,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -81707,7 +81707,7 @@
       "size": "1280",
       "theme": "light",
       "file": "puzzles-puzzle-category-done__1280-light.png",
-      "setupMs": 888,
+      "setupMs": 1231,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -82006,7 +82006,7 @@
       "size": "1440",
       "theme": "light",
       "file": "puzzles-puzzle-category-done__1440-light.png",
-      "setupMs": 886,
+      "setupMs": 1613,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -82305,7 +82305,7 @@
       "size": "1920",
       "theme": "light",
       "file": "puzzles-puzzle-category-done__1920-light.png",
-      "setupMs": 755,
+      "setupMs": 1108,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -82604,7 +82604,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "puzzles-puzzle-category-done__390-dark-dark.png",
-      "setupMs": 637,
+      "setupMs": 855,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -82896,7 +82896,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "puzzles-puzzle-category-done__1440-dark-dark.png",
-      "setupMs": 637,
+      "setupMs": 1288,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -83195,7 +83195,7 @@
       "size": "390",
       "theme": "light",
       "file": "puzzles-puzzle-all-done__390-light.png",
-      "setupMs": 954,
+      "setupMs": 1085,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -83472,7 +83472,7 @@
       "size": "768",
       "theme": "light",
       "file": "puzzles-puzzle-all-done__768-light.png",
-      "setupMs": 1296,
+      "setupMs": 1187,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -83749,7 +83749,7 @@
       "size": "1024",
       "theme": "light",
       "file": "puzzles-puzzle-all-done__1024-light.png",
-      "setupMs": 1022,
+      "setupMs": 1195,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -84033,7 +84033,7 @@
       "size": "1280",
       "theme": "light",
       "file": "puzzles-puzzle-all-done__1280-light.png",
-      "setupMs": 906,
+      "setupMs": 1153,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -84317,7 +84317,7 @@
       "size": "1440",
       "theme": "light",
       "file": "puzzles-puzzle-all-done__1440-light.png",
-      "setupMs": 912,
+      "setupMs": 1288,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -84601,7 +84601,7 @@
       "size": "1920",
       "theme": "light",
       "file": "puzzles-puzzle-all-done__1920-light.png",
-      "setupMs": 1011,
+      "setupMs": 1385,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -84885,7 +84885,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "puzzles-puzzle-all-done__390-dark-dark.png",
-      "setupMs": 908,
+      "setupMs": 1058,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -85162,7 +85162,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "puzzles-puzzle-all-done__1440-dark-dark.png",
-      "setupMs": 1591,
+      "setupMs": 1297,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -85446,7 +85446,7 @@
       "size": "390",
       "theme": "light",
       "file": "puzzles-puzzle-hint__390-light.png",
-      "setupMs": 1501,
+      "setupMs": 2604,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -85721,7 +85721,7 @@
       "size": "768",
       "theme": "light",
       "file": "puzzles-puzzle-hint__768-light.png",
-      "setupMs": 1635,
+      "setupMs": 3252,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -85996,7 +85996,7 @@
       "size": "1024",
       "theme": "light",
       "file": "puzzles-puzzle-hint__1024-light.png",
-      "setupMs": 2914,
+      "setupMs": 4221,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -86271,7 +86271,7 @@
       "size": "1280",
       "theme": "light",
       "file": "puzzles-puzzle-hint__1280-light.png",
-      "setupMs": 1449,
+      "setupMs": 2763,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -86540,7 +86540,7 @@
       "size": "1440",
       "theme": "light",
       "file": "puzzles-puzzle-hint__1440-light.png",
-      "setupMs": 1197,
+      "setupMs": 3796,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -86809,7 +86809,7 @@
       "size": "1920",
       "theme": "light",
       "file": "puzzles-puzzle-hint__1920-light.png",
-      "setupMs": 1174,
+      "setupMs": 4331,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -87078,7 +87078,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "puzzles-puzzle-hint__390-dark-dark.png",
-      "setupMs": 979,
+      "setupMs": 7039,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -87353,7 +87353,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "puzzles-puzzle-hint__1440-dark-dark.png",
-      "setupMs": 1501,
+      "setupMs": 5262,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -87622,7 +87622,7 @@
       "size": "390",
       "theme": "light",
       "file": "puzzles-puzzle-last-step__390-light.png",
-      "setupMs": 1760,
+      "setupMs": 3841,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -87639,9 +87639,9 @@
       },
       "document": {
         "scrollWidth": 390,
-        "scrollHeight": 1126,
+        "scrollHeight": 1086,
         "horizontalOverflow": false,
-        "bodyScrollHeight": 1126
+        "bodyScrollHeight": 1086
       },
       "regions": {
         "header": {
@@ -87654,14 +87654,14 @@
           "x": 0,
           "y": 168,
           "w": 390,
-          "h": 930
+          "h": 890
         },
         "asides": [
           {
             "x": 0,
             "y": 534,
             "w": 390,
-            "h": 564
+            "h": 524
           }
         ],
         "mainGridTemplate": "none"
@@ -87707,7 +87707,7 @@
         "14px": 12,
         "11px": 1,
         "20px": 1,
-        "12px": 9,
+        "12px": 8,
         "0.5px": 1
       },
       "typeSamples": [
@@ -87749,7 +87749,7 @@
           "color": "rgb(28, 25, 23)",
           "weight": "500",
           "sample": "button{← 残局列表}",
-          "count": 2
+          "count": 3
         },
         {
           "fontSize": "14px",
@@ -87772,8 +87772,8 @@
           "lineHeight": "20px",
           "color": "rgb(255, 255, 255)",
           "weight": "500",
-          "sample": "button[ask-hint]{再具体一点（3/3）}",
-          "count": 2
+          "sample": "button{回到残局列表}",
+          "count": 1
         },
         {
           "fontSize": "12px",
@@ -87781,7 +87781,7 @@
           "color": "rgb(115, 106, 97)",
           "weight": "400",
           "sample": "span{强制获胜路线}",
-          "count": 4
+          "count": 3
         },
         {
           "fontSize": "12px",
@@ -87930,7 +87930,7 @@
       "overflowing": [],
       "clipped": [],
       "counts": {
-        "elements": 428,
+        "elements": 427,
         "overflowing": 0,
         "clipped": 0,
         "contrastViolations": 0,
@@ -87943,7 +87943,7 @@
       "size": "768",
       "theme": "light",
       "file": "puzzles-puzzle-last-step__768-light.png",
-      "setupMs": 2101,
+      "setupMs": 3105,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -87960,9 +87960,9 @@
       },
       "document": {
         "scrollWidth": 768,
-        "scrollHeight": 1161,
+        "scrollHeight": 1137,
         "horizontalOverflow": false,
-        "bodyScrollHeight": 1161
+        "bodyScrollHeight": 1137
       },
       "regions": {
         "header": {
@@ -87975,14 +87975,14 @@
           "x": 0,
           "y": 124,
           "w": 768,
-          "h": 1009
+          "h": 985
         },
         "asides": [
           {
             "x": 0,
             "y": 628,
             "w": 768,
-            "h": 505
+            "h": 481
           }
         ],
         "mainGridTemplate": "none"
@@ -88028,7 +88028,7 @@
         "14px": 12,
         "11px": 1,
         "20px": 1,
-        "12px": 9,
+        "12px": 8,
         "0.5px": 1
       },
       "typeSamples": [
@@ -88070,7 +88070,7 @@
           "color": "rgb(28, 25, 23)",
           "weight": "500",
           "sample": "button{← 残局列表}",
-          "count": 2
+          "count": 3
         },
         {
           "fontSize": "14px",
@@ -88093,8 +88093,8 @@
           "lineHeight": "20px",
           "color": "rgb(255, 255, 255)",
           "weight": "500",
-          "sample": "button[ask-hint]{再具体一点（3/3）}",
-          "count": 2
+          "sample": "button{回到残局列表}",
+          "count": 1
         },
         {
           "fontSize": "12px",
@@ -88102,7 +88102,7 @@
           "color": "rgb(115, 106, 97)",
           "weight": "400",
           "sample": "span{强制获胜路线}",
-          "count": 4
+          "count": 3
         },
         {
           "fontSize": "12px",
@@ -88251,7 +88251,7 @@
       "overflowing": [],
       "clipped": [],
       "counts": {
-        "elements": 428,
+        "elements": 427,
         "overflowing": 0,
         "clipped": 0,
         "contrastViolations": 0,
@@ -88264,7 +88264,7 @@
       "size": "1024",
       "theme": "light",
       "file": "puzzles-puzzle-last-step__1024-light.png",
-      "setupMs": 1460,
+      "setupMs": 6410,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -88349,7 +88349,7 @@
         "14px": 12,
         "11px": 1,
         "20px": 1,
-        "12px": 9,
+        "12px": 8,
         "0.5px": 1
       },
       "typeSamples": [
@@ -88391,7 +88391,7 @@
           "color": "rgb(28, 25, 23)",
           "weight": "500",
           "sample": "button{← 残局列表}",
-          "count": 2
+          "count": 3
         },
         {
           "fontSize": "14px",
@@ -88414,8 +88414,8 @@
           "lineHeight": "20px",
           "color": "rgb(255, 255, 255)",
           "weight": "500",
-          "sample": "button[ask-hint]{再具体一点（3/3）}",
-          "count": 2
+          "sample": "button{回到残局列表}",
+          "count": 1
         },
         {
           "fontSize": "12px",
@@ -88423,7 +88423,7 @@
           "color": "rgb(115, 106, 97)",
           "weight": "400",
           "sample": "span{强制获胜路线}",
-          "count": 4
+          "count": 3
         },
         {
           "fontSize": "12px",
@@ -88572,7 +88572,7 @@
       "overflowing": [],
       "clipped": [],
       "counts": {
-        "elements": 428,
+        "elements": 427,
         "overflowing": 0,
         "clipped": 0,
         "contrastViolations": 0,
@@ -88585,7 +88585,7 @@
       "size": "1280",
       "theme": "light",
       "file": "puzzles-puzzle-last-step__1280-light.png",
-      "setupMs": 1557,
+      "setupMs": 7241,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -88670,7 +88670,7 @@
         "14px": 12,
         "11px": 1,
         "20px": 1,
-        "12px": 9,
+        "12px": 8,
         "0.5px": 1
       },
       "typeSamples": [
@@ -88712,7 +88712,7 @@
           "color": "rgb(28, 25, 23)",
           "weight": "500",
           "sample": "button{← 残局列表}",
-          "count": 2
+          "count": 3
         },
         {
           "fontSize": "14px",
@@ -88735,8 +88735,8 @@
           "lineHeight": "20px",
           "color": "rgb(255, 255, 255)",
           "weight": "500",
-          "sample": "button[ask-hint]{再具体一点（3/3）}",
-          "count": 2
+          "sample": "button{回到残局列表}",
+          "count": 1
         },
         {
           "fontSize": "12px",
@@ -88744,7 +88744,7 @@
           "color": "rgb(115, 106, 97)",
           "weight": "400",
           "sample": "span{强制获胜路线}",
-          "count": 4
+          "count": 3
         },
         {
           "fontSize": "12px",
@@ -88893,7 +88893,7 @@
       "overflowing": [],
       "clipped": [],
       "counts": {
-        "elements": 428,
+        "elements": 427,
         "overflowing": 0,
         "clipped": 0,
         "contrastViolations": 0,
@@ -88906,7 +88906,7 @@
       "size": "1440",
       "theme": "light",
       "file": "puzzles-puzzle-last-step__1440-light.png",
-      "setupMs": 1832,
+      "setupMs": 2845,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -88991,7 +88991,7 @@
         "14px": 12,
         "11px": 1,
         "20px": 1,
-        "12px": 9,
+        "12px": 8,
         "0.5px": 1
       },
       "typeSamples": [
@@ -89033,7 +89033,7 @@
           "color": "rgb(28, 25, 23)",
           "weight": "500",
           "sample": "button{← 残局列表}",
-          "count": 2
+          "count": 3
         },
         {
           "fontSize": "14px",
@@ -89056,8 +89056,8 @@
           "lineHeight": "20px",
           "color": "rgb(255, 255, 255)",
           "weight": "500",
-          "sample": "button[ask-hint]{再具体一点（3/3）}",
-          "count": 2
+          "sample": "button{回到残局列表}",
+          "count": 1
         },
         {
           "fontSize": "12px",
@@ -89065,7 +89065,7 @@
           "color": "rgb(115, 106, 97)",
           "weight": "400",
           "sample": "span{强制获胜路线}",
-          "count": 4
+          "count": 3
         },
         {
           "fontSize": "12px",
@@ -89214,7 +89214,7 @@
       "overflowing": [],
       "clipped": [],
       "counts": {
-        "elements": 428,
+        "elements": 427,
         "overflowing": 0,
         "clipped": 0,
         "contrastViolations": 0,
@@ -89227,7 +89227,7 @@
       "size": "1920",
       "theme": "light",
       "file": "puzzles-puzzle-last-step__1920-light.png",
-      "setupMs": 1625,
+      "setupMs": 3634,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -89312,7 +89312,7 @@
         "14px": 12,
         "11px": 1,
         "20px": 1,
-        "12px": 9,
+        "12px": 8,
         "0.5px": 1
       },
       "typeSamples": [
@@ -89354,7 +89354,7 @@
           "color": "rgb(28, 25, 23)",
           "weight": "500",
           "sample": "button{← 残局列表}",
-          "count": 2
+          "count": 3
         },
         {
           "fontSize": "14px",
@@ -89377,8 +89377,8 @@
           "lineHeight": "20px",
           "color": "rgb(255, 255, 255)",
           "weight": "500",
-          "sample": "button[ask-hint]{再具体一点（3/3）}",
-          "count": 2
+          "sample": "button{回到残局列表}",
+          "count": 1
         },
         {
           "fontSize": "12px",
@@ -89386,7 +89386,7 @@
           "color": "rgb(115, 106, 97)",
           "weight": "400",
           "sample": "span{强制获胜路线}",
-          "count": 4
+          "count": 3
         },
         {
           "fontSize": "12px",
@@ -89535,7 +89535,7 @@
       "overflowing": [],
       "clipped": [],
       "counts": {
-        "elements": 428,
+        "elements": 427,
         "overflowing": 0,
         "clipped": 0,
         "contrastViolations": 0,
@@ -89548,7 +89548,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "puzzles-puzzle-last-step__390-dark-dark.png",
-      "setupMs": 3137,
+      "setupMs": 2922,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -89565,9 +89565,9 @@
       },
       "document": {
         "scrollWidth": 390,
-        "scrollHeight": 1126,
+        "scrollHeight": 1086,
         "horizontalOverflow": false,
-        "bodyScrollHeight": 1126
+        "bodyScrollHeight": 1086
       },
       "regions": {
         "header": {
@@ -89580,14 +89580,14 @@
           "x": 0,
           "y": 168,
           "w": 390,
-          "h": 930
+          "h": 890
         },
         "asides": [
           {
             "x": 0,
             "y": 534,
             "w": 390,
-            "h": 564
+            "h": 524
           }
         ],
         "mainGridTemplate": "none"
@@ -89633,7 +89633,7 @@
         "14px": 12,
         "11px": 1,
         "20px": 1,
-        "12px": 9,
+        "12px": 8,
         "0.5px": 1
       },
       "typeSamples": [
@@ -89675,7 +89675,7 @@
           "color": "rgb(236, 232, 227)",
           "weight": "500",
           "sample": "button{← 残局列表}",
-          "count": 2
+          "count": 3
         },
         {
           "fontSize": "14px",
@@ -89698,8 +89698,8 @@
           "lineHeight": "20px",
           "color": "rgb(7, 33, 27)",
           "weight": "500",
-          "sample": "button[ask-hint]{再具体一点（3/3）}",
-          "count": 2
+          "sample": "button{回到残局列表}",
+          "count": 1
         },
         {
           "fontSize": "12px",
@@ -89707,7 +89707,7 @@
           "color": "rgb(132, 138, 149)",
           "weight": "400",
           "sample": "span{强制获胜路线}",
-          "count": 4
+          "count": 3
         },
         {
           "fontSize": "12px",
@@ -89856,7 +89856,7 @@
       "overflowing": [],
       "clipped": [],
       "counts": {
-        "elements": 427,
+        "elements": 426,
         "overflowing": 0,
         "clipped": 0,
         "contrastViolations": 0,
@@ -89869,7 +89869,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "puzzles-puzzle-last-step__1440-dark-dark.png",
-      "setupMs": 1770,
+      "setupMs": 3324,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -89954,7 +89954,7 @@
         "14px": 12,
         "11px": 1,
         "20px": 1,
-        "12px": 9,
+        "12px": 8,
         "0.5px": 1
       },
       "typeSamples": [
@@ -89996,7 +89996,7 @@
           "color": "rgb(236, 232, 227)",
           "weight": "500",
           "sample": "button{← 残局列表}",
-          "count": 2
+          "count": 3
         },
         {
           "fontSize": "14px",
@@ -90019,8 +90019,8 @@
           "lineHeight": "20px",
           "color": "rgb(7, 33, 27)",
           "weight": "500",
-          "sample": "button[ask-hint]{再具体一点（3/3）}",
-          "count": 2
+          "sample": "button{回到残局列表}",
+          "count": 1
         },
         {
           "fontSize": "12px",
@@ -90028,7 +90028,7 @@
           "color": "rgb(132, 138, 149)",
           "weight": "400",
           "sample": "span{强制获胜路线}",
-          "count": 4
+          "count": 3
         },
         {
           "fontSize": "12px",
@@ -90177,7 +90177,7 @@
       "overflowing": [],
       "clipped": [],
       "counts": {
-        "elements": 427,
+        "elements": 426,
         "overflowing": 0,
         "clipped": 0,
         "contrastViolations": 0,
@@ -90190,7 +90190,7 @@
       "size": "390",
       "theme": "light",
       "file": "review-review-empty__390-light.png",
-      "setupMs": 864,
+      "setupMs": 1258,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -90375,7 +90375,7 @@
       "size": "768",
       "theme": "light",
       "file": "review-review-empty__768-light.png",
-      "setupMs": 819,
+      "setupMs": 1338,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -90560,7 +90560,7 @@
       "size": "1024",
       "theme": "light",
       "file": "review-review-empty__1024-light.png",
-      "setupMs": 664,
+      "setupMs": 1434,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -90745,7 +90745,7 @@
       "size": "1280",
       "theme": "light",
       "file": "review-review-empty__1280-light.png",
-      "setupMs": 684,
+      "setupMs": 1530,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -90930,7 +90930,7 @@
       "size": "1440",
       "theme": "light",
       "file": "review-review-empty__1440-light.png",
-      "setupMs": 776,
+      "setupMs": 1193,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -91115,7 +91115,7 @@
       "size": "1920",
       "theme": "light",
       "file": "review-review-empty__1920-light.png",
-      "setupMs": 1119,
+      "setupMs": 1156,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -91300,7 +91300,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "review-review-empty__390-dark-dark.png",
-      "setupMs": 798,
+      "setupMs": 1396,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -91485,7 +91485,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "review-review-empty__1440-dark-dark.png",
-      "setupMs": 940,
+      "setupMs": 1298,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -91670,7 +91670,7 @@
       "size": "390",
       "theme": "light",
       "file": "review-review-library__390-light.png",
-      "setupMs": 693,
+      "setupMs": 847,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -91858,7 +91858,7 @@
       "size": "768",
       "theme": "light",
       "file": "review-review-library__768-light.png",
-      "setupMs": 635,
+      "setupMs": 1768,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -92046,7 +92046,7 @@
       "size": "1024",
       "theme": "light",
       "file": "review-review-library__1024-light.png",
-      "setupMs": 721,
+      "setupMs": 1172,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -92234,7 +92234,7 @@
       "size": "1280",
       "theme": "light",
       "file": "review-review-library__1280-light.png",
-      "setupMs": 715,
+      "setupMs": 1667,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -92422,7 +92422,7 @@
       "size": "1440",
       "theme": "light",
       "file": "review-review-library__1440-light.png",
-      "setupMs": 1184,
+      "setupMs": 1888,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -92610,7 +92610,7 @@
       "size": "1920",
       "theme": "light",
       "file": "review-review-library__1920-light.png",
-      "setupMs": 950,
+      "setupMs": 2333,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -92798,7 +92798,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "review-review-library__390-dark-dark.png",
-      "setupMs": 711,
+      "setupMs": 1879,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -92986,7 +92986,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "review-review-library__1440-dark-dark.png",
-      "setupMs": 977,
+      "setupMs": 2388,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -93174,7 +93174,7 @@
       "size": "390",
       "theme": "light",
       "file": "review-review-replay__390-light.png",
-      "setupMs": 2151,
+      "setupMs": 5821,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -93476,7 +93476,7 @@
       "size": "768",
       "theme": "light",
       "file": "review-review-replay__768-light.png",
-      "setupMs": 2302,
+      "setupMs": 2872,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -93778,7 +93778,7 @@
       "size": "1024",
       "theme": "light",
       "file": "review-review-replay__1024-light.png",
-      "setupMs": 2650,
+      "setupMs": 1732,
       "boardDetails": {
         "coordText": {
           "width": 12.33,
@@ -94080,7 +94080,7 @@
       "size": "1280",
       "theme": "light",
       "file": "review-review-replay__1280-light.png",
-      "setupMs": 1887,
+      "setupMs": 1599,
       "boardDetails": {
         "coordText": {
           "width": 14.84,
@@ -94382,7 +94382,7 @@
       "size": "1440",
       "theme": "light",
       "file": "review-review-replay__1440-light.png",
-      "setupMs": 2151,
+      "setupMs": 1579,
       "boardDetails": {
         "coordText": {
           "width": 14.84,
@@ -94684,7 +94684,7 @@
       "size": "1920",
       "theme": "light",
       "file": "review-review-replay__1920-light.png",
-      "setupMs": 1874,
+      "setupMs": 1672,
       "boardDetails": {
         "coordText": {
           "width": 14.84,
@@ -94986,7 +94986,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "review-review-replay__390-dark-dark.png",
-      "setupMs": 1928,
+      "setupMs": 1601,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -95288,7 +95288,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "review-review-replay__1440-dark-dark.png",
-      "setupMs": 2049,
+      "setupMs": 1812,
       "boardDetails": {
         "coordText": {
           "width": 14.84,
@@ -95590,7 +95590,7 @@
       "size": "390",
       "theme": "light",
       "file": "review-review-analysis__390-light.png",
-      "setupMs": 1664,
+      "setupMs": 2358,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -95893,7 +95893,7 @@
       "size": "768",
       "theme": "light",
       "file": "review-review-analysis__768-light.png",
-      "setupMs": 1994,
+      "setupMs": 1818,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -96196,7 +96196,7 @@
       "size": "1024",
       "theme": "light",
       "file": "review-review-analysis__1024-light.png",
-      "setupMs": 1900,
+      "setupMs": 5940,
       "boardDetails": {
         "coordText": {
           "width": 12.33,
@@ -96499,7 +96499,7 @@
       "size": "1280",
       "theme": "light",
       "file": "review-review-analysis__1280-light.png",
-      "setupMs": 1885,
+      "setupMs": 2467,
       "boardDetails": {
         "coordText": {
           "width": 14.84,
@@ -96802,7 +96802,7 @@
       "size": "1440",
       "theme": "light",
       "file": "review-review-analysis__1440-light.png",
-      "setupMs": 1863,
+      "setupMs": 1900,
       "boardDetails": {
         "coordText": {
           "width": 14.84,
@@ -97105,7 +97105,7 @@
       "size": "1920",
       "theme": "light",
       "file": "review-review-analysis__1920-light.png",
-      "setupMs": 1965,
+      "setupMs": 1934,
       "boardDetails": {
         "coordText": {
           "width": 14.84,
@@ -97408,7 +97408,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "review-review-analysis__390-dark-dark.png",
-      "setupMs": 1646,
+      "setupMs": 3093,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -97711,7 +97711,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "review-review-analysis__1440-dark-dark.png",
-      "setupMs": 1808,
+      "setupMs": 3258,
       "boardDetails": {
         "coordText": {
           "width": 14.84,

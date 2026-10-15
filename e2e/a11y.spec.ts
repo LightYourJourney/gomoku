@@ -370,3 +370,65 @@ test.describe('键盘操作 · 教学页', () => {
     await expect(page.getByRole('heading', { name: LESSONS[0]!.steps[0]!.title })).toBeVisible()
   })
 })
+
+/**
+ * Phase 05：残局的键盘通路。
+ *
+ * 与教学页那一组同一条纪律：**用真键盘 Tab 过去，不调 `.focus()`**——
+ * 程序化定位只能证明「这个元素存在」，证明不了「键盘用户到得了它」。
+ *
+ * 本阶段给残局加了「继续挑战」「下一题 →」「再做一次」三个新控件，
+ * 而这一组此前**一条都没有**（`grep 残局 e2e/a11y.spec.ts` 是零）：
+ * 教学页在 Phase 04 补过同样的缺口，残局这边是顺着新功能一起漏掉的。
+ */
+test.describe('键盘操作 · 残局', () => {
+  test('列表页那颗「继续挑战」用键盘也能按', async ({ page }) => {
+    await page.goto('/')
+    await page.getByRole('button', { name: '残局', exact: true }).click()
+
+    const cta = page.getByRole('button', { name: /^继续挑战：/ })
+    await expect(cta).toBeVisible()
+
+    let tabs = 0
+    while (tabs < 30) {
+      await page.keyboard.press('Tab')
+      tabs += 1
+      const text = await page.evaluate(() => document.activeElement?.textContent ?? '')
+      if (text.startsWith('继续挑战：')) break
+    }
+    expect(tabs, '按 Tab 应该能在 30 步之内走到「继续挑战」').toBeLessThan(30)
+
+    await page.keyboard.press('Enter')
+    await expect(page.getByRole('heading', { level: 1, name: '横向补满' })).toBeVisible()
+  })
+
+  test('做对之后，用键盘也能走到「下一题 →」并回车换题', async ({ page }) => {
+    await page.goto('/')
+    await page.getByRole('button', { name: '残局', exact: true }).click()
+    await page.getByTestId('puzzle-win-h').click()
+
+    // 用满三级提示，从**棋盘上的标记**反解坐标再落子——不写死答案
+    for (let i = 0; i < 3; i++) {
+      await page.getByRole('button', { name: /要提示|再具体一点/ }).click()
+    }
+    const mark = page.locator('[data-testid^="board-mark-"]').first()
+    await mark.waitFor()
+    const testId = (await mark.getAttribute('data-testid')) ?? ''
+    const match = /board-mark-(\d+)-(\d+)/.exec(testId)
+    expect(match, `棋盘上应该出现解法标记，实际拿到「${testId}」`).not.toBeNull()
+    await page.getByTestId(`intersection-${match![1]}-${match![2]}`).click()
+    await expect(page.getByTestId('feedback')).toHaveAttribute('data-ok', 'true')
+
+    let tabs = 0
+    while (tabs < 30) {
+      await page.keyboard.press('Tab')
+      tabs += 1
+      const text = await page.evaluate(() => document.activeElement?.textContent ?? '')
+      if (text.includes('下一题')) break
+    }
+    expect(tabs, '按 Tab 应该能在 30 步之内走到「下一题」').toBeLessThan(30)
+
+    await page.keyboard.press('Enter')
+    await expect(page.getByRole('heading', { level: 1, name: '斜向补满' })).toBeVisible()
+  })
+})

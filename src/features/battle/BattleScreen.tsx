@@ -44,8 +44,8 @@ const WIDE_QUERY = '(min-width: 1440px)'
  * 先例见 `Panel.tsx` 的 `bodyClassName` 注释。
  */
 const THREE_COLUMNS =
-  'lg:grid-cols-[clamp(240px,18vw,300px)_minmax(0,1fr)_clamp(300px,24vw,380px)]'
-const TWO_COLUMNS = 'lg:grid-cols-[minmax(0,1fr)_clamp(300px,24vw,380px)]'
+  'wide-layout:grid-cols-[clamp(240px,18vw,300px)_minmax(0,1fr)_clamp(300px,24vw,380px)]'
+const TWO_COLUMNS = 'wide-layout:grid-cols-[minmax(0,1fr)_clamp(300px,24vw,380px)]'
 
 /** 待确认的操作。同一时刻只可能有一个——弹窗是模态的。 */
 type PendingConfirm =
@@ -269,7 +269,7 @@ export function BattleScreen({ sound: injectedSound }: BattleScreenProps = {}) {
 
       <main
         className={cx(
-          'flex min-h-0 flex-1 flex-col lg:grid',
+          'flex min-h-0 flex-1 flex-col wide-layout:grid',
           wide ? THREE_COLUMNS : TWO_COLUMNS,
         )}
       >
@@ -302,7 +302,7 @@ export function BattleScreen({ sound: injectedSound }: BattleScreenProps = {}) {
         */}
         <div
           data-testid="battle-center-column"
-          className="flex min-h-0 flex-col gap-1 px-3 py-1 lg:px-4"
+          className="flex min-h-0 flex-col gap-1 px-3 py-1 wide-layout:px-4"
         >
           <MatchBar
             game={game}
@@ -312,7 +312,7 @@ export function BattleScreen({ sound: injectedSound }: BattleScreenProps = {}) {
             aiThinking={aiThinking}
           />
 
-          <BoardStage className="lg:flex-1">
+          <BoardStage className="wide-layout:flex-1">
             <Board
               board={game.board}
               lastMove={game.lastMove}
@@ -350,7 +350,7 @@ export function BattleScreen({ sound: injectedSound }: BattleScreenProps = {}) {
           会变成 `main` 网格里的一个额外项——棋盘当场从 729px 塌到 358px（1024 下 42px），
           探针的「棋盘 ≥320px」判据立刻红。类型检查抓不到这一类错误。
         */}
-        <aside className="order-2 space-y-2 px-3 pb-4 lg:order-3 lg:overflow-y-auto lg:border-l lg:border-border lg:px-4 lg:py-4">
+        <aside className="order-2 space-y-2 px-3 pb-4 wide-layout:order-3 wide-layout:overflow-y-auto wide-layout:border-l wide-layout:border-border wide-layout:px-4 wide-layout:py-4">
           <Panel title="对局概要" bodyClassName="space-y-1">
             <InfoRow label="模式">{mode === 'pve' ? '人机对战' : '本地双人'}</InfoRow>
             <InfoRow label="手数">{moveCount}</InfoRow>
