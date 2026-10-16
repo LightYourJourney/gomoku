@@ -18,18 +18,27 @@ export interface ReplayBoardProps {
 }
 
 /**
- * 回放棋盘上「当前手」的编号半径。
+ * 回放编号的半径与字号（用户单位）。
  *
- * 其余手是 `0.26`（`Board.tsx` 的注释解释了为什么要小：大半径会把棋子整个盖住，
- * 就看不出那一手是黑是白）。当前手稍微放大一点，好在密排的编号里认出来。
+ * **半径**受两条约束：`Board.tsx` 的注释解释了编号为什么要小（大半径会把棋子
+ * 整个盖住，就看不出那一手是黑是白），而棋子半径是 `STONE_RADIUS = 0.44`。
+ * 取 0.30、当前手略大到 0.34——390 视口（棋盘约 340px，1 单位 ≈ 21.25px）下
+ * 棋子外露 2.98px / 2.13px，都还看得出黑白，当前手则是个更实的块。
  *
- * **只能放这么大。** 棋子半径是 `STONE_RADIUS = 0.44`（`Board.tsx:61`），
- * 编号与棋子同心：0.26 时边缘余 0.18 单位，0.32 时只剩 0.12——
- * 390 视口（棋盘约 340px，1 单位 ≈ 21.25px）下就是 3.8px → 2.6px。
- * 再大就该把棋子吃掉了，得不偿失。
+ * **字号与半径解绑了**（`BoardMark.fontSize`）。原先字号恒等于 `radius × 1.25`，
+ * 于是半径被「棋子要露在外面」卡住的同时字号也被连带卡在 6.91px，
+ * 够不着 `DESIGN_SYSTEM` §8.2 的 10px 下限（F-UI-14）。徽标的高度是 `2r`，
+ * 装得下更大的字，所以按 10px 反推：`10 / 21.25 = 0.4706`，取 **0.51**
+ * （≈ 10.84px）留 8% 余量。
+ *
+ * **代价，如实记**：pill 的宽度只取决于字号，所以三位数手数（≥100 手）的徽标
+ * 会宽到 1.189 单位，相邻两个各伸 0.594、**重叠约 0.188 单位（@390 约 4px）**。
+ * 「半宽 < 1 格」这条硬约束仍然满足（0.594 < 1），数字也读得出，
+ * 但密排时会叠在一起——这是为 10px 付的价。**棋盘上的手顺总数不因此减少**。
  */
-const CURRENT_STEP_RADIUS = 0.32
-const PLAIN_STEP_RADIUS = 0.26
+const CURRENT_STEP_RADIUS = 0.34
+const PLAIN_STEP_RADIUS = 0.3
+const STEP_FONT_SIZE = 0.51
 
 /**
  * 回放视图：棋盘 + 游标控制。
@@ -63,6 +72,7 @@ export function ReplayBoard({ store, onExit, extraPanel }: ReplayBoardProps) {
   const marks = position.moves.map((point, index) => ({
     point,
     radius: index === cursor - 1 ? CURRENT_STEP_RADIUS : PLAIN_STEP_RADIUS,
+    fontSize: STEP_FONT_SIZE,
   }))
 
   return (

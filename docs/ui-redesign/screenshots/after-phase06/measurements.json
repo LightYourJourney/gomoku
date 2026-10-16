@@ -57,7 +57,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-empty__390-light.png",
-      "setupMs": 582,
+      "setupMs": 464,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -463,7 +463,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-empty__768-light.png",
-      "setupMs": 639,
+      "setupMs": 395,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -869,7 +869,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-empty__1024-light.png",
-      "setupMs": 911,
+      "setupMs": 412,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -1282,7 +1282,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-empty__1280-light.png",
-      "setupMs": 1132,
+      "setupMs": 422,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -1689,7 +1689,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-empty__1440-light.png",
-      "setupMs": 839,
+      "setupMs": 449,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -2095,7 +2095,7 @@
       "size": "1280x680",
       "theme": "light",
       "file": "battle-battle-empty__1280x680-light.png",
-      "setupMs": 556,
+      "setupMs": 364,
       "boardDetails": {
         "coordText": {
           "width": 9.97,
@@ -2508,7 +2508,7 @@
       "size": "1440x700",
       "theme": "light",
       "file": "battle-battle-empty__1440x700-light.png",
-      "setupMs": 599,
+      "setupMs": 411,
       "boardDetails": {
         "coordText": {
           "width": 10.36,
@@ -2920,7 +2920,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-empty__1920-light.png",
-      "setupMs": 652,
+      "setupMs": 442,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -3326,7 +3326,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-empty__390-dark-dark.png",
-      "setupMs": 602,
+      "setupMs": 407,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -3732,7 +3732,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-empty__1440-dark-dark.png",
-      "setupMs": 718,
+      "setupMs": 408,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -4138,7 +4138,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-midgame__390-light.png",
-      "setupMs": 580,
+      "setupMs": 389,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -4565,7 +4565,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-midgame__768-light.png",
-      "setupMs": 614,
+      "setupMs": 384,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -4992,7 +4992,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-midgame__1024-light.png",
-      "setupMs": 708,
+      "setupMs": 442,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -5425,7 +5425,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-midgame__1280-light.png",
-      "setupMs": 666,
+      "setupMs": 460,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -5852,7 +5852,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-midgame__1440-light.png",
-      "setupMs": 906,
+      "setupMs": 442,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -6279,7 +6279,7 @@
       "size": "1280x680",
       "theme": "light",
       "file": "battle-battle-midgame__1280x680-light.png",
-      "setupMs": 588,
+      "setupMs": 379,
       "boardDetails": {
         "coordText": {
           "width": 9.97,
@@ -6712,7 +6712,7 @@
       "size": "1440x700",
       "theme": "light",
       "file": "battle-battle-midgame__1440x700-light.png",
-      "setupMs": 621,
+      "setupMs": 401,
       "boardDetails": {
         "coordText": {
           "width": 10.36,
@@ -7151,7 +7151,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-midgame__1920-light.png",
-      "setupMs": 867,
+      "setupMs": 452,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -7578,7 +7578,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-midgame__390-dark-dark.png",
-      "setupMs": 868,
+      "setupMs": 388,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -8005,7 +8005,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-midgame__1440-dark-dark.png",
-      "setupMs": 1524,
+      "setupMs": 476,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -8432,7 +8432,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-thinking__390-light.png",
-      "setupMs": 1684,
+      "setupMs": 370,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -8857,7 +8857,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-thinking__768-light.png",
-      "setupMs": 1247,
+      "setupMs": 411,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -9282,7 +9282,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-thinking__1024-light.png",
-      "setupMs": 1042,
+      "setupMs": 445,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -9714,7 +9714,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-thinking__1280-light.png",
-      "setupMs": 1056,
+      "setupMs": 454,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -10146,7 +10146,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-thinking__1440-light.png",
-      "setupMs": 1083,
+      "setupMs": 519,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -10577,7 +10577,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-thinking__1920-light.png",
-      "setupMs": 1071,
+      "setupMs": 523,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -11008,7 +11008,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-thinking__390-dark-dark.png",
-      "setupMs": 654,
+      "setupMs": 489,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -11433,7 +11433,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-thinking__1440-dark-dark.png",
-      "setupMs": 1200,
+      "setupMs": 550,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -11864,7 +11864,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-hint__390-light.png",
-      "setupMs": 1418,
+      "setupMs": 755,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -12359,7 +12359,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-hint__768-light.png",
-      "setupMs": 777,
+      "setupMs": 625,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -12854,7 +12854,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-hint__1024-light.png",
-      "setupMs": 860,
+      "setupMs": 591,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -13355,7 +13355,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-hint__1280-light.png",
-      "setupMs": 844,
+      "setupMs": 628,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -13850,7 +13850,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-hint__1440-light.png",
-      "setupMs": 839,
+      "setupMs": 589,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -14345,7 +14345,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-hint__1920-light.png",
-      "setupMs": 850,
+      "setupMs": 666,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -14840,7 +14840,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-hint__390-dark-dark.png",
-      "setupMs": 780,
+      "setupMs": 568,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -15335,7 +15335,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-hint__1440-dark-dark.png",
-      "setupMs": 924,
+      "setupMs": 619,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -15830,7 +15830,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-confirm-restart__390-light.png",
-      "setupMs": 692,
+      "setupMs": 512,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -16294,7 +16294,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-confirm-restart__768-light.png",
-      "setupMs": 719,
+      "setupMs": 537,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -16758,7 +16758,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-confirm-restart__1024-light.png",
-      "setupMs": 809,
+      "setupMs": 589,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -17228,7 +17228,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-confirm-restart__1280-light.png",
-      "setupMs": 870,
+      "setupMs": 559,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -17692,7 +17692,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-confirm-restart__1440-light.png",
-      "setupMs": 877,
+      "setupMs": 541,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -18156,7 +18156,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-confirm-restart__1920-light.png",
-      "setupMs": 822,
+      "setupMs": 601,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -18620,7 +18620,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-confirm-restart__390-dark-dark.png",
-      "setupMs": 849,
+      "setupMs": 531,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -19084,7 +19084,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-confirm-restart__1440-dark-dark.png",
-      "setupMs": 990,
+      "setupMs": 607,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -19548,7 +19548,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-display-settings__390-light.png",
-      "setupMs": 685,
+      "setupMs": 525,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -20006,7 +20006,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-display-settings__768-light.png",
-      "setupMs": 1170,
+      "setupMs": 490,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -20464,7 +20464,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-display-settings__1024-light.png",
-      "setupMs": 1473,
+      "setupMs": 617,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -20928,7 +20928,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-display-settings__1280-light.png",
-      "setupMs": 2160,
+      "setupMs": 610,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -21386,7 +21386,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-display-settings__1440-light.png",
-      "setupMs": 2021,
+      "setupMs": 633,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -21844,7 +21844,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-display-settings__1920-light.png",
-      "setupMs": 1502,
+      "setupMs": 617,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -22302,7 +22302,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-display-settings__390-dark-dark.png",
-      "setupMs": 846,
+      "setupMs": 659,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -22760,7 +22760,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-display-settings__1440-dark-dark.png",
-      "setupMs": 1390,
+      "setupMs": 651,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -23218,7 +23218,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-finished__390-light.png",
-      "setupMs": 786,
+      "setupMs": 443,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -23687,7 +23687,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-finished__768-light.png",
-      "setupMs": 1135,
+      "setupMs": 482,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -24156,7 +24156,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-finished__1024-light.png",
-      "setupMs": 1068,
+      "setupMs": 483,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -24632,7 +24632,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-finished__1280-light.png",
-      "setupMs": 1268,
+      "setupMs": 478,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -25108,7 +25108,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-finished__1440-light.png",
-      "setupMs": 1772,
+      "setupMs": 473,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -25583,7 +25583,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-finished__1920-light.png",
-      "setupMs": 1603,
+      "setupMs": 511,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -26058,7 +26058,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-finished__390-dark-dark.png",
-      "setupMs": 1188,
+      "setupMs": 538,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -26527,7 +26527,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-finished__1440-dark-dark.png",
-      "setupMs": 1681,
+      "setupMs": 957,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -27002,7 +27002,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-opening__390-light.png",
-      "setupMs": 1057,
+      "setupMs": 521,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -27422,7 +27422,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-opening__768-light.png",
-      "setupMs": 874,
+      "setupMs": 565,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -27842,7 +27842,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-opening__1024-light.png",
-      "setupMs": 1403,
+      "setupMs": 571,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -28269,7 +28269,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-opening__1280-light.png",
-      "setupMs": 1041,
+      "setupMs": 570,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -28690,7 +28690,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-opening__1440-light.png",
-      "setupMs": 843,
+      "setupMs": 613,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -29110,7 +29110,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-opening__1920-light.png",
-      "setupMs": 915,
+      "setupMs": 573,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -29530,7 +29530,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-opening__390-dark-dark.png",
-      "setupMs": 741,
+      "setupMs": 545,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -29950,7 +29950,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-opening__1440-dark-dark.png",
-      "setupMs": 1004,
+      "setupMs": 591,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -30370,7 +30370,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-dense-black__390-light.png",
-      "setupMs": 677,
+      "setupMs": 489,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -30797,7 +30797,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-dense-black__768-light.png",
-      "setupMs": 766,
+      "setupMs": 517,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -31224,7 +31224,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-dense-black__1024-light.png",
-      "setupMs": 672,
+      "setupMs": 579,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -31657,7 +31657,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-dense-black__1280-light.png",
-      "setupMs": 656,
+      "setupMs": 590,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -32084,7 +32084,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-dense-black__1440-light.png",
-      "setupMs": 623,
+      "setupMs": 580,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -32511,7 +32511,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-dense-black__1920-light.png",
-      "setupMs": 725,
+      "setupMs": 613,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -32938,7 +32938,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-dense-black__390-dark-dark.png",
-      "setupMs": 591,
+      "setupMs": 596,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -33365,7 +33365,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-dense-black__1440-dark-dark.png",
-      "setupMs": 677,
+      "setupMs": 734,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -33792,7 +33792,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-dense-white__390-light.png",
-      "setupMs": 562,
+      "setupMs": 764,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -34219,7 +34219,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-dense-white__768-light.png",
-      "setupMs": 548,
+      "setupMs": 673,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -34646,7 +34646,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-dense-white__1024-light.png",
-      "setupMs": 734,
+      "setupMs": 1336,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -35079,7 +35079,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-dense-white__1280-light.png",
-      "setupMs": 715,
+      "setupMs": 812,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -35506,7 +35506,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-dense-white__1440-light.png",
-      "setupMs": 655,
+      "setupMs": 809,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -35933,7 +35933,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-dense-white__1920-light.png",
-      "setupMs": 703,
+      "setupMs": 820,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -36360,7 +36360,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-dense-white__390-dark-dark.png",
-      "setupMs": 663,
+      "setupMs": 660,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -36787,7 +36787,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-dense-white__1440-dark-dark.png",
-      "setupMs": 715,
+      "setupMs": 928,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -37214,7 +37214,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-win-board__390-light.png",
-      "setupMs": 756,
+      "setupMs": 807,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -37646,7 +37646,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-win-board__768-light.png",
-      "setupMs": 795,
+      "setupMs": 837,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -38078,7 +38078,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-win-board__1024-light.png",
-      "setupMs": 973,
+      "setupMs": 927,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -38517,7 +38517,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-win-board__1280-light.png",
-      "setupMs": 939,
+      "setupMs": 896,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -38956,7 +38956,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-win-board__1440-light.png",
-      "setupMs": 855,
+      "setupMs": 861,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -39394,7 +39394,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-win-board__1920-light.png",
-      "setupMs": 902,
+      "setupMs": 836,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -39832,7 +39832,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-win-board__390-dark-dark.png",
-      "setupMs": 732,
+      "setupMs": 739,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -40264,7 +40264,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-win-board__1440-dark-dark.png",
-      "setupMs": 854,
+      "setupMs": 820,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -40702,7 +40702,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-ai-moved__390-light.png",
-      "setupMs": 660,
+      "setupMs": 708,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -41161,7 +41161,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-ai-moved__768-light.png",
-      "setupMs": 673,
+      "setupMs": 743,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -41620,7 +41620,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-ai-moved__1024-light.png",
-      "setupMs": 686,
+      "setupMs": 814,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -42086,7 +42086,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-ai-moved__1280-light.png",
-      "setupMs": 849,
+      "setupMs": 829,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -42546,7 +42546,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-ai-moved__1440-light.png",
-      "setupMs": 1107,
+      "setupMs": 823,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -43005,7 +43005,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-ai-moved__1920-light.png",
-      "setupMs": 1112,
+      "setupMs": 855,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -43464,7 +43464,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-ai-moved__390-dark-dark.png",
-      "setupMs": 852,
+      "setupMs": 705,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -43923,7 +43923,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-ai-moved__1440-dark-dark.png",
-      "setupMs": 970,
+      "setupMs": 811,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -44382,7 +44382,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-ai-moved-expanded__390-light.png",
-      "setupMs": 1034,
+      "setupMs": 827,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -44857,7 +44857,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-ai-moved-expanded__768-light.png",
-      "setupMs": 1560,
+      "setupMs": 908,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -45332,7 +45332,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-ai-moved-expanded__1024-light.png",
-      "setupMs": 1498,
+      "setupMs": 895,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -45814,7 +45814,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-ai-moved-expanded__1280-light.png",
-      "setupMs": 1517,
+      "setupMs": 945,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -46290,7 +46290,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-ai-moved-expanded__1440-light.png",
-      "setupMs": 1494,
+      "setupMs": 983,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -46772,7 +46772,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-ai-moved-expanded__1920-light.png",
-      "setupMs": 1504,
+      "setupMs": 965,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -47254,7 +47254,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-ai-moved-expanded__390-dark-dark.png",
-      "setupMs": 1465,
+      "setupMs": 811,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -47729,7 +47729,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-ai-moved-expanded__1440-dark-dark.png",
-      "setupMs": 1535,
+      "setupMs": 903,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -48211,7 +48211,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-ai-error__390-light.png",
-      "setupMs": 853,
+      "setupMs": 591,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -48662,7 +48662,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-ai-error__768-light.png",
-      "setupMs": 809,
+      "setupMs": 612,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -49113,7 +49113,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-ai-error__1024-light.png",
-      "setupMs": 970,
+      "setupMs": 718,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -49570,7 +49570,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-ai-error__1280-light.png",
-      "setupMs": 918,
+      "setupMs": 743,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -50027,7 +50027,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-ai-error__1440-light.png",
-      "setupMs": 720,
+      "setupMs": 786,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -50484,7 +50484,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-ai-error__1920-light.png",
-      "setupMs": 842,
+      "setupMs": 774,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -50941,7 +50941,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-ai-error__390-dark-dark.png",
-      "setupMs": 617,
+      "setupMs": 711,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -51392,7 +51392,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-ai-error__1440-dark-dark.png",
-      "setupMs": 753,
+      "setupMs": 785,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -51849,7 +51849,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-finish-unsaved__390-light.png",
-      "setupMs": 862,
+      "setupMs": 902,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -52318,7 +52318,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-finish-unsaved__768-light.png",
-      "setupMs": 895,
+      "setupMs": 980,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -52787,7 +52787,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-finish-unsaved__1024-light.png",
-      "setupMs": 1184,
+      "setupMs": 1191,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -53263,7 +53263,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-finish-unsaved__1280-light.png",
-      "setupMs": 1147,
+      "setupMs": 1220,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -53739,7 +53739,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-finish-unsaved__1440-light.png",
-      "setupMs": 1063,
+      "setupMs": 985,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -54214,7 +54214,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-finish-unsaved__1920-light.png",
-      "setupMs": 1043,
+      "setupMs": 911,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -54689,7 +54689,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-finish-unsaved__390-dark-dark.png",
-      "setupMs": 832,
+      "setupMs": 886,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -55158,7 +55158,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-finish-unsaved__1440-dark-dark.png",
-      "setupMs": 880,
+      "setupMs": 942,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -55633,7 +55633,7 @@
       "size": "390",
       "theme": "light",
       "file": "learn-learn-list__390-light.png",
-      "setupMs": 691,
+      "setupMs": 700,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -55904,7 +55904,7 @@
       "size": "768",
       "theme": "light",
       "file": "learn-learn-list__768-light.png",
-      "setupMs": 791,
+      "setupMs": 699,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -56175,7 +56175,7 @@
       "size": "1024",
       "theme": "light",
       "file": "learn-learn-list__1024-light.png",
-      "setupMs": 752,
+      "setupMs": 645,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -56453,7 +56453,7 @@
       "size": "1280",
       "theme": "light",
       "file": "learn-learn-list__1280-light.png",
-      "setupMs": 947,
+      "setupMs": 658,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -56731,7 +56731,7 @@
       "size": "1440",
       "theme": "light",
       "file": "learn-learn-list__1440-light.png",
-      "setupMs": 708,
+      "setupMs": 785,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -57287,7 +57287,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "learn-learn-list__390-dark-dark.png",
-      "setupMs": 686,
+      "setupMs": 736,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -57558,7 +57558,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "learn-learn-list__1440-dark-dark.png",
-      "setupMs": 708,
+      "setupMs": 846,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -57836,7 +57836,7 @@
       "size": "390",
       "theme": "light",
       "file": "learn-learn-list-done__390-light.png",
-      "setupMs": 731,
+      "setupMs": 704,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -58124,7 +58124,7 @@
       "size": "768",
       "theme": "light",
       "file": "learn-learn-list-done__768-light.png",
-      "setupMs": 696,
+      "setupMs": 773,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -58412,7 +58412,7 @@
       "size": "1024",
       "theme": "light",
       "file": "learn-learn-list-done__1024-light.png",
-      "setupMs": 703,
+      "setupMs": 747,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -58707,7 +58707,7 @@
       "size": "1280",
       "theme": "light",
       "file": "learn-learn-list-done__1280-light.png",
-      "setupMs": 658,
+      "setupMs": 788,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -59002,7 +59002,7 @@
       "size": "1440",
       "theme": "light",
       "file": "learn-learn-list-done__1440-light.png",
-      "setupMs": 647,
+      "setupMs": 720,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -59297,7 +59297,7 @@
       "size": "1920",
       "theme": "light",
       "file": "learn-learn-list-done__1920-light.png",
-      "setupMs": 672,
+      "setupMs": 731,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -59592,7 +59592,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "learn-learn-list-done__390-dark-dark.png",
-      "setupMs": 619,
+      "setupMs": 737,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -59880,7 +59880,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "learn-learn-list-done__1440-dark-dark.png",
-      "setupMs": 586,
+      "setupMs": 800,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -60175,7 +60175,7 @@
       "size": "390",
       "theme": "light",
       "file": "learn-learn-diagram__390-light.png",
-      "setupMs": 752,
+      "setupMs": 860,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -60464,7 +60464,7 @@
       "size": "768",
       "theme": "light",
       "file": "learn-learn-diagram__768-light.png",
-      "setupMs": 811,
+      "setupMs": 933,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -60747,7 +60747,7 @@
       "size": "1024",
       "theme": "light",
       "file": "learn-learn-diagram__1024-light.png",
-      "setupMs": 862,
+      "setupMs": 1156,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -61030,7 +61030,7 @@
       "size": "1280",
       "theme": "light",
       "file": "learn-learn-diagram__1280-light.png",
-      "setupMs": 1804,
+      "setupMs": 1052,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -61313,7 +61313,7 @@
       "size": "1440",
       "theme": "light",
       "file": "learn-learn-diagram__1440-light.png",
-      "setupMs": 1441,
+      "setupMs": 892,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -61596,7 +61596,7 @@
       "size": "1920",
       "theme": "light",
       "file": "learn-learn-diagram__1920-light.png",
-      "setupMs": 1299,
+      "setupMs": 960,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -61879,7 +61879,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "learn-learn-diagram__390-dark-dark.png",
-      "setupMs": 1244,
+      "setupMs": 774,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -62168,7 +62168,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "learn-learn-diagram__1440-dark-dark.png",
-      "setupMs": 1073,
+      "setupMs": 1223,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -62451,7 +62451,7 @@
       "size": "390",
       "theme": "light",
       "file": "learn-learn-practice__390-light.png",
-      "setupMs": 1239,
+      "setupMs": 1278,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -62705,7 +62705,7 @@
       "size": "768",
       "theme": "light",
       "file": "learn-learn-practice__768-light.png",
-      "setupMs": 1188,
+      "setupMs": 895,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -62959,7 +62959,7 @@
       "size": "1024",
       "theme": "light",
       "file": "learn-learn-practice__1024-light.png",
-      "setupMs": 1498,
+      "setupMs": 956,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -63213,7 +63213,7 @@
       "size": "1280",
       "theme": "light",
       "file": "learn-learn-practice__1280-light.png",
-      "setupMs": 1333,
+      "setupMs": 1253,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -63461,7 +63461,7 @@
       "size": "1440",
       "theme": "light",
       "file": "learn-learn-practice__1440-light.png",
-      "setupMs": 1557,
+      "setupMs": 1102,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -63709,7 +63709,7 @@
       "size": "1920",
       "theme": "light",
       "file": "learn-learn-practice__1920-light.png",
-      "setupMs": 1522,
+      "setupMs": 1130,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -63957,7 +63957,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "learn-learn-practice__390-dark-dark.png",
-      "setupMs": 1198,
+      "setupMs": 1010,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -64211,7 +64211,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "learn-learn-practice__1440-dark-dark.png",
-      "setupMs": 1090,
+      "setupMs": 1030,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -64459,7 +64459,7 @@
       "size": "390",
       "theme": "light",
       "file": "learn-learn-practice-wrong__390-light.png",
-      "setupMs": 995,
+      "setupMs": 946,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -64750,7 +64750,7 @@
       "size": "768",
       "theme": "light",
       "file": "learn-learn-practice-wrong__768-light.png",
-      "setupMs": 1151,
+      "setupMs": 1012,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -65041,7 +65041,7 @@
       "size": "1024",
       "theme": "light",
       "file": "learn-learn-practice-wrong__1024-light.png",
-      "setupMs": 1192,
+      "setupMs": 1008,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -65332,7 +65332,7 @@
       "size": "1280",
       "theme": "light",
       "file": "learn-learn-practice-wrong__1280-light.png",
-      "setupMs": 1131,
+      "setupMs": 1095,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -65623,7 +65623,7 @@
       "size": "1440",
       "theme": "light",
       "file": "learn-learn-practice-wrong__1440-light.png",
-      "setupMs": 1120,
+      "setupMs": 1115,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -65914,7 +65914,7 @@
       "size": "1920",
       "theme": "light",
       "file": "learn-learn-practice-wrong__1920-light.png",
-      "setupMs": 1242,
+      "setupMs": 1177,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -66205,7 +66205,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "learn-learn-practice-wrong__390-dark-dark.png",
-      "setupMs": 1083,
+      "setupMs": 940,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -66496,7 +66496,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "learn-learn-practice-wrong__1440-dark-dark.png",
-      "setupMs": 1219,
+      "setupMs": 1177,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -66787,7 +66787,7 @@
       "size": "390",
       "theme": "light",
       "file": "learn-learn-practice-correct__390-light.png",
-      "setupMs": 1241,
+      "setupMs": 1103,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -67092,7 +67092,7 @@
       "size": "768",
       "theme": "light",
       "file": "learn-learn-practice-correct__768-light.png",
-      "setupMs": 1308,
+      "setupMs": 1073,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -67397,7 +67397,7 @@
       "size": "1024",
       "theme": "light",
       "file": "learn-learn-practice-correct__1024-light.png",
-      "setupMs": 1246,
+      "setupMs": 1177,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -67702,7 +67702,7 @@
       "size": "1280",
       "theme": "light",
       "file": "learn-learn-practice-correct__1280-light.png",
-      "setupMs": 1298,
+      "setupMs": 1109,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -68007,7 +68007,7 @@
       "size": "1440",
       "theme": "light",
       "file": "learn-learn-practice-correct__1440-light.png",
-      "setupMs": 1729,
+      "setupMs": 1113,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -68312,7 +68312,7 @@
       "size": "1920",
       "theme": "light",
       "file": "learn-learn-practice-correct__1920-light.png",
-      "setupMs": 1545,
+      "setupMs": 1203,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -68617,7 +68617,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "learn-learn-practice-correct__390-dark-dark.png",
-      "setupMs": 1651,
+      "setupMs": 1119,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -68922,7 +68922,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "learn-learn-practice-correct__1440-dark-dark.png",
-      "setupMs": 1421,
+      "setupMs": 1201,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -69227,7 +69227,7 @@
       "size": "390",
       "theme": "light",
       "file": "learn-learn-list-all-done__390-light.png",
-      "setupMs": 1090,
+      "setupMs": 957,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -69500,7 +69500,7 @@
       "size": "768",
       "theme": "light",
       "file": "learn-learn-list-all-done__768-light.png",
-      "setupMs": 1138,
+      "setupMs": 817,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -69773,7 +69773,7 @@
       "size": "1024",
       "theme": "light",
       "file": "learn-learn-list-all-done__1024-light.png",
-      "setupMs": 1119,
+      "setupMs": 821,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -70053,7 +70053,7 @@
       "size": "1280",
       "theme": "light",
       "file": "learn-learn-list-all-done__1280-light.png",
-      "setupMs": 1458,
+      "setupMs": 849,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -70333,7 +70333,7 @@
       "size": "1440",
       "theme": "light",
       "file": "learn-learn-list-all-done__1440-light.png",
-      "setupMs": 1710,
+      "setupMs": 867,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -70613,7 +70613,7 @@
       "size": "1920",
       "theme": "light",
       "file": "learn-learn-list-all-done__1920-light.png",
-      "setupMs": 1440,
+      "setupMs": 1191,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -70893,7 +70893,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "learn-learn-list-all-done__390-dark-dark.png",
-      "setupMs": 1331,
+      "setupMs": 965,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -71166,7 +71166,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "learn-learn-list-all-done__1440-dark-dark.png",
-      "setupMs": 1698,
+      "setupMs": 1089,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -71446,7 +71446,7 @@
       "size": "390",
       "theme": "light",
       "file": "puzzles-puzzle-list__390-light.png",
-      "setupMs": 1142,
+      "setupMs": 794,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -71721,7 +71721,7 @@
       "size": "768",
       "theme": "light",
       "file": "puzzles-puzzle-list__768-light.png",
-      "setupMs": 971,
+      "setupMs": 721,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -71996,7 +71996,7 @@
       "size": "1024",
       "theme": "light",
       "file": "puzzles-puzzle-list__1024-light.png",
-      "setupMs": 1099,
+      "setupMs": 664,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -72278,7 +72278,7 @@
       "size": "1280",
       "theme": "light",
       "file": "puzzles-puzzle-list__1280-light.png",
-      "setupMs": 771,
+      "setupMs": 907,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -72560,7 +72560,7 @@
       "size": "1440",
       "theme": "light",
       "file": "puzzles-puzzle-list__1440-light.png",
-      "setupMs": 932,
+      "setupMs": 800,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -72842,7 +72842,7 @@
       "size": "1920",
       "theme": "light",
       "file": "puzzles-puzzle-list__1920-light.png",
-      "setupMs": 839,
+      "setupMs": 817,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -73124,7 +73124,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "puzzles-puzzle-list__390-dark-dark.png",
-      "setupMs": 965,
+      "setupMs": 674,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -73399,7 +73399,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "puzzles-puzzle-list__1440-dark-dark.png",
-      "setupMs": 831,
+      "setupMs": 621,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -73681,7 +73681,7 @@
       "size": "390",
       "theme": "light",
       "file": "puzzles-puzzle-wrong__390-light.png",
-      "setupMs": 849,
+      "setupMs": 718,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -73965,7 +73965,7 @@
       "size": "768",
       "theme": "light",
       "file": "puzzles-puzzle-wrong__768-light.png",
-      "setupMs": 831,
+      "setupMs": 758,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -74249,7 +74249,7 @@
       "size": "1024",
       "theme": "light",
       "file": "puzzles-puzzle-wrong__1024-light.png",
-      "setupMs": 905,
+      "setupMs": 884,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -74533,7 +74533,7 @@
       "size": "1280",
       "theme": "light",
       "file": "puzzles-puzzle-wrong__1280-light.png",
-      "setupMs": 962,
+      "setupMs": 884,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -74817,7 +74817,7 @@
       "size": "1440",
       "theme": "light",
       "file": "puzzles-puzzle-wrong__1440-light.png",
-      "setupMs": 920,
+      "setupMs": 842,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -75101,7 +75101,7 @@
       "size": "1920",
       "theme": "light",
       "file": "puzzles-puzzle-wrong__1920-light.png",
-      "setupMs": 841,
+      "setupMs": 849,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -75385,7 +75385,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "puzzles-puzzle-wrong__390-dark-dark.png",
-      "setupMs": 790,
+      "setupMs": 761,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -75669,7 +75669,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "puzzles-puzzle-wrong__1440-dark-dark.png",
-      "setupMs": 871,
+      "setupMs": 883,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -75953,7 +75953,7 @@
       "size": "390",
       "theme": "light",
       "file": "puzzles-puzzle-correct__390-light.png",
-      "setupMs": 1163,
+      "setupMs": 882,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -76266,7 +76266,7 @@
       "size": "768",
       "theme": "light",
       "file": "puzzles-puzzle-correct__768-light.png",
-      "setupMs": 1330,
+      "setupMs": 1020,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -76579,7 +76579,7 @@
       "size": "1024",
       "theme": "light",
       "file": "puzzles-puzzle-correct__1024-light.png",
-      "setupMs": 1072,
+      "setupMs": 1008,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -76892,7 +76892,7 @@
       "size": "1280",
       "theme": "light",
       "file": "puzzles-puzzle-correct__1280-light.png",
-      "setupMs": 1129,
+      "setupMs": 1040,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -77205,7 +77205,7 @@
       "size": "1440",
       "theme": "light",
       "file": "puzzles-puzzle-correct__1440-light.png",
-      "setupMs": 1182,
+      "setupMs": 1057,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -77518,7 +77518,7 @@
       "size": "1920",
       "theme": "light",
       "file": "puzzles-puzzle-correct__1920-light.png",
-      "setupMs": 1035,
+      "setupMs": 1031,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -77831,7 +77831,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "puzzles-puzzle-correct__390-dark-dark.png",
-      "setupMs": 1040,
+      "setupMs": 860,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -78144,7 +78144,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "puzzles-puzzle-correct__1440-dark-dark.png",
-      "setupMs": 1045,
+      "setupMs": 959,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -78457,7 +78457,7 @@
       "size": "390",
       "theme": "light",
       "file": "puzzles-puzzle-list-partial__390-light.png",
-      "setupMs": 569,
+      "setupMs": 538,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -78749,7 +78749,7 @@
       "size": "768",
       "theme": "light",
       "file": "puzzles-puzzle-list-partial__768-light.png",
-      "setupMs": 572,
+      "setupMs": 561,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -79041,7 +79041,7 @@
       "size": "1024",
       "theme": "light",
       "file": "puzzles-puzzle-list-partial__1024-light.png",
-      "setupMs": 619,
+      "setupMs": 577,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -79340,7 +79340,7 @@
       "size": "1280",
       "theme": "light",
       "file": "puzzles-puzzle-list-partial__1280-light.png",
-      "setupMs": 881,
+      "setupMs": 594,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -79639,7 +79639,7 @@
       "size": "1440",
       "theme": "light",
       "file": "puzzles-puzzle-list-partial__1440-light.png",
-      "setupMs": 759,
+      "setupMs": 621,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -79938,7 +79938,7 @@
       "size": "1920",
       "theme": "light",
       "file": "puzzles-puzzle-list-partial__1920-light.png",
-      "setupMs": 624,
+      "setupMs": 616,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -80237,7 +80237,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "puzzles-puzzle-list-partial__390-dark-dark.png",
-      "setupMs": 667,
+      "setupMs": 579,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -80529,7 +80529,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "puzzles-puzzle-list-partial__1440-dark-dark.png",
-      "setupMs": 614,
+      "setupMs": 586,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -80828,7 +80828,7 @@
       "size": "390",
       "theme": "light",
       "file": "puzzles-puzzle-category-done__390-light.png",
-      "setupMs": 566,
+      "setupMs": 575,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -81120,7 +81120,7 @@
       "size": "768",
       "theme": "light",
       "file": "puzzles-puzzle-category-done__768-light.png",
-      "setupMs": 692,
+      "setupMs": 647,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -81412,7 +81412,7 @@
       "size": "1024",
       "theme": "light",
       "file": "puzzles-puzzle-category-done__1024-light.png",
-      "setupMs": 621,
+      "setupMs": 585,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -81711,7 +81711,7 @@
       "size": "1280",
       "theme": "light",
       "file": "puzzles-puzzle-category-done__1280-light.png",
-      "setupMs": 699,
+      "setupMs": 597,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -82010,7 +82010,7 @@
       "size": "1440",
       "theme": "light",
       "file": "puzzles-puzzle-category-done__1440-light.png",
-      "setupMs": 587,
+      "setupMs": 574,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -82309,7 +82309,7 @@
       "size": "1920",
       "theme": "light",
       "file": "puzzles-puzzle-category-done__1920-light.png",
-      "setupMs": 707,
+      "setupMs": 598,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -82608,7 +82608,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "puzzles-puzzle-category-done__390-dark-dark.png",
-      "setupMs": 640,
+      "setupMs": 722,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -82900,7 +82900,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "puzzles-puzzle-category-done__1440-dark-dark.png",
-      "setupMs": 675,
+      "setupMs": 669,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -83199,7 +83199,7 @@
       "size": "390",
       "theme": "light",
       "file": "puzzles-puzzle-all-done__390-light.png",
-      "setupMs": 915,
+      "setupMs": 959,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -83476,7 +83476,7 @@
       "size": "768",
       "theme": "light",
       "file": "puzzles-puzzle-all-done__768-light.png",
-      "setupMs": 967,
+      "setupMs": 866,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -83753,7 +83753,7 @@
       "size": "1024",
       "theme": "light",
       "file": "puzzles-puzzle-all-done__1024-light.png",
-      "setupMs": 862,
+      "setupMs": 851,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -84037,7 +84037,7 @@
       "size": "1280",
       "theme": "light",
       "file": "puzzles-puzzle-all-done__1280-light.png",
-      "setupMs": 1057,
+      "setupMs": 826,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -84321,7 +84321,7 @@
       "size": "1440",
       "theme": "light",
       "file": "puzzles-puzzle-all-done__1440-light.png",
-      "setupMs": 1088,
+      "setupMs": 926,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -84605,7 +84605,7 @@
       "size": "1920",
       "theme": "light",
       "file": "puzzles-puzzle-all-done__1920-light.png",
-      "setupMs": 1080,
+      "setupMs": 879,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -84889,7 +84889,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "puzzles-puzzle-all-done__390-dark-dark.png",
-      "setupMs": 938,
+      "setupMs": 847,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -85166,7 +85166,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "puzzles-puzzle-all-done__1440-dark-dark.png",
-      "setupMs": 953,
+      "setupMs": 912,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -85450,7 +85450,7 @@
       "size": "390",
       "theme": "light",
       "file": "puzzles-puzzle-hint__390-light.png",
-      "setupMs": 1461,
+      "setupMs": 784,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -85725,7 +85725,7 @@
       "size": "768",
       "theme": "light",
       "file": "puzzles-puzzle-hint__768-light.png",
-      "setupMs": 1071,
+      "setupMs": 882,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -86000,7 +86000,7 @@
       "size": "1024",
       "theme": "light",
       "file": "puzzles-puzzle-hint__1024-light.png",
-      "setupMs": 1076,
+      "setupMs": 1036,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -86275,7 +86275,7 @@
       "size": "1280",
       "theme": "light",
       "file": "puzzles-puzzle-hint__1280-light.png",
-      "setupMs": 1182,
+      "setupMs": 1015,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -86544,7 +86544,7 @@
       "size": "1440",
       "theme": "light",
       "file": "puzzles-puzzle-hint__1440-light.png",
-      "setupMs": 1490,
+      "setupMs": 1228,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -86813,7 +86813,7 @@
       "size": "1920",
       "theme": "light",
       "file": "puzzles-puzzle-hint__1920-light.png",
-      "setupMs": 1482,
+      "setupMs": 1365,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -87082,7 +87082,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "puzzles-puzzle-hint__390-dark-dark.png",
-      "setupMs": 1135,
+      "setupMs": 1183,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -87357,7 +87357,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "puzzles-puzzle-hint__1440-dark-dark.png",
-      "setupMs": 1076,
+      "setupMs": 1089,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -87626,7 +87626,7 @@
       "size": "390",
       "theme": "light",
       "file": "puzzles-puzzle-last-step__390-light.png",
-      "setupMs": 1605,
+      "setupMs": 1745,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -87947,7 +87947,7 @@
       "size": "768",
       "theme": "light",
       "file": "puzzles-puzzle-last-step__768-light.png",
-      "setupMs": 1537,
+      "setupMs": 1489,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -88268,7 +88268,7 @@
       "size": "1024",
       "theme": "light",
       "file": "puzzles-puzzle-last-step__1024-light.png",
-      "setupMs": 1552,
+      "setupMs": 1995,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -88589,7 +88589,7 @@
       "size": "1280",
       "theme": "light",
       "file": "puzzles-puzzle-last-step__1280-light.png",
-      "setupMs": 1524,
+      "setupMs": 1539,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -88910,7 +88910,7 @@
       "size": "1440",
       "theme": "light",
       "file": "puzzles-puzzle-last-step__1440-light.png",
-      "setupMs": 1521,
+      "setupMs": 1475,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -89231,7 +89231,7 @@
       "size": "1920",
       "theme": "light",
       "file": "puzzles-puzzle-last-step__1920-light.png",
-      "setupMs": 1691,
+      "setupMs": 1819,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -89552,7 +89552,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "puzzles-puzzle-last-step__390-dark-dark.png",
-      "setupMs": 1406,
+      "setupMs": 1731,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -89873,7 +89873,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "puzzles-puzzle-last-step__1440-dark-dark.png",
-      "setupMs": 1517,
+      "setupMs": 1708,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -90194,7 +90194,7 @@
       "size": "390",
       "theme": "light",
       "file": "review-review-empty__390-light.png",
-      "setupMs": 651,
+      "setupMs": 814,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -90394,7 +90394,7 @@
       "size": "768",
       "theme": "light",
       "file": "review-review-empty__768-light.png",
-      "setupMs": 693,
+      "setupMs": 1009,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -90594,7 +90594,7 @@
       "size": "1024",
       "theme": "light",
       "file": "review-review-empty__1024-light.png",
-      "setupMs": 802,
+      "setupMs": 1559,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -90794,7 +90794,7 @@
       "size": "1280",
       "theme": "light",
       "file": "review-review-empty__1280-light.png",
-      "setupMs": 683,
+      "setupMs": 842,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -90994,7 +90994,7 @@
       "size": "1440",
       "theme": "light",
       "file": "review-review-empty__1440-light.png",
-      "setupMs": 736,
+      "setupMs": 1135,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -91194,7 +91194,7 @@
       "size": "1920",
       "theme": "light",
       "file": "review-review-empty__1920-light.png",
-      "setupMs": 618,
+      "setupMs": 792,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -91394,7 +91394,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "review-review-empty__390-dark-dark.png",
-      "setupMs": 591,
+      "setupMs": 753,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -91594,7 +91594,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "review-review-empty__1440-dark-dark.png",
-      "setupMs": 638,
+      "setupMs": 819,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -91794,7 +91794,7 @@
       "size": "390",
       "theme": "light",
       "file": "review-review-library__390-light.png",
-      "setupMs": 590,
+      "setupMs": 748,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -91982,7 +91982,7 @@
       "size": "768",
       "theme": "light",
       "file": "review-review-library__768-light.png",
-      "setupMs": 635,
+      "setupMs": 791,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -92170,7 +92170,7 @@
       "size": "1024",
       "theme": "light",
       "file": "review-review-library__1024-light.png",
-      "setupMs": 644,
+      "setupMs": 667,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -92358,7 +92358,7 @@
       "size": "1280",
       "theme": "light",
       "file": "review-review-library__1280-light.png",
-      "setupMs": 753,
+      "setupMs": 711,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -92546,7 +92546,7 @@
       "size": "1440",
       "theme": "light",
       "file": "review-review-library__1440-light.png",
-      "setupMs": 638,
+      "setupMs": 831,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -92734,7 +92734,7 @@
       "size": "1920",
       "theme": "light",
       "file": "review-review-library__1920-light.png",
-      "setupMs": 614,
+      "setupMs": 773,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -92922,7 +92922,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "review-review-library__390-dark-dark.png",
-      "setupMs": 687,
+      "setupMs": 960,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -93110,7 +93110,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "review-review-library__1440-dark-dark.png",
-      "setupMs": 742,
+      "setupMs": 702,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -93298,7 +93298,7 @@
       "size": "390",
       "theme": "light",
       "file": "review-review-replay__390-light.png",
-      "setupMs": 1327,
+      "setupMs": 1387,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -93397,8 +93397,7 @@
         "11px": 1,
         "20px": 1,
         "0.52px": 60,
-        "0.325px": 8,
-        "0.4px": 1,
+        "0.51px": 9,
         "12px": 9
       },
       "typeSamples": [
@@ -93507,20 +93506,12 @@
           "count": 60
         },
         {
-          "fontSize": "0.4px",
-          "lineHeight": "0.6px",
-          "color": "rgb(28, 25, 23)",
-          "weight": "700",
-          "sample": "text{9}",
-          "count": 1
-        },
-        {
-          "fontSize": "0.325px",
-          "lineHeight": "0.4875px",
+          "fontSize": "0.51px",
+          "lineHeight": "0.765px",
           "color": "rgb(28, 25, 23)",
           "weight": "700",
           "sample": "text{1}",
-          "count": 8
+          "count": 9
         }
       ],
       "contrastViolations": [],
@@ -93681,7 +93672,7 @@
       "size": "768",
       "theme": "light",
       "file": "review-review-replay__768-light.png",
-      "setupMs": 1403,
+      "setupMs": 1349,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -93780,8 +93771,7 @@
         "11px": 1,
         "20px": 1,
         "0.52px": 60,
-        "0.325px": 8,
-        "0.4px": 1,
+        "0.51px": 9,
         "12px": 9
       },
       "typeSamples": [
@@ -93890,20 +93880,12 @@
           "count": 60
         },
         {
-          "fontSize": "0.4px",
-          "lineHeight": "0.6px",
-          "color": "rgb(28, 25, 23)",
-          "weight": "700",
-          "sample": "text{9}",
-          "count": 1
-        },
-        {
-          "fontSize": "0.325px",
-          "lineHeight": "0.4875px",
+          "fontSize": "0.51px",
+          "lineHeight": "0.765px",
           "color": "rgb(28, 25, 23)",
           "weight": "700",
           "sample": "text{1}",
-          "count": 8
+          "count": 9
         }
       ],
       "contrastViolations": [],
@@ -94064,7 +94046,7 @@
       "size": "1024",
       "theme": "light",
       "file": "review-review-replay__1024-light.png",
-      "setupMs": 1357,
+      "setupMs": 1587,
       "boardDetails": {
         "coordText": {
           "width": 12.33,
@@ -94163,8 +94145,7 @@
         "11px": 1,
         "20px": 1,
         "0.52px": 60,
-        "0.325px": 8,
-        "0.4px": 1,
+        "0.51px": 9,
         "12px": 9
       },
       "typeSamples": [
@@ -94273,20 +94254,12 @@
           "count": 60
         },
         {
-          "fontSize": "0.4px",
-          "lineHeight": "0.6px",
-          "color": "rgb(28, 25, 23)",
-          "weight": "700",
-          "sample": "text{9}",
-          "count": 1
-        },
-        {
-          "fontSize": "0.325px",
-          "lineHeight": "0.4875px",
+          "fontSize": "0.51px",
+          "lineHeight": "0.765px",
           "color": "rgb(28, 25, 23)",
           "weight": "700",
           "sample": "text{1}",
-          "count": 8
+          "count": 9
         }
       ],
       "contrastViolations": [],
@@ -94447,7 +94420,7 @@
       "size": "1280",
       "theme": "light",
       "file": "review-review-replay__1280-light.png",
-      "setupMs": 1539,
+      "setupMs": 1627,
       "boardDetails": {
         "coordText": {
           "width": 14.84,
@@ -94546,8 +94519,7 @@
         "11px": 1,
         "20px": 1,
         "0.52px": 60,
-        "0.325px": 8,
-        "0.4px": 1,
+        "0.51px": 9,
         "12px": 9
       },
       "typeSamples": [
@@ -94656,20 +94628,12 @@
           "count": 60
         },
         {
-          "fontSize": "0.4px",
-          "lineHeight": "0.6px",
-          "color": "rgb(28, 25, 23)",
-          "weight": "700",
-          "sample": "text{9}",
-          "count": 1
-        },
-        {
-          "fontSize": "0.325px",
-          "lineHeight": "0.4875px",
+          "fontSize": "0.51px",
+          "lineHeight": "0.765px",
           "color": "rgb(28, 25, 23)",
           "weight": "700",
           "sample": "text{1}",
-          "count": 8
+          "count": 9
         }
       ],
       "contrastViolations": [],
@@ -94830,7 +94794,7 @@
       "size": "1440",
       "theme": "light",
       "file": "review-review-replay__1440-light.png",
-      "setupMs": 1835,
+      "setupMs": 1606,
       "boardDetails": {
         "coordText": {
           "width": 14.84,
@@ -94929,8 +94893,7 @@
         "11px": 1,
         "20px": 1,
         "0.52px": 60,
-        "0.325px": 8,
-        "0.4px": 1,
+        "0.51px": 9,
         "12px": 9
       },
       "typeSamples": [
@@ -95039,20 +95002,12 @@
           "count": 60
         },
         {
-          "fontSize": "0.4px",
-          "lineHeight": "0.6px",
-          "color": "rgb(28, 25, 23)",
-          "weight": "700",
-          "sample": "text{9}",
-          "count": 1
-        },
-        {
-          "fontSize": "0.325px",
-          "lineHeight": "0.4875px",
+          "fontSize": "0.51px",
+          "lineHeight": "0.765px",
           "color": "rgb(28, 25, 23)",
           "weight": "700",
           "sample": "text{1}",
-          "count": 8
+          "count": 9
         }
       ],
       "contrastViolations": [],
@@ -95213,7 +95168,7 @@
       "size": "1920",
       "theme": "light",
       "file": "review-review-replay__1920-light.png",
-      "setupMs": 1504,
+      "setupMs": 1404,
       "boardDetails": {
         "coordText": {
           "width": 14.84,
@@ -95312,8 +95267,7 @@
         "11px": 1,
         "20px": 1,
         "0.52px": 60,
-        "0.325px": 8,
-        "0.4px": 1,
+        "0.51px": 9,
         "12px": 9
       },
       "typeSamples": [
@@ -95422,20 +95376,12 @@
           "count": 60
         },
         {
-          "fontSize": "0.4px",
-          "lineHeight": "0.6px",
-          "color": "rgb(28, 25, 23)",
-          "weight": "700",
-          "sample": "text{9}",
-          "count": 1
-        },
-        {
-          "fontSize": "0.325px",
-          "lineHeight": "0.4875px",
+          "fontSize": "0.51px",
+          "lineHeight": "0.765px",
           "color": "rgb(28, 25, 23)",
           "weight": "700",
           "sample": "text{1}",
-          "count": 8
+          "count": 9
         }
       ],
       "contrastViolations": [],
@@ -95596,7 +95542,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "review-review-replay__390-dark-dark.png",
-      "setupMs": 1598,
+      "setupMs": 1383,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -95695,8 +95641,7 @@
         "11px": 1,
         "20px": 1,
         "0.52px": 60,
-        "0.325px": 8,
-        "0.4px": 1,
+        "0.51px": 9,
         "12px": 9
       },
       "typeSamples": [
@@ -95805,20 +95750,12 @@
           "count": 60
         },
         {
-          "fontSize": "0.4px",
-          "lineHeight": "0.6px",
-          "color": "rgb(236, 232, 227)",
-          "weight": "700",
-          "sample": "text{9}",
-          "count": 1
-        },
-        {
-          "fontSize": "0.325px",
-          "lineHeight": "0.4875px",
+          "fontSize": "0.51px",
+          "lineHeight": "0.765px",
           "color": "rgb(236, 232, 227)",
           "weight": "700",
           "sample": "text{1}",
-          "count": 8
+          "count": 9
         }
       ],
       "contrastViolations": [],
@@ -95979,7 +95916,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "review-review-replay__1440-dark-dark.png",
-      "setupMs": 2086,
+      "setupMs": 1511,
       "boardDetails": {
         "coordText": {
           "width": 14.84,
@@ -96078,8 +96015,7 @@
         "11px": 1,
         "20px": 1,
         "0.52px": 60,
-        "0.325px": 8,
-        "0.4px": 1,
+        "0.51px": 9,
         "12px": 9
       },
       "typeSamples": [
@@ -96188,20 +96124,12 @@
           "count": 60
         },
         {
-          "fontSize": "0.4px",
-          "lineHeight": "0.6px",
-          "color": "rgb(236, 232, 227)",
-          "weight": "700",
-          "sample": "text{9}",
-          "count": 1
-        },
-        {
-          "fontSize": "0.325px",
-          "lineHeight": "0.4875px",
+          "fontSize": "0.51px",
+          "lineHeight": "0.765px",
           "color": "rgb(236, 232, 227)",
           "weight": "700",
           "sample": "text{1}",
-          "count": 8
+          "count": 9
         }
       ],
       "contrastViolations": [],
@@ -96362,7 +96290,7 @@
       "size": "390",
       "theme": "light",
       "file": "review-review-analysis__390-light.png",
-      "setupMs": 1472,
+      "setupMs": 1408,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -96461,8 +96389,7 @@
         "11px": 1,
         "20px": 1,
         "0.52px": 60,
-        "0.325px": 8,
-        "0.4px": 1,
+        "0.51px": 9,
         "12px": 18
       },
       "typeSamples": [
@@ -96571,20 +96498,12 @@
           "count": 60
         },
         {
-          "fontSize": "0.4px",
-          "lineHeight": "0.6px",
-          "color": "rgb(28, 25, 23)",
-          "weight": "700",
-          "sample": "text{9}",
-          "count": 1
-        },
-        {
-          "fontSize": "0.325px",
-          "lineHeight": "0.4875px",
+          "fontSize": "0.51px",
+          "lineHeight": "0.765px",
           "color": "rgb(28, 25, 23)",
           "weight": "700",
           "sample": "text{1}",
-          "count": 8
+          "count": 9
         }
       ],
       "contrastViolations": [],
@@ -96740,7 +96659,7 @@
       "size": "768",
       "theme": "light",
       "file": "review-review-analysis__768-light.png",
-      "setupMs": 2112,
+      "setupMs": 1744,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -96839,8 +96758,7 @@
         "11px": 1,
         "20px": 1,
         "0.52px": 60,
-        "0.325px": 8,
-        "0.4px": 1,
+        "0.51px": 9,
         "12px": 18
       },
       "typeSamples": [
@@ -96949,20 +96867,12 @@
           "count": 60
         },
         {
-          "fontSize": "0.4px",
-          "lineHeight": "0.6px",
-          "color": "rgb(28, 25, 23)",
-          "weight": "700",
-          "sample": "text{9}",
-          "count": 1
-        },
-        {
-          "fontSize": "0.325px",
-          "lineHeight": "0.4875px",
+          "fontSize": "0.51px",
+          "lineHeight": "0.765px",
           "color": "rgb(28, 25, 23)",
           "weight": "700",
           "sample": "text{1}",
-          "count": 8
+          "count": 9
         }
       ],
       "contrastViolations": [],
@@ -97118,7 +97028,7 @@
       "size": "1024",
       "theme": "light",
       "file": "review-review-analysis__1024-light.png",
-      "setupMs": 1829,
+      "setupMs": 2078,
       "boardDetails": {
         "coordText": {
           "width": 12.33,
@@ -97217,8 +97127,7 @@
         "11px": 1,
         "20px": 1,
         "0.52px": 60,
-        "0.325px": 8,
-        "0.4px": 1,
+        "0.51px": 9,
         "12px": 18
       },
       "typeSamples": [
@@ -97327,20 +97236,12 @@
           "count": 60
         },
         {
-          "fontSize": "0.4px",
-          "lineHeight": "0.6px",
-          "color": "rgb(28, 25, 23)",
-          "weight": "700",
-          "sample": "text{9}",
-          "count": 1
-        },
-        {
-          "fontSize": "0.325px",
-          "lineHeight": "0.4875px",
+          "fontSize": "0.51px",
+          "lineHeight": "0.765px",
           "color": "rgb(28, 25, 23)",
           "weight": "700",
           "sample": "text{1}",
-          "count": 8
+          "count": 9
         }
       ],
       "contrastViolations": [],
@@ -97496,7 +97397,7 @@
       "size": "1280",
       "theme": "light",
       "file": "review-review-analysis__1280-light.png",
-      "setupMs": 1795,
+      "setupMs": 2549,
       "boardDetails": {
         "coordText": {
           "width": 14.84,
@@ -97595,8 +97496,7 @@
         "11px": 1,
         "20px": 1,
         "0.52px": 60,
-        "0.325px": 8,
-        "0.4px": 1,
+        "0.51px": 9,
         "12px": 18
       },
       "typeSamples": [
@@ -97705,20 +97605,12 @@
           "count": 60
         },
         {
-          "fontSize": "0.4px",
-          "lineHeight": "0.6px",
-          "color": "rgb(28, 25, 23)",
-          "weight": "700",
-          "sample": "text{9}",
-          "count": 1
-        },
-        {
-          "fontSize": "0.325px",
-          "lineHeight": "0.4875px",
+          "fontSize": "0.51px",
+          "lineHeight": "0.765px",
           "color": "rgb(28, 25, 23)",
           "weight": "700",
           "sample": "text{1}",
-          "count": 8
+          "count": 9
         }
       ],
       "contrastViolations": [],
@@ -97874,7 +97766,7 @@
       "size": "1440",
       "theme": "light",
       "file": "review-review-analysis__1440-light.png",
-      "setupMs": 2373,
+      "setupMs": 1931,
       "boardDetails": {
         "coordText": {
           "width": 14.84,
@@ -97973,8 +97865,7 @@
         "11px": 1,
         "20px": 1,
         "0.52px": 60,
-        "0.325px": 8,
-        "0.4px": 1,
+        "0.51px": 9,
         "12px": 18
       },
       "typeSamples": [
@@ -98083,20 +97974,12 @@
           "count": 60
         },
         {
-          "fontSize": "0.4px",
-          "lineHeight": "0.6px",
-          "color": "rgb(28, 25, 23)",
-          "weight": "700",
-          "sample": "text{9}",
-          "count": 1
-        },
-        {
-          "fontSize": "0.325px",
-          "lineHeight": "0.4875px",
+          "fontSize": "0.51px",
+          "lineHeight": "0.765px",
           "color": "rgb(28, 25, 23)",
           "weight": "700",
           "sample": "text{1}",
-          "count": 8
+          "count": 9
         }
       ],
       "contrastViolations": [],
@@ -98252,7 +98135,7 @@
       "size": "1920",
       "theme": "light",
       "file": "review-review-analysis__1920-light.png",
-      "setupMs": 2429,
+      "setupMs": 1725,
       "boardDetails": {
         "coordText": {
           "width": 14.84,
@@ -98351,8 +98234,7 @@
         "11px": 1,
         "20px": 1,
         "0.52px": 60,
-        "0.325px": 8,
-        "0.4px": 1,
+        "0.51px": 9,
         "12px": 18
       },
       "typeSamples": [
@@ -98461,20 +98343,12 @@
           "count": 60
         },
         {
-          "fontSize": "0.4px",
-          "lineHeight": "0.6px",
-          "color": "rgb(28, 25, 23)",
-          "weight": "700",
-          "sample": "text{9}",
-          "count": 1
-        },
-        {
-          "fontSize": "0.325px",
-          "lineHeight": "0.4875px",
+          "fontSize": "0.51px",
+          "lineHeight": "0.765px",
           "color": "rgb(28, 25, 23)",
           "weight": "700",
           "sample": "text{1}",
-          "count": 8
+          "count": 9
         }
       ],
       "contrastViolations": [],
@@ -98630,7 +98504,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "review-review-analysis__390-dark-dark.png",
-      "setupMs": 1717,
+      "setupMs": 1332,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -98729,8 +98603,7 @@
         "11px": 1,
         "20px": 1,
         "0.52px": 60,
-        "0.325px": 8,
-        "0.4px": 1,
+        "0.51px": 9,
         "12px": 18
       },
       "typeSamples": [
@@ -98839,20 +98712,12 @@
           "count": 60
         },
         {
-          "fontSize": "0.4px",
-          "lineHeight": "0.6px",
-          "color": "rgb(236, 232, 227)",
-          "weight": "700",
-          "sample": "text{9}",
-          "count": 1
-        },
-        {
-          "fontSize": "0.325px",
-          "lineHeight": "0.4875px",
+          "fontSize": "0.51px",
+          "lineHeight": "0.765px",
           "color": "rgb(236, 232, 227)",
           "weight": "700",
           "sample": "text{1}",
-          "count": 8
+          "count": 9
         }
       ],
       "contrastViolations": [],
@@ -99008,7 +98873,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "review-review-analysis__1440-dark-dark.png",
-      "setupMs": 2307,
+      "setupMs": 1328,
       "boardDetails": {
         "coordText": {
           "width": 14.84,
@@ -99107,8 +98972,7 @@
         "11px": 1,
         "20px": 1,
         "0.52px": 60,
-        "0.325px": 8,
-        "0.4px": 1,
+        "0.51px": 9,
         "12px": 18
       },
       "typeSamples": [
@@ -99217,20 +99081,12 @@
           "count": 60
         },
         {
-          "fontSize": "0.4px",
-          "lineHeight": "0.6px",
-          "color": "rgb(236, 232, 227)",
-          "weight": "700",
-          "sample": "text{9}",
-          "count": 1
-        },
-        {
-          "fontSize": "0.325px",
-          "lineHeight": "0.4875px",
+          "fontSize": "0.51px",
+          "lineHeight": "0.765px",
           "color": "rgb(236, 232, 227)",
           "weight": "700",
           "sample": "text{1}",
-          "count": 8
+          "count": 9
         }
       ],
       "contrastViolations": [],
@@ -99386,7 +99242,7 @@
       "size": "390",
       "theme": "light",
       "file": "review-review-replay-start__390-light.png",
-      "setupMs": 1019,
+      "setupMs": 606,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -99730,7 +99586,7 @@
       "size": "768",
       "theme": "light",
       "file": "review-review-replay-start__768-light.png",
-      "setupMs": 892,
+      "setupMs": 704,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -100074,7 +99930,7 @@
       "size": "1024",
       "theme": "light",
       "file": "review-review-replay-start__1024-light.png",
-      "setupMs": 1087,
+      "setupMs": 844,
       "boardDetails": {
         "coordText": {
           "width": 12.33,
@@ -100418,7 +100274,7 @@
       "size": "1280",
       "theme": "light",
       "file": "review-review-replay-start__1280-light.png",
-      "setupMs": 946,
+      "setupMs": 868,
       "boardDetails": {
         "coordText": {
           "width": 14.84,
@@ -100762,7 +100618,7 @@
       "size": "1440",
       "theme": "light",
       "file": "review-review-replay-start__1440-light.png",
-      "setupMs": 982,
+      "setupMs": 829,
       "boardDetails": {
         "coordText": {
           "width": 14.84,
@@ -101106,7 +100962,7 @@
       "size": "1920",
       "theme": "light",
       "file": "review-review-replay-start__1920-light.png",
-      "setupMs": 959,
+      "setupMs": 919,
       "boardDetails": {
         "coordText": {
           "width": 14.84,
@@ -101450,7 +101306,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "review-review-replay-start__390-dark-dark.png",
-      "setupMs": 796,
+      "setupMs": 655,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -101794,7 +101650,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "review-review-replay-start__1440-dark-dark.png",
-      "setupMs": 1021,
+      "setupMs": 817,
       "boardDetails": {
         "coordText": {
           "width": 14.84,
@@ -102138,7 +101994,7 @@
       "size": "390",
       "theme": "light",
       "file": "review-review-replay-mid__390-light.png",
-      "setupMs": 803,
+      "setupMs": 686,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -102227,8 +102083,7 @@
         "11px": 1,
         "20px": 1,
         "0.52px": 60,
-        "0.325px": 3,
-        "0.4px": 1,
+        "0.51px": 4,
         "12px": 9
       },
       "typeSamples": [
@@ -102337,20 +102192,12 @@
           "count": 60
         },
         {
-          "fontSize": "0.4px",
-          "lineHeight": "0.6px",
-          "color": "rgb(28, 25, 23)",
-          "weight": "700",
-          "sample": "text{4}",
-          "count": 1
-        },
-        {
-          "fontSize": "0.325px",
-          "lineHeight": "0.4875px",
+          "fontSize": "0.51px",
+          "lineHeight": "0.765px",
           "color": "rgb(28, 25, 23)",
           "weight": "700",
           "sample": "text{1}",
-          "count": 3
+          "count": 4
         }
       ],
       "contrastViolations": [],
@@ -102511,7 +102358,7 @@
       "size": "768",
       "theme": "light",
       "file": "review-review-replay-mid__768-light.png",
-      "setupMs": 879,
+      "setupMs": 810,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -102600,8 +102447,7 @@
         "11px": 1,
         "20px": 1,
         "0.52px": 60,
-        "0.325px": 3,
-        "0.4px": 1,
+        "0.51px": 4,
         "12px": 9
       },
       "typeSamples": [
@@ -102710,20 +102556,12 @@
           "count": 60
         },
         {
-          "fontSize": "0.4px",
-          "lineHeight": "0.6px",
-          "color": "rgb(28, 25, 23)",
-          "weight": "700",
-          "sample": "text{4}",
-          "count": 1
-        },
-        {
-          "fontSize": "0.325px",
-          "lineHeight": "0.4875px",
+          "fontSize": "0.51px",
+          "lineHeight": "0.765px",
           "color": "rgb(28, 25, 23)",
           "weight": "700",
           "sample": "text{1}",
-          "count": 3
+          "count": 4
         }
       ],
       "contrastViolations": [],
@@ -102884,7 +102722,7 @@
       "size": "1024",
       "theme": "light",
       "file": "review-review-replay-mid__1024-light.png",
-      "setupMs": 950,
+      "setupMs": 792,
       "boardDetails": {
         "coordText": {
           "width": 12.33,
@@ -102973,8 +102811,7 @@
         "11px": 1,
         "20px": 1,
         "0.52px": 60,
-        "0.325px": 3,
-        "0.4px": 1,
+        "0.51px": 4,
         "12px": 9
       },
       "typeSamples": [
@@ -103083,20 +102920,12 @@
           "count": 60
         },
         {
-          "fontSize": "0.4px",
-          "lineHeight": "0.6px",
-          "color": "rgb(28, 25, 23)",
-          "weight": "700",
-          "sample": "text{4}",
-          "count": 1
-        },
-        {
-          "fontSize": "0.325px",
-          "lineHeight": "0.4875px",
+          "fontSize": "0.51px",
+          "lineHeight": "0.765px",
           "color": "rgb(28, 25, 23)",
           "weight": "700",
           "sample": "text{1}",
-          "count": 3
+          "count": 4
         }
       ],
       "contrastViolations": [],
@@ -103257,7 +103086,7 @@
       "size": "1280",
       "theme": "light",
       "file": "review-review-replay-mid__1280-light.png",
-      "setupMs": 925,
+      "setupMs": 880,
       "boardDetails": {
         "coordText": {
           "width": 14.84,
@@ -103346,8 +103175,7 @@
         "11px": 1,
         "20px": 1,
         "0.52px": 60,
-        "0.325px": 3,
-        "0.4px": 1,
+        "0.51px": 4,
         "12px": 9
       },
       "typeSamples": [
@@ -103456,20 +103284,12 @@
           "count": 60
         },
         {
-          "fontSize": "0.4px",
-          "lineHeight": "0.6px",
-          "color": "rgb(28, 25, 23)",
-          "weight": "700",
-          "sample": "text{4}",
-          "count": 1
-        },
-        {
-          "fontSize": "0.325px",
-          "lineHeight": "0.4875px",
+          "fontSize": "0.51px",
+          "lineHeight": "0.765px",
           "color": "rgb(28, 25, 23)",
           "weight": "700",
           "sample": "text{1}",
-          "count": 3
+          "count": 4
         }
       ],
       "contrastViolations": [],
@@ -103630,7 +103450,7 @@
       "size": "1440",
       "theme": "light",
       "file": "review-review-replay-mid__1440-light.png",
-      "setupMs": 1003,
+      "setupMs": 834,
       "boardDetails": {
         "coordText": {
           "width": 14.84,
@@ -103719,8 +103539,7 @@
         "11px": 1,
         "20px": 1,
         "0.52px": 60,
-        "0.325px": 3,
-        "0.4px": 1,
+        "0.51px": 4,
         "12px": 9
       },
       "typeSamples": [
@@ -103829,20 +103648,12 @@
           "count": 60
         },
         {
-          "fontSize": "0.4px",
-          "lineHeight": "0.6px",
-          "color": "rgb(28, 25, 23)",
-          "weight": "700",
-          "sample": "text{4}",
-          "count": 1
-        },
-        {
-          "fontSize": "0.325px",
-          "lineHeight": "0.4875px",
+          "fontSize": "0.51px",
+          "lineHeight": "0.765px",
           "color": "rgb(28, 25, 23)",
           "weight": "700",
           "sample": "text{1}",
-          "count": 3
+          "count": 4
         }
       ],
       "contrastViolations": [],
@@ -104003,7 +103814,7 @@
       "size": "1920",
       "theme": "light",
       "file": "review-review-replay-mid__1920-light.png",
-      "setupMs": 905,
+      "setupMs": 847,
       "boardDetails": {
         "coordText": {
           "width": 14.84,
@@ -104092,8 +103903,7 @@
         "11px": 1,
         "20px": 1,
         "0.52px": 60,
-        "0.325px": 3,
-        "0.4px": 1,
+        "0.51px": 4,
         "12px": 9
       },
       "typeSamples": [
@@ -104202,20 +104012,12 @@
           "count": 60
         },
         {
-          "fontSize": "0.4px",
-          "lineHeight": "0.6px",
-          "color": "rgb(28, 25, 23)",
-          "weight": "700",
-          "sample": "text{4}",
-          "count": 1
-        },
-        {
-          "fontSize": "0.325px",
-          "lineHeight": "0.4875px",
+          "fontSize": "0.51px",
+          "lineHeight": "0.765px",
           "color": "rgb(28, 25, 23)",
           "weight": "700",
           "sample": "text{1}",
-          "count": 3
+          "count": 4
         }
       ],
       "contrastViolations": [],
@@ -104376,7 +104178,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "review-review-replay-mid__390-dark-dark.png",
-      "setupMs": 816,
+      "setupMs": 872,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -104465,8 +104267,7 @@
         "11px": 1,
         "20px": 1,
         "0.52px": 60,
-        "0.325px": 3,
-        "0.4px": 1,
+        "0.51px": 4,
         "12px": 9
       },
       "typeSamples": [
@@ -104575,20 +104376,12 @@
           "count": 60
         },
         {
-          "fontSize": "0.4px",
-          "lineHeight": "0.6px",
-          "color": "rgb(236, 232, 227)",
-          "weight": "700",
-          "sample": "text{4}",
-          "count": 1
-        },
-        {
-          "fontSize": "0.325px",
-          "lineHeight": "0.4875px",
+          "fontSize": "0.51px",
+          "lineHeight": "0.765px",
           "color": "rgb(236, 232, 227)",
           "weight": "700",
           "sample": "text{1}",
-          "count": 3
+          "count": 4
         }
       ],
       "contrastViolations": [],
@@ -104749,7 +104542,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "review-review-replay-mid__1440-dark-dark.png",
-      "setupMs": 939,
+      "setupMs": 972,
       "boardDetails": {
         "coordText": {
           "width": 14.84,
@@ -104838,8 +104631,7 @@
         "11px": 1,
         "20px": 1,
         "0.52px": 60,
-        "0.325px": 3,
-        "0.4px": 1,
+        "0.51px": 4,
         "12px": 9
       },
       "typeSamples": [
@@ -104948,20 +104740,12 @@
           "count": 60
         },
         {
-          "fontSize": "0.4px",
-          "lineHeight": "0.6px",
-          "color": "rgb(236, 232, 227)",
-          "weight": "700",
-          "sample": "text{4}",
-          "count": 1
-        },
-        {
-          "fontSize": "0.325px",
-          "lineHeight": "0.4875px",
+          "fontSize": "0.51px",
+          "lineHeight": "0.765px",
           "color": "rgb(236, 232, 227)",
           "weight": "700",
           "sample": "text{1}",
-          "count": 3
+          "count": 4
         }
       ],
       "contrastViolations": [],
@@ -105122,7 +104906,7 @@
       "size": "390",
       "theme": "light",
       "file": "review-review-analyzing__390-light.png",
-      "setupMs": 1420,
+      "setupMs": 1231,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -105221,8 +105005,7 @@
         "11px": 1,
         "20px": 1,
         "0.52px": 60,
-        "0.325px": 8,
-        "0.4px": 1,
+        "0.51px": 9,
         "12px": 18
       },
       "typeSamples": [
@@ -105331,20 +105114,12 @@
           "count": 60
         },
         {
-          "fontSize": "0.4px",
-          "lineHeight": "0.6px",
-          "color": "rgb(28, 25, 23)",
-          "weight": "700",
-          "sample": "text{9}",
-          "count": 1
-        },
-        {
-          "fontSize": "0.325px",
-          "lineHeight": "0.4875px",
+          "fontSize": "0.51px",
+          "lineHeight": "0.765px",
           "color": "rgb(28, 25, 23)",
           "weight": "700",
           "sample": "text{1}",
-          "count": 8
+          "count": 9
         }
       ],
       "contrastViolations": [],
@@ -105500,7 +105275,7 @@
       "size": "768",
       "theme": "light",
       "file": "review-review-analyzing__768-light.png",
-      "setupMs": 1295,
+      "setupMs": 1170,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -105599,8 +105374,7 @@
         "11px": 1,
         "20px": 1,
         "0.52px": 60,
-        "0.325px": 8,
-        "0.4px": 1,
+        "0.51px": 9,
         "12px": 18
       },
       "typeSamples": [
@@ -105709,20 +105483,12 @@
           "count": 60
         },
         {
-          "fontSize": "0.4px",
-          "lineHeight": "0.6px",
-          "color": "rgb(28, 25, 23)",
-          "weight": "700",
-          "sample": "text{9}",
-          "count": 1
-        },
-        {
-          "fontSize": "0.325px",
-          "lineHeight": "0.4875px",
+          "fontSize": "0.51px",
+          "lineHeight": "0.765px",
           "color": "rgb(28, 25, 23)",
           "weight": "700",
           "sample": "text{1}",
-          "count": 8
+          "count": 9
         }
       ],
       "contrastViolations": [],
@@ -105878,7 +105644,7 @@
       "size": "1024",
       "theme": "light",
       "file": "review-review-analyzing__1024-light.png",
-      "setupMs": 1484,
+      "setupMs": 1441,
       "boardDetails": {
         "coordText": {
           "width": 12.33,
@@ -105977,8 +105743,7 @@
         "11px": 1,
         "20px": 1,
         "0.52px": 60,
-        "0.325px": 8,
-        "0.4px": 1,
+        "0.51px": 9,
         "12px": 18
       },
       "typeSamples": [
@@ -106087,20 +105852,12 @@
           "count": 60
         },
         {
-          "fontSize": "0.4px",
-          "lineHeight": "0.6px",
-          "color": "rgb(28, 25, 23)",
-          "weight": "700",
-          "sample": "text{9}",
-          "count": 1
-        },
-        {
-          "fontSize": "0.325px",
-          "lineHeight": "0.4875px",
+          "fontSize": "0.51px",
+          "lineHeight": "0.765px",
           "color": "rgb(28, 25, 23)",
           "weight": "700",
           "sample": "text{1}",
-          "count": 8
+          "count": 9
         }
       ],
       "contrastViolations": [],
@@ -106256,7 +106013,7 @@
       "size": "1280",
       "theme": "light",
       "file": "review-review-analyzing__1280-light.png",
-      "setupMs": 1481,
+      "setupMs": 1340,
       "boardDetails": {
         "coordText": {
           "width": 14.84,
@@ -106355,8 +106112,7 @@
         "11px": 1,
         "20px": 1,
         "0.52px": 60,
-        "0.325px": 8,
-        "0.4px": 1,
+        "0.51px": 9,
         "12px": 18
       },
       "typeSamples": [
@@ -106465,20 +106221,12 @@
           "count": 60
         },
         {
-          "fontSize": "0.4px",
-          "lineHeight": "0.6px",
-          "color": "rgb(28, 25, 23)",
-          "weight": "700",
-          "sample": "text{9}",
-          "count": 1
-        },
-        {
-          "fontSize": "0.325px",
-          "lineHeight": "0.4875px",
+          "fontSize": "0.51px",
+          "lineHeight": "0.765px",
           "color": "rgb(28, 25, 23)",
           "weight": "700",
           "sample": "text{1}",
-          "count": 8
+          "count": 9
         }
       ],
       "contrastViolations": [],
@@ -106634,7 +106382,7 @@
       "size": "1440",
       "theme": "light",
       "file": "review-review-analyzing__1440-light.png",
-      "setupMs": 1575,
+      "setupMs": 1785,
       "boardDetails": {
         "coordText": {
           "width": 14.84,
@@ -106733,8 +106481,7 @@
         "11px": 1,
         "20px": 1,
         "0.52px": 60,
-        "0.325px": 8,
-        "0.4px": 1,
+        "0.51px": 9,
         "12px": 18
       },
       "typeSamples": [
@@ -106843,20 +106590,12 @@
           "count": 60
         },
         {
-          "fontSize": "0.4px",
-          "lineHeight": "0.6px",
-          "color": "rgb(28, 25, 23)",
-          "weight": "700",
-          "sample": "text{9}",
-          "count": 1
-        },
-        {
-          "fontSize": "0.325px",
-          "lineHeight": "0.4875px",
+          "fontSize": "0.51px",
+          "lineHeight": "0.765px",
           "color": "rgb(28, 25, 23)",
           "weight": "700",
           "sample": "text{1}",
-          "count": 8
+          "count": 9
         }
       ],
       "contrastViolations": [],
@@ -107012,7 +106751,7 @@
       "size": "1920",
       "theme": "light",
       "file": "review-review-analyzing__1920-light.png",
-      "setupMs": 1671,
+      "setupMs": 1446,
       "boardDetails": {
         "coordText": {
           "width": 14.84,
@@ -107111,8 +106850,7 @@
         "11px": 1,
         "20px": 1,
         "0.52px": 60,
-        "0.325px": 8,
-        "0.4px": 1,
+        "0.51px": 9,
         "12px": 18
       },
       "typeSamples": [
@@ -107221,20 +106959,12 @@
           "count": 60
         },
         {
-          "fontSize": "0.4px",
-          "lineHeight": "0.6px",
-          "color": "rgb(28, 25, 23)",
-          "weight": "700",
-          "sample": "text{9}",
-          "count": 1
-        },
-        {
-          "fontSize": "0.325px",
-          "lineHeight": "0.4875px",
+          "fontSize": "0.51px",
+          "lineHeight": "0.765px",
           "color": "rgb(28, 25, 23)",
           "weight": "700",
           "sample": "text{1}",
-          "count": 8
+          "count": 9
         }
       ],
       "contrastViolations": [],
@@ -107390,7 +107120,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "review-review-analyzing__390-dark-dark.png",
-      "setupMs": 1359,
+      "setupMs": 1258,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -107489,8 +107219,7 @@
         "11px": 1,
         "20px": 1,
         "0.52px": 60,
-        "0.325px": 8,
-        "0.4px": 1,
+        "0.51px": 9,
         "12px": 18
       },
       "typeSamples": [
@@ -107599,20 +107328,12 @@
           "count": 60
         },
         {
-          "fontSize": "0.4px",
-          "lineHeight": "0.6px",
-          "color": "rgb(236, 232, 227)",
-          "weight": "700",
-          "sample": "text{9}",
-          "count": 1
-        },
-        {
-          "fontSize": "0.325px",
-          "lineHeight": "0.4875px",
+          "fontSize": "0.51px",
+          "lineHeight": "0.765px",
           "color": "rgb(236, 232, 227)",
           "weight": "700",
           "sample": "text{1}",
-          "count": 8
+          "count": 9
         }
       ],
       "contrastViolations": [],
@@ -107768,7 +107489,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "review-review-analyzing__1440-dark-dark.png",
-      "setupMs": 1718,
+      "setupMs": 1305,
       "boardDetails": {
         "coordText": {
           "width": 14.84,
@@ -107867,8 +107588,7 @@
         "11px": 1,
         "20px": 1,
         "0.52px": 60,
-        "0.325px": 8,
-        "0.4px": 1,
+        "0.51px": 9,
         "12px": 18
       },
       "typeSamples": [
@@ -107977,20 +107697,12 @@
           "count": 60
         },
         {
-          "fontSize": "0.4px",
-          "lineHeight": "0.6px",
-          "color": "rgb(236, 232, 227)",
-          "weight": "700",
-          "sample": "text{9}",
-          "count": 1
-        },
-        {
-          "fontSize": "0.325px",
-          "lineHeight": "0.4875px",
+          "fontSize": "0.51px",
+          "lineHeight": "0.765px",
           "color": "rgb(236, 232, 227)",
           "weight": "700",
           "sample": "text{1}",
-          "count": 8
+          "count": 9
         }
       ],
       "contrastViolations": [],
@@ -108146,7 +107858,7 @@
       "size": "390",
       "theme": "light",
       "file": "review-review-verdict-selected__390-light.png",
-      "setupMs": 1568,
+      "setupMs": 1503,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -108235,8 +107947,7 @@
         "11px": 1,
         "20px": 1,
         "0.52px": 60,
-        "0.325px": 7,
-        "0.4px": 1,
+        "0.51px": 8,
         "12px": 18
       },
       "typeSamples": [
@@ -108353,20 +108064,12 @@
           "count": 60
         },
         {
-          "fontSize": "0.4px",
-          "lineHeight": "0.6px",
-          "color": "rgb(28, 25, 23)",
-          "weight": "700",
-          "sample": "text{8}",
-          "count": 1
-        },
-        {
-          "fontSize": "0.325px",
-          "lineHeight": "0.4875px",
+          "fontSize": "0.51px",
+          "lineHeight": "0.765px",
           "color": "rgb(28, 25, 23)",
           "weight": "700",
           "sample": "text{1}",
-          "count": 7
+          "count": 8
         }
       ],
       "contrastViolations": [],
@@ -108522,7 +108225,7 @@
       "size": "768",
       "theme": "light",
       "file": "review-review-verdict-selected__768-light.png",
-      "setupMs": 1571,
+      "setupMs": 1413,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -108611,8 +108314,7 @@
         "11px": 1,
         "20px": 1,
         "0.52px": 60,
-        "0.325px": 7,
-        "0.4px": 1,
+        "0.51px": 8,
         "12px": 18
       },
       "typeSamples": [
@@ -108729,20 +108431,12 @@
           "count": 60
         },
         {
-          "fontSize": "0.4px",
-          "lineHeight": "0.6px",
-          "color": "rgb(28, 25, 23)",
-          "weight": "700",
-          "sample": "text{8}",
-          "count": 1
-        },
-        {
-          "fontSize": "0.325px",
-          "lineHeight": "0.4875px",
+          "fontSize": "0.51px",
+          "lineHeight": "0.765px",
           "color": "rgb(28, 25, 23)",
           "weight": "700",
           "sample": "text{1}",
-          "count": 7
+          "count": 8
         }
       ],
       "contrastViolations": [],
@@ -108898,7 +108592,7 @@
       "size": "1024",
       "theme": "light",
       "file": "review-review-verdict-selected__1024-light.png",
-      "setupMs": 1770,
+      "setupMs": 1550,
       "boardDetails": {
         "coordText": {
           "width": 12.33,
@@ -108987,8 +108681,7 @@
         "11px": 1,
         "20px": 1,
         "0.52px": 60,
-        "0.325px": 7,
-        "0.4px": 1,
+        "0.51px": 8,
         "12px": 18
       },
       "typeSamples": [
@@ -109105,20 +108798,12 @@
           "count": 60
         },
         {
-          "fontSize": "0.4px",
-          "lineHeight": "0.6px",
-          "color": "rgb(28, 25, 23)",
-          "weight": "700",
-          "sample": "text{8}",
-          "count": 1
-        },
-        {
-          "fontSize": "0.325px",
-          "lineHeight": "0.4875px",
+          "fontSize": "0.51px",
+          "lineHeight": "0.765px",
           "color": "rgb(28, 25, 23)",
           "weight": "700",
           "sample": "text{1}",
-          "count": 7
+          "count": 8
         }
       ],
       "contrastViolations": [],
@@ -109274,7 +108959,7 @@
       "size": "1280",
       "theme": "light",
       "file": "review-review-verdict-selected__1280-light.png",
-      "setupMs": 2197,
+      "setupMs": 1674,
       "boardDetails": {
         "coordText": {
           "width": 14.84,
@@ -109363,8 +109048,7 @@
         "11px": 1,
         "20px": 1,
         "0.52px": 60,
-        "0.325px": 7,
-        "0.4px": 1,
+        "0.51px": 8,
         "12px": 18
       },
       "typeSamples": [
@@ -109481,20 +109165,12 @@
           "count": 60
         },
         {
-          "fontSize": "0.4px",
-          "lineHeight": "0.6px",
-          "color": "rgb(28, 25, 23)",
-          "weight": "700",
-          "sample": "text{8}",
-          "count": 1
-        },
-        {
-          "fontSize": "0.325px",
-          "lineHeight": "0.4875px",
+          "fontSize": "0.51px",
+          "lineHeight": "0.765px",
           "color": "rgb(28, 25, 23)",
           "weight": "700",
           "sample": "text{1}",
-          "count": 7
+          "count": 8
         }
       ],
       "contrastViolations": [],
@@ -109650,7 +109326,7 @@
       "size": "1440",
       "theme": "light",
       "file": "review-review-verdict-selected__1440-light.png",
-      "setupMs": 2983,
+      "setupMs": 1601,
       "boardDetails": {
         "coordText": {
           "width": 14.84,
@@ -109739,8 +109415,7 @@
         "11px": 1,
         "20px": 1,
         "0.52px": 60,
-        "0.325px": 7,
-        "0.4px": 1,
+        "0.51px": 8,
         "12px": 18
       },
       "typeSamples": [
@@ -109857,20 +109532,12 @@
           "count": 60
         },
         {
-          "fontSize": "0.4px",
-          "lineHeight": "0.6px",
-          "color": "rgb(28, 25, 23)",
-          "weight": "700",
-          "sample": "text{8}",
-          "count": 1
-        },
-        {
-          "fontSize": "0.325px",
-          "lineHeight": "0.4875px",
+          "fontSize": "0.51px",
+          "lineHeight": "0.765px",
           "color": "rgb(28, 25, 23)",
           "weight": "700",
           "sample": "text{1}",
-          "count": 7
+          "count": 8
         }
       ],
       "contrastViolations": [],
@@ -110026,7 +109693,7 @@
       "size": "1920",
       "theme": "light",
       "file": "review-review-verdict-selected__1920-light.png",
-      "setupMs": 2654,
+      "setupMs": 1526,
       "boardDetails": {
         "coordText": {
           "width": 14.84,
@@ -110115,8 +109782,7 @@
         "11px": 1,
         "20px": 1,
         "0.52px": 60,
-        "0.325px": 7,
-        "0.4px": 1,
+        "0.51px": 8,
         "12px": 18
       },
       "typeSamples": [
@@ -110233,20 +109899,12 @@
           "count": 60
         },
         {
-          "fontSize": "0.4px",
-          "lineHeight": "0.6px",
-          "color": "rgb(28, 25, 23)",
-          "weight": "700",
-          "sample": "text{8}",
-          "count": 1
-        },
-        {
-          "fontSize": "0.325px",
-          "lineHeight": "0.4875px",
+          "fontSize": "0.51px",
+          "lineHeight": "0.765px",
           "color": "rgb(28, 25, 23)",
           "weight": "700",
           "sample": "text{1}",
-          "count": 7
+          "count": 8
         }
       ],
       "contrastViolations": [],
@@ -110402,7 +110060,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "review-review-verdict-selected__390-dark-dark.png",
-      "setupMs": 1952,
+      "setupMs": 1305,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -110491,8 +110149,7 @@
         "11px": 1,
         "20px": 1,
         "0.52px": 60,
-        "0.325px": 7,
-        "0.4px": 1,
+        "0.51px": 8,
         "12px": 18
       },
       "typeSamples": [
@@ -110609,20 +110266,12 @@
           "count": 60
         },
         {
-          "fontSize": "0.4px",
-          "lineHeight": "0.6px",
-          "color": "rgb(236, 232, 227)",
-          "weight": "700",
-          "sample": "text{8}",
-          "count": 1
-        },
-        {
-          "fontSize": "0.325px",
-          "lineHeight": "0.4875px",
+          "fontSize": "0.51px",
+          "lineHeight": "0.765px",
           "color": "rgb(236, 232, 227)",
           "weight": "700",
           "sample": "text{1}",
-          "count": 7
+          "count": 8
         }
       ],
       "contrastViolations": [],
@@ -110778,7 +110427,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "review-review-verdict-selected__1440-dark-dark.png",
-      "setupMs": 1966,
+      "setupMs": 1518,
       "boardDetails": {
         "coordText": {
           "width": 14.84,
@@ -110867,8 +110516,7 @@
         "11px": 1,
         "20px": 1,
         "0.52px": 60,
-        "0.325px": 7,
-        "0.4px": 1,
+        "0.51px": 8,
         "12px": 18
       },
       "typeSamples": [
@@ -110985,20 +110633,12 @@
           "count": 60
         },
         {
-          "fontSize": "0.4px",
-          "lineHeight": "0.6px",
-          "color": "rgb(236, 232, 227)",
-          "weight": "700",
-          "sample": "text{8}",
-          "count": 1
-        },
-        {
-          "fontSize": "0.325px",
-          "lineHeight": "0.4875px",
+          "fontSize": "0.51px",
+          "lineHeight": "0.765px",
           "color": "rgb(236, 232, 227)",
           "weight": "700",
           "sample": "text{1}",
-          "count": 7
+          "count": 8
         }
       ],
       "contrastViolations": [],

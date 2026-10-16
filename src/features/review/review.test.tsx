@@ -283,19 +283,24 @@ describe('ReviewScreen —— 本阶段新增的几处（Phase 06）', () => {
     const radii = () =>
       screen
         .getAllByTestId(/^board-mark-/)
-        .map((mark) => mark.querySelector('circle')?.getAttribute('r'))
+        .map((mark) => Number(mark.querySelector('circle')?.getAttribute('r')))
 
     fireEvent.click(screen.getByRole('button', { name: '下一步' }))
 
     // 先把游标钉死，再谈半径——否则半径不对时分不清是"标错了"还是"没走到"
     expect(screen.getByTestId('move-counter')).toHaveTextContent('1 / 9')
-    // 走到第 1 手：那一枚该是 0.32，还没有第 2 枚
-    expect(radii()).toEqual(['0.32'])
+    // 走到第 1 手：只有它，且是「当前手」那一档
+    expect(radii()).toHaveLength(1)
+    const current = radii()[0]!
 
     fireEvent.click(screen.getByRole('button', { name: '下一步' }))
 
-    // 走到第 2 手：新的那枚是 0.32，上一枚退回 0.26
-    expect(radii()).toEqual(['0.26', '0.32'])
+    // 走到第 2 手：新那枚「当前手」与刚才同档，上一枚退回常规档。
+    // 断言的是**关系**不是具体数值——半径是设计参数（F-UI-14 那轮调过一次：
+    // 0.26/0.32 → 0.30/0.34），而这里真正要守的是「当前手看得出来更突出」。
+    const [plain, now] = radii()
+    expect(now).toBe(current)
+    expect(now!).toBeGreaterThan(plain!)
   })
 })
 

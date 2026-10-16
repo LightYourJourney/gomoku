@@ -13,6 +13,7 @@ import { opponentOf } from '../../core/board'
 import type { Player } from '../../core/types'
 import { cx } from '../../lib/cx'
 import { createStoneSound, type StoneSound } from '../../lib/sound'
+import { useFocusOnMount } from '../../lib/useFocusOnMount'
 import { useMediaQuery } from '../../lib/useMediaQuery'
 import {
   canHumanPlay,
@@ -101,6 +102,8 @@ export function BattleScreen({ sound: injectedSound }: BattleScreenProps = {}) {
   const clearHint = useGameStore((state) => state.clearHint)
 
   const wide = useMediaQuery(WIDE_QUERY)
+  // 换页时把焦点交给正文——对战页不用 `PageShell`，那层处理得在这儿自己来
+  const mainRef = useFocusOnMount<HTMLElement>()
 
   /**
    * 「重新开始」按钮。终局弹窗关闭时把焦点送到它——对局结束后它是唯一还有意义的
@@ -268,8 +271,10 @@ export function BattleScreen({ sound: injectedSound }: BattleScreenProps = {}) {
       <AppHeader />
 
       <main
+        ref={mainRef}
+        tabIndex={-1}
         className={cx(
-          'flex min-h-0 flex-1 flex-col wide-layout:grid',
+          'flex min-h-0 flex-1 flex-col outline-none wide-layout:grid',
           wide ? THREE_COLUMNS : TWO_COLUMNS,
         )}
       >

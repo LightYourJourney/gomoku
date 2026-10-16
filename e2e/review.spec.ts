@@ -263,3 +263,32 @@ test('移动端 390：棋盘优先、控制可达、不出现嵌套滚动', asyn
   await analyze.scrollIntoViewIfNeeded()
   await expect(analyze).toBeVisible()
 })
+
+test('回放编号在最窄视口下不小于 10px（F-UI-14）', async ({ page }) => {
+  // 先在默认视口下开局、进回放（390 下点九手棋容易被布局变化干扰），
+  // 再切到最窄视口量——布局一变，用户单位对应的像素就变了
+  await openFirstRecord(page)
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.getByRole('button', { name: '下一步' }).click()
+  await expect(page.getByTestId(/^board-mark-/)).toHaveCount(1)
+
+  /*
+   * 判据来自 `DESIGN_SYSTEM.md` §8.2：**棋盘文字在最小支持视口下不得小于 10px**。
+   *
+   * 换算：棋盘 viewBox 是 16 个用户单位（1 边距 + 14 格 + 1 边距），
+   * 所以 1 用户单位 = 棋盘宽 / 16（与 `bench/ui.probe.mjs` 的 `unitPx` 同一手法）。
+   * 读**原始属性**而不是 computed style：SVG 里无单位的长度就是用户单位，
+   * 让浏览器替我们解释它只会多一层不确定。
+   */
+  const size = await page.evaluate(() => {
+    const board = document.querySelector('[data-testid="board"]')
+    const label = document.querySelector('[data-testid^="board-mark-"] text')
+    if (board === null || label === null) return null
+    const unitPx = board.getBoundingClientRect().width / 16
+    const fontSize = Number.parseFloat(label.getAttribute('font-size') ?? '0')
+    return fontSize * unitPx
+  })
+
+  expect(size, '没量到回放编号的文字').not.toBeNull()
+  expect(size!, `编号字号 ${size!.toFixed(2)}px，低于 §8.2 的 10px 下限`).toBeGreaterThanOrEqual(10)
+})

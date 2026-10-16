@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { useFocusOnMount } from '../../lib/useFocusOnMount'
 import { AppHeader } from './AppHeader'
 
 /**
@@ -43,12 +44,23 @@ export interface PageShellProps {
  * 硬套一个「阅读列」的壳只会两边都不像。
  */
 export function PageShell({ children, toolbar, footer, variant = 'reading' }: PageShellProps) {
+  /*
+   * 换页时把焦点交给正文。不这么做的话，用户点的那个按钮连同整棵树一起
+   * 卸载，焦点掉回 `<body>`——读屏不播报新页面，键盘用户得从头 Tab 一遍。
+   * 两个分支共用同一个 ref：条件渲染只会挂上其中一个。
+   */
+  const mainRef = useFocusOnMount<HTMLElement>()
+
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <AppHeader />
       {toolbar}
       {variant === 'reading' ? (
-        <main className="min-h-0 flex-1 overflow-y-auto">
+        <main
+          ref={mainRef}
+          tabIndex={-1}
+          className="min-h-0 flex-1 overflow-y-auto outline-none"
+        >
           {/* 阅读列：768px 是中文长文舒服的行宽上限，再宽视线会来回折返 */}
           <div className="mx-auto w-full max-w-3xl px-3 py-5 sm:px-4 lg:px-6">{children}</div>
         </main>
@@ -63,7 +75,11 @@ export function PageShell({ children, toolbar, footer, variant = 'reading' }: Pa
          * （FINDINGS 的 F-UI-01）。删掉行模板后只剩一个隐式行，
          * `align-content: normal`（= `stretch`）会把它撑满，棋盘拿到整列高度。
          */
-        <main className="flex min-h-0 flex-1 flex-col wide-layout:grid wide-layout:grid-cols-[minmax(0,1fr)_344px]">
+        <main
+          ref={mainRef}
+          tabIndex={-1}
+          className="flex min-h-0 flex-1 flex-col outline-none wide-layout:grid wide-layout:grid-cols-[minmax(0,1fr)_344px]"
+        >
           {children}
         </main>
       )}

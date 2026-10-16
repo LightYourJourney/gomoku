@@ -53,7 +53,7 @@ components / features   ← 展示层，只做渲染与事件转发
 
 **为什么分两种存储**：对局存档每次落子都要写、数据小、丢了就丢了；学习进度写得少但**丢了会让人白学一遍**，值得用更耐久的 IndexedDB。进度层在 IndexedDB 不可用时（隐私模式、open 抛错、被其他标签页占用）整体降级为内存态——进度丢了可以接受，白屏不行。
 
-**`lib/`** —— 无状态工具：主题解析、WebAudio 音效合成、动效类名（`motion.ts`）、坐标格式化、类名拼接。
+**`lib/`** —— 跨 feature 共用的小工具与小组件级 hook：主题解析、WebAudio 音效合成、动效类名（`motion.ts`）、坐标格式化、类名拼接、媒体查询（`useMediaQuery.ts`）、换页时的焦点接管（`useFocusOnMount.ts`）。**这些模块都没有一个 import store**——要碰 store 的东西属于 `store/` 或 `features/`。（`contrast.test.tsx` 是例外，它为了渲染真实组件才引 store，那是测试的本分。原先这里写的是「无状态工具」，但 `useMediaQuery` 早就是个有状态的 hook 了。）
 
 **`components/`** —— 展示。
 `ui/` 是与业务无关的原子组件；`board/` 是棋盘（`Board` + `BoardStage` 容器）；`panels/` 是业务面板；`AppErrorBoundary` 是顶层错误边界。面板全部通过 props 接收数据与回调，不直接读 store。

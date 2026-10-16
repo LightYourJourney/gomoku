@@ -415,3 +415,55 @@ test.describe('键盘操作 · 残局', () => {
     await expect(page.getByRole('heading', { level: 1, name: '斜向补满' })).toBeVisible()
   })
 })
+
+/**
+ * 焦点**正落在当前页面的 `<main>` 上**。
+ *
+ * 不能只判 `tagName === 'MAIN'`：换页前焦点就在上一页的 main 上时，那句在
+ * 换页前后**都成立**——测试会假通过。比的是同一个元素。
+ */
+function focusIsOnMain(page: import('@playwright/test').Page): Promise<boolean> {
+  return page.evaluate(() => {
+    const main = document.querySelector('main')
+    return main !== null && document.activeElement === main
+  })
+}
+
+test.describe('换页时的焦点', () => {
+  /*
+   * 换页之后焦点会掉回 `<body>`：被点的那颗导航按钮连同整棵树一起卸载，
+   * 浏览器就把焦点丢给了 body——读屏不播报新页面，键盘用户也不知道自己
+   * 到了哪，得从头 Tab 一遍。`useFocusOnMount` 把它接回正文，
+   * `PageShell` 与 `BattleScreen`（不用外壳）各接一次。
+   */
+  test('四个页面换过去之后，焦点都落在新页面的正文上', async ({ page }) => {
+    for (const nav of ['教学', '残局', '复盘', '对战'] as const) {
+      await page.goto('/')
+      /*
+       * `lastView` 会持久化，`goto('/')` 未必停在对战页——先点一个**不是目标**
+       * 的页，保证接下来那一击真的换页。
+       * （点当前页是空操作，组件不会重挂载，那时焦点**本该**留在按钮上——
+       * 用户并没有换页。所以这里必须绕开它，否则测的是另一回事。）
+       */
+      const other = nav === '对战' ? '教学' : '对战'
+      await page.getByRole('button', { name: other, exact: true }).click()
+      await page.getByRole('button', { name: nav, exact: true }).click()
+
+      await expect
+        .poll(() => focusIsOnMain(page), { message: `切到「${nav}」之后焦点没落在 main 上` })
+        .toBe(true)
+
+      /*
+       * 聚焦**不能把页面滚下去**。正文容器从顶栏**之后**才开始，而 `focus()`
+       * 默认会把焦点元素滚进视口——页面当场滚过顶栏（移动端约 113px）。
+       * 这条是 `mobile.spec.ts` 的两条触摸用例先抓住的：一条报
+       * `window.scrollY` 是 113，另一条因为整页位移把触摸坐标打偏、棋子没落下去。
+       * 在这里也钉一遍，是为了失败时**直接指向根因**，而不用绕道触摸用例去猜。
+       */
+      expect(
+        await page.evaluate(() => window.scrollY),
+        `切到「${nav}」之后页面被滚动了`,
+      ).toBe(0)
+    }
+  })
+})

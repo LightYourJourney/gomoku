@@ -15,10 +15,24 @@ export interface BoardMark {
   /**
    * 圆的半径，默认 0.4（一格为 1）。
    *
-   * 回放的落子编号用小半径（0.26）：默认尺寸会把棋子整个盖住，
+   * 回放的落子编号用小半径（0.30）：默认尺寸会把棋子整个盖住，
    * 看不出那一手是黑是白——编号的意义就少了一半。
    */
   readonly radius?: number
+  /**
+   * 文字字号（用户单位）。默认跟半径走（`radius * 1.25`）。
+   *
+   * **为什么要能单独指定。** 默认系数把字号绑死在半径上，而半径又被
+   * 「棋子得露在编号外面」绑死（要 `< STONE_RADIUS = 0.44`）。回放编号于是
+   * 卡在 6.91px，够不着 `DESIGN_SYSTEM` §8.2 的 10px 下限。
+   * 但徽标的**高度是 `2r`**，字号用满到 `1.7r` 仍装得下——被绑死的这两个量
+   * 本来就不必同步。回放编号据此只把半径提到棋子还露得出的 0.30，
+   * 字号按 10px 反推，两头都保住。
+   *
+   * 代价写在 `ReplayBoard` 那边：三位数手数的 pill 会宽到与邻格轻微重叠，
+   * 因为 pill 的宽度只取决于字号。
+   */
+  readonly fontSize?: number
 }
 
 /** 三种色调对应的填充色。避开棋盘木色，也互相分得开。 */
@@ -96,17 +110,23 @@ function labelWidth(label: string, fontSize: number): number {
  *
  * 一个字时它小于「直径 2r 的圆」，于是仍然画圆；两个字以上超过圆的直径，改画 pill。
  *
- * **边界要说准**：回放编号在半径 0.26 下，**1–9 手仍是圆、第 10 手起变成 pill**
- * （`badgeWidth('10', 0.26) = 0.643 > 0.52`）。这不是意外——两位数塞进 0.52 宽的圆里
- * 本来就贴着边，pill 反而更好读；但别在别处写「编号外观零变化」，那句只对一位数成立。
- * 判题标记（「对」/「错」）与提示编号（1/2/3）不受影响。
+ * **边界要说准**：回放编号在半径 0.30 / 字号 0.51 下，**1–9 手仍是圆、
+ * 第 10 手起变成 pill**（`badgeWidth('10', 0.30, 0.51) = 0.872 > 0.60`）。
+ * 这不是意外——两位数塞进 0.6 宽的圆里本来就贴着边，pill 反而更好读；
+ * 但别在别处写「编号外观零变化」，那句只对一位数成立。
+ * 判题标记（「对」/「错」）与提示编号（1/2/3）不受影响，它们走默认的 `radius * 1.25`。
  *
  * 硬约束（用例钉着）：**半宽必须 < 1 格**。相邻交叉点在 1 格外，
  * 半宽不到一格就永远盖不到相邻棋子的**中心**——被压住的棋子至少还看得出黑白。
- * 按当前字号，3 个汉字是 1.74（半宽 0.87，安全），4 个字是 2.24（半宽 1.12，破线）。
+ *
+ * - 默认字号（`radius * 1.25`，`radius = 0.4`）：3 个汉字 1.74（半宽 0.87，安全），
+ *   4 个字 2.24（半宽 1.12，破线）。
+ * - 回放编号（字号 0.51）：三位数是 1.189（半宽 0.594）——仍在「半宽 < 1 格」线上，
+ *   但相邻两个三位数编号会各伸 0.594、**重叠 0.188 单位（@390 约 4px）**。
+ *   pill 的宽度只取决于字号，所以这是放大字号绕不开的代价；`ReplayBoard` 那边写着它。
  */
-function badgeWidth(label: string, radius: number): number {
-  return Math.max(radius * 2, labelWidth(label, radius * 1.25) + BADGE_PADDING * 2)
+function badgeWidth(label: string, radius: number, fontSize: number): number {
+  return Math.max(radius * 2, labelWidth(label, fontSize) + BADGE_PADDING * 2)
 }
 
 /**
@@ -551,8 +571,10 @@ export function Board({
           {visibleMarks.map((mark, index) => {
             const tone = mark.tone ?? 'accent'
             const radius = mark.radius ?? 0.4
+            // 字号默认跟着半径走（历史行为）；回放编号单独指定——理由见 `BoardMark.fontSize`
+            const fontSize = mark.fontSize ?? radius * 1.25
             const label = mark.label ?? String(index + 1)
-            const width = badgeWidth(label, radius)
+            const width = badgeWidth(label, radius, fontSize)
             const isPill = width > radius * 2
 
             return (
@@ -584,7 +606,7 @@ export function Board({
                 <text
                   x={mark.point.x}
                   y={mark.point.y}
-                  fontSize={radius * 1.25}
+                  fontSize={fontSize}
                   fontFamily="var(--font-mono)"
                   fontWeight="700"
                   textAnchor="middle"
