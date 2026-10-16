@@ -202,6 +202,26 @@ describe('回放器 —— 自动播放', () => {
     expect(store.getState().cursor).toBe(9)
   })
 
+  it('推进到最后一手的当次就收尾——播放键不顶着禁用多亮一个间隔', () => {
+    store.getState().open(winRecord() as unknown as GameRecord)
+    store.getState().goTo(7)
+    store.getState().play()
+
+    // 两个间隔正好推进到第 9 手（终局）
+    vi.advanceTimersByTime(REPLAY_STEP_MS * 2)
+
+    expect(store.getState().cursor).toBe(9)
+    /*
+     * 到达终局的**那一刻**播放就该结束。
+     *
+     * 早先只在 tick 的**开头**查 `hasNext`，而推进到终局发生在 tick 的末尾——
+     * 于是第 9 手已经落在盘上、`playing` 还是 true：播放键顶着
+     * `disabled`（`!hasNext`）却写着「暂停」，要等下一个间隔才「发现」到头
+     * （慢速档 1.4s）。按不动，也停不掉。
+     */
+    expect(store.getState().playing).toBe(false)
+  })
+
   it('已在终局时 play 不启动——按钮不会先变「暂停」再自己弹回来', () => {
     store.getState().open(winRecord() as unknown as GameRecord)
     store.getState().goTo(9)

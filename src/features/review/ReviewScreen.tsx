@@ -184,6 +184,16 @@ function AnalysisPanel({ store, engine, replay }: AnalysisPanelProps) {
             重新分析
           </Button>
         </>
+      ) : record.moves.length === 0 ? (
+        /*
+         * 一步都没走就认输：没有可分析的手，不摆那颗「开始分析」。
+         * `start` 对这种局面会立刻收尾（`running` 置回 false、`verdicts`
+         * 仍为空），面板又渲染回这颗按钮——按下去与没按过长得一模一样，
+         * 正是任务书 §二 说的「只有外观、没有实际效果的按钮」。
+         */
+        <p data-testid="analysis-empty" className="text-xs text-faint">
+          这一局没有落子，没有可分析的手。
+        </p>
       ) : !state.running && verdicts.length === 0 ? (
         <>
           <p className="text-xs text-faint">
@@ -209,9 +219,16 @@ function AnalysisPanel({ store, engine, replay }: AnalysisPanelProps) {
           {cursor > 0 && (
             <p data-testid="analysis-current" className="text-xs text-muted">
               当前第 {cursor} 手：
-              {currentVerdict === undefined
-                ? '与引擎一致，没有亏损。'
-                : verdictLabel(currentVerdict)}
+              {/*
+                取不到结论 ≠ 结论是「没亏损」。
+                `verdicts` 里**装着** loss 为 0 的手（`buildVerdict` 总会产出一条，
+                而「与引擎一致」正是 `verdictLabel` 的一个分支），所以取不到只有
+                两种可能：这一手被跳过了（引擎对某个局面答「无棋可走」，
+                `analysisStore` 不编结论，见那边的注释），或者分析没跑到它。
+                两种都该如实说——原先这里一律说成「与引擎一致，没有亏损」，
+                store 拒绝编造，界面替它编了。
+              */}
+              {currentVerdict === undefined ? '没有分析结果。' : verdictLabel(currentVerdict)}
             </p>
           )}
 

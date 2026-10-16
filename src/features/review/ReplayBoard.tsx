@@ -92,12 +92,18 @@ export function ReplayBoard({ store, onExit, extraPanel }: ReplayBoardProps) {
               </span>{' '}
               手
             </span>
-            <span className="text-xs text-faint">
-              {position.status === 'won' || position.status === 'resigned'
-                ? record.winner === null
+            {/*
+              「还在下」是 `status === 'playing'`，**不是**「没赢也没认输」。
+              `GameStatus` 有四态（`core/types.ts`）：`playing | won | draw | resigned`——
+              早先这里列的是 `'won' || 'resigned'`，于是满盘和棋（`'draw'`）落进
+              else，这一栏写着「对局中」，而它上面那条列表行明明写着「和棋」。
+            */}
+            <span data-testid="replay-status" className="text-xs text-faint">
+              {position.status === 'playing'
+                ? '对局中'
+                : record.winner === null
                   ? '和棋'
-                  : `${record.winner === 1 ? '黑' : '白'}方胜`
-                : '对局中'}
+                  : `${record.winner === 1 ? '黑' : '白'}方胜`}
             </span>
           </div>
 
@@ -138,7 +144,7 @@ export function ReplayBoard({ store, onExit, extraPanel }: ReplayBoardProps) {
           <div className="flex items-center gap-2">
             <span className="shrink-0 text-xs text-muted">速度</span>
             <div className="flex flex-1 gap-1" role="group" aria-label="播放速度">
-              {(['slow', 'normal', 'fast'] as const satisfies readonly ReplaySpeed[]).map(
+              {(Object.keys(REPLAY_SPEED_LABELS) as readonly ReplaySpeed[]).map(
                 (value) => (
                   <button
                     key={value}

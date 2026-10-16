@@ -341,7 +341,12 @@ export function createAnalysisStore(): UseBoundStore<StoreApi<AnalysisStore>> {
 
       stop() {
         reset()
-        set({ running: false, target: null })
+        /*
+         * `error` 一并清掉：它属于**那一次尝试**，`target` 一走就没有谁
+         * 还能为它负责。留着它，下一局的分析面板会顶着上一局的失败，
+         * 显示「这次分析没跑完：<上一局的错>」加一颗「重新分析」。
+         */
+        set({ running: false, target: null, error: null })
       },
     }
   })

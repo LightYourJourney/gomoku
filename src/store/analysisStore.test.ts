@@ -385,3 +385,30 @@ describe('分析管线 —— 响应与请求对不上', () => {
     expect(store.getState().error).toBe('分析响应与请求对不上，这一轮已中止')
   })
 })
+
+describe('分析管线 —— 错误的生命周期', () => {
+  /*
+   * 错误属于**那一次尝试**，不该比它活得久。
+   *
+   * `stop()` 会把 `target` 置空（「这条结论不再属于任何棋谱」），却漏了
+   * `error`：于是 A 局分析失败之后回到列表、点开 B 局，B 的分析面板顶着
+   * 「这次分析没跑完：<A 局的错误>」和一颗「重新分析」——错误跨了棋谱。
+   */
+  it('stop 之后不留上一次的错误', async () => {
+    store.getState().start({
+      record: threeWinRecord(),
+      engine: spy.engine,
+      difficulty: 'easy',
+      budgetMs: 400,
+    })
+    spy.reject(0, '引擎炸了')
+    await Promise.resolve()
+    await Promise.resolve()
+
+    expect(store.getState().error).toBe('引擎炸了')
+
+    store.getState().stop()
+
+    expect(store.getState().error).toBeNull()
+  })
+})

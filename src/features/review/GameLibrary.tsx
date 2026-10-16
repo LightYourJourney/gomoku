@@ -37,6 +37,11 @@ function metaLabel(record: GameRecord): string {
   return `${mode}${difficulty} · ${record.moves.length} 手`
 }
 
+/** 被跳过的棋谱条数说明——空库与列表上方说的是同一句话。 */
+function skippedNote(count: number): string {
+  return `另有 ${count} 条棋谱读不出来，多半是更早的版本留下的。`
+}
+
 /**
  * 空状态的图形标识。
  *
@@ -52,7 +57,13 @@ function LibraryGlyph() {
       className="mx-auto h-12 w-12"
       data-testid="library-glyph"
     >
-      <g stroke="var(--c-border-strong)" strokeWidth="1.5">
+      {/*
+        网格线用 `--c-grid`——`Board.tsx:374` 的棋盘本身用的就是它。
+        原先写的是 `--c-border-strong`，那个令牌在 `DESIGN_SYSTEM.md` §2.2 里的
+        用途是「控件的 hover 描边、开关的关闭态」，禁用途一栏明写「**常态**」；
+        §6 说得更硬：「常态不许用」。画在这里的就是常态的棋盘线。
+      */}
+      <g stroke="var(--c-grid)" strokeWidth="1.5">
         {[8, 18, 28, 38].map((at) => (
           <line key={`v${at}`} x1={at} y1={8} x2={at} y2={38} />
         ))}
@@ -113,23 +124,29 @@ export function GameLibrary({ storage, onOpen, onStartBattle }: GameLibraryProps
           )}
           {result.skipped > 0 && (
             <p data-testid="library-skipped" className="mt-3 text-xs text-faint">
-              另有 {result.skipped} 条棋谱读不出来，多半是更早的版本留下的。
+              {skippedNote(result.skipped)}
             </p>
           )}
         </Panel>
       ) : (
         <>
           {(result.degraded || result.skipped > 0) && (
-            <p className="mb-3 text-xs text-faint">
+            /*
+             * 颜色挂在各自的 span 上，不挂在父 `<p>`：这两句不是一个等级。
+             * 「存不了数据」是警告（与空库分支同色），「有 N 条读不出来」
+             * 是对更早数据的说明。原先父级统一 `text-faint`，于是同一句
+             * 降级警告在空库时是 `warn`、有棋谱时降成了三级信息。
+             */
+            <p className="mb-3 text-xs">
               {result.degraded && (
-                <span data-testid="library-degraded">
+                <span data-testid="library-degraded" className="text-warn">
                   这个浏览器不让本站保存数据，下面这些是本次会话里的对局，关掉页面就没了。
                 </span>
               )}
               {result.degraded && result.skipped > 0 && ' '}
               {result.skipped > 0 && (
-                <span data-testid="library-skipped">
-                  另有 {result.skipped} 条棋谱读不出来，多半是更早的版本留下的。
+                <span data-testid="library-skipped" className="text-faint">
+                  {skippedNote(result.skipped)}
                 </span>
               )}
             </p>

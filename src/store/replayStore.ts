@@ -21,7 +21,14 @@ export const REPLAY_SPEEDS = {
 
 export type ReplaySpeed = keyof typeof REPLAY_SPEEDS
 
-/** 界面上给这三档的名字。顺序即展示顺序。 */
+/**
+ * 界面上给这三档的名字。**键序即展示顺序**——回放面板直接按它的键渲染。
+ *
+ * `Record<ReplaySpeed, string>` 保证加档位时这里必然被补上，而面板
+ * 又从这个对象取顺序，于是「有几档、什么顺序、叫什么」只有这一个出处。
+ * 早先面板自己又抄了一遍 `['slow', 'normal', 'fast']`：两句注释都写着
+ * 「就是展示顺序」，实际谁也没管谁。
+ */
 export const REPLAY_SPEED_LABELS: Record<ReplaySpeed, string> = {
   slow: '慢速',
   normal: '标准',
@@ -119,27 +126,29 @@ export function createReplayStore(): UseBoundStore<StoreApi<ReplayStore>> {
       stopTimer()
       timer = setInterval(() => {
         const state = get()
+        const rec = state.record
         // 到尾（或记录已关）自动停——这是任务书 §六 点名的「到达结尾自动停止」
-        if (state.record === null || !state.hasNext) {
+        if (rec === null || !state.hasNext) {
           stopTimer()
           commit({ playing: false })
           return
         }
-        advance()
-      }, stepMs)
-    }
 
-    /**
-     * 定时器专用的「推进一格」。**它不碰 `playing`。**
-     *
-     * 与下面公开的 `stepNext` 分家是必须的：`stepNext` 现在会暂停
-     * （手动定位的规则），定时器若调它就等于第一个 tick 把自己停掉，
-     * 自动播放只走一手。两件事长得像，语义不同。
-     */
-    function advance() {
-      const { record, cursor } = get()
-      if (record === null || cursor >= record.moves.length) return
-      commit({ cursor: cursor + 1 })
+        /*
+         * 推进一格，**不走公开的 `stepNext`**：那个会暂停（手动定位的规则），
+         * 定时器调它就等于第一个 tick 把自己停掉，自动播放只走一手。
+         * 两件事长得像，语义不同。
+         *
+         * 「推进后正好到头」必须在**这一次 tick 里**收尾，不能等下一轮：
+         * 否则第 N 手已经落在盘上、`playing` 还是 true，播放键顶着
+         * `disabled`（`!hasNext`）写着「暂停」，最长一个间隔按不动
+         * （慢速档 1.4s）——既停不掉，也点不动。
+         */
+        const next = state.cursor + 1
+        const atEnd = next >= rec.moves.length
+        if (atEnd) stopTimer()
+        commit({ cursor: next, playing: !atEnd })
+      }, stepMs)
     }
 
     // record + cursor + playing + speed 之外的字段全部派生；set 时整体重算，
@@ -160,7 +169,14 @@ export function createReplayStore(): UseBoundStore<StoreApi<ReplayStore>> {
       )
     }
 
-    /** 手动定位的统一前奏：停表 + 退出播放态。三个公开定位方法都从它开始。 */
+        /**
+     * 手动定位的统一前奏：**停表**。三个公开定位方法都从它开始。
+     *
+     * 「退出播放态」不在这里——它和游标一起由调用方的
+     * `commit({ ..., playing: false })` 完成。两步分开是边界逼出来的：
+     * 越界时那几个方法要原样返回、一个字段都不许动（见 `stepPrev` 的注释），
+     * 所以「接管」只能发生在**真的要走一步**的时候。
+     */
     function takeOver() {
       stopTimer()
     }

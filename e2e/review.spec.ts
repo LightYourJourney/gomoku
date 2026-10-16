@@ -222,3 +222,44 @@ test('点分析结论里的关键手：棋盘跳到那一手，卡片高亮', as
   // 棋盘真的落到那一手：编号数 = N
   await expect(page.getByTestId(/^board-mark-/)).toHaveCount(moveNo)
 })
+
+test('移动端 390：棋盘优先、控制可达、不出现嵌套滚动', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 })
+  await openFirstRecord(page)
+
+  // 任务书 §四：「棋盘优先，回放控制必须容易触达」——三样都在视口里
+  await expect(page.getByTestId('board')).toBeVisible()
+  await expect(page.getByTestId('move-counter')).toBeVisible()
+  await expect(page.getByRole('button', { name: '下一步' })).toBeVisible()
+
+  // 横向不溢出（390 是最窄的真实手机）
+  const overflow = await page.evaluate(
+    () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+  )
+  expect(overflow, `回放页在 390 下横向溢出了 ${overflow}px`).toBeLessThanOrEqual(0)
+
+  /*
+   * 任务书 §四：「不制造多重滚动陷阱」。
+   *
+   * 判据是 `main` 内部**没有**出现第二个纵向滚动区——手机上手指落在内层
+   * 滚动区、页面不跟手，就是「滚不动」的常见成因，而这类问题 jsdom
+   * 完全看不见（没有布局）。整页滚动本身是允许的：390 下应用根是
+   * `min-h-dvh`，滚的就是文档。
+   */
+  const nested = await page.evaluate(() => {
+    const found: string[] = []
+    for (const el of document.querySelectorAll<HTMLElement>('main, main *')) {
+      const style = getComputedStyle(el)
+      if (style.overflowY !== 'auto' && style.overflowY !== 'scroll') continue
+      if (el.scrollHeight <= el.clientHeight + 1) continue
+      found.push(`${el.tagName.toLowerCase()}[${el.className.slice(0, 48)}]`)
+    }
+    return found
+  })
+  expect(nested, `main 内部出现了嵌套滚动区：${nested.join(' | ')}`).toHaveLength(0)
+
+  // 分析面板在下方，滚得到、点得到
+  const analyze = page.getByRole('button', { name: '开始分析' })
+  await analyze.scrollIntoViewIfNeeded()
+  await expect(analyze).toBeVisible()
+})

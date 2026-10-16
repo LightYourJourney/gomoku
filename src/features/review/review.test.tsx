@@ -1,7 +1,7 @@
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { UseBoundStore, StoreApi } from 'zustand'
-import { BLACK, type Point } from '../../core/types'
+import { BLACK, BOARD_SIZE, type Point } from '../../core/types'
 import { createReplayStore, REPLAY_STEP_MS, type ReplayStore } from '../../store/replayStore'
 import { createAnalysisStore } from '../../store/analysisStore'
 import { memoryGameRecords, type GameRecord, type GameRecordsStorage } from '../../persist/gameRecords'
@@ -299,6 +299,131 @@ describe('ReviewScreen —— 本阶段新增的几处（Phase 06）', () => {
   })
 })
 
+describe('分析面板 —— 没结论的手不能被说成有结论', () => {
+  /*
+   * `analysisStore` 在**引擎答「无棋可走」**时会主动跳过两手：那一手没有
+   * 可比的首选着法（拼不出结论），而它**前面**那一手的「走完之后」评分
+   * 正是这个局面，也拼不出来。store 的注释写着「不给一个编出来的结论」。
+   *
+   * 面板原先却对「没有结论」一律说「与引擎一致，没有亏损」——store 拒绝
+   * 编造，界面替它编了。
+   */
+  it('没有结论的那一手如实说，不替 store 说成「与引擎一致」', async () => {
+    const storage = memoryGameRecords()
+    await storage.put(nineMoveRecord())
+
+    const injectedReplay = createReplayStore()
+    const injectedAnalysis = createAnalysisStore()
+    render(
+      <ReviewScreen
+        storage={storage}
+        engine={noMoveAtEngine(5)}
+        stores={{ replay: injectedReplay, analysis: injectedAnalysis }}
+      />,
+    )
+    fireEvent.click((await screen.findAllByTestId(/^record-/))[0]!)
+    fireEvent.click(await screen.findByRole('button', { name: '开始分析' }))
+    await waitFor(() => expect(injectedAnalysis.getState().running).toBe(false))
+
+    // 前提：局面 5 无棋可走 → 手 5 与手 4 都没有结论
+    expect(injectedAnalysis.getState().verdicts.has(4)).toBe(false)
+    expect(injectedAnalysis.getState().verdicts.has(5)).toBe(false)
+
+    // 把游标拖到第 5 手（那一手没有结论）
+    fireEvent.change(screen.getByRole('slider', { name: '回放手数' }), {
+      target: { value: '5' },
+    })
+
+    const current = screen.getByTestId('analysis-current')
+    expect(current).toHaveTextContent('当前第 5 手')
+    expect(current).not.toHaveTextContent('与引擎一致，没有亏损。')
+  })
+})
+
+describe('ReviewScreen —— 和棋', () => {
+  it('满盘和棋：回放状态栏说「和棋」，不说「对局中」', async () => {
+    const storage = memoryGameRecords()
+    await storage.put(drawRecord())
+    render(<ReviewScreen storage={storage} engine={idleEngine()} />)
+
+    // 列表这一行已经说「和棋」了
+    const row = (await screen.findAllByTestId(/^record-/))[0]!
+    expect(row).toHaveTextContent('和棋')
+
+    fireEvent.click(row)
+    await screen.findByTestId('move-counter')
+
+    // 打开时停在空盘，那一帧「对局中」是对的——棋局确实还没走完。
+    expect(screen.getByTestId('replay-status')).toHaveTextContent('对局中')
+
+    // 推到终局：这时 `position.status` 才是 `'draw'`。早先这里只认
+    // `'won'` 与 `'resigned'`，`'draw'` 落进 else，于是这一页和它上面
+    // 那条列表行自相矛盾——列表说「和棋」，回放状态栏说「对局中」。
+    fireEvent.click(screen.getByRole('button', { name: '终局' }))
+
+    const status = screen.getByTestId('replay-status')
+    expect(status).toHaveTextContent('和棋')
+    expect(status).not.toHaveTextContent('对局中')
+  })
+})
+
+describe('ReviewScreen —— 0 手认输局', () => {
+  it('一步都没走，不摆一颗点了没反应的「开始分析」', async () => {
+    const storage = memoryGameRecords()
+    // `winner` 不用写：`put()` 会按 moves + resignedBy 重算（0 手 + 黑认输 → 白胜）
+    await storage.put({
+      moves: [],
+      firstPlayer: BLACK,
+      mode: 'pve',
+      humanColor: BLACK,
+      difficulty: 'easy',
+      resignedBy: BLACK,
+    })
+    render(<ReviewScreen storage={storage} engine={idleEngine()} />)
+    fireEvent.click((await screen.findAllByTestId(/^record-/))[0]!)
+
+    await screen.findByTestId('move-counter')
+
+    // 空盘上没有可分析的手：按钮点下去只会回到原样（`start` 立刻收尾，
+    // `verdicts` 仍为空，面板又渲染回这颗按钮）——那就是一颗
+    // 「只有外观、没有实际效果」的按钮。
+    expect(screen.queryByRole('button', { name: '开始分析' })).not.toBeInTheDocument()
+    expect(screen.getByTestId('analysis-empty')).toHaveTextContent('没有落子')
+  })
+})
+
+describe('ReviewScreen —— 分析失败', () => {
+  it('失败要说出来，并给一颗「重新分析」', async () => {
+    const storage = memoryGameRecords()
+    await storage.put(nineMoveRecord())
+    render(<ReviewScreen storage={storage} engine={failingEngine()} />)
+    fireEvent.click((await screen.findAllByTestId(/^record-/))[0]!)
+    fireEvent.click(await screen.findByRole('button', { name: '开始分析' }))
+
+    expect(await screen.findByTestId('analysis-error')).toHaveTextContent('引擎炸了')
+    expect(screen.getByRole('button', { name: '重新分析' })).toBeInTheDocument()
+  })
+
+  it('换到另一局之后不留着上一局的错误', async () => {
+    const storage = memoryGameRecords()
+    await storage.put(nineMoveRecord())
+    await storage.put(threeMoveRecord())
+
+    render(<ReviewScreen storage={storage} engine={failingEngine()} />)
+    // 列表按 seq 降序：先点开的是后存进去的那局
+    fireEvent.click((await screen.findAllByTestId(/^record-/))[0]!)
+    fireEvent.click(await screen.findByRole('button', { name: '开始分析' }))
+    await screen.findByTestId('analysis-error')
+
+    // 回列表、换一局
+    fireEvent.click(screen.getByRole('button', { name: '← 棋谱列表' }))
+    fireEvent.click((await screen.findAllByTestId(/^record-/))[0]!)
+
+    await screen.findByTestId('move-counter')
+    expect(screen.queryByTestId('analysis-error')).not.toBeInTheDocument()
+  })
+})
+
 /** 永不 resolve 的引擎：让「分析中」状态稳定可断言。 */
 function idleEngine(): AiEngine {
   return {
@@ -440,4 +565,100 @@ describe('GameLibrary —— 读不出棋谱时如实说明', () => {
     const notice = await screen.findByTestId('library-skipped')
     expect(notice).toHaveTextContent('2')
   })
+
+  it('库里有棋谱时，降级提示换成对得上事实的措辞', async () => {
+    const storage = memoryGameRecords(true)
+    await storage.put(nineMoveRecord())
+
+    render(
+      <GameLibrary storage={storage} onOpen={vi.fn()} onStartBattle={vi.fn()} />,
+    )
+
+    // 列表照常出来
+    expect(await screen.findByTestId('record-1')).toBeInTheDocument()
+    // 空状态那句不出现，但降级这件事照样要说——而且说的是「下面这些」
+    expect(screen.queryByText('还没有保存的对局')).not.toBeInTheDocument()
+    expect(screen.getByTestId('library-degraded')).toHaveTextContent('本次会话')
+  })
 })
+
+/** 一上来就失败的引擎：钉「分析失败」这条路径的界面。 */
+function failingEngine(): AiEngine {
+  return {
+    search: () => Promise.reject(new Error('引擎炸了')),
+    handleResponse() {},
+    handleError() {},
+    dispose() {},
+  }
+}
+
+/**
+ * 在第 `nullAt` 号局面回「无棋可走」的引擎。
+ *
+ * 真实引擎只在**满盘**时这么答（`core` 判 `draw` 的条件），而满盘要 225 手
+ * 才造得出来。这里直接让它答，测的是**收到这个应答之后**的行为。
+ */
+function noMoveAtEngine(nullAt: number): AiEngine {
+  return {
+    search(request) {
+      const index = request.moveIndex ?? 0
+      return Promise.resolve({
+        requestId: request.requestId,
+        gameVersion: request.gameVersion,
+        moveIndex: index,
+        move: index === nullAt ? null : { x: 9, y: 9 },
+        score: 1,
+        depth: 1,
+        nodes: 1,
+        elapsedMs: 1,
+        confidence: 'exact' as const,
+        reason: 'search' as const,
+        candidates: [],
+        urgency: 'normal' as const,
+      })
+    },
+    handleResponse() {},
+    handleError() {},
+    dispose() {},
+  }
+}
+
+/**
+ * 满盘和棋的棋谱（225 手，`winner` 为 `null`）。
+ *
+ * **「和棋」只有这一个来源**：`core` 只在棋盘填满且无人成五时判 `draw`，
+ * 不真的填满就造不出这个终局——列表按 `winner === null` 说「和棋」，
+ * 回放页则要等 `position.status === 'draw'`。
+ *
+ * 填充模式 `(x + 2y) % 4 < 2` 与 `core/game.test.ts` 的 `drawOrder()` 同源：
+ * 横、竖、两条对角线上的最长同色连续都只有 2，终局不含五连。没有再抽一份
+ * 共享 fixture——两处用途不同（那边测 core 的判和规则，这边测界面把和棋
+ * 说成什么），而它是个稳定的数学构造。
+ */
+function drawRecord(): ReplayRecord {
+  const black: Point[] = []
+  const white: Point[] = []
+  for (let y = 0; y < BOARD_SIZE; y += 1) {
+    for (let x = 0; x < BOARD_SIZE; x += 1) {
+      const side = (x + 2 * y) % 4 < 2 ? black : white
+      side.push({ x, y })
+    }
+  }
+
+  const moves: Point[] = []
+  for (let i = 0; i < black.length; i += 1) {
+    moves.push(black[i]!)
+    const mate = white[i]
+    if (mate !== undefined) moves.push(mate)
+  }
+
+  return {
+    moves,
+    firstPlayer: BLACK,
+    mode: 'pvp',
+    humanColor: BLACK,
+    difficulty: 'easy',
+    resignedBy: null,
+    winner: null,
+  }
+}
