@@ -57,7 +57,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-empty__390-light.png",
-      "setupMs": 464,
+      "setupMs": 1173,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -463,7 +463,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-empty__768-light.png",
-      "setupMs": 395,
+      "setupMs": 774,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -869,7 +869,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-empty__1024-light.png",
-      "setupMs": 412,
+      "setupMs": 866,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -1282,7 +1282,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-empty__1280-light.png",
-      "setupMs": 422,
+      "setupMs": 732,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -1689,7 +1689,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-empty__1440-light.png",
-      "setupMs": 449,
+      "setupMs": 816,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -2095,7 +2095,7 @@
       "size": "1280x680",
       "theme": "light",
       "file": "battle-battle-empty__1280x680-light.png",
-      "setupMs": 364,
+      "setupMs": 922,
       "boardDetails": {
         "coordText": {
           "width": 9.97,
@@ -2508,7 +2508,7 @@
       "size": "1440x700",
       "theme": "light",
       "file": "battle-battle-empty__1440x700-light.png",
-      "setupMs": 411,
+      "setupMs": 645,
       "boardDetails": {
         "coordText": {
           "width": 10.36,
@@ -2920,7 +2920,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-empty__1920-light.png",
-      "setupMs": 442,
+      "setupMs": 870,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -3326,7 +3326,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-empty__390-dark-dark.png",
-      "setupMs": 407,
+      "setupMs": 597,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -3732,7 +3732,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-empty__1440-dark-dark.png",
-      "setupMs": 408,
+      "setupMs": 719,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -4138,7 +4138,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-midgame__390-light.png",
-      "setupMs": 389,
+      "setupMs": 604,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -4565,7 +4565,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-midgame__768-light.png",
-      "setupMs": 384,
+      "setupMs": 632,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -4992,7 +4992,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-midgame__1024-light.png",
-      "setupMs": 442,
+      "setupMs": 616,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -5425,7 +5425,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-midgame__1280-light.png",
-      "setupMs": 460,
+      "setupMs": 635,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -5852,7 +5852,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-midgame__1440-light.png",
-      "setupMs": 442,
+      "setupMs": 692,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -6279,7 +6279,7 @@
       "size": "1280x680",
       "theme": "light",
       "file": "battle-battle-midgame__1280x680-light.png",
-      "setupMs": 379,
+      "setupMs": 563,
       "boardDetails": {
         "coordText": {
           "width": 9.97,
@@ -6712,7 +6712,7 @@
       "size": "1440x700",
       "theme": "light",
       "file": "battle-battle-midgame__1440x700-light.png",
-      "setupMs": 401,
+      "setupMs": 550,
       "boardDetails": {
         "coordText": {
           "width": 10.36,
@@ -7151,7 +7151,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-midgame__1920-light.png",
-      "setupMs": 452,
+      "setupMs": 757,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -7578,7 +7578,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-midgame__390-dark-dark.png",
-      "setupMs": 388,
+      "setupMs": 553,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -8005,7 +8005,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-midgame__1440-dark-dark.png",
-      "setupMs": 476,
+      "setupMs": 1509,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -8432,7 +8432,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-thinking__390-light.png",
-      "setupMs": 370,
+      "setupMs": 2235,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -8857,7 +8857,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-thinking__768-light.png",
-      "setupMs": 411,
+      "setupMs": 3699,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -9282,7 +9282,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-thinking__1024-light.png",
-      "setupMs": 445,
+      "setupMs": 1183,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -9714,7 +9714,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-thinking__1280-light.png",
-      "setupMs": 454,
+      "setupMs": 802,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -10146,7 +10146,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-thinking__1440-light.png",
-      "setupMs": 519,
+      "setupMs": 765,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -10577,7 +10577,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-thinking__1920-light.png",
-      "setupMs": 523,
+      "setupMs": 744,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -11008,7 +11008,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-thinking__390-dark-dark.png",
-      "setupMs": 489,
+      "setupMs": 746,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -11433,7 +11433,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-thinking__1440-dark-dark.png",
-      "setupMs": 550,
+      "setupMs": 688,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -11864,7 +11864,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-hint__390-light.png",
-      "setupMs": 755,
+      "setupMs": 1191,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -12359,7 +12359,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-hint__768-light.png",
-      "setupMs": 625,
+      "setupMs": 1881,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -12854,7 +12854,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-hint__1024-light.png",
-      "setupMs": 591,
+      "setupMs": 2019,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -13355,7 +13355,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-hint__1280-light.png",
-      "setupMs": 628,
+      "setupMs": 1832,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -13850,7 +13850,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-hint__1440-light.png",
-      "setupMs": 589,
+      "setupMs": 1477,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -14345,7 +14345,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-hint__1920-light.png",
-      "setupMs": 666,
+      "setupMs": 1295,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -14840,7 +14840,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-hint__390-dark-dark.png",
-      "setupMs": 568,
+      "setupMs": 743,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -15335,7 +15335,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-hint__1440-dark-dark.png",
-      "setupMs": 619,
+      "setupMs": 862,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -15830,7 +15830,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-confirm-restart__390-light.png",
-      "setupMs": 512,
+      "setupMs": 689,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -16294,7 +16294,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-confirm-restart__768-light.png",
-      "setupMs": 537,
+      "setupMs": 735,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -16758,7 +16758,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-confirm-restart__1024-light.png",
-      "setupMs": 589,
+      "setupMs": 741,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -17228,7 +17228,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-confirm-restart__1280-light.png",
-      "setupMs": 559,
+      "setupMs": 794,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -17692,7 +17692,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-confirm-restart__1440-light.png",
-      "setupMs": 541,
+      "setupMs": 1396,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -18156,7 +18156,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-confirm-restart__1920-light.png",
-      "setupMs": 601,
+      "setupMs": 958,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -18620,7 +18620,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-confirm-restart__390-dark-dark.png",
-      "setupMs": 531,
+      "setupMs": 824,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -19084,7 +19084,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-confirm-restart__1440-dark-dark.png",
-      "setupMs": 607,
+      "setupMs": 754,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -19548,7 +19548,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-display-settings__390-light.png",
-      "setupMs": 525,
+      "setupMs": 603,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -20006,7 +20006,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-display-settings__768-light.png",
-      "setupMs": 490,
+      "setupMs": 668,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -20464,7 +20464,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-display-settings__1024-light.png",
-      "setupMs": 617,
+      "setupMs": 717,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -20928,7 +20928,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-display-settings__1280-light.png",
-      "setupMs": 610,
+      "setupMs": 791,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -21386,7 +21386,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-display-settings__1440-light.png",
-      "setupMs": 633,
+      "setupMs": 733,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -21844,7 +21844,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-display-settings__1920-light.png",
-      "setupMs": 617,
+      "setupMs": 764,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -22302,7 +22302,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-display-settings__390-dark-dark.png",
-      "setupMs": 659,
+      "setupMs": 617,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -22760,7 +22760,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-display-settings__1440-dark-dark.png",
-      "setupMs": 651,
+      "setupMs": 765,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -23218,7 +23218,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-finished__390-light.png",
-      "setupMs": 443,
+      "setupMs": 491,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -23687,7 +23687,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-finished__768-light.png",
-      "setupMs": 482,
+      "setupMs": 509,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -24156,7 +24156,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-finished__1024-light.png",
-      "setupMs": 483,
+      "setupMs": 547,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -24632,7 +24632,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-finished__1280-light.png",
-      "setupMs": 478,
+      "setupMs": 622,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -25108,7 +25108,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-finished__1440-light.png",
-      "setupMs": 473,
+      "setupMs": 521,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -25583,7 +25583,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-finished__1920-light.png",
-      "setupMs": 511,
+      "setupMs": 579,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -26058,7 +26058,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-finished__390-dark-dark.png",
-      "setupMs": 538,
+      "setupMs": 587,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -26527,7 +26527,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-finished__1440-dark-dark.png",
-      "setupMs": 957,
+      "setupMs": 632,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -27002,7 +27002,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-opening__390-light.png",
-      "setupMs": 521,
+      "setupMs": 732,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -27422,7 +27422,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-opening__768-light.png",
-      "setupMs": 565,
+      "setupMs": 763,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -27842,7 +27842,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-opening__1024-light.png",
-      "setupMs": 571,
+      "setupMs": 734,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -28269,7 +28269,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-opening__1280-light.png",
-      "setupMs": 570,
+      "setupMs": 934,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -28690,7 +28690,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-opening__1440-light.png",
-      "setupMs": 613,
+      "setupMs": 801,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -29110,7 +29110,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-opening__1920-light.png",
-      "setupMs": 573,
+      "setupMs": 807,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -29530,7 +29530,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-opening__390-dark-dark.png",
-      "setupMs": 545,
+      "setupMs": 1082,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -29950,7 +29950,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-opening__1440-dark-dark.png",
-      "setupMs": 591,
+      "setupMs": 1281,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -30370,7 +30370,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-dense-black__390-light.png",
-      "setupMs": 489,
+      "setupMs": 693,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -30797,7 +30797,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-dense-black__768-light.png",
-      "setupMs": 517,
+      "setupMs": 637,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -31224,7 +31224,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-dense-black__1024-light.png",
-      "setupMs": 579,
+      "setupMs": 774,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -31657,7 +31657,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-dense-black__1280-light.png",
-      "setupMs": 590,
+      "setupMs": 669,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -32084,7 +32084,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-dense-black__1440-light.png",
-      "setupMs": 580,
+      "setupMs": 663,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -32511,7 +32511,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-dense-black__1920-light.png",
-      "setupMs": 613,
+      "setupMs": 672,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -32938,7 +32938,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-dense-black__390-dark-dark.png",
-      "setupMs": 596,
+      "setupMs": 591,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -33365,7 +33365,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-dense-black__1440-dark-dark.png",
-      "setupMs": 734,
+      "setupMs": 687,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -33792,7 +33792,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-dense-white__390-light.png",
-      "setupMs": 764,
+      "setupMs": 562,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -34219,7 +34219,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-dense-white__768-light.png",
-      "setupMs": 673,
+      "setupMs": 644,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -34646,7 +34646,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-dense-white__1024-light.png",
-      "setupMs": 1336,
+      "setupMs": 732,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -35079,7 +35079,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-dense-white__1280-light.png",
-      "setupMs": 812,
+      "setupMs": 728,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -35506,7 +35506,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-dense-white__1440-light.png",
-      "setupMs": 809,
+      "setupMs": 739,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -35933,7 +35933,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-dense-white__1920-light.png",
-      "setupMs": 820,
+      "setupMs": 730,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -36360,7 +36360,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-dense-white__390-dark-dark.png",
-      "setupMs": 660,
+      "setupMs": 599,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -36787,7 +36787,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-dense-white__1440-dark-dark.png",
-      "setupMs": 928,
+      "setupMs": 713,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -37214,7 +37214,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-win-board__390-light.png",
-      "setupMs": 807,
+      "setupMs": 698,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -37646,7 +37646,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-win-board__768-light.png",
-      "setupMs": 837,
+      "setupMs": 795,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -38078,7 +38078,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-win-board__1024-light.png",
-      "setupMs": 927,
+      "setupMs": 734,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -38517,7 +38517,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-win-board__1280-light.png",
-      "setupMs": 896,
+      "setupMs": 853,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -38956,7 +38956,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-win-board__1440-light.png",
-      "setupMs": 861,
+      "setupMs": 835,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -39394,7 +39394,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-win-board__1920-light.png",
-      "setupMs": 836,
+      "setupMs": 829,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -39832,7 +39832,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-win-board__390-dark-dark.png",
-      "setupMs": 739,
+      "setupMs": 772,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -40264,7 +40264,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-win-board__1440-dark-dark.png",
-      "setupMs": 820,
+      "setupMs": 886,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -40702,7 +40702,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-ai-moved__390-light.png",
-      "setupMs": 708,
+      "setupMs": 625,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -41161,7 +41161,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-ai-moved__768-light.png",
-      "setupMs": 743,
+      "setupMs": 628,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -41620,7 +41620,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-ai-moved__1024-light.png",
-      "setupMs": 814,
+      "setupMs": 671,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -42086,7 +42086,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-ai-moved__1280-light.png",
-      "setupMs": 829,
+      "setupMs": 1104,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -42546,7 +42546,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-ai-moved__1440-light.png",
-      "setupMs": 823,
+      "setupMs": 834,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -43005,7 +43005,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-ai-moved__1920-light.png",
-      "setupMs": 855,
+      "setupMs": 1067,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -43464,7 +43464,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-ai-moved__390-dark-dark.png",
-      "setupMs": 705,
+      "setupMs": 852,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -43923,7 +43923,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-ai-moved__1440-dark-dark.png",
-      "setupMs": 811,
+      "setupMs": 888,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -44382,7 +44382,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-ai-moved-expanded__390-light.png",
-      "setupMs": 827,
+      "setupMs": 817,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -44857,7 +44857,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-ai-moved-expanded__768-light.png",
-      "setupMs": 908,
+      "setupMs": 815,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -45332,7 +45332,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-ai-moved-expanded__1024-light.png",
-      "setupMs": 895,
+      "setupMs": 913,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -45814,7 +45814,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-ai-moved-expanded__1280-light.png",
-      "setupMs": 945,
+      "setupMs": 949,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -46290,7 +46290,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-ai-moved-expanded__1440-light.png",
-      "setupMs": 983,
+      "setupMs": 1002,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -46772,7 +46772,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-ai-moved-expanded__1920-light.png",
-      "setupMs": 965,
+      "setupMs": 1139,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -47254,7 +47254,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-ai-moved-expanded__390-dark-dark.png",
-      "setupMs": 811,
+      "setupMs": 1033,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -47729,7 +47729,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-ai-moved-expanded__1440-dark-dark.png",
-      "setupMs": 903,
+      "setupMs": 1079,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -48211,7 +48211,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-ai-error__390-light.png",
-      "setupMs": 591,
+      "setupMs": 798,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -48662,7 +48662,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-ai-error__768-light.png",
-      "setupMs": 612,
+      "setupMs": 815,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -49113,7 +49113,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-ai-error__1024-light.png",
-      "setupMs": 718,
+      "setupMs": 1086,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -49570,7 +49570,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-ai-error__1280-light.png",
-      "setupMs": 743,
+      "setupMs": 876,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -50027,7 +50027,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-ai-error__1440-light.png",
-      "setupMs": 786,
+      "setupMs": 1722,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -50484,7 +50484,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-ai-error__1920-light.png",
-      "setupMs": 774,
+      "setupMs": 1157,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -50941,7 +50941,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-ai-error__390-dark-dark.png",
-      "setupMs": 711,
+      "setupMs": 1898,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -51392,7 +51392,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-ai-error__1440-dark-dark.png",
-      "setupMs": 785,
+      "setupMs": 805,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -51849,7 +51849,7 @@
       "size": "390",
       "theme": "light",
       "file": "battle-battle-finish-unsaved__390-light.png",
-      "setupMs": 902,
+      "setupMs": 1020,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -52318,7 +52318,7 @@
       "size": "768",
       "theme": "light",
       "file": "battle-battle-finish-unsaved__768-light.png",
-      "setupMs": 980,
+      "setupMs": 918,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -52787,7 +52787,7 @@
       "size": "1024",
       "theme": "light",
       "file": "battle-battle-finish-unsaved__1024-light.png",
-      "setupMs": 1191,
+      "setupMs": 919,
       "boardDetails": {
         "coordText": {
           "width": 12.56,
@@ -53263,7 +53263,7 @@
       "size": "1280",
       "theme": "light",
       "file": "battle-battle-finish-unsaved__1280-light.png",
-      "setupMs": 1220,
+      "setupMs": 1000,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -53739,7 +53739,7 @@
       "size": "1440",
       "theme": "light",
       "file": "battle-battle-finish-unsaved__1440-light.png",
-      "setupMs": 985,
+      "setupMs": 1174,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -54214,7 +54214,7 @@
       "size": "1920",
       "theme": "light",
       "file": "battle-battle-finish-unsaved__1920-light.png",
-      "setupMs": 911,
+      "setupMs": 1341,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -54689,7 +54689,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "battle-battle-finish-unsaved__390-dark-dark.png",
-      "setupMs": 886,
+      "setupMs": 1648,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -55158,7 +55158,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "battle-battle-finish-unsaved__1440-dark-dark.png",
-      "setupMs": 942,
+      "setupMs": 1127,
       "boardDetails": {
         "coordText": {
           "width": 14.27,
@@ -55633,7 +55633,7 @@
       "size": "390",
       "theme": "light",
       "file": "learn-learn-list__390-light.png",
-      "setupMs": 700,
+      "setupMs": 753,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -55904,7 +55904,7 @@
       "size": "768",
       "theme": "light",
       "file": "learn-learn-list__768-light.png",
-      "setupMs": 699,
+      "setupMs": 891,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -56175,7 +56175,7 @@
       "size": "1024",
       "theme": "light",
       "file": "learn-learn-list__1024-light.png",
-      "setupMs": 645,
+      "setupMs": 810,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -56453,7 +56453,7 @@
       "size": "1280",
       "theme": "light",
       "file": "learn-learn-list__1280-light.png",
-      "setupMs": 658,
+      "setupMs": 912,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -56731,7 +56731,7 @@
       "size": "1440",
       "theme": "light",
       "file": "learn-learn-list__1440-light.png",
-      "setupMs": 785,
+      "setupMs": 898,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -57009,7 +57009,7 @@
       "size": "1920",
       "theme": "light",
       "file": "learn-learn-list__1920-light.png",
-      "setupMs": 908,
+      "setupMs": 1009,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -57287,7 +57287,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "learn-learn-list__390-dark-dark.png",
-      "setupMs": 736,
+      "setupMs": 1035,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -57558,7 +57558,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "learn-learn-list__1440-dark-dark.png",
-      "setupMs": 846,
+      "setupMs": 1058,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -57836,7 +57836,7 @@
       "size": "390",
       "theme": "light",
       "file": "learn-learn-list-done__390-light.png",
-      "setupMs": 704,
+      "setupMs": 726,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -58124,7 +58124,7 @@
       "size": "768",
       "theme": "light",
       "file": "learn-learn-list-done__768-light.png",
-      "setupMs": 773,
+      "setupMs": 807,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -58412,7 +58412,7 @@
       "size": "1024",
       "theme": "light",
       "file": "learn-learn-list-done__1024-light.png",
-      "setupMs": 747,
+      "setupMs": 812,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -58707,7 +58707,7 @@
       "size": "1280",
       "theme": "light",
       "file": "learn-learn-list-done__1280-light.png",
-      "setupMs": 788,
+      "setupMs": 742,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -59002,7 +59002,7 @@
       "size": "1440",
       "theme": "light",
       "file": "learn-learn-list-done__1440-light.png",
-      "setupMs": 720,
+      "setupMs": 1012,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -59297,7 +59297,7 @@
       "size": "1920",
       "theme": "light",
       "file": "learn-learn-list-done__1920-light.png",
-      "setupMs": 731,
+      "setupMs": 759,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -59592,7 +59592,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "learn-learn-list-done__390-dark-dark.png",
-      "setupMs": 737,
+      "setupMs": 1188,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -59880,7 +59880,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "learn-learn-list-done__1440-dark-dark.png",
-      "setupMs": 800,
+      "setupMs": 935,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -60175,7 +60175,7 @@
       "size": "390",
       "theme": "light",
       "file": "learn-learn-diagram__390-light.png",
-      "setupMs": 860,
+      "setupMs": 854,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -60464,7 +60464,7 @@
       "size": "768",
       "theme": "light",
       "file": "learn-learn-diagram__768-light.png",
-      "setupMs": 933,
+      "setupMs": 1265,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -60747,7 +60747,7 @@
       "size": "1024",
       "theme": "light",
       "file": "learn-learn-diagram__1024-light.png",
-      "setupMs": 1156,
+      "setupMs": 1137,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -61030,7 +61030,7 @@
       "size": "1280",
       "theme": "light",
       "file": "learn-learn-diagram__1280-light.png",
-      "setupMs": 1052,
+      "setupMs": 1173,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -61313,7 +61313,7 @@
       "size": "1440",
       "theme": "light",
       "file": "learn-learn-diagram__1440-light.png",
-      "setupMs": 892,
+      "setupMs": 1491,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -61596,7 +61596,7 @@
       "size": "1920",
       "theme": "light",
       "file": "learn-learn-diagram__1920-light.png",
-      "setupMs": 960,
+      "setupMs": 1124,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -61879,7 +61879,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "learn-learn-diagram__390-dark-dark.png",
-      "setupMs": 774,
+      "setupMs": 1728,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -62168,7 +62168,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "learn-learn-diagram__1440-dark-dark.png",
-      "setupMs": 1223,
+      "setupMs": 1880,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -62451,7 +62451,7 @@
       "size": "390",
       "theme": "light",
       "file": "learn-learn-practice__390-light.png",
-      "setupMs": 1278,
+      "setupMs": 1080,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -62705,7 +62705,7 @@
       "size": "768",
       "theme": "light",
       "file": "learn-learn-practice__768-light.png",
-      "setupMs": 895,
+      "setupMs": 1694,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -62959,7 +62959,7 @@
       "size": "1024",
       "theme": "light",
       "file": "learn-learn-practice__1024-light.png",
-      "setupMs": 956,
+      "setupMs": 1842,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -63213,7 +63213,7 @@
       "size": "1280",
       "theme": "light",
       "file": "learn-learn-practice__1280-light.png",
-      "setupMs": 1253,
+      "setupMs": 1642,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -63461,7 +63461,7 @@
       "size": "1440",
       "theme": "light",
       "file": "learn-learn-practice__1440-light.png",
-      "setupMs": 1102,
+      "setupMs": 1757,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -63709,7 +63709,7 @@
       "size": "1920",
       "theme": "light",
       "file": "learn-learn-practice__1920-light.png",
-      "setupMs": 1130,
+      "setupMs": 2230,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -63957,7 +63957,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "learn-learn-practice__390-dark-dark.png",
-      "setupMs": 1010,
+      "setupMs": 1960,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -64211,7 +64211,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "learn-learn-practice__1440-dark-dark.png",
-      "setupMs": 1030,
+      "setupMs": 1473,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -64459,7 +64459,7 @@
       "size": "390",
       "theme": "light",
       "file": "learn-learn-practice-wrong__390-light.png",
-      "setupMs": 946,
+      "setupMs": 1367,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -64750,7 +64750,7 @@
       "size": "768",
       "theme": "light",
       "file": "learn-learn-practice-wrong__768-light.png",
-      "setupMs": 1012,
+      "setupMs": 1369,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -65041,7 +65041,7 @@
       "size": "1024",
       "theme": "light",
       "file": "learn-learn-practice-wrong__1024-light.png",
-      "setupMs": 1008,
+      "setupMs": 2353,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -65332,7 +65332,7 @@
       "size": "1280",
       "theme": "light",
       "file": "learn-learn-practice-wrong__1280-light.png",
-      "setupMs": 1095,
+      "setupMs": 2067,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -65623,7 +65623,7 @@
       "size": "1440",
       "theme": "light",
       "file": "learn-learn-practice-wrong__1440-light.png",
-      "setupMs": 1115,
+      "setupMs": 2507,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -65914,7 +65914,7 @@
       "size": "1920",
       "theme": "light",
       "file": "learn-learn-practice-wrong__1920-light.png",
-      "setupMs": 1177,
+      "setupMs": 1938,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -66205,7 +66205,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "learn-learn-practice-wrong__390-dark-dark.png",
-      "setupMs": 940,
+      "setupMs": 1794,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -66496,7 +66496,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "learn-learn-practice-wrong__1440-dark-dark.png",
-      "setupMs": 1177,
+      "setupMs": 1354,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -66787,7 +66787,7 @@
       "size": "390",
       "theme": "light",
       "file": "learn-learn-practice-correct__390-light.png",
-      "setupMs": 1103,
+      "setupMs": 1180,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -67092,7 +67092,7 @@
       "size": "768",
       "theme": "light",
       "file": "learn-learn-practice-correct__768-light.png",
-      "setupMs": 1073,
+      "setupMs": 1607,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -67397,7 +67397,7 @@
       "size": "1024",
       "theme": "light",
       "file": "learn-learn-practice-correct__1024-light.png",
-      "setupMs": 1177,
+      "setupMs": 1651,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -67702,7 +67702,7 @@
       "size": "1280",
       "theme": "light",
       "file": "learn-learn-practice-correct__1280-light.png",
-      "setupMs": 1109,
+      "setupMs": 1312,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -68007,7 +68007,7 @@
       "size": "1440",
       "theme": "light",
       "file": "learn-learn-practice-correct__1440-light.png",
-      "setupMs": 1113,
+      "setupMs": 1368,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -68312,7 +68312,7 @@
       "size": "1920",
       "theme": "light",
       "file": "learn-learn-practice-correct__1920-light.png",
-      "setupMs": 1203,
+      "setupMs": 1309,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -68617,7 +68617,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "learn-learn-practice-correct__390-dark-dark.png",
-      "setupMs": 1119,
+      "setupMs": 1332,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -68922,7 +68922,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "learn-learn-practice-correct__1440-dark-dark.png",
-      "setupMs": 1201,
+      "setupMs": 1406,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -69227,7 +69227,7 @@
       "size": "390",
       "theme": "light",
       "file": "learn-learn-list-all-done__390-light.png",
-      "setupMs": 957,
+      "setupMs": 1138,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -69500,7 +69500,7 @@
       "size": "768",
       "theme": "light",
       "file": "learn-learn-list-all-done__768-light.png",
-      "setupMs": 817,
+      "setupMs": 1411,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -69773,7 +69773,7 @@
       "size": "1024",
       "theme": "light",
       "file": "learn-learn-list-all-done__1024-light.png",
-      "setupMs": 821,
+      "setupMs": 1449,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -70053,7 +70053,7 @@
       "size": "1280",
       "theme": "light",
       "file": "learn-learn-list-all-done__1280-light.png",
-      "setupMs": 849,
+      "setupMs": 1486,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -70333,7 +70333,7 @@
       "size": "1440",
       "theme": "light",
       "file": "learn-learn-list-all-done__1440-light.png",
-      "setupMs": 867,
+      "setupMs": 1253,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -70613,7 +70613,7 @@
       "size": "1920",
       "theme": "light",
       "file": "learn-learn-list-all-done__1920-light.png",
-      "setupMs": 1191,
+      "setupMs": 1466,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -70893,7 +70893,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "learn-learn-list-all-done__390-dark-dark.png",
-      "setupMs": 965,
+      "setupMs": 1442,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -71166,7 +71166,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "learn-learn-list-all-done__1440-dark-dark.png",
-      "setupMs": 1089,
+      "setupMs": 1300,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -71446,7 +71446,7 @@
       "size": "390",
       "theme": "light",
       "file": "puzzles-puzzle-list__390-light.png",
-      "setupMs": 794,
+      "setupMs": 656,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -71721,7 +71721,7 @@
       "size": "768",
       "theme": "light",
       "file": "puzzles-puzzle-list__768-light.png",
-      "setupMs": 721,
+      "setupMs": 645,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -71996,7 +71996,7 @@
       "size": "1024",
       "theme": "light",
       "file": "puzzles-puzzle-list__1024-light.png",
-      "setupMs": 664,
+      "setupMs": 641,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -72278,7 +72278,7 @@
       "size": "1280",
       "theme": "light",
       "file": "puzzles-puzzle-list__1280-light.png",
-      "setupMs": 907,
+      "setupMs": 848,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -72560,7 +72560,7 @@
       "size": "1440",
       "theme": "light",
       "file": "puzzles-puzzle-list__1440-light.png",
-      "setupMs": 800,
+      "setupMs": 930,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -72842,7 +72842,7 @@
       "size": "1920",
       "theme": "light",
       "file": "puzzles-puzzle-list__1920-light.png",
-      "setupMs": 817,
+      "setupMs": 783,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -73124,7 +73124,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "puzzles-puzzle-list__390-dark-dark.png",
-      "setupMs": 674,
+      "setupMs": 689,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -73399,7 +73399,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "puzzles-puzzle-list__1440-dark-dark.png",
-      "setupMs": 621,
+      "setupMs": 736,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -73681,7 +73681,7 @@
       "size": "390",
       "theme": "light",
       "file": "puzzles-puzzle-wrong__390-light.png",
-      "setupMs": 718,
+      "setupMs": 820,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -73965,7 +73965,7 @@
       "size": "768",
       "theme": "light",
       "file": "puzzles-puzzle-wrong__768-light.png",
-      "setupMs": 758,
+      "setupMs": 974,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -74249,7 +74249,7 @@
       "size": "1024",
       "theme": "light",
       "file": "puzzles-puzzle-wrong__1024-light.png",
-      "setupMs": 884,
+      "setupMs": 967,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -74533,7 +74533,7 @@
       "size": "1280",
       "theme": "light",
       "file": "puzzles-puzzle-wrong__1280-light.png",
-      "setupMs": 884,
+      "setupMs": 1235,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -74817,7 +74817,7 @@
       "size": "1440",
       "theme": "light",
       "file": "puzzles-puzzle-wrong__1440-light.png",
-      "setupMs": 842,
+      "setupMs": 943,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -75101,7 +75101,7 @@
       "size": "1920",
       "theme": "light",
       "file": "puzzles-puzzle-wrong__1920-light.png",
-      "setupMs": 849,
+      "setupMs": 969,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -75385,7 +75385,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "puzzles-puzzle-wrong__390-dark-dark.png",
-      "setupMs": 761,
+      "setupMs": 928,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -75669,7 +75669,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "puzzles-puzzle-wrong__1440-dark-dark.png",
-      "setupMs": 883,
+      "setupMs": 1053,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -75953,7 +75953,7 @@
       "size": "390",
       "theme": "light",
       "file": "puzzles-puzzle-correct__390-light.png",
-      "setupMs": 882,
+      "setupMs": 1039,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -76266,7 +76266,7 @@
       "size": "768",
       "theme": "light",
       "file": "puzzles-puzzle-correct__768-light.png",
-      "setupMs": 1020,
+      "setupMs": 1061,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -76579,7 +76579,7 @@
       "size": "1024",
       "theme": "light",
       "file": "puzzles-puzzle-correct__1024-light.png",
-      "setupMs": 1008,
+      "setupMs": 1352,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -76892,7 +76892,7 @@
       "size": "1280",
       "theme": "light",
       "file": "puzzles-puzzle-correct__1280-light.png",
-      "setupMs": 1040,
+      "setupMs": 1253,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -77205,7 +77205,7 @@
       "size": "1440",
       "theme": "light",
       "file": "puzzles-puzzle-correct__1440-light.png",
-      "setupMs": 1057,
+      "setupMs": 1252,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -77518,7 +77518,7 @@
       "size": "1920",
       "theme": "light",
       "file": "puzzles-puzzle-correct__1920-light.png",
-      "setupMs": 1031,
+      "setupMs": 1234,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -77831,7 +77831,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "puzzles-puzzle-correct__390-dark-dark.png",
-      "setupMs": 860,
+      "setupMs": 1130,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -78144,7 +78144,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "puzzles-puzzle-correct__1440-dark-dark.png",
-      "setupMs": 959,
+      "setupMs": 1141,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -78457,7 +78457,7 @@
       "size": "390",
       "theme": "light",
       "file": "puzzles-puzzle-list-partial__390-light.png",
-      "setupMs": 538,
+      "setupMs": 601,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -78749,7 +78749,7 @@
       "size": "768",
       "theme": "light",
       "file": "puzzles-puzzle-list-partial__768-light.png",
-      "setupMs": 561,
+      "setupMs": 650,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -79041,7 +79041,7 @@
       "size": "1024",
       "theme": "light",
       "file": "puzzles-puzzle-list-partial__1024-light.png",
-      "setupMs": 577,
+      "setupMs": 643,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -79340,7 +79340,7 @@
       "size": "1280",
       "theme": "light",
       "file": "puzzles-puzzle-list-partial__1280-light.png",
-      "setupMs": 594,
+      "setupMs": 650,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -79639,7 +79639,7 @@
       "size": "1440",
       "theme": "light",
       "file": "puzzles-puzzle-list-partial__1440-light.png",
-      "setupMs": 621,
+      "setupMs": 768,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -79938,7 +79938,7 @@
       "size": "1920",
       "theme": "light",
       "file": "puzzles-puzzle-list-partial__1920-light.png",
-      "setupMs": 616,
+      "setupMs": 702,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -80237,7 +80237,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "puzzles-puzzle-list-partial__390-dark-dark.png",
-      "setupMs": 579,
+      "setupMs": 734,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -80529,7 +80529,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "puzzles-puzzle-list-partial__1440-dark-dark.png",
-      "setupMs": 586,
+      "setupMs": 711,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -80828,7 +80828,7 @@
       "size": "390",
       "theme": "light",
       "file": "puzzles-puzzle-category-done__390-light.png",
-      "setupMs": 575,
+      "setupMs": 639,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -81120,7 +81120,7 @@
       "size": "768",
       "theme": "light",
       "file": "puzzles-puzzle-category-done__768-light.png",
-      "setupMs": 647,
+      "setupMs": 630,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -81412,7 +81412,7 @@
       "size": "1024",
       "theme": "light",
       "file": "puzzles-puzzle-category-done__1024-light.png",
-      "setupMs": 585,
+      "setupMs": 710,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -81711,7 +81711,7 @@
       "size": "1280",
       "theme": "light",
       "file": "puzzles-puzzle-category-done__1280-light.png",
-      "setupMs": 597,
+      "setupMs": 618,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -82010,7 +82010,7 @@
       "size": "1440",
       "theme": "light",
       "file": "puzzles-puzzle-category-done__1440-light.png",
-      "setupMs": 574,
+      "setupMs": 678,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -82309,7 +82309,7 @@
       "size": "1920",
       "theme": "light",
       "file": "puzzles-puzzle-category-done__1920-light.png",
-      "setupMs": 598,
+      "setupMs": 648,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -82608,7 +82608,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "puzzles-puzzle-category-done__390-dark-dark.png",
-      "setupMs": 722,
+      "setupMs": 630,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -82900,7 +82900,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "puzzles-puzzle-category-done__1440-dark-dark.png",
-      "setupMs": 669,
+      "setupMs": 674,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -83199,7 +83199,7 @@
       "size": "390",
       "theme": "light",
       "file": "puzzles-puzzle-all-done__390-light.png",
-      "setupMs": 959,
+      "setupMs": 1061,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -83476,7 +83476,7 @@
       "size": "768",
       "theme": "light",
       "file": "puzzles-puzzle-all-done__768-light.png",
-      "setupMs": 866,
+      "setupMs": 1007,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -83753,7 +83753,7 @@
       "size": "1024",
       "theme": "light",
       "file": "puzzles-puzzle-all-done__1024-light.png",
-      "setupMs": 851,
+      "setupMs": 1400,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -84037,7 +84037,7 @@
       "size": "1280",
       "theme": "light",
       "file": "puzzles-puzzle-all-done__1280-light.png",
-      "setupMs": 826,
+      "setupMs": 1269,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -84321,7 +84321,7 @@
       "size": "1440",
       "theme": "light",
       "file": "puzzles-puzzle-all-done__1440-light.png",
-      "setupMs": 926,
+      "setupMs": 1200,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -84605,7 +84605,7 @@
       "size": "1920",
       "theme": "light",
       "file": "puzzles-puzzle-all-done__1920-light.png",
-      "setupMs": 879,
+      "setupMs": 1341,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -84889,7 +84889,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "puzzles-puzzle-all-done__390-dark-dark.png",
-      "setupMs": 847,
+      "setupMs": 1310,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -85166,7 +85166,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "puzzles-puzzle-all-done__1440-dark-dark.png",
-      "setupMs": 912,
+      "setupMs": 1268,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -85450,7 +85450,7 @@
       "size": "390",
       "theme": "light",
       "file": "puzzles-puzzle-hint__390-light.png",
-      "setupMs": 784,
+      "setupMs": 1181,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -85725,7 +85725,7 @@
       "size": "768",
       "theme": "light",
       "file": "puzzles-puzzle-hint__768-light.png",
-      "setupMs": 882,
+      "setupMs": 1184,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -86000,7 +86000,7 @@
       "size": "1024",
       "theme": "light",
       "file": "puzzles-puzzle-hint__1024-light.png",
-      "setupMs": 1036,
+      "setupMs": 1362,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -86275,7 +86275,7 @@
       "size": "1280",
       "theme": "light",
       "file": "puzzles-puzzle-hint__1280-light.png",
-      "setupMs": 1015,
+      "setupMs": 1832,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -86544,7 +86544,7 @@
       "size": "1440",
       "theme": "light",
       "file": "puzzles-puzzle-hint__1440-light.png",
-      "setupMs": 1228,
+      "setupMs": 1911,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -86813,7 +86813,7 @@
       "size": "1920",
       "theme": "light",
       "file": "puzzles-puzzle-hint__1920-light.png",
-      "setupMs": 1365,
+      "setupMs": 1826,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -87082,7 +87082,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "puzzles-puzzle-hint__390-dark-dark.png",
-      "setupMs": 1183,
+      "setupMs": 1635,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -87357,7 +87357,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "puzzles-puzzle-hint__1440-dark-dark.png",
-      "setupMs": 1089,
+      "setupMs": 1654,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -87626,7 +87626,7 @@
       "size": "390",
       "theme": "light",
       "file": "puzzles-puzzle-last-step__390-light.png",
-      "setupMs": 1745,
+      "setupMs": 1663,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -87947,7 +87947,7 @@
       "size": "768",
       "theme": "light",
       "file": "puzzles-puzzle-last-step__768-light.png",
-      "setupMs": 1489,
+      "setupMs": 2832,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -88268,7 +88268,7 @@
       "size": "1024",
       "theme": "light",
       "file": "puzzles-puzzle-last-step__1024-light.png",
-      "setupMs": 1995,
+      "setupMs": 2021,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -88589,7 +88589,7 @@
       "size": "1280",
       "theme": "light",
       "file": "puzzles-puzzle-last-step__1280-light.png",
-      "setupMs": 1539,
+      "setupMs": 2266,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -88910,7 +88910,7 @@
       "size": "1440",
       "theme": "light",
       "file": "puzzles-puzzle-last-step__1440-light.png",
-      "setupMs": 1475,
+      "setupMs": 1973,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -89231,7 +89231,7 @@
       "size": "1920",
       "theme": "light",
       "file": "puzzles-puzzle-last-step__1920-light.png",
-      "setupMs": 1819,
+      "setupMs": 1527,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -89552,7 +89552,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "puzzles-puzzle-last-step__390-dark-dark.png",
-      "setupMs": 1731,
+      "setupMs": 1351,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -89873,7 +89873,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "puzzles-puzzle-last-step__1440-dark-dark.png",
-      "setupMs": 1708,
+      "setupMs": 1550,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": {
@@ -90194,7 +90194,7 @@
       "size": "390",
       "theme": "light",
       "file": "review-review-empty__390-light.png",
-      "setupMs": 814,
+      "setupMs": 663,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -90394,7 +90394,7 @@
       "size": "768",
       "theme": "light",
       "file": "review-review-empty__768-light.png",
-      "setupMs": 1009,
+      "setupMs": 686,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -90594,7 +90594,7 @@
       "size": "1024",
       "theme": "light",
       "file": "review-review-empty__1024-light.png",
-      "setupMs": 1559,
+      "setupMs": 698,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -90794,7 +90794,7 @@
       "size": "1280",
       "theme": "light",
       "file": "review-review-empty__1280-light.png",
-      "setupMs": 842,
+      "setupMs": 731,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -90994,7 +90994,7 @@
       "size": "1440",
       "theme": "light",
       "file": "review-review-empty__1440-light.png",
-      "setupMs": 1135,
+      "setupMs": 681,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -91194,7 +91194,7 @@
       "size": "1920",
       "theme": "light",
       "file": "review-review-empty__1920-light.png",
-      "setupMs": 792,
+      "setupMs": 673,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -91394,7 +91394,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "review-review-empty__390-dark-dark.png",
-      "setupMs": 753,
+      "setupMs": 800,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -91594,7 +91594,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "review-review-empty__1440-dark-dark.png",
-      "setupMs": 819,
+      "setupMs": 677,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -91794,7 +91794,7 @@
       "size": "390",
       "theme": "light",
       "file": "review-review-library__390-light.png",
-      "setupMs": 748,
+      "setupMs": 694,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -91982,7 +91982,7 @@
       "size": "768",
       "theme": "light",
       "file": "review-review-library__768-light.png",
-      "setupMs": 791,
+      "setupMs": 687,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -92170,7 +92170,7 @@
       "size": "1024",
       "theme": "light",
       "file": "review-review-library__1024-light.png",
-      "setupMs": 667,
+      "setupMs": 683,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -92358,7 +92358,7 @@
       "size": "1280",
       "theme": "light",
       "file": "review-review-library__1280-light.png",
-      "setupMs": 711,
+      "setupMs": 675,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -92546,7 +92546,7 @@
       "size": "1440",
       "theme": "light",
       "file": "review-review-library__1440-light.png",
-      "setupMs": 831,
+      "setupMs": 642,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -92734,7 +92734,7 @@
       "size": "1920",
       "theme": "light",
       "file": "review-review-library__1920-light.png",
-      "setupMs": 773,
+      "setupMs": 623,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -92922,7 +92922,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "review-review-library__390-dark-dark.png",
-      "setupMs": 960,
+      "setupMs": 824,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -93110,7 +93110,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "review-review-library__1440-dark-dark.png",
-      "setupMs": 702,
+      "setupMs": 766,
       "boardDetails": {
         "coordText": null,
         "intersectionHit": null
@@ -93298,7 +93298,7 @@
       "size": "390",
       "theme": "light",
       "file": "review-review-replay__390-light.png",
-      "setupMs": 1387,
+      "setupMs": 1800,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -93672,7 +93672,7 @@
       "size": "768",
       "theme": "light",
       "file": "review-review-replay__768-light.png",
-      "setupMs": 1349,
+      "setupMs": 2451,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -94046,7 +94046,7 @@
       "size": "1024",
       "theme": "light",
       "file": "review-review-replay__1024-light.png",
-      "setupMs": 1587,
+      "setupMs": 2336,
       "boardDetails": {
         "coordText": {
           "width": 12.33,
@@ -94420,7 +94420,7 @@
       "size": "1280",
       "theme": "light",
       "file": "review-review-replay__1280-light.png",
-      "setupMs": 1627,
+      "setupMs": 2207,
       "boardDetails": {
         "coordText": {
           "width": 14.84,
@@ -94794,7 +94794,7 @@
       "size": "1440",
       "theme": "light",
       "file": "review-review-replay__1440-light.png",
-      "setupMs": 1606,
+      "setupMs": 1662,
       "boardDetails": {
         "coordText": {
           "width": 14.84,
@@ -95168,7 +95168,7 @@
       "size": "1920",
       "theme": "light",
       "file": "review-review-replay__1920-light.png",
-      "setupMs": 1404,
+      "setupMs": 1495,
       "boardDetails": {
         "coordText": {
           "width": 14.84,
@@ -95542,7 +95542,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "review-review-replay__390-dark-dark.png",
-      "setupMs": 1383,
+      "setupMs": 1244,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -95916,7 +95916,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "review-review-replay__1440-dark-dark.png",
-      "setupMs": 1511,
+      "setupMs": 1406,
       "boardDetails": {
         "coordText": {
           "width": 14.84,
@@ -96290,7 +96290,7 @@
       "size": "390",
       "theme": "light",
       "file": "review-review-analysis__390-light.png",
-      "setupMs": 1408,
+      "setupMs": 1301,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -96659,7 +96659,7 @@
       "size": "768",
       "theme": "light",
       "file": "review-review-analysis__768-light.png",
-      "setupMs": 1744,
+      "setupMs": 1369,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -97028,7 +97028,7 @@
       "size": "1024",
       "theme": "light",
       "file": "review-review-analysis__1024-light.png",
-      "setupMs": 2078,
+      "setupMs": 1502,
       "boardDetails": {
         "coordText": {
           "width": 12.33,
@@ -97397,7 +97397,7 @@
       "size": "1280",
       "theme": "light",
       "file": "review-review-analysis__1280-light.png",
-      "setupMs": 2549,
+      "setupMs": 1558,
       "boardDetails": {
         "coordText": {
           "width": 14.84,
@@ -97766,7 +97766,7 @@
       "size": "1440",
       "theme": "light",
       "file": "review-review-analysis__1440-light.png",
-      "setupMs": 1931,
+      "setupMs": 1577,
       "boardDetails": {
         "coordText": {
           "width": 14.84,
@@ -98135,7 +98135,7 @@
       "size": "1920",
       "theme": "light",
       "file": "review-review-analysis__1920-light.png",
-      "setupMs": 1725,
+      "setupMs": 1551,
       "boardDetails": {
         "coordText": {
           "width": 14.84,
@@ -98504,7 +98504,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "review-review-analysis__390-dark-dark.png",
-      "setupMs": 1332,
+      "setupMs": 1342,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -98873,7 +98873,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "review-review-analysis__1440-dark-dark.png",
-      "setupMs": 1328,
+      "setupMs": 1751,
       "boardDetails": {
         "coordText": {
           "width": 14.84,
@@ -99242,7 +99242,7 @@
       "size": "390",
       "theme": "light",
       "file": "review-review-replay-start__390-light.png",
-      "setupMs": 606,
+      "setupMs": 1033,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -99586,7 +99586,7 @@
       "size": "768",
       "theme": "light",
       "file": "review-review-replay-start__768-light.png",
-      "setupMs": 704,
+      "setupMs": 1024,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -99930,7 +99930,7 @@
       "size": "1024",
       "theme": "light",
       "file": "review-review-replay-start__1024-light.png",
-      "setupMs": 844,
+      "setupMs": 1185,
       "boardDetails": {
         "coordText": {
           "width": 12.33,
@@ -100274,7 +100274,7 @@
       "size": "1280",
       "theme": "light",
       "file": "review-review-replay-start__1280-light.png",
-      "setupMs": 868,
+      "setupMs": 1420,
       "boardDetails": {
         "coordText": {
           "width": 14.84,
@@ -100618,7 +100618,7 @@
       "size": "1440",
       "theme": "light",
       "file": "review-review-replay-start__1440-light.png",
-      "setupMs": 829,
+      "setupMs": 1271,
       "boardDetails": {
         "coordText": {
           "width": 14.84,
@@ -100962,7 +100962,7 @@
       "size": "1920",
       "theme": "light",
       "file": "review-review-replay-start__1920-light.png",
-      "setupMs": 919,
+      "setupMs": 1124,
       "boardDetails": {
         "coordText": {
           "width": 14.84,
@@ -101306,7 +101306,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "review-review-replay-start__390-dark-dark.png",
-      "setupMs": 655,
+      "setupMs": 1077,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -101650,7 +101650,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "review-review-replay-start__1440-dark-dark.png",
-      "setupMs": 817,
+      "setupMs": 1165,
       "boardDetails": {
         "coordText": {
           "width": 14.84,
@@ -101994,7 +101994,7 @@
       "size": "390",
       "theme": "light",
       "file": "review-review-replay-mid__390-light.png",
-      "setupMs": 686,
+      "setupMs": 1052,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -102358,7 +102358,7 @@
       "size": "768",
       "theme": "light",
       "file": "review-review-replay-mid__768-light.png",
-      "setupMs": 810,
+      "setupMs": 1029,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -102722,7 +102722,7 @@
       "size": "1024",
       "theme": "light",
       "file": "review-review-replay-mid__1024-light.png",
-      "setupMs": 792,
+      "setupMs": 1078,
       "boardDetails": {
         "coordText": {
           "width": 12.33,
@@ -103086,7 +103086,7 @@
       "size": "1280",
       "theme": "light",
       "file": "review-review-replay-mid__1280-light.png",
-      "setupMs": 880,
+      "setupMs": 1511,
       "boardDetails": {
         "coordText": {
           "width": 14.84,
@@ -103450,7 +103450,7 @@
       "size": "1440",
       "theme": "light",
       "file": "review-review-replay-mid__1440-light.png",
-      "setupMs": 834,
+      "setupMs": 1402,
       "boardDetails": {
         "coordText": {
           "width": 14.84,
@@ -103814,7 +103814,7 @@
       "size": "1920",
       "theme": "light",
       "file": "review-review-replay-mid__1920-light.png",
-      "setupMs": 847,
+      "setupMs": 1734,
       "boardDetails": {
         "coordText": {
           "width": 14.84,
@@ -104178,7 +104178,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "review-review-replay-mid__390-dark-dark.png",
-      "setupMs": 872,
+      "setupMs": 1115,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -104542,7 +104542,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "review-review-replay-mid__1440-dark-dark.png",
-      "setupMs": 972,
+      "setupMs": 1772,
       "boardDetails": {
         "coordText": {
           "width": 14.84,
@@ -104906,7 +104906,7 @@
       "size": "390",
       "theme": "light",
       "file": "review-review-analyzing__390-light.png",
-      "setupMs": 1231,
+      "setupMs": 2442,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -105275,7 +105275,7 @@
       "size": "768",
       "theme": "light",
       "file": "review-review-analyzing__768-light.png",
-      "setupMs": 1170,
+      "setupMs": 2642,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -105644,7 +105644,7 @@
       "size": "1024",
       "theme": "light",
       "file": "review-review-analyzing__1024-light.png",
-      "setupMs": 1441,
+      "setupMs": 3416,
       "boardDetails": {
         "coordText": {
           "width": 12.33,
@@ -106013,7 +106013,7 @@
       "size": "1280",
       "theme": "light",
       "file": "review-review-analyzing__1280-light.png",
-      "setupMs": 1340,
+      "setupMs": 2748,
       "boardDetails": {
         "coordText": {
           "width": 14.84,
@@ -106382,7 +106382,7 @@
       "size": "1440",
       "theme": "light",
       "file": "review-review-analyzing__1440-light.png",
-      "setupMs": 1785,
+      "setupMs": 3169,
       "boardDetails": {
         "coordText": {
           "width": 14.84,
@@ -106751,7 +106751,7 @@
       "size": "1920",
       "theme": "light",
       "file": "review-review-analyzing__1920-light.png",
-      "setupMs": 1446,
+      "setupMs": 2315,
       "boardDetails": {
         "coordText": {
           "width": 14.84,
@@ -107120,7 +107120,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "review-review-analyzing__390-dark-dark.png",
-      "setupMs": 1258,
+      "setupMs": 1979,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -107489,7 +107489,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "review-review-analyzing__1440-dark-dark.png",
-      "setupMs": 1305,
+      "setupMs": 2267,
       "boardDetails": {
         "coordText": {
           "width": 14.84,
@@ -107858,7 +107858,7 @@
       "size": "390",
       "theme": "light",
       "file": "review-review-verdict-selected__390-light.png",
-      "setupMs": 1503,
+      "setupMs": 1978,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -108225,7 +108225,7 @@
       "size": "768",
       "theme": "light",
       "file": "review-review-verdict-selected__768-light.png",
-      "setupMs": 1413,
+      "setupMs": 2287,
       "boardDetails": {
         "coordText": {
           "width": 9.36,
@@ -108592,7 +108592,7 @@
       "size": "1024",
       "theme": "light",
       "file": "review-review-verdict-selected__1024-light.png",
-      "setupMs": 1550,
+      "setupMs": 2130,
       "boardDetails": {
         "coordText": {
           "width": 12.33,
@@ -108959,7 +108959,7 @@
       "size": "1280",
       "theme": "light",
       "file": "review-review-verdict-selected__1280-light.png",
-      "setupMs": 1674,
+      "setupMs": 2095,
       "boardDetails": {
         "coordText": {
           "width": 14.84,
@@ -109326,7 +109326,7 @@
       "size": "1440",
       "theme": "light",
       "file": "review-review-verdict-selected__1440-light.png",
-      "setupMs": 1601,
+      "setupMs": 2183,
       "boardDetails": {
         "coordText": {
           "width": 14.84,
@@ -109693,7 +109693,7 @@
       "size": "1920",
       "theme": "light",
       "file": "review-review-verdict-selected__1920-light.png",
-      "setupMs": 1526,
+      "setupMs": 2069,
       "boardDetails": {
         "coordText": {
           "width": 14.84,
@@ -110060,7 +110060,7 @@
       "size": "390-dark",
       "theme": "dark",
       "file": "review-review-verdict-selected__390-dark-dark.png",
-      "setupMs": 1305,
+      "setupMs": 1588,
       "boardDetails": {
         "coordText": {
           "width": 6.66,
@@ -110427,7 +110427,7 @@
       "size": "1440-dark",
       "theme": "dark",
       "file": "review-review-verdict-selected__1440-dark-dark.png",
-      "setupMs": 1518,
+      "setupMs": 1808,
       "boardDetails": {
         "coordText": {
           "width": 14.84,

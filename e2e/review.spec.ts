@@ -227,8 +227,27 @@ test('移动端 390：棋盘优先、控制可达、不出现嵌套滚动', asyn
   await page.setViewportSize({ width: 390, height: 844 })
   await openFirstRecord(page)
 
-  // 任务书 §四：「棋盘优先，回放控制必须容易触达」——三样都在视口里
-  await expect(page.getByTestId('board')).toBeVisible()
+  /*
+   * 任务书 §四 的第一条是「**棋盘优先**」——棋盘必须在首屏视口内。
+   *
+   * 这里**不能用 `toBeVisible()`**：它只判元素渲染出来了（非 `display:none`、
+   * 非零尺寸），**不判视口相交**——被推到屏幕外的元素照样 "visible"。
+   */
+  const boardInViewport = await page.getByTestId('board').evaluate((el) => {
+    const rect = el.getBoundingClientRect()
+    return (
+      rect.top >= 0 &&
+      rect.bottom <= window.innerHeight &&
+      rect.left >= 0 &&
+      rect.right <= window.innerWidth
+    )
+  })
+  expect(boardInViewport, '棋盘不在首屏视口内').toBe(true)
+
+  /*
+   * 手数计数与「下一步」**不必都在首屏**——§四 第二条只要求「容易触达」，
+   * 滚动得到就算。它们渲染出来即可；横向不出界由下面那条 scrollWidth 断言守。
+   */
   await expect(page.getByTestId('move-counter')).toBeVisible()
   await expect(page.getByRole('button', { name: '下一步' })).toBeVisible()
 
@@ -291,4 +310,25 @@ test('回放编号在最窄视口下不小于 10px（F-UI-14）', async ({ page 
 
   expect(size, '没量到回放编号的文字').not.toBeNull()
   expect(size!, `编号字号 ${size!.toFixed(2)}px，低于 §8.2 的 10px 下限`).toBeGreaterThanOrEqual(10)
+})
+
+test('点开一局棋谱之后，焦点落在回放页的正文上', async ({ page }) => {
+  /*
+   * 复盘页是「一个页面、两种形态」：列表与回放返回的都是 `<PageShell>`
+   * （**同类型、同位置**），React 会复用实例——`useFocusOnMount` 的 effect
+   * 不重跑，于是点开棋谱之后焦点照样掉回 `<body>`，和没修一样。
+   * 两个 `<PageShell>` 各带一个 `key` 才把它们拆成两棵树。
+   *
+   * 顶层的换页由 `a11y.spec.ts` 的「换页时的焦点」守着，这里是页面**内部**的那一半。
+   */
+  await openFirstRecord(page)
+
+  await expect
+    .poll(() =>
+      page.evaluate(() => {
+        const main = document.querySelector('main')
+        return main !== null && document.activeElement === main
+      }),
+    )
+    .toBe(true)
 })

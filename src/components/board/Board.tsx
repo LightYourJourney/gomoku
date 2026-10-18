@@ -122,8 +122,9 @@ function labelWidth(label: string, fontSize: number): number {
  * - 默认字号（`radius * 1.25`，`radius = 0.4`）：3 个汉字 1.74（半宽 0.87，安全），
  *   4 个字 2.24（半宽 1.12，破线）。
  * - 回放编号（字号 0.51）：三位数是 1.189（半宽 0.594）——仍在「半宽 < 1 格」线上，
- *   但相邻两个三位数编号会各伸 0.594、**重叠 0.188 单位（@390 约 4px）**。
- *   pill 的宽度只取决于字号，所以这是放大字号绕不开的代价；`ReplayBoard` 那边写着它。
+ *   但相邻两个三位数编号会各伸 0.594、**重叠 0.1886 单位**（@390 约 4px）。
+ *   这个重叠**比每侧 0.12 的内边距还大**，所以后画的那个会盖住前一格**文字的右缘**
+ *   （约 0.069 单位）。完整的代价写在 `ReplayBoard` 的常量注释里。
  */
 function badgeWidth(label: string, radius: number, fontSize: number): number {
   return Math.max(radius * 2, labelWidth(label, fontSize) + BADGE_PADDING * 2)

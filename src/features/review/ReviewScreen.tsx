@@ -74,6 +74,14 @@ export function ReviewScreen({ storage, engine, stores }: ReviewScreenProps) {
   if (open) {
     return (
       <PageShell
+        /*
+         * `key` 是必须的：两个分支返回的都是 `<PageShell>`（同类型、同位置），
+         * React 会复用同一个实例——于是 `useFocusOnMount` 的 effect 不重跑，
+         * 点开一局棋谱之后焦点照样掉回 `<body>`。换 key 把它们变成两棵树。
+         * （教学页不需要：`LearnScreen` 进课程时返回的是根类型完全不同的
+         * `<LessonView>`，`PageShell` 本来就是新建的。）
+         */
+        key="replay"
         variant="flush"
         toolbar={
           <div className="flex shrink-0 items-center gap-2 border-b border-border px-3 py-2">
@@ -99,7 +107,7 @@ export function ReviewScreen({ storage, engine, stores }: ReviewScreenProps) {
   }
 
   return (
-    <PageShell>
+    <PageShell key="library">
       <GameLibrary
         storage={storage}
         onOpen={openRecord}

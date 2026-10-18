@@ -169,18 +169,6 @@ export function createReplayStore(): UseBoundStore<StoreApi<ReplayStore>> {
       )
     }
 
-        /**
-     * 手动定位的统一前奏：**停表**。三个公开定位方法都从它开始。
-     *
-     * 「退出播放态」不在这里——它和游标一起由调用方的
-     * `commit({ ..., playing: false })` 完成。两步分开是边界逼出来的：
-     * 越界时那几个方法要原样返回、一个字段都不许动（见 `stepPrev` 的注释），
-     * 所以「接管」只能发生在**真的要走一步**的时候。
-     */
-    function takeOver() {
-      stopTimer()
-    }
-
     return {
       ...deriveState(null, 0, false, 'normal'),
 
@@ -205,19 +193,26 @@ export function createReplayStore(): UseBoundStore<StoreApi<ReplayStore>> {
       stepPrev() {
         const { cursor } = get()
         if (cursor <= 0) return
-        takeOver()
+        // 手动定位即接管：先停表；退出播放态由下面那次 commit 一起做。
+        // 两步是有意分开的——越界时前面已经 return 了，一个字段都不许动。
+        stopTimer()
         commit({ cursor: cursor - 1, playing: false })
       },
 
       stepNext() {
         const { record, cursor } = get()
         if (record === null || cursor >= record.moves.length) return
-        takeOver()
+        stopTimer()
         commit({ cursor: cursor + 1, playing: false })
       },
 
       goTo(index) {
-        takeOver()
+        /*
+         * **`goTo` 与上面两个不同：它不「原样返回」。**
+         * 越界只是 clamp，游标没变也照常 `commit`——`position` 会是新对象。
+         * 真正的空操作只有 `stepPrev` / `stepNext` 两个步进方法。
+         */
+        stopTimer()
         const { record } = get()
         if (record === null) return
         const clamped = Math.max(0, Math.min(index, record.moves.length))
