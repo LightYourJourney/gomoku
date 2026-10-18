@@ -155,6 +155,21 @@ async function openFirstRecord(page: Page): Promise<void> {
   await expect(page.getByTestId('move-counter')).toHaveText('0 / 9')
 }
 
+/*
+ * 复盘回放也吃同一套桌面棋盘预算。
+ *
+ * `layout.spec.ts` 的 620px 断言覆盖教学练习与残局详情，唯独没覆盖复盘回放——
+ * 它同样走 `PageShell` 的 flush 布局，塌陷机制完全相同，不该在这个预算之外。
+ */
+test('1440×900：回放棋盘长到 620px 以上', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await openFirstRecord(page)
+
+  const box = await page.getByTestId('board').boundingBox()
+  expect(box, '找不到棋盘').not.toBeNull()
+  expect(box!.width, `回放棋盘只有 ${box!.width}px`).toBeGreaterThanOrEqual(620)
+})
+
 test('时间轴：拖到任意一手，棋盘与两个计数一起走', async ({ page }) => {
   await openFirstRecord(page)
 

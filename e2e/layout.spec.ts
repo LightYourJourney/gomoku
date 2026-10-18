@@ -238,6 +238,69 @@ test.describe('棋盘尺寸预算', () => {
   }
 })
 
+/*
+ * 任务书点名的六组视口（Phase 07 固化）。
+ *
+ * 探针的六档宽度一律 `height: 900`，而任务书点的是具体的宽高组合。
+ * 这组用例把「六档下棋盘 ≥320、正方形、页面不横向溢出」变成可复跑的门禁，
+ * 不再只靠文档里的一次手动量测。1024×768 的棋盘受高度约束（597px），
+ * 所以这里只断 320 的硬底线——620 的桌面预算仍在上面那组 `height: 900` 用例里。
+ */
+test.describe('任务书六档视口', () => {
+  for (const [width, height] of [
+    [390, 844],
+    [768, 1024],
+    [1024, 768],
+    [1280, 800],
+    [1440, 900],
+    [1920, 1080],
+  ] as const) {
+    test(`@${width}×${height}：棋盘 ≥${MIN_BOARD} 且为正方形，无横向溢出`, async ({ page }) => {
+      await page.setViewportSize({ width, height })
+      await page.goto('/')
+
+      const box = await boardBox(page)
+      expect(box.width, `棋盘只有 ${box.width}px 宽`).toBeGreaterThanOrEqual(MIN_BOARD)
+      expect(Math.abs(box.width - box.height), '棋盘不是正方形').toBeLessThanOrEqual(1)
+
+      const overflow = await page.evaluate(
+        () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      )
+      expect(overflow, `@${width}×${height} 横向溢出了 ${overflow}px`).toBeLessThanOrEqual(0)
+    })
+  }
+})
+
+/*
+ * 极小的横屏窗口（任务书 §三 的边界）。
+ *
+ * 这一档棋盘**必然低于 320**：`320 + 顶栏 + 工具栏` 物理上放不进 412 的高度。
+ * 它没有被接受为合规（见 `KNOWN_ISSUES.md` M-3），但也不能无人看守——
+ * 这里钉住「不塌、正方形、不横向溢出、工具栏渲染出来」，防止某次布局改动
+ * 把它从「小」变成「坏」。
+ */
+test.describe('极小横屏（已知物理边界，见 KNOWN_ISSUES M-3）', () => {
+  for (const [width, height] of [
+    [900, 480],
+    [915, 412],
+  ] as const) {
+    test(`@${width}×${height}：棋盘不塌、正方形、工具栏在`, async ({ page }) => {
+      await page.setViewportSize({ width, height })
+      await page.goto('/')
+
+      const box = await boardBox(page)
+      expect(box.width, `棋盘塌到 ${box.width}px`).toBeGreaterThanOrEqual(200)
+      expect(Math.abs(box.width - box.height), '棋盘不是正方形').toBeLessThanOrEqual(1)
+      await expect(page.getByRole('button', { name: '求提示' })).toBeVisible()
+
+      const overflow = await page.evaluate(
+        () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      )
+      expect(overflow, `@${width}×${height} 横向溢出了 ${overflow}px`).toBeLessThanOrEqual(0)
+    })
+  }
+})
+
 test.describe('页面标题', () => {
   test('复盘页在 390 下不被压成一字一行', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 })

@@ -520,7 +520,7 @@ e2e 却没同步这份文档。所以「134 → 135 → 141」中间那段差额
 对比度违规与横向溢出保持 0。
 
 **最终门禁**（全部实跑）：lint / typecheck / build ✓、test **1060 passed** ✓、
-gates（**1060 · 149**，0 clones）✓、e2e **149 passed** ✓、e2e:prod **5 passed** ✓、
+gates（**1060 · 158**，0 clones）✓、e2e **158 passed** ✓、e2e:prod **5 passed** ✓、
 check:coverage（3084 条 + 136 新增）✓、bench:check（19/19 + 29）✓、
 ui:probe（**38 状态 / 308 张**，七条量化判据全过）✓。
 
@@ -534,7 +534,9 @@ ui:probe（**38 状态 / 308 张**，七条量化判据全过）✓。
 `AGENTS.md` 固化「布局预算」的量化判据。
 
 **仍未关闭的问题**：4 条 Medium + 5 条 Low，逐条写了「为什么不修」与再次处理的
-入口，见 `ui-redesign/KNOWN_ISSUES.md`。**没有一条用「已知限制」绕过修复。**
+入口，见 `ui-redesign/KNOWN_ISSUES.md`。**没有一条被无声略过**：每条都有具体
+代价与入口；其中 M-3（极小横屏棋盘 <320）是唯一一条以物理不可行为由不修的，
+`AGENTS.md` 与 `ARCHITECTURE.md` 都指向它，而不是把「已知限制」当标签用。
 
 ## 长期待办
 
