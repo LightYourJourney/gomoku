@@ -37,10 +37,11 @@ export default function App() {
       /*
        * 安全区内边距（F-UI-18）。`index.html` 开了 `viewport-fit=cover`，
        * 横屏刘海与底部手势条会压住内容；没有 `env()` 时页面直接铺到屏幕边缘。
-       * 三个方向都加——无刘海的设备上 `env()` 等于 0，没有任何影响。
+       * **四个方向都加**（顶栏也会被刘海压住）——无刘海的设备上 `env()` 等于 0，
+       * 没有任何影响。
        * 背景色由根容器自己铺（padding 在背景之内），刘海区仍是主题底色。
        */
-      className="flex min-h-dvh flex-col bg-bg pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)] text-fg wide-layout:h-dvh wide-layout:overflow-hidden"
+      className="flex min-h-dvh flex-col bg-bg pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)] pt-[env(safe-area-inset-top)] text-fg wide-layout:h-dvh wide-layout:overflow-hidden"
     >
       {view === 'battle' && <BattleScreen />}
       {view === 'learn' && <LearnScreen />}

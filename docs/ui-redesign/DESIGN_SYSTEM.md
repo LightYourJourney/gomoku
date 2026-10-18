@@ -373,9 +373,9 @@
 
 1. 动效只标注「刚刚发生了什么」，不做入场装饰、不做循环播放。
 2. `prefers-reduced-motion: reduce` 时必须全部关闭。
-3. **`animate-spin` 现在不在降级名单里**——状态药丸的转圈在「减少动态」下照转
-   （实测确认）。这是本规范要修的一处：把 `spin` 一并纳入 `@media` 块，
-   或改成不依赖动画的静态指示。
+3. **`animate-spin` 已纳入降级名单**（Phase 07 修）：`src/index.css` 的
+   `@media (prefers-reduced-motion: reduce)` 把它与四个自定义动效一起关掉，
+   「思考中」的转圈变成静态半环。
 4. 150ms 级别的 `transition` 保留：那是最短的状态反馈，关掉会让悬停变成无反馈的跳变。
 
 ## 10. 布局与响应式
@@ -475,10 +475,11 @@
 
 ### 10.4 移动端
 
-- `env(safe-area-inset-*)`：`index.html` 已开 `viewport-fit=cover` 却没有用安全区变量，
-  刘海屏横屏会贴边。顶栏与页面底部加上 `padding` 补偿。**（尚未处理）**
-- `meta[name=theme-color]` 固定为浅色 `#f6f4f0`，深色主题下移动端浏览器 UI 仍是浅色。
-  **（尚未处理）**
+- **安全区已处理**（Phase 07）：`index.html` 的 `viewport-fit=cover` 现在配上
+  根容器（`App.tsx`）的 `pt / pb / pl / pr` 四个方向 `env(safe-area-inset-*)`——
+  顶栏不再被刘海压住，底部不再叠手势条。无刘海的设备上 `env()` 为 0。
+- **`meta[name=theme-color]` 已随主题更新**（Phase 07）：`applyTheme()` 在切主题时
+  同步为 `#0f1115`（深色）/ `#f6f4f0`（浅色），与 `index.css` 的 `--c-bg` 同源。
 
 ## 11. 图标语言
 

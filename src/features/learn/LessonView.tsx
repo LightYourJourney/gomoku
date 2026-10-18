@@ -57,8 +57,10 @@ export function LessonView({ lesson, solved, onExit, onSolved, exit }: LessonVie
             `clientWidth 69 / scrollWidth 80`）。把这三个字在 <640 视口视觉隐藏，
             省下的 64px 正好够标题完整显示。
 
-            **可访问名不变**：`sr-only` 文本仍在无障碍树里，按钮读作
-            「← 课程列表」，既有 e2e / 单测按这个名字定位，一条都不用改。
+            **可访问名不变**：`aria-label` 把它钉死为「← 课程列表」，既有
+            e2e / 单测按这个名字定位，一条都不用改。
+            **注意**：`aria-label` 与可见文本是同一句话的两份，改文案要一起改——
+            否则读屏念出的和眼睛看到的会分叉。
           */}
           <Button onClick={onExit} aria-label="← 课程列表">
             ←<span className="max-sm:sr-only"> 课程列表</span>

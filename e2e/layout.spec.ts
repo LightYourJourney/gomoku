@@ -256,20 +256,21 @@ test.describe('页面标题', () => {
 
   test('四个页面各自的标题都是唯一的一级标题', async ({ page }) => {
     /*
-     * 对战页是默认页，不用点导航。它的 `h1` 是 `sr-only` 的（棋盘优先布局，
+     * 对战页是默认页，单独断言。它的 `h1` 是 `sr-only` 的（棋盘优先布局，
      * 没有可见标题的容身之处）——但读屏按标题跳转时必须有落点。
      * 这条用例原先名叫「四个页面」，实际只查了三个：对战页缺 h1 被漏在外面。
      */
+    await page.goto('/')
+    await expect(page.getByRole('heading', { level: 1 })).toHaveCount(1)
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('对战')
+
     for (const [nav, title] of [
-      ['对战', '对战'],
       ['教学', '互动教学'],
       ['残局', '残局挑战'],
       ['复盘', '复盘'],
     ] as const) {
       await page.goto('/')
-      if (nav !== '对战') {
-        await page.getByRole('button', { name: nav, exact: true }).click()
-      }
+      await page.getByRole('button', { name: nav, exact: true }).click()
       await expect(page.getByRole('heading', { level: 1 })).toHaveCount(1)
       await expect(page.getByRole('heading', { level: 1 })).toHaveText(title)
     }
