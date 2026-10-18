@@ -160,6 +160,17 @@ export function createAnalysisStore(): UseBoundStore<StoreApi<AnalysisStore>> {
     }
 
     function emit(index: number, entry: PendingVerdict, pos: NonNullable<PendingVerdict['position']>) {
+      /*
+       * 一手的 loss 横跨**两次搜索**：局面 i 的评分（`pos.score`）和「走完这手
+       * 之后」局面 i+1 的评分（`reply.score`）。任一半没搜完，这一手的结论就
+       * 只是启发式的——只报 `pos.confidence` 会把「exact + heuristic」标成
+       * 「搜索完成」，界面等于在说谎，而 §八 要求的正是「不得把有限预算的
+       * 分析称为绝对正确」。所以取两者中较差的那个。
+       * `playedIsWinning` 时没有 reply 半边（只需要引擎那一半），照旧取 pos。
+       */
+      const confidence =
+        entry.reply?.confidence === 'heuristic' ? 'heuristic' : pos.confidence
+
       const verdict = buildVerdict({
         moveIndex: index,
         played: entry.played,
@@ -167,7 +178,7 @@ export function createAnalysisStore(): UseBoundStore<StoreApi<AnalysisStore>> {
         engineScore: pos.score,
         playedScore: entry.playedIsWinning ? 0 : -(entry.reply?.score ?? 0), // 与上面的 playedScore 同一口径
         isWinningMove: entry.playedIsWinning,
-        confidence: pos.confidence,
+        confidence,
         engineDepth: pos.depth,
         engineNodes: pos.nodes,
       })

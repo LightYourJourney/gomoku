@@ -80,6 +80,12 @@ export function ReviewScreen({ storage, engine, stores }: ReviewScreenProps) {
          * 点开一局棋谱之后焦点照样掉回 `<body>`。换 key 把它们变成两棵树。
          * （教学页不需要：`LearnScreen` 进课程时返回的是根类型完全不同的
          * `<LessonView>`，`PageShell` 本来就是新建的。）
+         *
+         * 代价，如实记：换 key 让 `PageShell` 连同那个 `overflow-y-auto` 的
+         * `main` 一起重建，于是从回放返回列表时滚动位置回到顶部（换 key 之前
+         * `main` 是复用的，位置会保留）。接受它——列表本来就因为 `GameLibrary`
+         * 重挂载而重新读盘，「进入一页从顶部开始」也是常规语义；不为此放弃
+         * 焦点修复，也不值得为它给 `PageShell` 加一个只服务本页的 prop。
          */
         key="replay"
         variant="flush"
@@ -245,7 +251,11 @@ function AnalysisPanel({ store, engine, replay }: AnalysisPanelProps) {
                 两种都该如实说——原先这里一律说成「与引擎一致，没有亏损」，
                 store 拒绝编造，界面替它编了。
               */}
-              {currentVerdict === undefined ? '没有分析结果。' : verdictLabel(currentVerdict)}
+              {currentVerdict === undefined
+                ? '没有分析结果。'
+                : `${verdictLabel(currentVerdict)}${
+                    currentVerdict.confidence === 'exact' ? '' : '（启发式）'
+                  }`}
             </p>
           )}
 

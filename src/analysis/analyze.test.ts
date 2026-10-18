@@ -96,6 +96,17 @@ describe('verdictLabel', () => {
     expect(label).toBe('分差约 2 子')
   })
 
+  it('半子以下的亏损 → 不说「分差约 0 子」', () => {
+    // `buildSummary` 只把 loss > 0 的手排进「亏损最多」，而一个活三在
+    // shapeScore 里是 800——`Math.round(800 / 10_000)` 得 0，榜单上会出现
+    // 「关键手：分差约 0 子」这种自相矛盾的说法。
+    const label = verdictLabel(
+      verdict({ engineScore: 800, playedScore: 0, engineMove: { x: 3, y: 3 } }),
+    )
+    expect(label).toBe('分差很小（不足 1 子）')
+    expect(label).not.toContain('0 子')
+  })
+
   it('大分差 → 分差极大——不声称「错过取胜」', () => {
     // 玩家可能本来就没有胜机（例如该防没防、局面直接崩），
     // 说「错过直接取胜」是在编造一个当时并不存在的机会。

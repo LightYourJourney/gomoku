@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test'
+import { expect, test, type Locator, type Page } from '@playwright/test'
 import { REPLAY_STEP_MS } from '../src/store/replayStore'
 
 /**
@@ -246,10 +246,23 @@ test('移动端 390：棋盘优先、控制可达、不出现嵌套滚动', asyn
 
   /*
    * 手数计数与「下一步」**不必都在首屏**——§四 第二条只要求「容易触达」，
-   * 滚动得到就算。它们渲染出来即可；横向不出界由下面那条 scrollWidth 断言守。
+   * 滚动得到就算。但「可达」得真的走到那一步：`toBeVisible()` 只证明元素
+   * 渲染出来了（非 `display:none`、非零尺寸），**不证明滚得到**。
+   * 所以先 `scrollIntoViewIfNeeded()`，再判它确实进了视口。
+   * 横向不出界由下面那条 scrollWidth 断言守。
    */
-  await expect(page.getByTestId('move-counter')).toBeVisible()
-  await expect(page.getByRole('button', { name: '下一步' })).toBeVisible()
+  const reachable = async (locator: Locator) => {
+    await locator.scrollIntoViewIfNeeded()
+    return locator.evaluate((el) => {
+      const rect = el.getBoundingClientRect()
+      return rect.top >= 0 && rect.bottom <= window.innerHeight
+    })
+  }
+  expect(await reachable(page.getByTestId('move-counter')), '手数计数滚不到视口里').toBe(true)
+  expect(
+    await reachable(page.getByRole('button', { name: '下一步' })),
+    '「下一步」滚不到视口里',
+  ).toBe(true)
 
   // 横向不溢出（390 是最窄的真实手机）
   const overflow = await page.evaluate(

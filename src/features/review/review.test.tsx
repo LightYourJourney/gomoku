@@ -223,6 +223,11 @@ describe('ReviewScreen 三段流转', () => {
     const source = await screen.findByTestId('analysis-source')
     expect(source).toHaveTextContent(/ms/)
     expect(source).toHaveTextContent(/引擎 search-1/)
+
+    // §八 点名要有「分数的含义和局限」：没有这句，「分差约 3 子」会被当成精确值
+    const caveat = screen.getByTestId('analysis-caveat')
+    expect(caveat).toHaveTextContent('不是精确子数')
+    expect(caveat).toHaveTextContent('启发式')
   })
 
   it('点「开始分析」后进入分析中状态，进度可见', async () => {
@@ -349,6 +354,36 @@ describe('分析面板 —— 没结论的手不能被说成有结论', () => {
     const current = screen.getByTestId('analysis-current')
     expect(current).toHaveTextContent('当前第 5 手')
     expect(current).not.toHaveTextContent('与引擎一致，没有亏损。')
+  })
+
+  it('当前手是启发式的就标出来——caveat 指的标签每一处都要有', async () => {
+    const storage = memoryGameRecords()
+    await storage.put(nineMoveRecord())
+
+    const injectedReplay = createReplayStore()
+    const injectedAnalysis = createAnalysisStore()
+    render(
+      <ReviewScreen
+        storage={storage}
+        engine={scriptedEngine([1])}
+        stores={{ replay: injectedReplay, analysis: injectedAnalysis }}
+      />,
+    )
+    fireEvent.click((await screen.findAllByTestId(/^record-/))[0]!)
+    fireEvent.click(await screen.findByRole('button', { name: '开始分析' }))
+    await waitFor(() => expect(injectedAnalysis.getState().running).toBe(false))
+
+    /*
+     * 手 1 的局面请求（局面 1）没搜完。原先 `emit` 只报这一半的 confidence，
+     * 而 loss 的另一半来自局面 2——现在取两者较差，这一手整体算启发式。
+     * 同时钉住 loss=500 不再说成「分差约 0 子」。
+     */
+    fireEvent.change(screen.getByRole('slider', { name: '回放手数' }), {
+      target: { value: '2' },
+    })
+    const current = screen.getByTestId('analysis-current')
+    expect(current).toHaveTextContent('（启发式）')
+    expect(current).toHaveTextContent('不足 1 子')
   })
 })
 
@@ -505,7 +540,7 @@ describe('分析结论列表：只列真有亏损的手', () => {
 })
 
 /** 按 moveIndex 给出脚本化响应的引擎：手 0 与引擎首选相同，手 1 走亏。 */
-function scriptedEngine(): AiEngine {
+function scriptedEngine(heuristicAt: readonly number[] = []): AiEngine {
   return {
     search(request) {
       const index = request.moveIndex ?? 0
@@ -524,7 +559,7 @@ function scriptedEngine(): AiEngine {
         depth: 1,
         nodes: 1,
         elapsedMs: 1,
-        confidence: 'exact' as const,
+        confidence: heuristicAt.includes(index) ? ('heuristic' as const) : ('exact' as const),
         reason: 'search' as const,
         candidates: [],
         urgency: 'normal' as const,

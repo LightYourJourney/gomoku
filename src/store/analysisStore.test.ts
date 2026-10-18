@@ -168,6 +168,20 @@ describe('分析管线 —— 排队', () => {
     expect(verdicts.get(2)?.loss).toBe(70)
     expect(verdicts.get(8)?.loss).toBe(0) // 终局手
   })
+
+  it('一手横跨两次搜索：任一半没搜完，这一手就标启发式', async () => {
+    store.getState().start({ record: threeWinRecord(), engine: spy.engine, difficulty: 'easy', budgetMs: 400 })
+
+    // 局面 0 搜索完整；局面 1（同时是手 0 的 reply 半边）预算内没搜完。
+    spy.settle(0, { x: 3, y: 7 }, 100)
+    await Promise.resolve()
+    spy.settle(1, { x: 4, y: 7 }, -50, 4, { confidence: 'heuristic' })
+    await Promise.resolve()
+
+    // 手 0 的 loss 一半来自局面 0、一半来自局面 1。只报局面 0 的 confidence
+    // 会把「exact + heuristic」标成「搜索完成」——界面等于在说谎。
+    expect(store.getState().verdicts.get(0)?.confidence).toBe('heuristic')
+  })
 })
 
 // ── 取消与错误 ───────────────────────────────────────────────

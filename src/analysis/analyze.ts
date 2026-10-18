@@ -94,6 +94,14 @@ export function verdictLabel(v: MoveVerdict): string {
   if (v.move.x === v.engineMove.x && v.move.y === v.engineMove.y) return '与引擎一致'
   if (v.loss === 0) return '与引擎首选相当'
   if (v.loss >= WIN_SCORE / 2) return '分差极大'
+  /*
+   * `Math.round(loss / 10_000)` 在 `0 < loss < 5_000` 时得 **0**，会写出
+   * 「分差约 0 子」——而 `buildSummary` 只把 `loss > 0` 的手排进「亏损最多」，
+   * 于是榜单上会出现一条「关键手：分差约 0 子」的自相矛盾。这不是极端情况：
+   * 一个活三在 `shapeScore` 里是 800，正好落在这个区间。
+   * 半子以下不换算成子数，如实说「不足 1 子」。
+   */
+  if (v.loss < 5_000) return '分差很小（不足 1 子）'
   return `分差约 ${Math.round(v.loss / 10_000)} 子`
 }
 
