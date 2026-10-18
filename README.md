@@ -80,7 +80,7 @@ yarn dev          # 开发服务器
 ![复盘分析](docs/screenshots/phase4-analysis.png)
 
 **键盘与无障碍**
-棋盘是一张 ARIA grid：单一 Tab 停靠点、方向键移动焦点、`Enter` / `空格` 落子，每格的可读名带坐标与状态。状态变化由**唯一一处** `aria-live` 播报（「AI 正在思考」「最后一手在 H8」……）。落子与面板动效在系统要求减少动态时自动关闭。见 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)。
+棋盘是一张 ARIA grid：单一 Tab 停靠点、方向键移动焦点、`Enter` / `空格` 落子，每格的可读名带坐标与状态。状态变化由**唯一一处** `aria-live` 播报（「AI 正在思考」「最后一手在 H8」……）。落子、面板与「思考中」的转圈在系统要求减少动态时自动关闭。见 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)。
 
 **错误边界与存档**
 顶层错误边界兜住渲染异常，给一个说明与「重新加载」而不是白屏。每步自动存档，刷新即恢复；即使刷新时正轮到 AI，恢复后也会接着走完。存储不可用时（隐私模式等）整体降级为内存态。

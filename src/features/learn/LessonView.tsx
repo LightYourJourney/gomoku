@@ -50,7 +50,19 @@ export function LessonView({ lesson, solved, onExit, onSolved, exit }: LessonVie
       // 返回 / 翻页工具栏是页面级控件，交给壳渲染在顶栏正下方
       toolbar={
         <div className="flex shrink-0 items-center gap-2 border-b border-border px-3 py-2">
-          <Button onClick={onExit}>← 课程列表</Button>
+          {/*
+            手机上只显示「←」。390 下工具栏里这颗按钮、课名、页码、上一步/下一步
+            挤在一行，课名被压到 69px——四个字的「基本规则」需要 80px，
+            `truncate` 把它截成了三个半字（探针的 `clipped` 量到
+            `clientWidth 69 / scrollWidth 80`）。把这三个字在 <640 视口视觉隐藏，
+            省下的 64px 正好够标题完整显示。
+
+            **可访问名不变**：`sr-only` 文本仍在无障碍树里，按钮读作
+            「← 课程列表」，既有 e2e / 单测按这个名字定位，一条都不用改。
+          */}
+          <Button onClick={onExit} aria-label="← 课程列表">
+            ←<span className="max-sm:sr-only"> 课程列表</span>
+          </Button>
           {/*
         课名是这一页的**主标题**，用 `h1`。原先它只是个 `span`，
         于是这节课的页面根本没有一级标题（探针的 `headings` 量得清清楚楚：

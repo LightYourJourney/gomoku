@@ -306,7 +306,14 @@
   .motion-stone-drop,
   .motion-last-move-pulse,
   .motion-panel-in,
-  .motion-banner-in {
+  .motion-banner-in,
+  /*
+   * Tailwind 的 `animate-spin` 不在这份自定义名单里，而「AI 思考中」那颗
+   * 转圈正是它（`StatusPill`）——一个无限循环、用户关不掉的动画。
+   * 用户在系统里明确要求减少动态后它仍在转（F-UI-07，WCAG 2.2.2 A）。
+   * 停掉后留下一个静态半环，仍然是「正在处理」的指示。
+   */
+  .animate-spin {
     animation: none;
   }
 }

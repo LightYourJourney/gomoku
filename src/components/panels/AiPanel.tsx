@@ -37,11 +37,12 @@ const REASON_TEXT: Record<SearchReason, { label: string; player: string }> = {
    * 两版各对一半，合起来说明这条路径不该按「第几手」措辞。现在这句只说
    * **引擎算出了什么**，不承诺「棋盘上已经出现了什么」。
    *
-   * `label` 仍是「直接取胜」，对第 2 种来源偏强。**这条不在这里修**：
-   * 它是 `FINDINGS.md` 的 F-UI-23，`PLAN.md` 排在 **Phase 05**
-   * （`SearchResponse` 补 `plies`、按算杀手数分档），依赖正是「本阶段先把面板结构定下来」。
+   * `label` 原先是「直接取胜」，对第 2 种来源偏强（F-UI-23）。Phase 07 用
+   * 最小修法关掉它：改成「算到必胜」——与 `player` 那句同一个承诺强度，不再
+   * 暗示「这一手落下就赢」。原计划（`SearchResponse` 补 `plies`、按算杀手数
+   * 分档）要给 `ai/` 加字段，超出 UI/UX 终审的范围，留给后续迭代。
    */
-  win: { label: '直接取胜', player: 'AI 算出一条连成五子的必胜路线，走了这条路线上的下一手。' },
+  win: { label: '算到必胜', player: 'AI 算出一条连成五子的必胜路线，走了这条路线上的下一手。' },
   block: { label: '必须防守', player: 'AI 在防守：你下一手能连成五子，它先堵住。' },
   search: { label: '搜索结果', player: 'AI 完整搜索后选了这一手。' },
   opening: { label: '开局天元', player: '开局第一手，AI 占了天元。' },

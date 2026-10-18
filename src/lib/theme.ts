@@ -26,4 +26,13 @@ export function applyTheme(
 ): void {
   root.classList.toggle('dark', theme === 'dark')
   root.style.colorScheme = theme
+  /*
+   * 移动端浏览器的地址栏 / 状态栏取这个值。`index.html` 里写死的是浅色，
+   * 深色主题下不更新它，手机会一直挂一条浅色横条（F-UI-17）。
+   * 两个值与 `index.css` 里 `--c-bg` 的两套令牌同源，改令牌时要一起改。
+   * 从 `root` 的 ownerDocument 取，测试可以传任意根元素。
+   */
+  root.ownerDocument
+    .querySelector('meta[name="theme-color"]')
+    ?.setAttribute('content', theme === 'dark' ? '#0f1115' : '#f6f4f0')
 }

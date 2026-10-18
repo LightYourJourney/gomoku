@@ -279,6 +279,13 @@ export function BattleScreen({ sound: injectedSound }: BattleScreenProps = {}) {
         )}
       >
         {/*
+          页面级标题，视觉隐藏。`DESIGN_SYSTEM` §排版要求「每个页面有且只有一个
+          `h1`」，而这页是棋盘优先布局——顶栏的「对战」已经是可见的页面标识，
+          再摆一行 20px 标题只会把棋盘往下推。`sr-only` 让读屏用户按标题跳转时
+          有落点，视觉上零占位。FINDINGS 的 F-UI-11 记的就是这一页缺 h1。
+        */}
+        <h1 className="sr-only">对战</h1>
+        {/*
           左栏**只在宽桌面存在**。窄档把设置并进右栏底部，靠 JS 决定渲染在哪一边，
           而不是 CSS 各写一份——两份 DOM 意味着两组 `radiogroup`，
           而 jsdom 里没有样式表，`hidden` 根本不生效（见 `useMediaQuery` 的注释）。

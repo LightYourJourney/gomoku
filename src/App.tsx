@@ -34,7 +34,13 @@ export default function App() {
         `DESIGN_SYSTEM.md` §8.1 的 320px。所以不是把条件收回去，而是让对战页
         和另外三页一样，够宽就两栏、就 `h-dvh`、就各自滚。
       */
-      className="flex min-h-dvh flex-col bg-bg text-fg wide-layout:h-dvh wide-layout:overflow-hidden"
+      /*
+       * 安全区内边距（F-UI-18）。`index.html` 开了 `viewport-fit=cover`，
+       * 横屏刘海与底部手势条会压住内容；没有 `env()` 时页面直接铺到屏幕边缘。
+       * 三个方向都加——无刘海的设备上 `env()` 等于 0，没有任何影响。
+       * 背景色由根容器自己铺（padding 在背景之内），刘海区仍是主题底色。
+       */
+      className="flex min-h-dvh flex-col bg-bg pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)] text-fg wide-layout:h-dvh wide-layout:overflow-hidden"
     >
       {view === 'battle' && <BattleScreen />}
       {view === 'learn' && <LearnScreen />}

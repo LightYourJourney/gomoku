@@ -199,6 +199,14 @@ Phase 03 之前它是一圈 `--c-danger` 的红环：`danger` 是「认输 / 错
 
 **自适应尺寸**用 CSS 容器查询：容器声明 `container-type: size`，棋盘取 `width: min(100cqw, 100cqh)` 配 `aspect-ratio: 1`，即「能容纳的最大正方形」，不需要 JS 测量。
 
+**字号与半径解绑**（`BoardMark.fontSize`）：徽标高度是 `2r`，字号不必等于
+`radius × 1.25`。回放编号因此能在保持小半径（棋子仍露在外面）的同时把字号提到
+0.51 单位——@390 约 10.84px，守住 `DESIGN_SYSTEM` §8.2 的 10px 下限（F-UI-14）。
+
+**布局预算由 e2e 钉住**（`e2e/layout.spec.ts`）：任何视口棋盘 ≥ 320px 且为正方形；
+≥1024 时 ≥ 620px；两栏/三栏下棋盘与侧栏互不压盖。高度极小的横屏窗口（900×480）
+物理上放不下 `320 + 顶栏 + 工具栏`，是已知例外（`ui-redesign/KNOWN_ISSUES.md` M-3）。
+
 ## 键盘与无障碍
 
 可交互时棋盘是 `role="grid"`：每行一个 `role="row"`，每个交叉点一个 `role="gridcell"`。gridcell 必须有 row 作上下文，平铺 225 个 cell 是无主的；只读棋盘（复盘）退回 `role="img"`，不谎报有交互。
@@ -247,6 +255,13 @@ WCAG AA 的 4.5:1。`faint` / `good` / `warn` / `accent` 的值就是按它反�
 ## 主题
 
 浅色与深色两套 CSS 变量分别挂在 `:root` 与 `.dark` 上，经 Tailwind v4 的 `@theme inline` 暴露成语义色（`bg-surface`、`text-muted`、`border-border`）。组件里不写 `dark:` 前缀，切主题只改 `<html>` 上的一个类。棋盘木纹、棋子渐变同样走 CSS 变量，所以两套主题共用同一份 SVG。
+
+**主题不只改类**：`applyTheme()` 同时更新 `meta[name=theme-color]`（深色 `#0f1115` /
+浅色 `#f6f4f0`，与 `--c-bg` 同源）。移动端浏览器拿这个值画地址栏——不更新它，
+深色主题下会一直挂着一条浅色横条（F-UI-17）。
+
+**安全区内边距**：`index.html` 开了 `viewport-fit=cover`，根容器用
+`env(safe-area-inset-*)` 避开横屏刘海与底部手势条；无刘海设备上 `env()` 为 0。
 
 ## 测试策略
 

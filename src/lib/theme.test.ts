@@ -32,4 +32,22 @@ describe('applyTheme', () => {
     expect(root.classList.contains('dark')).toBe(false)
     expect(root.style.colorScheme).toBe('light')
   })
+
+  it('同步 meta theme-color——否则深色主题下手机地址栏还是浅色（F-UI-17）', () => {
+    const meta = document.createElement('meta')
+    meta.setAttribute('name', 'theme-color')
+    meta.setAttribute('content', '#f6f4f0')
+    document.head.append(meta)
+    const root = document.createElement('div')
+
+    try {
+      applyTheme('dark', root)
+      expect(meta.getAttribute('content')).toBe('#0f1115')
+
+      applyTheme('light', root)
+      expect(meta.getAttribute('content')).toBe('#f6f4f0')
+    } finally {
+      meta.remove()
+    }
+  })
 })
