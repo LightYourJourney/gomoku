@@ -179,6 +179,15 @@ function AnalysisPanel({ store, engine, replay }: AnalysisPanelProps) {
       <p data-testid="analysis-source" className="text-xs text-faint">
         {DIFFICULTY_LABELS[difficulty]} · {budgetMs}ms · 引擎 {ENGINE_VERSION}
       </p>
+      {/*
+        任务书 §八 的「技术与来源信息」里点名要有**「分数的含义和局限」**。
+        没有这句，「分差约 3 子」会被当成精确值——而它只是棋型评分的粗略换算
+        （`analyze.ts` 的 `verdictLabel` 注释写了同一件事，但那是代码注释，
+        用户看不到）。预算内没搜完的手连这个都只能算启发式。
+      */}
+      <p data-testid="analysis-caveat" className="text-xs text-faint">
+        分差按棋型评分粗算，不是精确子数；标「启发式」的手没搜完，结论更粗。
+      </p>
       {state.error !== null && state.running === false ? (
         /*
          * 分析失败要**说出来**。原先 `error` 只是躺在 store 里没人渲染，

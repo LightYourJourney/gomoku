@@ -7,7 +7,7 @@ import { createAnalysisStore } from '../../store/analysisStore'
 import { memoryGameRecords, type GameRecord, type GameRecordsStorage } from '../../persist/gameRecords'
 import type { AiEngine } from '../../ai/engine'
 import { GameLibrary } from './GameLibrary'
-import { ReplayBoard } from './ReplayBoard'
+import { CURRENT_STEP_RADIUS, PLAIN_STEP_RADIUS, ReplayBoard } from './ReplayBoard'
 import { ReviewScreen } from './ReviewScreen'
 
 type ReplayRecord = Omit<GameRecord, 'seq' | 'schemaVersion'>
@@ -295,12 +295,19 @@ describe('ReviewScreen —— 本阶段新增的几处（Phase 06）', () => {
 
     fireEvent.click(screen.getByRole('button', { name: '下一步' }))
 
-    // 走到第 2 手：新那枚「当前手」与刚才同档，上一枚退回常规档。
-    // 断言的是**关系**不是具体数值——半径是设计参数（F-UI-14 那轮调过一次：
-    // 0.26/0.32 → 0.30/0.34），而这里真正要守的是「当前手看得出来更突出」。
+    /*
+     * 走到第 2 手：新那枚「当前手」与刚才同档，上一枚退回常规档。
+     *
+     * **数值和关系都要断。** 只断「一大一小」的话，谁把两档都改成默认的 0.4
+     * 也不会红——而那等于把「当前手更突出」这件事弄没了。
+     * （半径是设计参数，F-UI-14 那轮从 0.26/0.32 调到 0.30/0.34；
+     * 所以断言从常量取，而不是把字面量再抄一遍。）
+     */
     const [plain, now] = radii()
     expect(now).toBe(current)
-    expect(now!).toBeGreaterThan(plain!)
+    expect(now).toBe(CURRENT_STEP_RADIUS)
+    expect(plain).toBe(PLAIN_STEP_RADIUS)
+    expect(CURRENT_STEP_RADIUS).toBeGreaterThan(PLAIN_STEP_RADIUS)
   })
 })
 
@@ -569,6 +576,22 @@ describe('GameLibrary —— 读不出棋谱时如实说明', () => {
 
     const notice = await screen.findByTestId('library-skipped')
     expect(notice).toHaveTextContent('2')
+  })
+
+  it('读取还没回来时说「正在读取棋谱…」，不假装成空库', () => {
+    // 任务书 §十一.4 要「棋谱**加载**与错误状态」——加载中那一帧此前没有用例，
+    // 而它恰恰是最容易被写成「一眼空库」的一帧
+    const pending: GameRecordsStorage = {
+      list: () => new Promise(() => {}),
+      get: () => Promise.resolve(null),
+      put: () => Promise.reject(new Error('测试里用不到')),
+      delete: () => Promise.resolve(),
+    }
+
+    render(<GameLibrary storage={pending} onOpen={vi.fn()} onStartBattle={vi.fn()} />)
+
+    expect(screen.getByText('正在读取棋谱…')).toBeInTheDocument()
+    expect(screen.queryByText('还没有保存的对局')).not.toBeInTheDocument()
   })
 
   it('库里有棋谱时，降级提示换成对得上事实的措辞', async () => {

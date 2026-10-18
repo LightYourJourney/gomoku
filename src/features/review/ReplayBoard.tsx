@@ -41,8 +41,9 @@ export interface ReplayBoardProps {
  * 手顺**总数也没减少**；但「三位数密排时数字仍读得出」这句
  * **我没有实测**（手上没有 ≥100 手的真实棋谱），只能说大概率，不是结论。
  */
-const CURRENT_STEP_RADIUS = 0.34
-const PLAIN_STEP_RADIUS = 0.3
+/** 导出给测试：断言「渲染出来的半径就是这两个值」，而不只是「一大一小」。 */
+export const CURRENT_STEP_RADIUS = 0.34
+export const PLAIN_STEP_RADIUS = 0.3
 const STEP_FONT_SIZE = 0.51
 
 /**
