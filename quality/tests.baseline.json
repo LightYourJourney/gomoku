@@ -1,10 +1,10 @@
 {
-  "note": "测试条数棘轮：只许涨（e2eSkipped 是**静态**数出来的 skip/fixme 标记数——`playwright --list` 对跳过的用例不打标记，工具这条路走不通）。2026-10-13：拆分 mobile.spec.ts 一条用例为两条 → 103。**2026-10-19 Phase 07 收尾：把基线抬到当时的实际条数（1060 / 162）**——此前基线停在 912/103，删掉几十条也仍然绿，棘轮实际上没守住「只许涨」。删用例、跳用例都是把安全网改小——要改就显式改这里，并在提交信息里写明理由。",
-  "unitTotal": 1060,
+  "note": "测试条数棘轮：只许涨（e2eSkipped 是**静态**数出来的 skip/fixme 标记数——`playwright --list` 对跳过的用例不打标记，工具这条路走不通）。2026-10-13：拆分 mobile.spec.ts 一条用例为两条 → 103。**2026-10-19 Phase 07 收尾：把基线抬到当时的实际条数（1060 / 162）**；**2026-10-20 Phase 09A：抬到 1085 / 162（+25 条发布加固回归）**——此前基线停在 912/103，删掉几十条也仍然绿，棘轮实际上没守住「只许涨」。删用例、跳用例都是把安全网改小——要改就显式改这里，并在提交信息里写明理由。",
+  "unitTotal": 1085,
   "unitPending": 0,
   "unitTodo": 0,
   "e2eTotal": 162,
   "e2eSkipped": 0,
-  "measuredAt": "2026-10-19",
+  "measuredAt": "2026-10-20",
   "measuredFrom": "yarn test 的 vitest-report.json 与 yarn playwright test --list"
 }

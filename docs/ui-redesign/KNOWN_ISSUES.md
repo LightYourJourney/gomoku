@@ -11,7 +11,7 @@
 > **Phase 09A 处置（2026-10-20）**：P3-1（进度写入时机）已用串行 latest-wins
 > 队列 + `flush()` 修复；P3-2（分析措辞）已用显式 `SearchPath` 修复；
 > **P3-3（判题/求解 60–132 ms 同步阻塞）撤回**——那是测量口径错误，实测纯函数
-> ≤5.15 ms、生产产物提交 1.3–4.3 ms；P3-5 已补 `robots.txt`（`llms.txt` 按本阶段
+> ≤9.08 ms（CPU 最小值；空载 wall ≤5.15 ms）、生产产物提交 1.3–4.3 ms（空载）；P3-5 已补 `robots.txt`（`llms.txt` 按本阶段
 > 要求不加）；**P3-4（超宽屏密度）仍未处理**，留在审计报告里。
 > 发布侧的已知限制（真实托管未验证、仅 Chrome 实测、CSP 依赖自定义响应头、
 > 关闭前 flush 不保证）见 [RELEASE_READINESS.md](../release/RELEASE_READINESS.md) §10。

@@ -384,6 +384,13 @@ describe('分析面板 —— 没结论的手不能被说成有结论', () => {
     const current = screen.getByTestId('analysis-current')
     expect(current).toHaveTextContent('（启发式）')
     expect(current).toHaveTextContent('不足 1 子')
+
+    /*
+     * 同一张卡片上没有第二种说法：这手的首选（pos）搜索完成，但后续一手超时，
+     * 结论整体是启发式。只写路径会显示「搜索完成」，与上面的「（启发式）」矛盾。
+     */
+    const card = screen.getByTestId('verdict-1')
+    expect(card).toHaveTextContent('搜索完成 · 结论为启发式')
   })
 })
 

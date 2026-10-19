@@ -9,7 +9,7 @@
 - [ ] `git status` 干净，发布提交就是评审过的那个提交
 - [ ] `yarn lint` 通过
 - [ ] `yarn typecheck` 通过
-- [ ] `yarn test` 全过（Phase 09A 基线：1084）
+- [ ] `yarn test` 全过（Phase 09A 基线：1085）
 - [ ] `yarn build` 通过
 - [ ] `yarn e2e` 全过（Phase 09A 基线：162）
 - [ ] `yarn e2e:prod` 全过（Phase 09A 基线：5）

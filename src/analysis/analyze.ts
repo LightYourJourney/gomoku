@@ -136,6 +136,22 @@ export function pathLabel(path: SearchPath): string {
 }
 
 /**
+ * 复盘卡片上的一行：**路径 + 这一手结论自身的可靠度**。
+ *
+ * 两者是正交的：`path` 只说「引擎首选是怎么来的」，`confidence` 说的是
+ * 「这一手的分差算得准不准」——后者取的是局面与后续两手搜索里较差的那个
+ * （`analysisStore.emit`）。只写路径的话，「首选搜索完成、后续一手超时」会显示成
+ * 「搜索完成」，而同一张卡片下方又标「（启发式）」，同一结论两种说法。
+ * 这不是推断出来的组合：`analysisStore.test.ts` 里有现成的用例。
+ */
+export function pathSummary(path: SearchPath, confidence: Confidence): string {
+  const label = pathLabel(path)
+  // `aborted` 的文案已经写了「启发式」；`none` 压根没有结论可谈。其余才需要补。
+  const hasConclusion = path === 'search' || path === 'shortcut'
+  return hasConclusion && confidence === 'heuristic' ? `${label} · 结论为启发式` : label
+}
+
+/**
  * 分析结论的缓存键。掺引擎版本（换 ENGINE_VERSION 必须重算）、档位与预算
  * （换任何一项结论都可能不同）；`v1` 是键自身的版本，键结构变了递增。
  */

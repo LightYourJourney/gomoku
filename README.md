@@ -38,7 +38,8 @@ yarn dev          # 开发服务器
 | `yarn bench` | 引擎基准（约一两分钟），数字见 [docs/AI_ENGINE.md](docs/AI_ENGINE.md) 的「实测」 |
 | `yarn bench:check` | 引擎基准**数值门禁**：`yarn bench` + 断言。只断言余量充足的行（`bench/baseline.json` 里 `gated` 冻结），跳过的逐行打印原因 |
 | `yarn bench:render` | 首屏与落子成本的浏览器实测，数字见 [docs/TEST_REPORT.md](docs/TEST_REPORT.md) |
-| `yarn bench:learn` | 教学/残局判题与求解的纯函数耗时（最慢 4.81–5.15 ms 求解 / 2.39–2.97 ms 判题），写 `bench/learn-last-run.json` |
+| `yarn bench:learn` | 教学/残局判题与求解的纯函数耗时（CPU 最小值最慢 9.08 ms 求解 / 4.32 ms 判题；空载 wall 4.81–5.15 / 2.39–2.97 ms），写 `bench/learn-last-run.json` |
+| `yarn bench:blocking` | 真实浏览器页内耗时探针：提示点击 → DOM 变更（需先 `yarn preview --port 5192`；数字随机器负载变化） |
 | `yarn gates` | 四道防退化闸门串跑（`check:cycles` + `check:deadcode` + `check:dupes` + `check:tests`）。**pre-push 钩子跑的就是它**，见 [AGENTS.md](AGENTS.md) |
 | `yarn check:tests` | 测试条数棘轮：单测/e2e 条数与跳过数只许涨不许跌。删用例、加 `.skip` 都会红，要减就显式改 `quality/tests.baseline.json`。e2e 的跳过是**静态扫 spec 文件**数出来的——`playwright --list` 对跳过的用例不打标记，工具这条路走不通 |
 | `yarn check:coverage` | 覆盖棘轮：探针扫到的状态、每行的控件与棋盘，必须是入库基线的**超集**。**基线**的来源是 `docs/ui-redesign/screenshots/after-phase02/measurements.json`（写在 `quality/coverage.baseline.json` 的 `source` 里）；脚本本地默认读 `docs/ui-redesign/screenshots/after-phase06/measurements.json`（`quality/coverage.ratchet.mjs` 的默认值，可用 `--current` 指定；CI 显式传当期探针产物）。**改了界面之后要在 CI 的 probe job 里跑**（本地单跑用的是上一期产物，不是这次的新量测） |

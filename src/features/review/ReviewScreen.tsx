@@ -6,7 +6,7 @@ import type { GameRecord, GameRecordsStorage } from '../../persist/gameRecords'
 import { DIFFICULTY_LABELS } from '../../ai/difficulty'
 import { ENGINE_VERSION } from '../../ai/version'
 import { formatPoint } from '../../lib/coords'
-import { buildSummary, pathLabel, verdictLabel } from '../../analysis/analyze'
+import { buildSummary, pathSummary, verdictLabel } from '../../analysis/analyze'
 import { searchPathOf } from '../../ai/types'
 import { cx } from '../../lib/cx'
 import { Button } from '../../components/ui/Button'
@@ -300,7 +300,7 @@ function AnalysisPanel({ store, engine, replay }: AnalysisPanelProps) {
                 </div>
                 <div className="mt-1 text-xs text-faint">
                   深度 {verdict.engineDepth} · 节点 {verdict.engineNodes} ·{' '}
-                  {pathLabel(searchPathOf(verdict.reason))}
+                  {pathSummary(searchPathOf(verdict.reason), verdict.confidence)}
                 </div>
               </button>
             )

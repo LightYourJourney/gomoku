@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import type { Point } from '../core/types'
 import { WIN_SCORE } from '../ai/types'
 import { ENGINE_VERSION } from '../ai/version'
-import { buildSummary, buildVerdict, cacheKey, pathLabel, verdictLabel, type MoveVerdict } from './analyze'
+import { buildSummary, buildVerdict, cacheKey, pathLabel, pathSummary, verdictLabel, type MoveVerdict } from './analyze'
 
 const AT: Point = { x: 7, y: 7 }
 
@@ -197,5 +197,16 @@ describe('搜索路径的语义（Phase 09A）', () => {
     // 仍然写着「搜索完成」。
     expect(pathLabel('shortcut')).not.toContain('搜索完成')
     expect(pathLabel('shortcut')).not.toBe(pathLabel('search'))
+  })
+
+  it('pathSummary：路径与可靠度正交，启发式结论必须补在路径后面', () => {
+    // 回归：首选搜索完成、但后续一手超时，`verdict.confidence` 是 heuristic。
+    // 只写 pathLabel 会让同一张卡片上出现「搜索完成」与「（启发式）」两种说法。
+    expect(pathSummary('search', 'exact')).toBe('搜索完成')
+    expect(pathSummary('search', 'heuristic')).toBe('搜索完成 · 结论为启发式')
+    expect(pathSummary('shortcut', 'heuristic')).toBe('规则/快速路径判定 · 结论为启发式')
+    // `aborted` 的文案本身已含「启发式」，不再重复。
+    expect(pathSummary('aborted', 'heuristic')).toBe('预算内未搜完（启发式）')
+    expect(pathSummary('none', 'heuristic')).toBe('无可用着法')
   })
 })

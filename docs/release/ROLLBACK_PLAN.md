@@ -66,7 +66,7 @@ npx wrangler pages deploy dist --project-name gomoku-lab
 
 ## 4. 数据影响评估（当前版本）
 
-- 学习进度：`schemaVersion = 1`；棋谱：`schemaVersion = 2`；对局存档：`schemaVersion = 2`。
+- 学习进度：`schemaVersion = 1`；棋谱：`schemaVersion = 1`；对局存档：`schemaVersion = 2`。
 - 本次发布**没有**改动这三个版本号，因此「回滚到上一版」不会触发任何丢弃路径。
 - 进度写入是 latest-wins 串行队列；回滚只影响后续写入的格式，不影响已落盘数据。
 - 升级方向（旧 → 新）已验证：v1 只有 progress 表的老库升级到 v2 后，旧进度原样读回。

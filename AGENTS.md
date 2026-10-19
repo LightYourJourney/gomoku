@@ -17,7 +17,7 @@ Gomoku Lab 的开发约定。通用工程原则（想清楚再写、保持简单
 - **时钟一律可注入。** `Date.now()` 的**调用**只允许出现在 `ai/search.ts` 的时间预算里，
   且超时行为必须仍然可以通过 `budgetMs` 参数在测试里强制触发——不要把它改成不可覆盖的常量。
   别处需要时钟就走**参数注入**：`ai/threat.ts` / `ai/search.ts` / `learn/verify.ts` / `learn/hints.ts`
-  的签名都是 `now: () => number`，调用方把 `Date.now` 传进去（见 `features/learn/PracticeBoard.tsx`），
+  的签名都是 `now: () => number`，调用方把 `Date.now` 传进去（判题见 `features/learn/PracticeBoard.tsx`，求解见 `features/learn/solutionCache.ts`），
   测试里换成假时钟。**不要在函数体内直接写 `Date.now()`**——那样时间就固定不住了。
   （这条原先写的是「只允许出现在 `ai/search.ts`」，比事实更绝对：注入式的用法一直存在，
   `persist/gameRecords.ts` 与 `features/review/GameLibrary.tsx` 的注释还按旧措辞引用了它。）
