@@ -12,7 +12,7 @@ Gomoku Lab 的开发约定。通用工程原则（想清楚再写、保持简单
 
 - **不使用 `enum`**。`tsconfig.app.json` 开了 `erasableSyntaxOnly`，一律用 `as const` 对象加联合类型。
 - **`core` / `ai` / `learn` 的算法部分不得引入 React、DOM、Zustand、localStorage、IndexedDB、Worker**。引擎逻辑本身（`patterns` / `evaluate` / `candidates` / `difficulty` / `search`）与全部 `core` 模块必须是能脱离浏览器直接单测的纯逻辑。
-  - `learn/` 是教学内容层：`types.ts` / `verify.ts` / `hints.ts` / `lessons.ts` / `puzzles.ts` 全是纯逻辑，依赖方向 `features → learn → ai → core` 单向，**不得被 `ai`/`core` 反向依赖**（`store` 不依赖 `learn`：`src/store/` 只 import `core` / `persist` / `ai`）。棋盘的字符画解析器住在 `lib/board-lines.ts`（内容与测试共用）。
+  - `learn/` 是教学内容层：`types.ts` / `verify.ts` / `hints.ts` / `lessons.ts` / `puzzles.ts` 全是纯逻辑，依赖方向 `features → learn → ai → core` 单向，**不得被 `ai`/`core` 反向依赖**。`store` 不依赖 `learn`、`features`、`components`；它从 `core` / `persist` / `ai` / `analysis` / `lib` 取纯逻辑（`settingsStore` 用 `lib/theme`、`analysisStore` 用 `analysis`，都是不碰 DOM 的纯模块）。棋盘的字符画解析器住在 `lib/board-lines.ts`（内容与测试共用）。
   - **例外**：`ai/worker.ts` 与 `ai/browserEngine.ts`。前者是 Worker 的入口，后者负责创建 Worker——只有这两个文件允许触碰 Worker，且只做消息收发，不含任何搜索逻辑。`ai/engine.ts` 虽然也住在 `ai/` 下，但它连 Worker 都不碰（发送函数是注入进来的），仍是可单测的纯状态机。
 - **时钟一律可注入。** `Date.now()` 的**调用**只允许出现在 `ai/search.ts` 的时间预算里，
   且超时行为必须仍然可以通过 `budgetMs` 参数在测试里强制触发——不要把它改成不可覆盖的常量。
@@ -40,7 +40,8 @@ Gomoku Lab 的开发约定。通用工程原则（想清楚再写、保持简单
   棋盘 ≥ **620px**（低高度窗口里棋盘受高度约束，1024×768 实测 597px，仍远高于
   320 底线）；两栏/三栏下棋盘与侧栏互不压盖、状态条与工具栏互不相交。
   **高度极小的横屏窗口（900×480 / 915×412）棋盘会低于 320**：`320 + 顶栏 + 工具栏`
-  物理上放不下。**这一档不是合规、也不是项目约定**——它没有尺寸断言，属于
+  物理上放不下。**这一档不是合规、也不是项目约定**——它没有「≥320」的合规断言
+  （只有一条 ≥200 的边界断言：不塌、正方形、工具栏在），属于
   `docs/ui-redesign/KNOWN_ISSUES.md` M-3 记录的规范冲突（§8.1 的绝对措辞待调整）。
   改断点、栅格或棋盘容器的高度策略时，这几条断言必须仍然全绿。
 - 不允许为了让测试通过而删除有效断言、跳过用例或替换成无意义的 mock。

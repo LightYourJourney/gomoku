@@ -197,7 +197,7 @@ Phase 5 之后功能与工程层面都已收口，但界面本身**从未被系�
 | [ui-redesign/PLAN.md](ui-redesign/PLAN.md) | Phase 01–07 的实施计划（含 3 轮自审） |
 | [ui-redesign/REVIEW.md](ui-redesign/REVIEW.md) | 独立终审的结论 |
 | `superpowers/specs/` 与 `superpowers/plans/` | **归档**：各阶段动工前的技术设计与实施计划（带日期）。它们记的是**写作当时**的样子，不是现状——每份开头都有一行归档说明，读之前先看那行 |
-| `bench/ui.probe.mjs` | 探针：受控状态 × 视口矩阵的截图与量测（`yarn ui:probe`）。**当前 27 个状态 / 220 张**——21 / 172 是 Phase 02 收尾时的数 |
+| `bench/ui.probe.mjs` | 探针：受控状态 × 视口矩阵的截图与量测（`yarn ui:probe`）。**当前 38 个状态 / 308 张**——21 / 172 是 Phase 02 收尾时的数，27 / 220 是 Phase 03 的 |
 
 **结论**：对比度、键盘可达性、错误恢复三项**没有发现缺陷**（156 次量测逐元素扫过，
 0 处低于 WCAG AA）。问题集中在布局与信息密度：
@@ -520,7 +520,7 @@ e2e 却没同步这份文档。所以「134 → 135 → 141」中间那段差额
 对比度违规与横向溢出保持 0。
 
 **最终门禁**（全部实跑）：lint / typecheck / build ✓、test **1060 passed** ✓、
-gates（**1060 · 158**，0 clones）✓、e2e **158 passed** ✓、e2e:prod **5 passed** ✓、
+gates（**1060 · 162**，0 clones）✓、e2e **162 passed** ✓、e2e:prod **5 passed** ✓、
 check:coverage（3084 条 + 136 新增）✓、bench:check（19/19 + 29）✓、
 ui:probe（**38 状态 / 308 张**，七条量化判据全过）✓。
 

@@ -58,7 +58,8 @@ Phase D 只做**设计级影响分析**，不开发任何新功能。
   —— **2026-10-13：前者已由 `knip.jsonc` 的 `ignoreExportsUsedInFile: { type, interface }` 整类放行**。
   这是一条**裁定**，不是遗漏：再有人问「为什么 knip 不报这些」，答案是这份 §1.3。
   （同文件里 `verify.ts` 那个 `export const OK` 是**真**多余的导出，已修——`variable` 种类不在放行之列。）
-- `Board.tsx` 的 565 行；225 个命中 `<rect>` 与每格一个 `onKeyDown`
+- `Board.tsx` 的 **681 行**（2026-10-19 复核；建单时 565 行，Phase 03–06 增加了
+  标记字号解绑、最后一手反色点与胜利环）；225 个命中 `<rect>` 与每格一个 `onKeyDown`
 - **`.jscpd.json` 里那 6 个被豁免的文件**（`LearnScreen`/`PuzzleScreen`、`lessons`/`puzzles`、
   `gameRecords`/`progress`）—— 2026-10-13 建立重复代码闸门时逐个看过，不是图省事：
   - `lessons.ts` ↔ `puzzles.ts`（两处各 21 行）：克隆的是**内容数据字面量的形状**

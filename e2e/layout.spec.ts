@@ -227,7 +227,7 @@ test.describe('棋盘尺寸预算', () => {
     })
   }
 
-  for (const width of [1024, 1440, 1920] as const) {
+  for (const width of [1024, 1280, 1440, 1920] as const) {
     test(`残局 · 详情 @${width}：棋盘长到 ${DESKTOP_BOARD}px 以上`, async ({ page }) => {
       await page.setViewportSize({ width, height: 900 })
       await gotoPuzzle(page)

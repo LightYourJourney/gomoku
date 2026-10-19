@@ -50,12 +50,12 @@ function Candidate({ suggestion, rank }: { suggestion: MoveSuggestion; rank: num
       </span>
       <span className="flex flex-wrap gap-1 text-xs">
         {attack !== 'none' && (
-          <span className="rounded bg-accent-soft px-2 py-0.5 text-accent">
+          <span className="rounded-md bg-accent-soft px-2 py-0.5 text-accent">
             进攻 {threatLabel(attack)}
           </span>
         )}
         {defense !== 'none' && (
-          <span className="rounded bg-warn-soft px-2 py-0.5 text-warn">
+          <span className="rounded-md bg-warn-soft px-2 py-0.5 text-warn">
             防守 {threatLabel(defense)}
           </span>
         )}

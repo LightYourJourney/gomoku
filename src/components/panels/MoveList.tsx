@@ -85,7 +85,7 @@ function MoveCell({ point, player, highlighted }: MoveCellProps) {
     <span
       data-testid={`move-${point.x}-${point.y}`}
       className={cx(
-        'inline-flex items-center gap-2 rounded px-1 py-0.5 tabular-nums',
+        'inline-flex items-center gap-2 rounded-md px-1 py-0.5 tabular-nums',
         /*
          * 最后一手的底色是 **accent**，不是 danger。
          *
