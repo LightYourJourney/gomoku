@@ -176,9 +176,9 @@
 
 现状六种（6/8/10/12/16/full）里的 `rounded-[10px]`（品牌标记）已归并到 12（现在全仓 0 处）。
 
-**一处未收敛的偏离**：`HintPanel.tsx` 两处、`MoveList.tsx` 一处仍写着**裸 `rounded`**
-（Tailwind 默认 4px，不在上面的档位里；`index.css` 没有覆盖 `--radius`）。按本表该归到 6 或 8。
-记在这里是为了不让它被当成「已定的档位」——**改那两处之前先看这条**。
+**裸 `rounded` 已清零**：Phase 07 收尾时 `HintPanel.tsx` 两处、`MoveList.tsx` 一处
+（Tailwind 默认 4px，不在上面的档位里）统一归并到 `rounded-md`。
+现在全仓只剩 `rounded-md` / `rounded-lg` / `rounded-xl` / `rounded-2xl` / `rounded-full` 五档。
 
 ### 5.2 阴影：两级
 
@@ -497,7 +497,8 @@ yarn lint && yarn typecheck && yarn test && yarn build && yarn e2e && yarn e2e:p
 yarn ui:probe --out after-phaseNN     # 与 screenshots/before/ 逐张对照
 ```
 
-`e2e/layout.spec.ts`（Phase 01 新增 28 条，Phase 02 扩到 41 条，Phase 03 之后共 **44 条**）把下面几条变成了可断言的：
+`e2e/layout.spec.ts`（`playwright test e2e/layout.spec.ts --list` 当前 **61 条**，
+循环里的每一档各算一条）把下面几条变成了可断言的：
 棋盘 ≥320px 且是正方形（六档宽度、三个页面）、**宽度 ≥1024 且高度 ≥900** 时
 棋盘 ≥620px（620 只在 `height: 900` 下断言；低高度窗口受高度约束，1024×768
 实测 597px）、

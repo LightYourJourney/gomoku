@@ -1,5 +1,8 @@
 # UI/UX 审计发现（Phase 00）
 
+> **阶段快照（历史记录）**：审计对象是 `afcab74`，28 条发现的原文与当时状态都停在
+> Phase 00——**不是当前状态**。逐条核销结果见 [`FINAL_AUDIT.md`](FINAL_AUDIT.md) §2。
+
 审计对象：`afcab74`（工作区干净）。基线见 [BASELINE.md](BASELINE.md)，
 规范见 [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md)。
 

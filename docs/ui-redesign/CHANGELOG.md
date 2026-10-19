@@ -26,6 +26,20 @@
 - **`PHASE_05.md` 里一句与证据矛盾的「已交付」已更正**：F-UI-07/23/24 当时
   并未修。
 
+### 交付后的两轴评审整改（固定点 `afcab74`）
+
+- **Lighthouse 四页 × 深浅两主题**：Accessibility 全部 100（隔离上下文逐页
+  snapshot 审计）；Best Practices 同样 100。**VoiceOver 仍未执行**，如实记在
+  `FINAL_AUDIT.md` §2，不混进「全部实测」。
+- **620px 预算覆盖补全**：残局详情加 1280 一档，复盘回放扩到
+  1024 / 1280 / 1440 / 1920 四档；e2e 158 → **162**，测试条数基线同步。
+- **三处裸 `rounded` 归并到 `rounded-md`**（`HintPanel` 两处、`MoveList` 一处），
+  圆角体系现在只有规范里的四档加 `rounded-full`。
+- **F-UI-23 改记为「部分」**：文案已从「直接取胜」改为「算到必胜」，
+  按算杀手数分档所需的 `plies` 字段仍未加（增强，不是缺陷）。
+- 文档口径同步：`TEST_REPORT` 基线、`ROADMAP` 探针数量、`AGENTS` 的 store 依赖、
+  `TECH_DEBT` 的 `Board.tsx` 行数、`DESIGN_SYSTEM` 的回放编号换算。
+
 ### 验证
 
 - 五条用户路径（对战 / 教学 / 残局 / 复盘 / 主题与恢复）在真实浏览器逐条走通。

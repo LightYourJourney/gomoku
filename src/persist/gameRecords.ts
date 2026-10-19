@@ -14,8 +14,9 @@ export const GAME_RECORDS_SCHEMA_VERSION = 1
 /**
  * 一局已结束的棋。
  *
- * **不存时间戳**：项目约定 `Date.now()` 只允许出现在 `ai/search.ts`，棋谱的
- * 先后次序由 IndexedDB 的自增主键 `seq` 表达——列表按它降序，最近的在前。
+ * **不存时间戳**：项目约定时钟一律注入，`Date.now()` 的**直接调用**只允许出现在
+ * `ai/search.ts`；棋谱的先后次序由 IndexedDB 的自增主键 `seq` 表达——列表按它降序，
+ * 最近的在前。
  */
 export interface GameRecord {
   /** IndexedDB 自增主键。列表按它降序 = 最近的在前。 */

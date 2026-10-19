@@ -27,8 +27,8 @@ function resultLabel(record: GameRecord): string {
  * 而它本来就在 `record.difficulty` 里躺着。双人局不标——那里没有 AI 难度，
  * 硬写一个「入门」是在编。
  *
- * **不加时间戳**：`AGENTS.md` 规定 `Date.now()` 只能出现在 `ai/search.ts`，
- * 而 `GameRecord` 是刻意不存时间的（先后由自增主键表达）；
+ * **不加时间戳**：`AGENTS.md` 规定时钟一律注入、`Date.now()` 的直接调用只能出现在
+ * `ai/search.ts`，而 `GameRecord` 是刻意不存时间的（先后由自增主键表达）；
  * 补上去会让所有存量棋谱作废。先后看列表顺序就够了。
  */
 function metaLabel(record: GameRecord): string {

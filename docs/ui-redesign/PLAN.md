@@ -1,5 +1,8 @@
 # UI/UX 改版 · 分阶段实施计划（Phase 00 → 07）
 
+> **计划已完成（历史记录）**：Phase 00–07 全部交付，本文件保留为当时的计划与自审记录。
+> 实际结果见 [`FINAL_AUDIT.md`](FINAL_AUDIT.md)。
+
 依据：[FINDINGS.md](FINDINGS.md) 的 28 条发现 + [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md) 的规范。
 基线：[BASELINE.md](BASELINE.md)，含 156 张截图与 156 条量测。
 

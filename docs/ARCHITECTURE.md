@@ -6,15 +6,15 @@
 components / features   ← 展示层，只做渲染与事件转发
         ↓
       store             ← Zustand：对局状态、设置、AI 请求编排、回放与分析管线
-        ↓
-    analysis → learn    ← 分析结论的纯函数与教学内容（都不碰浏览器）
-        ↓
+      ↙   ↘
+analysis   learn        ← 分析结论与教学内容（两条互不依赖的纯逻辑支线）
+      ↘   ↙
    ai  →  core          ← 引擎与纯规则
         ↓
      browser APIs       ← Worker / localStorage / IndexedDB / WebAudio
 ```
 
-**依赖方向严格单向**：`components → features → store → ai/core`，`ai → core`。`core` 不依赖任何其他层，也不碰 React、DOM、时间与随机数。这条约束让规则与引擎可以脱离浏览器直接单测。
+**依赖方向严格单向**：`components → features → store`；`store` 向下依赖 `analysis` / `ai` / `core` / `persist` / `lib`；`analysis → ai → core`，`learn → ai → core`，两条支线互不依赖。`core` 不依赖任何其他层，也不碰 React、DOM、时间与随机数。这条约束让规则与引擎可以脱离浏览器直接单测。
 
 ## 各层职责
 
@@ -37,7 +37,7 @@ components / features   ← 展示层，只做渲染与事件转发
 
 **`learn/`** —— 教学内容。
 `types.ts` 课程与题目的数据形状；`verify.ts` 判定一手棋有没有达成目标；`hints.ts` 求解与三级提示；`lessons.ts` / `puzzles.ts` 是内容本身；`positions.ts` 是被多处内容共用的局面常量（字符画写法见 `lib/board-lines.ts`）。依赖方向 `features → learn → ai → core`，单向；`learn` 不得被 `ai`/`core` 反向依赖。
-**`store` 与 `learn` 之间没有依赖**（`src/store/` 只 import `core` / `persist` / `ai`）——
+**`store` 与 `learn` 之间没有依赖**（`src/store/` 只 import `core` / `persist` / `ai` / `analysis` / `lib`）——
 原先这里写成 `features → store → learn → ai → core` 一条链，把两者串了起来，实际是两条并行的支线。
 
 **共用局面为什么值得单独抽一个文件**：同一个局面会被讲解、练习和题库一起引用（`FOUR_THREE` 就被 5 处用），抄几遍的话改一处必漏几处。但它同时是个陷阱——**两道题共用同一块盘面时，题面很容易照着「我以为的差别」写，而盘面其实一模一样**。第四轮审查抓到过一次，见 `docs/TEST_REPORT.md` 的「二之六」。抽常量之后仍要逐题核对题面描述与盘面是否相符。
@@ -58,7 +58,7 @@ components / features   ← 展示层，只做渲染与事件转发
 **`components/`** —— 展示。
 `ui/` 是与业务无关的原子组件；`board/` 是棋盘（`Board` + `BoardStage` 容器）；`panels/` 是业务面板；`AppErrorBoundary` 是顶层错误边界。面板全部通过 props 接收数据与回调，不直接读 store。
 
-**`features/`** —— 容器。`shell/` 是六个页面位置共用的外壳：`AppHeader`（品牌 + 导航 + 主题）与 `PageShell`（外壳、滚动策略、两种正文模式）；`battle/` 是对战页，并承载 `status.ts` 这类纯推导逻辑；`learn/` 是课程列表与课程运行器；`puzzles/` 是残局挑战。
+**`features/`** —— 容器。`shell/` 是六个页面位置共用的外壳：`AppHeader`（品牌 + 导航 + 主题）与 `PageShell`（外壳、滚动策略、两种正文模式）；`battle/` 是对战页，并承载 `status.ts` 这类纯推导逻辑；`learn/` 是课程列表与课程运行器；`puzzles/` 是残局挑战；`review/` 是棋谱库、回放与引擎分析。
 
 **`PageShell` 为什么住在 `features/shell/` 而不是 `components/ui/`**：它要渲染 `AppHeader`，而 `AppHeader` 读 store。放进 `components/` 就成了 `components → features`，与「依赖方向单向 `components → features → store`」相反。同层之间互相引用没有这个问题。
 
@@ -203,7 +203,7 @@ Phase 03 之前它是一圈 `--c-danger` 的红环：`danger` 是「认输 / 错
 `radius × 1.25`。回放编号因此能在保持小半径（棋子仍露在外面）的同时把字号提到
 0.51 单位——@390 约 10.84px，守住 `DESIGN_SYSTEM` §8.2 的 10px 下限（F-UI-14）。
 
-**布局预算由 e2e 钉住**（`e2e/layout.spec.ts`）：任何视口棋盘 ≥ 320px 且为正方形；
+**布局预算由 e2e 钉住**（`e2e/layout.spec.ts`）：e2e 覆盖的常规视口下棋盘 ≥ 320px 且为正方形；
 **宽度 ≥1024 且高度 ≥900** 时 ≥ 620px（低高度窗口里棋盘受高度约束，1024×768
 实测 597px）；两栏/三栏下棋盘与侧栏互不压盖。高度极小的横屏窗口（900×480 /
 915×412）物理上放不下 `320 + 顶栏 + 工具栏`，**这一档没有尺寸断言，也不是被
