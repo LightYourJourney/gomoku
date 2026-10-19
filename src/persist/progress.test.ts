@@ -228,3 +228,38 @@ describe("lastView 的 'review' 取值", () => {
     expect(await loadProgress()).toEqual(review)
   })
 })
+
+describe('老库兼容（Phase 09A §七）', () => {
+  it('v1 只有 progress 表时，升级到 v2 后旧进度仍能原样读回', async () => {
+    // beforeEach 建的是当前版本；先删掉，改造成「老用户只有 v1 + progress 表」。
+    await new Promise<void>((resolve, reject) => {
+      const del = globalThis.indexedDB.deleteDatabase(DB_NAME)
+      del.onsuccess = () => resolve()
+      del.onerror = () => reject(new Error('删库失败'))
+      del.onblocked = () => resolve()
+    })
+
+    await new Promise<void>((resolve, reject) => {
+      const legacy = globalThis.indexedDB.open(DB_NAME, 1)
+      legacy.onupgradeneeded = () => {
+        legacy.result.createObjectStore('progress')
+      }
+      legacy.onsuccess = () => {
+        const db = legacy.result
+        const tx = db.transaction('progress', 'readwrite')
+        tx.objectStore('progress').put(SAMPLE, 'learning')
+        tx.oncomplete = () => {
+          db.close()
+          resolve()
+        }
+        tx.onerror = () => reject(new Error('老库写不进去'))
+      }
+      legacy.onerror = () => reject(new Error('建老库失败'))
+    })
+
+    // 走生产路径打开（v2）：onupgradeneeded → ensureSchema 补建 records 表，
+    // 但不能动 progress 表里的旧记录。
+    __setIndexedDbFactory(null) // 同时清掉内存兜底，确保读的是 IndexedDB
+    expect(await loadProgress()).toEqual(SAMPLE)
+  })
+})

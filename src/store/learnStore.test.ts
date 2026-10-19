@@ -34,7 +34,7 @@ class FakeStorage implements ProgressStorage {
   }
 }
 
-const flush = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 0))
+const tick = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 0))
 
 let storage: FakeStorage
 let store: ReturnType<typeof createLearnStore>
@@ -51,7 +51,7 @@ describe('载入', () => {
     expect(state().loaded).toBe(false)
 
     state().bootstrap()
-    await flush()
+    await tick()
 
     expect(state().loaded).toBe(true)
   })
@@ -66,7 +66,7 @@ describe('载入', () => {
     }
 
     state().bootstrap()
-    await flush()
+    await tick()
 
     expect(state().progress.completedLessons).toEqual(['rules'])
     expect(state().progress.lastView).toBe('learn')
@@ -78,7 +78,7 @@ describe('载入', () => {
     store = createLearnStore(new FakeStorage(true))
 
     state().bootstrap()
-    await flush()
+    await tick()
 
     expect(state().loaded).toBe(true)
     expect(state().progress).toEqual(EMPTY_PROGRESS)
@@ -88,10 +88,10 @@ describe('载入', () => {
 describe('完成与通关', () => {
   it('完成一节课会写进进度并落盘', async () => {
     state().bootstrap()
-    await flush()
+    await tick()
 
     state().completeLesson('rules')
-    await flush()
+    await tick()
 
     expect(state().progress.completedLessons).toEqual(['rules'])
     expect(storage.saved.completedLessons).toEqual(['rules'])
@@ -116,7 +116,7 @@ describe('完成与通关', () => {
     store = createLearnStore(new FakeStorage(false, true))
 
     state().completeLesson('rules')
-    await flush()
+    await tick()
 
     expect(state().progress.completedLessons).toEqual(['rules'])
   })
@@ -128,7 +128,7 @@ describe('完成与通关', () => {
 
     state().bootstrap()
     state().setView('learn')
-    await flush()
+    await tick()
 
     expect(state().view).toBe('learn')
     expect(state().progress.lastView).toBe('learn')
@@ -142,7 +142,7 @@ describe('完成与通关', () => {
 
     state().bootstrap()
     state().completeLesson('defense')
-    await flush()
+    await tick()
 
     expect(state().progress.completedLessons).toContain('defense')
   })
@@ -155,10 +155,10 @@ describe('视图', () => {
 
   it('setView 同时更新当前视图与要落盘的位置', async () => {
     state().bootstrap()
-    await flush()
+    await tick()
 
     state().setView('puzzles')
-    await flush()
+    await tick()
 
     expect(state().view).toBe('puzzles')
     expect(state().progress.lastView).toBe('puzzles')
@@ -169,7 +169,7 @@ describe('视图', () => {
     storage.saved = { ...EMPTY_PROGRESS, lastView: 'learn' }
 
     state().bootstrap()
-    await flush()
+    await tick()
 
     expect(state().view).toBe('learn')
   })
@@ -202,5 +202,146 @@ describe("视图扩展 —— 'review'", () => {
     state().setView('review')
 
     expect(state().progress.lastView).toBe('review')
+  })
+})
+
+
+/**
+ * 可以精确控制「哪一次写入何时完成」的存储。
+ *
+ * 用它构造真实的竞态：第一次写入还挂着，第二次修改已经发生。
+ */
+class GatedStorage implements ProgressStorage {
+  saved: LearningProgress = EMPTY_PROGRESS
+  calls: LearningProgress[] = []
+  private gates: Array<{ resolve: () => void; reject: (error: Error) => void }> = []
+
+  load(): Promise<LearningProgress> {
+    return Promise.resolve(this.saved)
+  }
+
+  save(progress: LearningProgress): Promise<void> {
+    this.calls.push(progress)
+    return new Promise<void>((resolve, reject) => {
+      this.gates.push({
+        resolve: () => {
+          this.saved = progress
+          resolve()
+        },
+        reject,
+      })
+    })
+  }
+
+  clear(): Promise<void> {
+    this.saved = EMPTY_PROGRESS
+    return Promise.resolve()
+  }
+
+  /** 完成最早那一笔还没结束的写入。 */
+  finishNext(): void {
+    const gate = this.gates.shift()
+    if (gate === undefined) throw new Error('没有在飞的写入')
+    gate.resolve()
+  }
+
+  failNext(): void {
+    const gate = this.gates.shift()
+    if (gate === undefined) throw new Error('没有在飞的写入')
+    gate.reject(new Error('写不进去'))
+  }
+
+  get inflight(): number {
+    return this.gates.length
+  }
+}
+
+describe('写入时序（Phase 09A）', () => {
+  let gated: GatedStorage
+
+  beforeEach(async () => {
+    gated = new GatedStorage()
+    store = createLearnStore(gated)
+    state().bootstrap()
+    await tick()
+  })
+
+  it('连续修改时按顺序写，最后落盘的一定是最新状态', async () => {
+    state().visit('lesson', 'rules')
+    state().visit('lesson', 'two')
+
+    // 第二次还没轮到：第一笔在飞，最新的那份先排队
+    expect(gated.calls.map((p) => p.lastVisited?.id)).toEqual(['rules'])
+
+    gated.finishNext()
+    await tick()
+
+    expect(gated.calls.map((p) => p.lastVisited?.id)).toEqual(['rules', 'two'])
+
+    gated.finishNext()
+    await tick()
+    expect(gated.saved.lastVisited).toEqual({ kind: 'lesson', id: 'two' })
+  })
+
+  it('旧写入不会覆盖新数据：第一笔完成之后才写第二笔', async () => {
+    state().setView('learn')
+    state().setView('puzzles')
+
+    expect(gated.calls).toHaveLength(1)
+    gated.finishNext()
+    await tick()
+    expect(gated.calls).toHaveLength(2)
+    gated.finishNext()
+    await tick()
+
+    expect(gated.saved.lastView).toBe('puzzles')
+  })
+
+  it('flush 会等到队列排空，而不是只看当前这一笔', async () => {
+    state().visit('lesson', 'rules')
+    state().visit('lesson', 'two')
+
+    let done = false
+    void state().flush().then(() => { done = true })
+
+    await Promise.resolve()
+    expect(done).toBe(false) // 第一笔还挂着
+
+    gated.finishNext()
+    await tick()
+    expect(gated.calls).toHaveLength(2) // flush 期间第二笔已经发出
+    expect(done).toBe(false)
+
+    gated.finishNext()
+    await tick()
+    expect(done).toBe(true)
+    expect(gated.saved.lastVisited).toEqual({ kind: 'lesson', id: 'two' })
+  })
+
+  it('没有待写时 flush 立即完成', async () => {
+    await expect(state().flush()).resolves.toBeUndefined()
+  })
+
+  it('一次写入失败不会卡住后续写入', async () => {
+    state().visit('lesson', 'rules')
+    gated.failNext()
+    await tick()
+
+    state().visit('lesson', 'two')
+    gated.finishNext()
+    await tick()
+
+    expect(gated.saved.lastVisited).toEqual({ kind: 'lesson', id: 'two' })
+  })
+
+  it('把设置成同一个值不会重复写入', async () => {
+    state().setView('learn')
+    gated.finishNext()
+    await tick()
+    const before = gated.calls.length
+
+    state().setView('learn')
+
+    expect(gated.calls.length).toBe(before)
   })
 })

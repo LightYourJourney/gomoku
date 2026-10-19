@@ -1,4 +1,4 @@
-import { WIN_SCORE, type Confidence } from '../ai/types'
+import { WIN_SCORE, type Confidence, type SearchPath, type SearchReason } from '../ai/types'
 import { ENGINE_VERSION } from '../ai/version'
 import type { Point } from '../core/types'
 import type { Difficulty } from '../ai/types'
@@ -23,6 +23,13 @@ export interface MoveVerdict {
   readonly loss: number
   /** 单手结论的可靠度：搜完 = exact，超时 = heuristic */
   readonly confidence: Confidence
+  /**
+   * 引擎给出这一手时走的路径（`SearchReason` 原样带出）。
+   *
+   * 与 `confidence` 是两件事：一次「直接成五」既 exact 又没做搜索。
+   * 界面必须用 `searchPathOf()` 分类，不能拿 depth / nodes 推。
+   */
+  readonly reason: SearchReason
   readonly engineDepth: number
   readonly engineNodes: number
 }
@@ -43,6 +50,7 @@ export interface VerdictInput {
   /** 该手是否直接终局（成五）。终局手 loss 恒 0——赢棋不存在亏损。 */
   readonly isWinningMove: boolean
   readonly confidence: Confidence
+  readonly reason: SearchReason
   readonly engineDepth: number
   readonly engineNodes: number
 }
@@ -60,6 +68,7 @@ export function buildVerdict(input: VerdictInput): MoveVerdict {
     engineMove: input.engineMove,
     loss: Math.max(0, raw),
     confidence: input.confidence,
+    reason: input.reason,
     engineDepth: input.engineDepth,
     engineNodes: input.engineNodes,
   }
@@ -103,6 +112,27 @@ export function verdictLabel(v: MoveVerdict): string {
    */
   if (v.loss < 5_000) return '分差很小（不足 1 子）'
   return `分差约 ${Math.round(v.loss / 10_000)} 子`
+}
+
+/**
+ * 「这一手是怎么得出来的」的人话。
+ *
+ * 与 `verdictLabel`（分差怎么读）是两件事：**四类路径必须分开说**。
+ * 把「规则 / 快速路径判定」写成「搜索完成」，等于告诉玩家引擎展开过搜索——
+ * 而它可能一次都没展开（直接成五、必防、开局天元，深度 0、节点 0）。
+ * 这正是 Phase 08 独立审计发现的那条语义缺陷。
+ */
+export function pathLabel(path: SearchPath): string {
+  switch (path) {
+    case 'search':
+      return '搜索完成'
+    case 'shortcut':
+      return '规则/快速路径判定'
+    case 'aborted':
+      return '预算内未搜完（启发式）'
+    case 'none':
+      return '无可用着法'
+  }
 }
 
 /**

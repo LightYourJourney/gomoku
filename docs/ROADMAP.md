@@ -11,6 +11,7 @@
 | Phase 5 | 视觉打磨 + 键盘无障碍 + 平板触屏 + 错误边界 + 部署与文档 | ✅ 已完成并通过终审 |
 | UI/UX Phase 00–07 | 视觉系统、四个页面重构、响应式与无障碍终审 | ✅ 已完成并通过两轴评审 |
 | Phase 08 | 独立产品验收审计（第三方视角，不改代码） | ✅ 达到发布候选标准（见 [审计报告](audit/POST_UI_REDESIGN_AUDIT.md)） |
+| Phase 09A | 发布前可靠性加固与发布准备（不对外发布） | ✅ 完成；可进入 staging，公开发布仍需授权与真实托管验证 |
 
 一次只推进一个阶段，每个阶段跑完「类型检查 → 单元测试 → 生产构建 → 真实浏览器验证」再进入下一个。
 
@@ -574,6 +575,38 @@ AI 必防与取胜 + 五档实测深度节点（1/2/4/6/7 层，12→104,511 节
 **交付**：[POST_UI_REDESIGN_AUDIT.md](audit/POST_UI_REDESIGN_AUDIT.md)
 （审计范围与方法、业务正确性、代码质量、测试结果、分级问题、未覆盖范围与下一轮路线图）；
 原始读数在 [phase08-evidence.json](audit/phase08-evidence.json)。
+
+## Phase 09A · 发布前可靠性加固与发布准备 ✅
+
+**定位**：不是新功能，也不是又一次改版。只做「发布前必须解决」的可靠性、
+安全与交付准备；**没有向任何外部平台发布**，没有修改远端仓库/域名/DNS/账号。
+
+**完成的内容**：
+
+- **进度写入时序**：内存态 / 排队 / 落盘三层分开；串行 latest-wins 队列，
+  旧写入不可能覆盖新写入；`flush()` 提供确定性同步点；`pagehide` /
+  `visibilitychange` 只做尽力而为，**不承诺关闭前绝对落盘**。
+- **分析结论语义**：新增 `SearchPath`（search / shortcut / aborted / none），
+  由 `SearchReason` 穷举映射；UI 不再从 depth/nodes 猜路径；搜索与走子决策零改动。
+- **主线程测量更正**：Phase 08 的 60–132 ms 系测量口径错误。纯函数最慢
+  4.81–5.15 ms（求解）/ 2.39–2.97 ms（判题），生产产物页内提交 1.3–4.3 ms，
+  无 >50 ms long task；**不引入 Worker**。
+- **发布资源**：`robots.txt`（允许索引）、`404.html`、`_headers`（CSP + 安全头 + 缓存）；
+  README 删掉「不含任何网络请求 / 完全离线」的错误口径。
+- **安全**：无密钥、无动态执行、无第三方资源；运行时依赖 3 个且 audit 0；
+  CSP 在真实 `dist/` 上按主流程实测 0 违规。
+- **IndexedDB 兼容**：v1（仅 progress 表）升级到 v2 后旧进度原样读回，有测试；
+  **localhost 与生产域名不同源，数据不迁移**，本阶段不做导入/导出。
+- **门禁**：1084 单测 / 162 e2e / 5 产物冒烟 / 308 张探针 / 19+29 基准不变量，全绿。
+
+**交付**：[RELEASE_READINESS.md](release/RELEASE_READINESS.md)、
+[DEPLOYMENT_PLAN.md](release/DEPLOYMENT_PLAN.md)、
+[ROLLBACK_PLAN.md](release/ROLLBACK_PLAN.md)、
+[RELEASE_CHECKLIST.md](release/RELEASE_CHECKLIST.md)。
+摘要见 [TEST_REPORT.md](TEST_REPORT.md) 的「〇之十三」。
+
+**明确未做**：未发布；未创建托管项目；未加第三方统计/广告/远程字体/新外部 API；
+未做完整导入导出；未把求解挪进 Worker；未改 AI 决策。
 
 ## 长期待办
 

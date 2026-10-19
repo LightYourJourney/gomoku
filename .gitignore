@@ -16,6 +16,7 @@ dist-ssr
 # 要写进文档的数字必须另存一份到 bench/runs/<出处提交>.json（不可变），
 # 文档引用那一份——否则重跑一次基准就会让文档里的数字失去出处，而且工作区变脏。
 bench/last-run.json
+bench/learn-last-run.json
 
 # 探针在 CI 里的输出。注意 `--out` 是相对 docs/ui-redesign/screenshots/ 解析的：
 # `--out ci` → docs/ui-redesign/screenshots/ci/（172 张 PNG + 一份 measurements.json）

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import type { Point } from '../core/types'
 import { WIN_SCORE } from '../ai/types'
 import { ENGINE_VERSION } from '../ai/version'
-import { buildSummary, buildVerdict, cacheKey, verdictLabel, type MoveVerdict } from './analyze'
+import { buildSummary, buildVerdict, cacheKey, pathLabel, verdictLabel, type MoveVerdict } from './analyze'
 
 const AT: Point = { x: 7, y: 7 }
 
@@ -15,6 +15,7 @@ function verdict(overrides: Partial<Parameters<typeof buildVerdict>[0]> = {}): M
     playedScore: 500,
     isWinningMove: false,
     confidence: 'exact',
+    reason: 'search',
     engineDepth: 2,
     engineNodes: 100,
     ...overrides,
@@ -156,6 +157,7 @@ describe('着法相同即无亏损（捷径评分与真实评估不可比）', (
       playedScore: 12_000,
       isWinningMove: false,
       confidence: 'exact',
+      reason: 'search',
       engineDepth: 0,
       engineNodes: 0,
     })
@@ -164,13 +166,36 @@ describe('着法相同即无亏损（捷径评分与真实评估不可比）', (
 
   it('亏损榜不含着法与引擎一致的着手', () => {
     const verdicts = [
-      buildVerdict({ moveIndex: 0, played: AT, engineMove: AT, engineScore: 1_000_000, playedScore: 1, isWinningMove: false, confidence: 'exact', engineDepth: 0, engineNodes: 0 }),
-      buildVerdict({ moveIndex: 1, played: { x: 1, y: 1 }, engineMove: { x: 2, y: 2 }, engineScore: 900, playedScore: 100, isWinningMove: false, confidence: 'exact', engineDepth: 2, engineNodes: 50 }),
+      buildVerdict({ moveIndex: 0, played: AT, engineMove: AT, engineScore: 1_000_000, playedScore: 1, isWinningMove: false, confidence: 'exact', reason: 'search', engineDepth: 0, engineNodes: 0 }),
+      buildVerdict({ moveIndex: 1, played: { x: 1, y: 1 }, engineMove: { x: 2, y: 2 }, engineScore: 900, playedScore: 100, isWinningMove: false, confidence: 'exact', reason: 'search', engineDepth: 2, engineNodes: 50 }),
     ]
 
     const summary = buildSummary(verdicts)
 
     expect(summary.moveVerdicts).toHaveLength(2)
     expect(summary.topLosses.map((v) => v.moveIndex)).toEqual([1])
+  })
+})
+
+
+describe('搜索路径的语义（Phase 09A）', () => {
+  it('buildVerdict 原样带出引擎的 reason——不靠 depth/nodes 反推', () => {
+    expect(verdict({ reason: 'win' }).reason).toBe('win')
+    expect(verdict({ reason: 'block' }).reason).toBe('block')
+    expect(verdict({ reason: 'timeout' }).reason).toBe('timeout')
+  })
+
+  it('四类路径各有各的说法', () => {
+    expect(pathLabel('search')).toBe('搜索完成')
+    expect(pathLabel('shortcut')).toBe('规则/快速路径判定')
+    expect(pathLabel('aborted')).toBe('预算内未搜完（启发式）')
+    expect(pathLabel('none')).toBe('无可用着法')
+  })
+
+  it('快速路径与常规搜索不许混为一谈', () => {
+    // 这条钉的正是 Phase 08 发现的那个缺陷：深度 0、节点 0 的规则判定
+    // 仍然写着「搜索完成」。
+    expect(pathLabel('shortcut')).not.toContain('搜索完成')
+    expect(pathLabel('shortcut')).not.toBe(pathLabel('search'))
   })
 })

@@ -20,6 +20,39 @@ export type SearchReason =
   | 'no_move'
 
 /**
+ * 这一手是**怎么**得出来的（不是「结论有多可靠」，那是 `Confidence`）。
+ *
+ * 四类分别对应四种对用户可见的说法，界面与复盘必须用这个显式分类，
+ * **不许靠 depth / nodes / elapsedMs 反推**——那些是度量，不是语义：
+ * 一次算杀可能 0 节点（规则扫描直接命中），一次很短的搜索也可能深度为 0。
+ */
+export type SearchPath =
+  /** 常规搜索完成 */
+  | 'search'
+  /** 规则或快速路径直接确定：直接成五、必防、开局天元（含算杀链首手） */
+  | 'shortcut'
+  /** 预算耗尽、搜索中止，返回启发式兜底 */
+  | 'aborted'
+  /** 无棋可走，没有结论可言 */
+  | 'none'
+
+/** `SearchReason` → 显式路径分类。穷举，新增 reason 时这里会编译失败。 */
+export function searchPathOf(reason: SearchReason): SearchPath {
+  switch (reason) {
+    case 'search':
+      return 'search'
+    case 'timeout':
+      return 'aborted'
+    case 'no_move':
+      return 'none'
+    case 'win':
+    case 'block':
+    case 'opening':
+      return 'shortcut'
+  }
+}
+
+/**
  * 结论的可靠程度。
  * `exact` 表示这是搜索/必胜判断的结论；`heuristic` 表示预算不足时的启发式建议，
  * 不保证最优。界面必须如实区分二者。

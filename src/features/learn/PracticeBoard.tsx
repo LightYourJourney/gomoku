@@ -6,11 +6,12 @@ import { Panel } from '../../components/ui/Panel'
 import { Button } from '../../components/ui/Button'
 import { cx } from '../../lib/cx'
 import { parseBoardLines } from '../../lib/board-lines'
-import { goalHint, HINT_LEVELS, solveMove } from '../../learn/hints'
+import { goalHint, HINT_LEVELS } from '../../learn/hints'
 import type { Practice } from '../../learn/types'
 import { applyToBoard, judgeMove, type Verdict } from '../../learn/verify'
 import type { Point } from '../../core/types'
 import { SIDE_PANEL_CLASS } from '../shell/PageShell'
+import { solvePractice } from './solutionCache'
 
 export interface PracticeBoardProps {
   readonly practice: Practice
@@ -46,9 +47,13 @@ export function PracticeBoard({ practice, onSolved, alreadySolved = false, foote
   const [attempt, setAttempt] = useState<{ move: Point; verdict: Verdict } | null>(null)
   const [hintLevel, setHintLevel] = useState(0)
 
+  /*
+   * 第三级才求解。`solvePractice` 按题目对象缓存结果——「再做一次」会重建
+   * 组件，但不会重新付一遍算杀的开销（同一道题的解法不会变）。
+   */
   const solution = useMemo(
-    () => (hintLevel >= HINT_LEVELS ? solveMove(base, practice.player, practice.goal, Date.now) : null),
-    [base, hintLevel, practice],
+    () => (hintLevel >= HINT_LEVELS ? solvePractice(practice) : null),
+    [hintLevel, practice],
   )
 
   const solved = attempt?.verdict.ok === true

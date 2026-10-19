@@ -169,6 +169,18 @@ describe('分析管线 —— 排队', () => {
     expect(verdicts.get(8)?.loss).toBe(0) // 终局手
   })
 
+  it('把引擎的 reason 原样带进结论——不靠 depth / nodes 反推路径', async () => {
+    store.getState().start({ record: threeWinRecord(), engine: spy.engine, difficulty: 'easy', budgetMs: 400 })
+
+    // 局面 0 是「直接成五」的捷径：深度 0、节点 0，但 reason 明确是 win
+    spy.settle(0, { x: 3, y: 7 }, 100, 0, { reason: 'win' })
+    await Promise.resolve()
+    spy.settle(1, { x: 4, y: 7 }, -50)
+    await Promise.resolve()
+
+    expect(store.getState().verdicts.get(0)?.reason).toBe('win')
+  })
+
   it('一手横跨两次搜索：任一半没搜完，这一手就标启发式', async () => {
     store.getState().start({ record: threeWinRecord(), engine: spy.engine, difficulty: 'easy', budgetMs: 400 })
 

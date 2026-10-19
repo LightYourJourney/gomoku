@@ -15,6 +15,7 @@
     "lint": "oxlint",
     "bench": "vitest run --config vitest.bench.config.ts",
     "bench:render": "yarn build && node bench/render.probe.mjs",
+    "bench:learn": "vitest run --config vitest.learn.config.ts",
     "ui:probe": "node bench/ui.probe.mjs",
     "check:cycles": "madge --circular --extensions ts,tsx src",
     "check:deadcode": "knip --reporter compact",

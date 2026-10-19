@@ -1,10 +1,13 @@
 # Gomoku Lab · 五子棋实验室
 
-一款**完全离线**的五子棋 Web 应用：五档真实强度的 AI 对战、提示、互动教学、残局挑战与对局复盘。
+一款**纯前端、无需后端**的五子棋 Web 应用：五档真实强度的 AI 对战、提示、互动教学、残局挑战与对局复盘。
 无后端、无账号、无云数据库、不调用任何第三方大模型 API——规则与 AI 全部自研。
+页面加载时从**同源**取静态资源；之后的对局、教学与复盘全部在本机完成（不含 Service Worker，
+断网后刷新页面仍需能访问宿主）。
 
-**当前进度：Phase 1–5 与 UI/UX 改版 Phase 00–07 全部完成并通过终审。**
+**当前进度：Phase 1–5、UI/UX 改版 Phase 00–07、Phase 08 独立审计与 Phase 09A 发布加固全部完成。**
 键盘与读屏可用、平板与触屏专项验证过、生产构建有独立的冒烟通道、用法有[使用说明](docs/USAGE.md)；
+发布就绪评估与部署方案见 [RELEASE_READINESS.md](docs/release/RELEASE_READINESS.md)；
 最终审计与残留问题见 [FINAL_AUDIT.md](docs/ui-redesign/FINAL_AUDIT.md) 与 [KNOWN_ISSUES.md](docs/ui-redesign/KNOWN_ISSUES.md)。
 
 ![桌面端浅色主题](docs/screenshots/desktop-light.png)
@@ -35,6 +38,7 @@ yarn dev          # 开发服务器
 | `yarn bench` | 引擎基准（约一两分钟），数字见 [docs/AI_ENGINE.md](docs/AI_ENGINE.md) 的「实测」 |
 | `yarn bench:check` | 引擎基准**数值门禁**：`yarn bench` + 断言。只断言余量充足的行（`bench/baseline.json` 里 `gated` 冻结），跳过的逐行打印原因 |
 | `yarn bench:render` | 首屏与落子成本的浏览器实测，数字见 [docs/TEST_REPORT.md](docs/TEST_REPORT.md) |
+| `yarn bench:learn` | 教学/残局判题与求解的纯函数耗时（最慢 4.81–5.15 ms 求解 / 2.39–2.97 ms 判题），写 `bench/learn-last-run.json` |
 | `yarn gates` | 四道防退化闸门串跑（`check:cycles` + `check:deadcode` + `check:dupes` + `check:tests`）。**pre-push 钩子跑的就是它**，见 [AGENTS.md](AGENTS.md) |
 | `yarn check:tests` | 测试条数棘轮：单测/e2e 条数与跳过数只许涨不许跌。删用例、加 `.skip` 都会红，要减就显式改 `quality/tests.baseline.json`。e2e 的跳过是**静态扫 spec 文件**数出来的——`playwright --list` 对跳过的用例不打标记，工具这条路走不通 |
 | `yarn check:coverage` | 覆盖棘轮：探针扫到的状态、每行的控件与棋盘，必须是入库基线的**超集**。**基线**的来源是 `docs/ui-redesign/screenshots/after-phase02/measurements.json`（写在 `quality/coverage.baseline.json` 的 `source` 里）；脚本本地默认读 `docs/ui-redesign/screenshots/after-phase06/measurements.json`（`quality/coverage.ratchet.mjs` 的默认值，可用 `--current` 指定；CI 显式传当期探针产物）。**改了界面之后要在 CI 的 probe job 里跑**（本地单跑用的是上一期产物，不是这次的新量测） |
@@ -115,7 +119,9 @@ grep -o 'src="[^"]*"' dist/index.html          # 应看到 /gomoku/assets/...
 grep -o '/gomoku/assets/worker-[^`]*' dist/assets/index-*.js
 ```
 
-应用不含任何网络请求，也没有跨域与后端依赖。
+应用**没有后端、没有跨域依赖，也不调用任何第三方接口**：页面加载后只请求同源的
+静态资源（HTML / JS / CSS / 图标与 Worker chunk），不发送任何用户数据。静态资源本身
+当然要走 HTTP/HTTPS，这不是「零网络请求」——准确说法是**零第三方运行时请求、零数据外发**。
 
 ## 目录结构
 
@@ -175,8 +181,12 @@ bench/         引擎基准与渲染探针（不进常规测试套件）
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) —— 分层、数据流与接口契约
 - [docs/RULES.md](docs/RULES.md) —— 规则定义与边界情形
 - [docs/AI_ENGINE.md](docs/AI_ENGINE.md) —— 引擎原理、难度参数与已知局限
-- [docs/ROADMAP.md](docs/ROADMAP.md) —— Phase 1–5 与 UI 改版 Phase 00–07 的进度、长期待办
+- [docs/ROADMAP.md](docs/ROADMAP.md) —— Phase 1–5、UI 改版 00–07、Phase 08/09A 的进度与长期待办
 - [docs/TEST_REPORT.md](docs/TEST_REPORT.md) —— 测试覆盖、浏览器验证与性能实测
+- [docs/release/RELEASE_READINESS.md](docs/release/RELEASE_READINESS.md) —— 发布就绪评估（分级结论、门禁读数、未验证项）
+- [docs/release/DEPLOYMENT_PLAN.md](docs/release/DEPLOYMENT_PLAN.md) —— 托管平台对比与部署步骤
+- [docs/release/ROLLBACK_PLAN.md](docs/release/ROLLBACK_PLAN.md) —— 回滚路径、数据影响与演练
+- [docs/release/RELEASE_CHECKLIST.md](docs/release/RELEASE_CHECKLIST.md) —— 发布前 / staging / 公开发布清单
 - [AGENTS.md](AGENTS.md) —— 参与开发前的约定
 
 ## 移动端

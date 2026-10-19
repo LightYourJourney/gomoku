@@ -7,16 +7,21 @@ import { indexedDbGameRecords } from './persist/gameRecords'
 import { appEngine } from './store/useGameStore'
 import { useLearnStore } from './store/learnStore'
 import { useThemeEffect } from './store/settingsStore'
+import { useFlushOnHide } from './lib/useFlushOnHide'
 
 export default function App() {
   useThemeEffect()
 
   const view = useLearnStore((state) => state.view)
   const bootstrap = useLearnStore((state) => state.bootstrap)
+  const flush = useLearnStore((state) => state.flush)
 
   useEffect(() => {
     bootstrap()
   }, [bootstrap])
+
+  // 切后台 / 关页面前把学习进度尽力冲出去（不是落盘保证，见 hook 注释）
+  useFlushOnHide(flush)
 
   return (
     <div

@@ -11,6 +11,13 @@ export interface LearnStore {
   readonly view: View
 
   bootstrap(): void
+  /**
+   * 等所有已排队的写入结束。
+   *
+   * 生命周期钩子（`pagehide` / `visibilitychange`）与测试用它做同步点——
+   * **它不是「落盘保证」**：页面在等待期间被销毁，异步写入仍可能来不及提交。
+   */
+  flush(): Promise<void>
   setView(view: View): void
   completeLesson(id: string): void
   solvePuzzle(id: string): void
@@ -41,13 +48,63 @@ export function createLearnStore(storage: ProgressStorage): UseBoundStore<StoreA
      */
     let pendingPersist = false
 
-    /** 落盘。失败就算了——内存里的进度仍然有效，本次会话照常可用。 */
+    /**
+     * 队列里最新的一份待写状态；`null` 表示没有待写。
+     *
+     * **只保留最新一份**：一次修改在写、下一次修改到来时，中间态没有再写的价值。
+     * 这样既不会让旧写入覆盖新数据（同一时刻只有一条写链），也不会在连续点击时
+     * 排出一长串重复写入。
+     */
+    let queued: LearningProgress | null = null
+
+    /** 当前这条写链；`null` 表示没有在写。 */
+    let writing: Promise<void> | null = null
+
+    /**
+     * 把队列里的状态依次写出去。
+     *
+     * 失败只吞掉这一笔、**不原地重试**：存储永久坏掉时（隐私模式、被其他标签页
+     * 占用）重试会变成死循环。内存里的进度仍然正确，下一次变更会重新排队。
+     */
+    async function drain(): Promise<void> {
+      try {
+        while (queued !== null) {
+          const next = queued
+          queued = null
+          try {
+            await storage.save(next)
+          } catch {
+            // 见上：丢掉这一笔，让后续变更继续
+          }
+        }
+      } finally {
+        writing = null
+      }
+    }
+
+    /**
+     * 发起一次写入。
+     *
+     * 载入完成之前只挂起（不能拿合并前的进度覆盖存储）；载入之后交给写链。
+     * 写链是**串行**的，所以「旧写入后完成、覆盖新数据」在结构上不可能发生。
+     */
     const persist = (progress: LearningProgress): void => {
       if (!get().loaded) {
         pendingPersist = true
         return
       }
-      void storage.save(progress).catch(() => {})
+      queued = progress
+      if (writing === null) writing = drain()
+    }
+
+    const flush = (): Promise<void> => {
+      // drain 的 while 会吃掉「在写期间排进来的最新一份」，等它本身即可。
+      if (writing !== null) return writing
+      if (queued !== null) {
+        writing = drain()
+        return writing
+      }
+      return Promise.resolve()
     }
 
     /**
@@ -98,7 +155,7 @@ export function createLearnStore(storage: ProgressStorage): UseBoundStore<StoreA
             // 把载入期间挂起的那次写入补上
             if (pendingPersist) {
               pendingPersist = false
-              void storage.save(get().progress).catch(() => {})
+              persist(get().progress)
             }
           },
           () => {
@@ -112,6 +169,8 @@ export function createLearnStore(storage: ProgressStorage): UseBoundStore<StoreA
         set({ view })
         update({ lastView: view })
       },
+
+      flush,
 
       completeLesson(id) {
         update({ completedLessons: withAdded(get().progress.completedLessons, id) })

@@ -1,10 +1,11 @@
 # 测试报告
 
-**日期**：2026-10-19
+**日期**：2026-10-20
 **范围**：Phase 1（基础可玩版本）、Phase 2（强化 AI）、Phase 3（互动教学 + 残局挑战）、
 Phase 4（复盘与分析）、Phase 5（最终打磨）、Phase 5 之后的**全仓工程审计**（见本文「〇之五」）、
 **UI/UX 改版 Phase 00–07**（Phase 01 / 02 见「〇之六」「〇之十」，03–07 见 `docs/ui-redesign/` 各阶段的记录；
-Phase 07 的最终门禁、探针对照与基准在 `ui-redesign/FINAL_TEST_REPORT.md`）、**质量门禁（CI + 本地钩子）**（见「〇之十一」），
+Phase 07 的最终门禁、探针对照与基准在 `ui-redesign/FINAL_TEST_REPORT.md`）、**质量门禁（CI + 本地钩子）**（见「〇之十一」）、
+**Phase 08 独立审计**（见「〇之十二」）与 **Phase 09A 发布加固**（见「〇之十三」），
 以及阶段之间的两轴代码审查
 **结论**：类型检查、单元测试、生产构建、真实浏览器验证、端到端测试、生产构建冒烟全部通过；
 四个页面在两套主题下的 Lighthouse 无障碍审计均为 100。
@@ -15,7 +16,7 @@ Phase 07 的最终门禁、探针对照与基准在 `ui-redesign/FINAL_TEST_REPO
 
 | 项 | 数量 |
 | --- | --- |
-| 单元 / 组件用例 | **1060**（62 个文件） |
+| 单元 / 组件用例 | **1084**（65 个文件） |
 | 端到端用例 | **162**（桌面 142 + 移动触屏 11 + 平板 9，共 9 个 spec 文件），另有生产构建冒烟 5 条（`yarn e2e:prod`） |
 | 界面基线与量测 | `yarn ui:probe`：38 个受控状态 × 视口矩阵 = 308 张截图 + 308 条 DOM 量测，逐张可对照（Phase 05 是 34 / 276，Phase 04 是 29 / 236，Phase 03 是 27 / 220，Phase 02 是 21 / 172） |
 | 质量门禁 | 本地 pre-push 快档（5 条命令，热跑 30–45 秒，看机器负载）+ CI 全档（4 个 job）+ 四道防退化闸门 + 两把覆盖棘轮，见「〇之十一」 |
@@ -62,6 +63,35 @@ Lighthouse 三页（含深色）Accessibility 全 100——**一次性观测，�
 
 **结论**：达到发布候选标准；P0/P1 = 0；新增 5 条 P3 与 1 条未能复现的环境伪影；
 历史 M-2 经 200 手棋谱实测关闭。未覆盖范围（VoiceOver、Safari/Firefox、真机、soak）见报告 §9.3。
+
+## 〇之十三、Phase 09A 发布加固摘要
+
+完整评估：[`docs/release/RELEASE_READINESS.md`](release/RELEASE_READINESS.md)；
+方案与清单：[DEPLOYMENT_PLAN.md](release/DEPLOYMENT_PLAN.md)、
+[ROLLBACK_PLAN.md](release/ROLLBACK_PLAN.md)、[RELEASE_CHECKLIST.md](release/RELEASE_CHECKLIST.md)。
+
+**门禁（2026-10-20 本机实跑，退出码 0）**：lint / typecheck / build ✓、
+test **1084**（65 文件）✓、e2e **162** ✓、e2e:prod **5** ✓、
+gates（0 环 / 0 未使用 / 0 clones，棘轮 1084 · 162）✓、
+check:coverage（3084 条，+136）✓、ui:probe（38 状态 / **308 张**，七条判据全过）✓、
+bench:check（19/19 + 29 项不变量）✓。
+
+**新增定向回归测试**（全部先有可失败的场景，再实现）：
+
+- 进度写入时序 6 条：按序落盘、旧写入不覆盖新值、`flush` 等整条队列、空队列立即完成、
+  单次失败不阻塞后续、同值不重复写（`learnStore.test.ts`，用门控存储，无 sleep）。
+- 生命周期 flush 4 条：隐藏触发、可见不触发、`pagehide` 触发、卸载取消订阅。
+- 分析路径 8 条：`searchPathOf` 五映射、`buildVerdict` 透传、`analysisStore` 携带、
+  复盘卡片在 `reason: 'win'` 时显示「规则/快速路径判定」而不是「搜索完成」。
+- 题解缓存 3 条；老 IndexedDB（v1 仅 progress 表）升级后旧进度可读 1 条。
+
+**性能口径更正**：Phase 08 的「判题/求解 60–132 ms 同步阻塞」是测量口径错误
+（计时块含固定 60 ms 等待）。纯函数最慢 4.81–5.15 ms（求解）/ 2.39–2.97 ms（判题），
+生产产物页内提交 1.3–4.3 ms，无 >50 ms long task。审计报告 §7 P3-3 已加更正。
+
+**发布资源与安全**：新增 `robots.txt`、`404.html`、`_headers`（CSP + 安全头 + 缓存）；
+生产产物全流程 5 个同源请求、0 外源、0 error；CSP 在真实 `dist/` 上 0 违规；
+运行时依赖 3 个，`yarn audit` 0 条。详见 RELEASE_READINESS §6–§7。
 
 ## 〇之十一、质量门禁（CI + 本地钩子）
 

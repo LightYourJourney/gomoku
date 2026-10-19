@@ -2,7 +2,7 @@ import { create, type StoreApi, type UseBoundStore } from 'zustand'
 import { opponentOf } from '../core/board'
 import type { Point } from '../core/types'
 import type { AiEngine } from '../ai/engine'
-import type { Difficulty, SearchResponse } from '../ai/types'
+import type { Difficulty, SearchReason, SearchResponse } from '../ai/types'
 import { ENGINE_VERSION } from '../ai/version'
 import type { GameRecord } from '../persist/gameRecords'
 import { replay } from '../core/game'
@@ -44,7 +44,15 @@ interface PendingVerdict {
   readonly played: Point
   readonly playedIsWinning: boolean
   /** 局面 i 的响应（引擎首选 + 评分）。 */
-  position?: { move: Point; score: number; depth: number; nodes: number; confidence: 'exact' | 'heuristic' }
+  position?: {
+    move: Point
+    score: number
+    depth: number
+    nodes: number
+    confidence: 'exact' | 'heuristic'
+    /** 引擎给出首选着法时走的路径，原样带进结论供界面分类。 */
+    reason: SearchReason
+  }
   /** 局面 i+1 的响应（对手视角评分；终局手不需要）。 */
   reply?: { score: number; depth: number; nodes: number; confidence: 'exact' | 'heuristic' }
 }
@@ -110,6 +118,7 @@ export function createAnalysisStore(): UseBoundStore<StoreApi<AnalysisStore>> {
           depth: response.depth,
           nodes: response.nodes,
           confidence: response.confidence,
+          reason: response.reason,
         }
       }
 
@@ -179,6 +188,7 @@ export function createAnalysisStore(): UseBoundStore<StoreApi<AnalysisStore>> {
         playedScore: entry.playedIsWinning ? 0 : -(entry.reply?.score ?? 0), // 与上面的 playedScore 同一口径
         isWinningMove: entry.playedIsWinning,
         confidence,
+        reason: pos.reason,
         engineDepth: pos.depth,
         engineNodes: pos.nodes,
       })

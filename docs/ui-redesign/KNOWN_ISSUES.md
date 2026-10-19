@@ -7,6 +7,14 @@
 > 同步判题、超宽屏密度、robots/llms）记录在
 > [POST_UI_REDESIGN_AUDIT.md](../audit/POST_UI_REDESIGN_AUDIT.md) §7 / §9.2，
 > **本文件不重复收录**——同一件事只留一个出处，避免两份清单漂移。
+>
+> **Phase 09A 处置（2026-10-20）**：P3-1（进度写入时机）已用串行 latest-wins
+> 队列 + `flush()` 修复；P3-2（分析措辞）已用显式 `SearchPath` 修复；
+> **P3-3（判题/求解 60–132 ms 同步阻塞）撤回**——那是测量口径错误，实测纯函数
+> ≤5.15 ms、生产产物提交 1.3–4.3 ms；P3-5 已补 `robots.txt`（`llms.txt` 按本阶段
+> 要求不加）；**P3-4（超宽屏密度）仍未处理**，留在审计报告里。
+> 发布侧的已知限制（真实托管未验证、仅 Chrome 实测、CSP 依赖自定义响应头、
+> 关闭前 flush 不保证）见 [RELEASE_READINESS.md](../release/RELEASE_READINESS.md) §10。
 
 已经修掉的条目不在本文件里——那一份在 `FINAL_AUDIT.md` 与 `CHANGELOG.md`。
 
@@ -171,7 +179,7 @@ Phase 07 的只读结构审计（`FINAL_AUDIT.md` §5 有完整表）按「可�
 | High | 0 | 原有的三条已在 Phase 07 修复 |
 | Medium | 3 | M-1 / M-3 / M-4（M-2 已由 Phase 08 的独立审计实测关闭，见该条上方补记） |
 | Low | 6 | L-1 ~ L-6（均为记录性条目，无用户可观察缺陷） |
-| Phase 08 P3 | 5 | 见 [审计报告](../audit/POST_UI_REDESIGN_AUDIT.md) §9.2；不在此重复 |
+| Phase 08 P3 | 5 | 见 [审计报告](../audit/POST_UI_REDESIGN_AUDIT.md) §9.2；Phase 09A 已修 P3-1/P3-2、撤回 P3-3、补 P3-5 的 robots、**P3-4 仍未处理** |
 
 **没有一条被无声略过**：Medium 里的每一条都写明了「为什么不修」的具体代价与
 再次处理的入口，而不是一句「暂不支持」。其中 **M-3 是唯一一条以物理不可行

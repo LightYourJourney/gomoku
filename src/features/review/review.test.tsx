@@ -725,3 +725,55 @@ function drawRecord(): ReplayRecord {
     winner: null,
   }
 }
+
+
+/**
+ * Phase 09A：规则 / 快速路径确定的着手，不许再显示「搜索完成」。
+ *
+ * 构造：除手 1 外，引擎推荐都与玩家实际着法相同（loss 0）；手 1 的引擎
+ * 推荐不同，且 reason 是 `win`（直接成五的捷径），深度 / 节点都是 0。
+ * 结论卡片必须说「规则/快速路径判定」。
+ */
+function shortcutEngine(): AiEngine {
+  return {
+    search(request) {
+      const index = request.moveIndex ?? 0
+      const played = NINE_MOVES[index] ?? { x: 7, y: 7 }
+      return Promise.resolve({
+        requestId: request.requestId,
+        gameVersion: request.gameVersion,
+        moveIndex: index,
+        move: index === 1 ? { x: 9, y: 9 } : played,
+        score: index === 1 ? 500 : 1_000_000,
+        depth: 0,
+        nodes: 0,
+        elapsedMs: 1,
+        confidence: 'exact' as const,
+        reason: index === 1 ? ('win' as const) : ('search' as const),
+        candidates: [],
+        urgency: 'normal' as const,
+      })
+    },
+    handleResponse() {},
+    handleError() {},
+    dispose() {},
+  }
+}
+
+describe('ReviewScreen —— 搜索路径的措辞（Phase 09A）', () => {
+  it('规则 / 快速路径判定不说成「搜索完成」', async () => {
+    const storage = memoryGameRecords()
+    await storage.put(nineMoveRecord())
+    render(<ReviewScreen storage={storage} engine={shortcutEngine()} />)
+
+    fireEvent.click((await screen.findAllByTestId(/^record-/))[0]!)
+    fireEvent.click(await screen.findByRole('button', { name: '开始分析' }))
+
+    const card = await screen.findByTestId('verdict-1')
+    expect(card).toHaveTextContent('规则/快速路径判定')
+    expect(card).not.toHaveTextContent('搜索完成')
+    // 原始度量照常显示：读者能自己看出这一手没展开搜索
+    expect(card).toHaveTextContent('深度 0')
+    expect(card).toHaveTextContent('节点 0')
+  })
+})

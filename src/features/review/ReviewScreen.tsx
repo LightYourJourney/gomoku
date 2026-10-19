@@ -6,7 +6,8 @@ import type { GameRecord, GameRecordsStorage } from '../../persist/gameRecords'
 import { DIFFICULTY_LABELS } from '../../ai/difficulty'
 import { ENGINE_VERSION } from '../../ai/version'
 import { formatPoint } from '../../lib/coords'
-import { buildSummary, verdictLabel } from '../../analysis/analyze'
+import { buildSummary, pathLabel, verdictLabel } from '../../analysis/analyze'
+import { searchPathOf } from '../../ai/types'
 import { cx } from '../../lib/cx'
 import { Button } from '../../components/ui/Button'
 import { Panel } from '../../components/ui/Panel'
@@ -299,7 +300,7 @@ function AnalysisPanel({ store, engine, replay }: AnalysisPanelProps) {
                 </div>
                 <div className="mt-1 text-xs text-faint">
                   深度 {verdict.engineDepth} · 节点 {verdict.engineNodes} ·{' '}
-                  {verdict.confidence === 'exact' ? '搜索完成' : '预算内未搜完（启发式）'}
+                  {pathLabel(searchPathOf(verdict.reason))}
                 </div>
               </button>
             )
