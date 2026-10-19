@@ -40,6 +40,29 @@ Phase 07 的最终门禁、探针对照与基准在 `ui-redesign/FINAL_TEST_REPO
 
 ---
 
+## 〇之十二、Phase 08 独立验收审计摘要
+
+审计对象 `33378c3`。完整报告：[`docs/audit/POST_UI_REDESIGN_AUDIT.md`](audit/POST_UI_REDESIGN_AUDIT.md)；
+原始读数：[`docs/audit/phase08-evidence.json`](audit/phase08-evidence.json)；
+基准 spot-check 产物：[`bench/runs/33378c3.json`](../bench/runs/33378c3.json)。
+
+**门禁（全部实跑，退出码 0）**：lint / typecheck / build ✓、test **1060**（62 文件）✓、
+e2e **162** ✓、e2e:prod **5** ✓、gates（0 环 / 0 未使用 / 0 clones，棘轮 1060 · 162）✓、
+check:coverage（3084 条，+136）✓、ui:probe（38 状态 / **308 张**，七条判据全过）✓、
+bench:check（19/19 + 29 项不变量）✓、bench:render（FCP/LCP 112 ms、落子 0.10 ms 中位）✓。
+Lighthouse 三页（含深色）Accessibility 全 100——**一次性观测，不是 CI 门禁**。
+
+**文档性能数字**：按 `AI_ENGINE.md` 的规矩只对照稳定列——`search` 判定的 depth/nodes
+逐字一致；绝对耗时属不稳定列，本次读数已归档到 `bench/runs/33378c3.json`，
+**不据此判定回归**。
+
+**浏览器验证**：对战 / 教学 / 残局 / 复盘四条主流程 + 模式与执子切换确认 + 终局入库 +
+中途刷新恢复 + 思考中悔棋/认输/重开/求提示 + AI 必防与取胜 + 五档实测 +
+继续学习/继续挑战 + 教学返回 + **残局多解（走提示未标出的另一头同样判对）**。
+
+**结论**：达到发布候选标准；P0/P1 = 0；新增 5 条 P3 与 1 条未能复现的环境伪影；
+历史 M-2 经 200 手棋谱实测关闭。未覆盖范围（VoiceOver、Safari/Firefox、真机、soak）见报告 §9.3。
+
 ## 〇之十一、质量门禁（CI + 本地钩子）
 
 设计见 [`docs/superpowers/specs/2026-10-13-quality-gates-design.md`](superpowers/specs/2026-10-13-quality-gates-design.md)
