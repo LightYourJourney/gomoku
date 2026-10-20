@@ -11,6 +11,21 @@
   `meta.openingsVersion`（开局集指纹）、`a/b.resolved`（实际生效参数）。
 - **`.md`**：人读摘要。表头里的「完整数据」指向 `meta.resultFile`。
 
+## Phase 10B 的剖析产物
+
+`2026-10-20_1708-phase10b-*.json` 是 `yarn profile` 的四份输出，**不是棋力实验**：
+
+| 文件 | 内容 |
+| --- | --- |
+| `cpu-profile` | 固定深度剖析：任务表、函数自身耗时、调用计数、派生比例 |
+| `real-budget` | 真实预算（hard 1600 ms）剖析 |
+| `micro` | 热点函数单价、`inBounds` 对照、置换表内存 |
+| `incremental` | 增量评估生命周期、落子/撤销单价、递归树、内存 |
+
+它们由 `bench/profile/*.profile.ts` 生成，**每次 `yarn profile` 都会覆盖**
+`bench/profile/last-*.json`；这里存的是被文档引用的一次运行（负载 11.5–12.8，8 核）。
+绝对微秒数随负载变化，读法与噪声说明见 [CPU_PROFILE.md](../CPU_PROFILE.md) §1。
+
 ## 两点注意
 
 1. **`2026-10-20_04-05-*` 那三份用的是旧 schema**：它们把逐局信息放在

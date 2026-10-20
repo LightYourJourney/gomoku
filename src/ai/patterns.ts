@@ -1,5 +1,6 @@
 import { DIRECTIONS, idx, inBounds } from '../core/board'
 import { WIN_LENGTH, type Board, type Player, type Point } from '../core/types'
+import { countCall } from './metrics'
 import { WIN_SCORE, type ThreatKind } from './types'
 
 export type { ThreatKind }
@@ -207,6 +208,8 @@ export function analyzeDirection(
  * 将来若真要改语义，会因为那条用例变红而变成一次刻意决定。
  */
 export function analyzeFast(board: Board, point: Point, player: Player): FastThreat {
+  countCall('analyzeFast')
+
   const winningPoints: Point[] = []
   let five = false
   let maxWinningInOneDirection = 0
@@ -406,6 +409,8 @@ export function threatScoreWith(
   player: Player,
   fast: FastThreat,
 ): number {
+  countCall('threatScoreWith')
+
   if (fast.five) return WIN_SCORE
   if (fast.openFour) return SHAPE_VALUE.openFour
   if (fast.four) return SHAPE_VALUE.four

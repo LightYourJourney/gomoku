@@ -1,6 +1,7 @@
 import { idx, opponentOf } from '../core/board'
 import { BOARD_SIZE, type Board, type Player, type Point } from '../core/types'
 import { candidateMoves } from './candidates'
+import { countCall } from './metrics'
 import { DIFFICULTY_PARAMS, type DifficultyParams } from './difficulty'
 import { evaluateBoard, WIN_SCORE } from './evaluate'
 import {
@@ -178,10 +179,13 @@ function orderMoves(
   ply: number,
   tableMove: Point | null,
 ): OrderedMoves {
+  countCall('orderMoves')
+
   const opponent = opponentOf(player)
   const scored: Array<{ point: Point; score: number }> = []
 
   for (const point of candidates) {
+    countCall('orderCandidates')
     const mine = analyzeFast(board, point, player)
     if (mine.five) return { points: [], winNow: point }
 

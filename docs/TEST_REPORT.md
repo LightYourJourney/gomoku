@@ -17,7 +17,7 @@ Phase 07 的最终门禁、探针对照与基准在 `ui-redesign/FINAL_TEST_REPO
 
 | 项 | 数量 |
 | --- | --- |
-| 单元 / 组件用例 | **1161**（70 个文件） |
+| 单元 / 组件用例 | **1185**（71 个文件） |
 | 端到端用例 | **162**（桌面 142 + 移动触屏 11 + 平板 9，共 9 个 spec 文件），另有生产构建冒烟 5 条（`yarn e2e:prod`） |
 | 界面基线与量测 | `yarn ui:probe`：38 个受控状态 × 视口矩阵 = 308 张截图 + 308 条 DOM 量测，逐张可对照（Phase 05 是 34 / 276，Phase 04 是 29 / 236，Phase 03 是 27 / 220，Phase 02 是 21 / 172） |
 | 质量门禁 | 本地 pre-push 快档（5 条命令，热跑 30–45 秒，看机器负载）+ CI 全档（4 个 job）+ 四道防退化闸门 + 两把覆盖棘轮，见「〇之十一」 |
@@ -126,6 +126,40 @@ bench:check（19/19 + 29 项不变量）✓。
 e2e 162 / e2e:prod 5 不受影响（本阶段未改产品代码路径）。
 
 **没有改动**：`src/ai/*`、`src/core/*`、五档参数、Worker 协议、既有测试。
+
+## 〇之十五、Phase 10B 搜索热点与增量评估摘要
+
+完整报告：[`docs/ai-research/PHASE_10B.md`](ai-research/PHASE_10B.md)；
+剖析：[CPU_PROFILE.md](ai-research/CPU_PROFILE.md)；
+增量评估：[INCREMENTAL_EVALUATION.md](ai-research/INCREMENTAL_EVALUATION.md)；
+候选排序：[OPTIMIZATION_CANDIDATES.md](ai-research/OPTIMIZATION_CANDIDATES.md)。
+
+**新增测试 24 条**（`src/ai/incrementalEvaluate.test.ts`）：基础棋型、双方重叠、贴边、
+长连、连续落子 / 撤销、随机差分（20 个种子 × 30 手 + 10 个种子 × 120 步随机撤销）、
+含五连终局。判据是**与 `evaluateBoard` 逐位相等**。
+
+**测试本身的鉴别力做过变异验证**：只更新第一条受影响的线 → 6 条红；
+撤销不恢复总分 → 3 条红。
+
+**实测（`yarn profile`，归档 `runs/2026-10-20_1731-phase10b-*.json`）**：
+
+| 项 | 结果 |
+| --- | --- |
+| CPU 占比 | 着法排序 **47–48%**、局面评估 **30%**、递归 3%、候选生成 2%、置换表/算杀 <0.2%、GC <1% |
+| `evaluateBoard` 调用频率 | 每节点 **0.69–0.73 次** |
+| 增量生命周期 | 3.5–4.3 µs vs 全盘 70–74 µs（**17.1–20.0×**） |
+| 同树递归（只换叶子取分） | 9.9–13.2× |
+| 端到端投影 | **1.39×**（不足以多搜一层：每层需要 2.3–4.7×） |
+| 内存 | 增量评估 ≈2.96 KiB/实例；置换表 ≈190 B/条 |
+
+**门禁**：lint / typecheck / test（**1185** / 71 文件）/ build / gates / e2e 162 / e2e:prod 5 全绿；
+`yarn bench:check` 19 条断言行 + 29 项不变量一致，**`bench/baseline.json` 未改**。
+
+**没有改动**：`src/ai/search.ts` 的算法与参数、五档参数、`core/*`、Worker、既有测试。
+新增的调用计数器默认关闭，`yarn test` 与生产路径行为不变。
+
+**环境警示**：机器全程跑着无关进程，同一函数在多次运行间相差 3 倍（69–233 µs）；
+文档里的结论以**占比与比值**为准，见 [CPU_PROFILE.md](ai-research/CPU_PROFILE.md) §1。
 
 ## 〇之十一、质量门禁（CI + 本地钩子）
 

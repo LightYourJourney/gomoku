@@ -51,3 +51,7 @@ docs/ui-redesign/screenshots/**/*.png
 *.njsproj
 *.sln
 *.sw?
+
+# Phase 10B 剖析产物（每次 yarn profile 覆盖，需要留档的复制到 docs/ai-research/runs/）
+bench/profile/last-*.json
+bench/profile/last-*.cpuprofile

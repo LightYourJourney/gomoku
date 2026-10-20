@@ -5,5 +5,5 @@
     "types": ["node"],
     "noEmit": true
   },
-  "include": ["bench", "vitest.bench.config.ts", "vitest.learn.config.ts", "vitest.strength.config.ts"]
+  "include": ["bench", "vitest.bench.config.ts", "vitest.learn.config.ts", "vitest.strength.config.ts", "vitest.profile.config.ts"]
 }

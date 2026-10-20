@@ -1,5 +1,6 @@
 import { idx, inBounds } from '../core/board'
 import { BOARD_SIZE, CELL_COUNT, type Board, type Point } from '../core/types'
+import { countCall } from './metrics'
 
 /**
  * 候选点搜索半径。
@@ -14,6 +15,8 @@ export const NEIGHBOR_RADIUS = 2
  * 空盘与满盘都返回空数组——两种情况由调用方分别处理成「下天元」与「无棋可走」。
  */
 export function candidateMoves(board: Board, radius: number = NEIGHBOR_RADIUS): Point[] {
+  countCall('candidateMoves')
+
   const moves: Point[] = []
   const seen = new Uint8Array(CELL_COUNT)
 

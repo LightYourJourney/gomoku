@@ -1,6 +1,7 @@
 import { idx, opponentOf } from '../core/board'
 import type { Board, Player, Point } from '../core/types'
 import { candidateMoves } from './candidates'
+import { countCall } from './metrics'
 import { analyzeFast, isWinningPoint } from './patterns'
 
 export interface ThreatSearchResult {
@@ -258,6 +259,8 @@ export function findForcedWin(
   player: Player,
   options: ThreatSearchOptions,
 ): ThreatSearchResult {
+  countCall('forcedWin')
+
   const ctx: ThreatContext = { options, nodes: 0, expired: false }
   const result = attack(board.slice(), player, options.maxPlies, MAX_THREE_LAYERS, ctx, null)
 

@@ -1,4 +1,5 @@
 import { CELL_COUNT, type Board, type Player, type Point } from '../core/types'
+import { countCall } from './metrics'
 
 /**
  * 局面哈希，用两个 32 位分量表示。
@@ -122,6 +123,7 @@ export function createTranspositionTable(): TranspositionTable {
 
   return {
     probe(key, depth) {
+      countCall('ttProbe')
       const found = slots.get(key.hi)
       if (found === undefined) return null
       if (found.lo !== key.lo) return null
@@ -130,6 +132,7 @@ export function createTranspositionTable(): TranspositionTable {
     },
 
     store(key, entry) {
+      countCall('ttStore')
       const existing = slots.get(key.hi)
       if (existing !== undefined && existing.lo === key.lo && existing.depth > entry.depth) return
       slots.set(key.hi, entry)

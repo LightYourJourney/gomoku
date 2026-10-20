@@ -44,6 +44,7 @@ yarn dev          # 开发服务器
 | `yarn bench:learn` | 教学/残局判题与求解的纯函数耗时（CPU 最小值最慢 9.08 ms 求解 / 4.32 ms 判题；空载 wall 4.81–5.15 / 2.39–2.97 ms），写 `bench/learn-last-run.json` |
 | `yarn bench:blocking` | 真实浏览器页内耗时探针：提示点击 → DOM 变更（需先 `yarn preview --port 5192`；数字随机器负载变化） |
 | `yarn strength` | **AI 棋力评测**：配对赛 + 置信区间 + 搜索指标。`STRENGTH_MODE=smoke/standard/extended`、`STRENGTH_A/B=<难度>`；报告写 `bench/strength/results/` |
+| `yarn profile` | **搜索热点剖析**：V8 采样（固定深度 / 真实预算）、热点单价、增量评估生命周期；结果解读见 [CPU_PROFILE](docs/ai-research/CPU_PROFILE.md) |
 | `yarn strength:bundle` | 把任意源码树（含 `git worktree`）的引擎打成独立包，用于**版本对照** |
 | `yarn gates` | 四道防退化闸门串跑（`check:cycles` + `check:deadcode` + `check:dupes` + `check:tests`）。**pre-push 钩子跑的就是它**，见 [AGENTS.md](AGENTS.md) |
 | `yarn check:tests` | 测试条数棘轮：单测/e2e 条数与跳过数只许涨不许跌。删用例、加 `.skip` 都会红，要减就显式改 `quality/tests.baseline.json`。e2e 的跳过是**静态扫 spec 文件**数出来的——`playwright --list` 对跳过的用例不打标记，工具这条路走不通 |

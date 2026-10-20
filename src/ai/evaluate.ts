@@ -1,5 +1,6 @@
 import { idx, opponentOf } from '../core/board'
-import { BOARD_SIZE, WIN_LENGTH, type Board, type Player } from '../core/types'
+import { BOARD_SIZE, CELL_COUNT, WIN_LENGTH, type Board, type Player } from '../core/types'
+import { countCall } from './metrics'
 import { WIN_SCORE } from './types'
 
 export { WIN_SCORE }
@@ -62,6 +63,30 @@ function buildLines(): number[][] {
 }
 
 const LINES = buildLines()
+
+/**
+ * 全部 72 条评估线段。
+ *
+ * 导出是给增量评估用的（`incrementalEvaluate.ts`）：两边必须共用**同一份**
+ * 线段定义与同一套计分函数，否则「增量结果与全盘评估一致」这条保证会随着
+ * 两份逐渐分叉的规则悄悄失效。
+ */
+export const EVALUATION_LINES: readonly (readonly number[])[] = LINES
+
+/**
+ * 交叉点 → 经过它的线段下标集合。
+ *
+ * 一个点最多被横、竖、两条斜向共 4 条线经过；边角上的斜线可能因长度不足 5
+ * 而不在评估集合里，所以实际是 2–4 条。增量评估靠它把「一次落子」的更新范围
+ * 从 72 条线缩到这几条。
+ */
+export const LINES_BY_CELL: readonly (readonly number[])[] = (() => {
+  const byCell: number[][] = Array.from({ length: CELL_COUNT }, () => [])
+  LINES.forEach((line, lineIndex) => {
+    for (const cell of line) byCell[cell]!.push(lineIndex)
+  })
+  return byCell
+})()
 
 /**
  * 段内只有「己方子」与「空位」两种（对手子与棋盘边都是段的边界），
@@ -146,7 +171,13 @@ function scoreThreeRuns(
   return best
 }
 
-function scoreLine(board: Board, line: readonly number[], player: Player): number {
+/**
+ * 一条线上 `player` 的得分。
+ *
+ * 导出给增量评估复用——**不要再写第二份**。这套「按对手子切段、再按最强棋型
+ * 计一次分」的规则一旦复制，两份就会各自演化，最终增量结果与全盘评估对不上。
+ */
+export function scoreLine(board: Board, line: readonly number[], player: Player): number {
   const opponent = opponentOf(player)
   let score = 0
   let cursor = 0
@@ -174,6 +205,8 @@ function scoreLine(board: Board, line: readonly number[], player: Player): numbe
  * 必胜判断处理，不在这里近似。
  */
 export function evaluateBoard(board: Board, player: Player): number {
+  countCall('evaluateBoard')
+
   const opponent = opponentOf(player)
   let score = 0
 
