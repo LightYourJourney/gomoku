@@ -1,4 +1,4 @@
-import { applyMove } from '../../src/core/game'
+import { applyMove, type GameState } from '../../src/core/game'
 import { BLACK, type Player } from '../../src/core/types'
 import { openingState, type MatchOpening } from './openings'
 import type {
@@ -65,7 +65,22 @@ function mutated(before: Uint8Array, after: Uint8Array): boolean {
 export function playGame(options: PlayGameOptions): GameRecord {
   const now = options.now ?? Date.now
   const startedAt = now()
-  let state = openingState(options.opening)
+
+  let state: GameState
+  try {
+    state = openingState(options.opening)
+  } catch (error) {
+    /*
+     * 开局都还原不出来，说明是**实验本身**的问题（数据集损坏 / 参数错），
+     * 不是引擎的缺陷。单独归类，既不进胜率，也不冒充 `engine-error`。
+     */
+    return emptyRecord(options, 'environment-error', [], {
+      error: error instanceof Error ? error.message : String(error),
+      failAtMove: 0,
+      elapsedMs: now() - startedAt,
+    })
+  }
+
   const moves: PlayedMove[] = []
 
   while (state.status === 'playing' && state.moves.length < options.maxMoves) {
@@ -84,7 +99,7 @@ export function playGame(options: PlayGameOptions): GameRecord {
     let result: EngineMove
 
     try {
-      result = engine.choose(input, state.current, { moveIndex: state.moves.length })
+      result = engine.choose(input, state.current)
     } catch (error) {
       return emptyRecord(options, 'engine-error', moves, {
         error: `${engine.id}: ${error instanceof Error ? error.message : String(error)}`,
@@ -123,6 +138,8 @@ export function playGame(options: PlayGameOptions): GameRecord {
       point: result.move,
       player: state.current,
       engine: engine.id,
+      // 落子前的手数就是这一手的全局序号（开局的手已计入）
+      ply: state.moves.length,
       metrics: {
         depth: result.depth,
         nodes: result.nodes,

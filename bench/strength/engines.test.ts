@@ -53,6 +53,12 @@ describe('配置校验', () => {
     expect(() => assertSpec(SPEC)).not.toThrow()
     expect(() => assertSpec({ ...SPEC, clock: 'real', maxDepth: undefined, budgetMs: 100 })).not.toThrow()
   })
+
+  it('当前源码没有可指纹化的文件，报告里记 null 而不是占位串', async () => {
+    const loaded = await loadEngine(SPEC)
+    expect(loaded.kind).toBe('source')
+    expect(loaded.digest).toBeNull()
+  })
 })
 
 describe('打包后的引擎与进程内引擎行为一致', () => {
@@ -71,8 +77,8 @@ describe('打包后的引擎与进程内引擎行为一致', () => {
 
     for (const position of POSITIONS) {
       const board = boardOf(position)
-      const a = bundled.engine.choose(board.slice(), position.player, { moveIndex: 0 })
-      const b = local.choose(board.slice(), position.player, { moveIndex: 0 })
+      const a = bundled.engine.choose(board.slice(), position.player)
+      const b = local.choose(board.slice(), position.player)
 
       expect(a.move, `${position.id} 的着法不一致`).toEqual(b.move)
       expect(a.reason, `${position.id} 的 reason 不一致`).toEqual(b.reason)
@@ -113,8 +119,8 @@ describe('两个引擎包不会互相污染', () => {
     const b = await loadEngine({ ...SPEC, id: 'two', module: two })
 
     const board = boardOf(POSITIONS[0]!)
-    expect(a.engine.choose(board, 1, { moveIndex: 0 }).move).toEqual({ x: 1, y: 1 })
-    expect(b.engine.choose(board, 1, { moveIndex: 0 }).move).toEqual({ x: 5, y: 5 })
+    expect(a.engine.choose(board, 1).move).toEqual({ x: 1, y: 1 })
+    expect(b.engine.choose(board, 1).move).toEqual({ x: 5, y: 5 })
     expect(a.digest).not.toBe(b.digest)
   })
 

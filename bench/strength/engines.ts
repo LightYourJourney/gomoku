@@ -22,8 +22,13 @@ import { createLocalEngine } from './local'
 
 export interface LoadedEngine {
   readonly engine: Engine
-  /** 配置指纹：同名不同包时报告能分辨出测的是哪一份。 */
-  readonly digest: string
+  /**
+   * 引擎包 SHA-256；当前源码为 `null`。
+   *
+   * 这里不能塞一个 `'source'` 之类的占位串——报告里「指纹」一列是要能直接比对的
+   * 哈希，混进同形不同义的字符串会让读者以为那份源码也被指纹化过。
+   */
+  readonly digest: string | null
   /** 实际加载方式，进报告。 */
   readonly kind: 'source' | 'module'
 }
@@ -34,7 +39,7 @@ interface EngineModule {
 
 export async function loadEngine(spec: EngineSpec): Promise<LoadedEngine> {
   if (spec.module === undefined) {
-    return { engine: createLocalEngine(spec), digest: 'source', kind: 'source' }
+    return { engine: createLocalEngine(spec), digest: null, kind: 'source' }
   }
 
   const path = resolve(spec.module)

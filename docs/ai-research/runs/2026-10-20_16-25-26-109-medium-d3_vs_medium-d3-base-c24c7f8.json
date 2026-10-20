@@ -1,0 +1,1784 @@
+{
+  "meta": {
+    "commit": "95ab073b1b3b701c69055c2839e58f4a6a9bff3e",
+    "dirty": true,
+    "engineVersion": "search-1",
+    "node": "v26.12.0",
+    "platform": "darwin",
+    "arch": "arm64",
+    "cpuCount": 8,
+    "startedAt": "2026-10-20T16:25:26.109Z",
+    "finishedAt": "2026-10-20T16:25:27.138Z",
+    "durationMs": 1029,
+    "mode": "standard",
+    "command": "yarn strength STRENGTH_MODE=standard STRENGTH_A=medium STRENGTH_A_FIXED=3 STRENGTH_A_ID=medium-d3 STRENGTH_B=medium STRENGTH_B_FIXED=3 STRENGTH_B_MODULE=bench/strength/.engines/base-c24c7f8.mjs STRENGTH_B_ID=medium-d3@base-c24c7f8 STRENGTH_REPEATS=1 STRENGTH_MAX_MOVES=120",
+    "openingsVersion": "38932bb04705fe4e",
+    "statistics": {
+      "method": "配对 Bootstrap，以开局为簇重采样",
+      "bootstrapSamples": 2000,
+      "bootstrapSeed": 2654435769,
+      "clusterUnit": "opening"
+    },
+    "notes": [
+      "确定性模式（时钟固定、深度固定）：可复现，但**不代表**正式难度下的棋力。",
+      "负载均值（1 分钟）：8.43"
+    ],
+    "resultFile": "/Users/leo/leocode/vibe/games/gomoku/bench/strength/results/2026-10-20_16-25-26-109-medium-d3_vs_medium-d3-base-c24c7f8.json"
+  },
+  "a": {
+    "spec": {
+      "id": "medium-d3",
+      "label": "medium",
+      "difficulty": "medium",
+      "clock": "fixed",
+      "maxDepth": 3
+    },
+    "resolved": {
+      "budgetMs": 1000000000,
+      "maxDepth": 3,
+      "width": 10,
+      "threatPlies": 5,
+      "threatThrees": false,
+      "transposition": true
+    },
+    "digest": null,
+    "kind": "source"
+  },
+  "b": {
+    "spec": {
+      "id": "medium-d3@base-c24c7f8",
+      "label": "medium",
+      "difficulty": "medium",
+      "clock": "fixed",
+      "maxDepth": 3,
+      "module": "bench/strength/.engines/base-c24c7f8.mjs"
+    },
+    "resolved": {
+      "budgetMs": 1000000000,
+      "maxDepth": 3,
+      "width": 10,
+      "threatPlies": 5,
+      "threatThrees": false,
+      "transposition": true
+    },
+    "digest": "474c7f8aef42d09d689c7424cbe68b303347928a5ad2f457fbe702b7fa8d92d9",
+    "kind": "module"
+  },
+  "openings": [
+    {
+      "id": "center-adjacent",
+      "moves": [
+        {
+          "x": 7,
+          "y": 7
+        },
+        {
+          "x": 7,
+          "y": 8
+        }
+      ]
+    },
+    {
+      "id": "center-diagonal",
+      "moves": [
+        {
+          "x": 7,
+          "y": 7
+        },
+        {
+          "x": 8,
+          "y": 8
+        }
+      ]
+    },
+    {
+      "id": "center-knight",
+      "moves": [
+        {
+          "x": 7,
+          "y": 7
+        },
+        {
+          "x": 8,
+          "y": 6
+        }
+      ]
+    },
+    {
+      "id": "offset-first",
+      "moves": [
+        {
+          "x": 6,
+          "y": 7
+        },
+        {
+          "x": 7,
+          "y": 7
+        }
+      ]
+    }
+  ],
+  "maxMoves": 120,
+  "repeats": 1,
+  "summary": {
+    "aId": "medium-d3",
+    "bId": "medium-d3@base-c24c7f8",
+    "tally": {
+      "games": 8,
+      "scored": 8,
+      "aWins": 4,
+      "bWins": 4,
+      "draws": 0,
+      "moveLimit": 0,
+      "aborted": 0,
+      "illegalMove": 0,
+      "noMove": 0,
+      "engineError": 0,
+      "environmentError": 0
+    },
+    "scoreRate": 0.5,
+    "ci": {
+      "low": 0.5,
+      "high": 0.5,
+      "level": 0.95,
+      "samples": 2000
+    },
+    "elo": 0,
+    "asBlack": {
+      "games": 4,
+      "wins": 4,
+      "draws": 0,
+      "losses": 0,
+      "scoreRate": 1
+    },
+    "asWhite": {
+      "games": 4,
+      "wins": 0,
+      "draws": 0,
+      "losses": 4,
+      "scoreRate": 0
+    },
+    "bAsBlack": {
+      "games": 4,
+      "wins": 0,
+      "draws": 0,
+      "losses": 4,
+      "scoreRate": 0
+    },
+    "bAsWhite": {
+      "games": 4,
+      "wins": 4,
+      "draws": 0,
+      "losses": 0,
+      "scoreRate": 1
+    },
+    "perOpening": [
+      {
+        "opening": "center-adjacent",
+        "repeats": 1,
+        "aScoreRate": 0.5,
+        "aBlackOutcomes": "black-win×1",
+        "bBlackOutcomes": "black-win×1"
+      },
+      {
+        "opening": "center-diagonal",
+        "repeats": 1,
+        "aScoreRate": 0.5,
+        "aBlackOutcomes": "black-win×1",
+        "bBlackOutcomes": "black-win×1"
+      },
+      {
+        "opening": "center-knight",
+        "repeats": 1,
+        "aScoreRate": 0.5,
+        "aBlackOutcomes": "black-win×1",
+        "bBlackOutcomes": "black-win×1"
+      },
+      {
+        "opening": "offset-first",
+        "repeats": 1,
+        "aScoreRate": 0.5,
+        "aBlackOutcomes": "black-win×1",
+        "bBlackOutcomes": "black-win×1"
+      }
+    ]
+  },
+  "search": {
+    "a": {
+      "moves": 44,
+      "avgNodes": 178.5909090909091,
+      "medianNodes": 228,
+      "maxNodes": 296,
+      "avgDepth": 2.1818181818181817,
+      "avgElapsedMs": 0,
+      "ttHits": 0,
+      "timeouts": 0,
+      "shortcuts": 12,
+      "searched": 32,
+      "phases": {
+        "opening": {
+          "moves": 44,
+          "avgNodes": 178.5909090909091,
+          "maxNodes": 296,
+          "avgDepth": 2.1818181818181817,
+          "avgElapsedMs": 0
+        },
+        "middle": {
+          "moves": 0,
+          "avgNodes": 0,
+          "maxNodes": 0,
+          "avgDepth": 0,
+          "avgElapsedMs": 0
+        },
+        "end": {
+          "moves": 0,
+          "avgNodes": 0,
+          "maxNodes": 0,
+          "avgDepth": 0,
+          "avgElapsedMs": 0
+        }
+      }
+    },
+    "b": {
+      "moves": 44,
+      "avgNodes": 178.5909090909091,
+      "medianNodes": 228,
+      "maxNodes": 296,
+      "avgDepth": 2.1818181818181817,
+      "avgElapsedMs": 0,
+      "ttHits": 0,
+      "timeouts": 0,
+      "shortcuts": 12,
+      "searched": 32,
+      "phases": {
+        "opening": {
+          "moves": 44,
+          "avgNodes": 178.5909090909091,
+          "maxNodes": 296,
+          "avgDepth": 2.1818181818181817,
+          "avgElapsedMs": 0
+        },
+        "middle": {
+          "moves": 0,
+          "avgNodes": 0,
+          "maxNodes": 0,
+          "avgDepth": 0,
+          "avgElapsedMs": 0
+        },
+        "end": {
+          "moves": 0,
+          "avgNodes": 0,
+          "maxNodes": 0,
+          "avgDepth": 0,
+          "avgElapsedMs": 0
+        }
+      }
+    }
+  },
+  "games": [
+    {
+      "opening": "center-adjacent",
+      "black": "medium-d3",
+      "white": "medium-d3@base-c24c7f8",
+      "outcome": "black-win",
+      "winner": 1,
+      "moves": [
+        {
+          "point": {
+            "x": 6,
+            "y": 7
+          },
+          "player": 1,
+          "engine": "medium-d3",
+          "ply": 2,
+          "metrics": {
+            "depth": 3,
+            "nodes": 259,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 7
+          },
+          "player": 2,
+          "engine": "medium-d3@base-c24c7f8",
+          "ply": 3,
+          "metrics": {
+            "depth": 3,
+            "nodes": 215,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 9
+          },
+          "player": 1,
+          "engine": "medium-d3",
+          "ply": 4,
+          "metrics": {
+            "depth": 3,
+            "nodes": 233,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 8
+          },
+          "player": 2,
+          "engine": "medium-d3@base-c24c7f8",
+          "ply": 5,
+          "metrics": {
+            "depth": 3,
+            "nodes": 229,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 8
+          },
+          "player": 1,
+          "engine": "medium-d3",
+          "ply": 6,
+          "metrics": {
+            "depth": 3,
+            "nodes": 228,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 8
+          },
+          "player": 2,
+          "engine": "medium-d3@base-c24c7f8",
+          "ply": 7,
+          "metrics": {
+            "depth": 3,
+            "nodes": 214,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 4,
+            "y": 7
+          },
+          "player": 1,
+          "engine": "medium-d3",
+          "ply": 8,
+          "metrics": {
+            "depth": 3,
+            "nodes": 277,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 6
+          },
+          "player": 2,
+          "engine": "medium-d3@base-c24c7f8",
+          "ply": 9,
+          "metrics": {
+            "depth": 3,
+            "nodes": 266,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 3,
+            "y": 6
+          },
+          "player": 1,
+          "engine": "medium-d3",
+          "ply": 10,
+          "metrics": {
+            "depth": 0,
+            "nodes": 6,
+            "ttHits": 0,
+            "reason": "win",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 2,
+            "y": 5
+          },
+          "player": 2,
+          "engine": "medium-d3@base-c24c7f8",
+          "ply": 11,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 10
+          },
+          "player": 1,
+          "engine": "medium-d3",
+          "ply": 12,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "win",
+            "elapsedMs": 0
+          }
+        }
+      ],
+      "error": null,
+      "failAtMove": null,
+      "elapsedMs": 149
+    },
+    {
+      "opening": "center-adjacent",
+      "black": "medium-d3@base-c24c7f8",
+      "white": "medium-d3",
+      "outcome": "black-win",
+      "winner": 1,
+      "moves": [
+        {
+          "point": {
+            "x": 6,
+            "y": 7
+          },
+          "player": 1,
+          "engine": "medium-d3@base-c24c7f8",
+          "ply": 2,
+          "metrics": {
+            "depth": 3,
+            "nodes": 259,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 7
+          },
+          "player": 2,
+          "engine": "medium-d3",
+          "ply": 3,
+          "metrics": {
+            "depth": 3,
+            "nodes": 215,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 9
+          },
+          "player": 1,
+          "engine": "medium-d3@base-c24c7f8",
+          "ply": 4,
+          "metrics": {
+            "depth": 3,
+            "nodes": 233,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 8
+          },
+          "player": 2,
+          "engine": "medium-d3",
+          "ply": 5,
+          "metrics": {
+            "depth": 3,
+            "nodes": 229,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 8
+          },
+          "player": 1,
+          "engine": "medium-d3@base-c24c7f8",
+          "ply": 6,
+          "metrics": {
+            "depth": 3,
+            "nodes": 228,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 8
+          },
+          "player": 2,
+          "engine": "medium-d3",
+          "ply": 7,
+          "metrics": {
+            "depth": 3,
+            "nodes": 214,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 4,
+            "y": 7
+          },
+          "player": 1,
+          "engine": "medium-d3@base-c24c7f8",
+          "ply": 8,
+          "metrics": {
+            "depth": 3,
+            "nodes": 277,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 6
+          },
+          "player": 2,
+          "engine": "medium-d3",
+          "ply": 9,
+          "metrics": {
+            "depth": 3,
+            "nodes": 266,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 3,
+            "y": 6
+          },
+          "player": 1,
+          "engine": "medium-d3@base-c24c7f8",
+          "ply": 10,
+          "metrics": {
+            "depth": 0,
+            "nodes": 6,
+            "ttHits": 0,
+            "reason": "win",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 2,
+            "y": 5
+          },
+          "player": 2,
+          "engine": "medium-d3",
+          "ply": 11,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 10
+          },
+          "player": 1,
+          "engine": "medium-d3@base-c24c7f8",
+          "ply": 12,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "win",
+            "elapsedMs": 0
+          }
+        }
+      ],
+      "error": null,
+      "failAtMove": null,
+      "elapsedMs": 158
+    },
+    {
+      "opening": "center-diagonal",
+      "black": "medium-d3",
+      "white": "medium-d3@base-c24c7f8",
+      "outcome": "black-win",
+      "winner": 1,
+      "moves": [
+        {
+          "point": {
+            "x": 8,
+            "y": 7
+          },
+          "player": 1,
+          "engine": "medium-d3",
+          "ply": 2,
+          "metrics": {
+            "depth": 3,
+            "nodes": 274,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 7
+          },
+          "player": 2,
+          "engine": "medium-d3@base-c24c7f8",
+          "ply": 3,
+          "metrics": {
+            "depth": 3,
+            "nodes": 215,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 9
+          },
+          "player": 1,
+          "engine": "medium-d3",
+          "ply": 4,
+          "metrics": {
+            "depth": 3,
+            "nodes": 233,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 8
+          },
+          "player": 2,
+          "engine": "medium-d3@base-c24c7f8",
+          "ply": 5,
+          "metrics": {
+            "depth": 3,
+            "nodes": 229,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 8
+          },
+          "player": 1,
+          "engine": "medium-d3",
+          "ply": 6,
+          "metrics": {
+            "depth": 3,
+            "nodes": 228,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 8
+          },
+          "player": 2,
+          "engine": "medium-d3@base-c24c7f8",
+          "ply": 7,
+          "metrics": {
+            "depth": 3,
+            "nodes": 214,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 7
+          },
+          "player": 1,
+          "engine": "medium-d3",
+          "ply": 8,
+          "metrics": {
+            "depth": 3,
+            "nodes": 277,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 6
+          },
+          "player": 2,
+          "engine": "medium-d3@base-c24c7f8",
+          "ply": 9,
+          "metrics": {
+            "depth": 3,
+            "nodes": 266,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 4,
+            "y": 6
+          },
+          "player": 1,
+          "engine": "medium-d3",
+          "ply": 10,
+          "metrics": {
+            "depth": 0,
+            "nodes": 6,
+            "ttHits": 0,
+            "reason": "win",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 3,
+            "y": 5
+          },
+          "player": 2,
+          "engine": "medium-d3@base-c24c7f8",
+          "ply": 11,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 10
+          },
+          "player": 1,
+          "engine": "medium-d3",
+          "ply": 12,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "win",
+            "elapsedMs": 0
+          }
+        }
+      ],
+      "error": null,
+      "failAtMove": null,
+      "elapsedMs": 122
+    },
+    {
+      "opening": "center-diagonal",
+      "black": "medium-d3@base-c24c7f8",
+      "white": "medium-d3",
+      "outcome": "black-win",
+      "winner": 1,
+      "moves": [
+        {
+          "point": {
+            "x": 8,
+            "y": 7
+          },
+          "player": 1,
+          "engine": "medium-d3@base-c24c7f8",
+          "ply": 2,
+          "metrics": {
+            "depth": 3,
+            "nodes": 274,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 7
+          },
+          "player": 2,
+          "engine": "medium-d3",
+          "ply": 3,
+          "metrics": {
+            "depth": 3,
+            "nodes": 215,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 9
+          },
+          "player": 1,
+          "engine": "medium-d3@base-c24c7f8",
+          "ply": 4,
+          "metrics": {
+            "depth": 3,
+            "nodes": 233,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 8
+          },
+          "player": 2,
+          "engine": "medium-d3",
+          "ply": 5,
+          "metrics": {
+            "depth": 3,
+            "nodes": 229,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 8
+          },
+          "player": 1,
+          "engine": "medium-d3@base-c24c7f8",
+          "ply": 6,
+          "metrics": {
+            "depth": 3,
+            "nodes": 228,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 8
+          },
+          "player": 2,
+          "engine": "medium-d3",
+          "ply": 7,
+          "metrics": {
+            "depth": 3,
+            "nodes": 214,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 7
+          },
+          "player": 1,
+          "engine": "medium-d3@base-c24c7f8",
+          "ply": 8,
+          "metrics": {
+            "depth": 3,
+            "nodes": 277,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 6
+          },
+          "player": 2,
+          "engine": "medium-d3",
+          "ply": 9,
+          "metrics": {
+            "depth": 3,
+            "nodes": 266,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 4,
+            "y": 6
+          },
+          "player": 1,
+          "engine": "medium-d3@base-c24c7f8",
+          "ply": 10,
+          "metrics": {
+            "depth": 0,
+            "nodes": 6,
+            "ttHits": 0,
+            "reason": "win",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 3,
+            "y": 5
+          },
+          "player": 2,
+          "engine": "medium-d3",
+          "ply": 11,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 10
+          },
+          "player": 1,
+          "engine": "medium-d3@base-c24c7f8",
+          "ply": 12,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "win",
+            "elapsedMs": 0
+          }
+        }
+      ],
+      "error": null,
+      "failAtMove": null,
+      "elapsedMs": 120
+    },
+    {
+      "opening": "center-knight",
+      "black": "medium-d3",
+      "white": "medium-d3@base-c24c7f8",
+      "outcome": "black-win",
+      "winner": 1,
+      "moves": [
+        {
+          "point": {
+            "x": 7,
+            "y": 6
+          },
+          "player": 1,
+          "engine": "medium-d3",
+          "ply": 2,
+          "metrics": {
+            "depth": 3,
+            "nodes": 285,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 5
+          },
+          "player": 2,
+          "engine": "medium-d3@base-c24c7f8",
+          "ply": 3,
+          "metrics": {
+            "depth": 3,
+            "nodes": 215,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 7
+          },
+          "player": 1,
+          "engine": "medium-d3",
+          "ply": 4,
+          "metrics": {
+            "depth": 3,
+            "nodes": 293,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 7
+          },
+          "player": 2,
+          "engine": "medium-d3@base-c24c7f8",
+          "ply": 5,
+          "metrics": {
+            "depth": 3,
+            "nodes": 231,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 8
+          },
+          "player": 1,
+          "engine": "medium-d3",
+          "ply": 6,
+          "metrics": {
+            "depth": 3,
+            "nodes": 248,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 5
+          },
+          "player": 2,
+          "engine": "medium-d3@base-c24c7f8",
+          "ply": 7,
+          "metrics": {
+            "depth": 3,
+            "nodes": 223,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 9
+          },
+          "player": 1,
+          "engine": "medium-d3",
+          "ply": 8,
+          "metrics": {
+            "depth": 3,
+            "nodes": 296,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 5
+          },
+          "player": 2,
+          "engine": "medium-d3@base-c24c7f8",
+          "ply": 9,
+          "metrics": {
+            "depth": 3,
+            "nodes": 268,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 10,
+            "y": 6
+          },
+          "player": 1,
+          "engine": "medium-d3",
+          "ply": 10,
+          "metrics": {
+            "depth": 0,
+            "nodes": 1,
+            "ttHits": 0,
+            "reason": "win",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 11,
+            "y": 5
+          },
+          "player": 2,
+          "engine": "medium-d3@base-c24c7f8",
+          "ply": 11,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 10
+          },
+          "player": 1,
+          "engine": "medium-d3",
+          "ply": 12,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "win",
+            "elapsedMs": 0
+          }
+        }
+      ],
+      "error": null,
+      "failAtMove": null,
+      "elapsedMs": 132
+    },
+    {
+      "opening": "center-knight",
+      "black": "medium-d3@base-c24c7f8",
+      "white": "medium-d3",
+      "outcome": "black-win",
+      "winner": 1,
+      "moves": [
+        {
+          "point": {
+            "x": 7,
+            "y": 6
+          },
+          "player": 1,
+          "engine": "medium-d3@base-c24c7f8",
+          "ply": 2,
+          "metrics": {
+            "depth": 3,
+            "nodes": 285,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 5
+          },
+          "player": 2,
+          "engine": "medium-d3",
+          "ply": 3,
+          "metrics": {
+            "depth": 3,
+            "nodes": 215,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 7
+          },
+          "player": 1,
+          "engine": "medium-d3@base-c24c7f8",
+          "ply": 4,
+          "metrics": {
+            "depth": 3,
+            "nodes": 293,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 7
+          },
+          "player": 2,
+          "engine": "medium-d3",
+          "ply": 5,
+          "metrics": {
+            "depth": 3,
+            "nodes": 231,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 8
+          },
+          "player": 1,
+          "engine": "medium-d3@base-c24c7f8",
+          "ply": 6,
+          "metrics": {
+            "depth": 3,
+            "nodes": 248,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 5
+          },
+          "player": 2,
+          "engine": "medium-d3",
+          "ply": 7,
+          "metrics": {
+            "depth": 3,
+            "nodes": 223,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 9
+          },
+          "player": 1,
+          "engine": "medium-d3@base-c24c7f8",
+          "ply": 8,
+          "metrics": {
+            "depth": 3,
+            "nodes": 296,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 5
+          },
+          "player": 2,
+          "engine": "medium-d3",
+          "ply": 9,
+          "metrics": {
+            "depth": 3,
+            "nodes": 268,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 10,
+            "y": 6
+          },
+          "player": 1,
+          "engine": "medium-d3@base-c24c7f8",
+          "ply": 10,
+          "metrics": {
+            "depth": 0,
+            "nodes": 1,
+            "ttHits": 0,
+            "reason": "win",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 11,
+            "y": 5
+          },
+          "player": 2,
+          "engine": "medium-d3",
+          "ply": 11,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 10
+          },
+          "player": 1,
+          "engine": "medium-d3@base-c24c7f8",
+          "ply": 12,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "win",
+            "elapsedMs": 0
+          }
+        }
+      ],
+      "error": null,
+      "failAtMove": null,
+      "elapsedMs": 109
+    },
+    {
+      "opening": "offset-first",
+      "black": "medium-d3",
+      "white": "medium-d3@base-c24c7f8",
+      "outcome": "black-win",
+      "winner": 1,
+      "moves": [
+        {
+          "point": {
+            "x": 6,
+            "y": 6
+          },
+          "player": 1,
+          "engine": "medium-d3",
+          "ply": 2,
+          "metrics": {
+            "depth": 3,
+            "nodes": 268,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 8
+          },
+          "player": 2,
+          "engine": "medium-d3@base-c24c7f8",
+          "ply": 3,
+          "metrics": {
+            "depth": 3,
+            "nodes": 215,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 6
+          },
+          "player": 1,
+          "engine": "medium-d3",
+          "ply": 4,
+          "metrics": {
+            "depth": 3,
+            "nodes": 233,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 6
+          },
+          "player": 2,
+          "engine": "medium-d3@base-c24c7f8",
+          "ply": 5,
+          "metrics": {
+            "depth": 3,
+            "nodes": 229,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 5
+          },
+          "player": 1,
+          "engine": "medium-d3",
+          "ply": 6,
+          "metrics": {
+            "depth": 3,
+            "nodes": 228,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 8
+          },
+          "player": 2,
+          "engine": "medium-d3@base-c24c7f8",
+          "ply": 7,
+          "metrics": {
+            "depth": 3,
+            "nodes": 213,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 4
+          },
+          "player": 1,
+          "engine": "medium-d3",
+          "ply": 8,
+          "metrics": {
+            "depth": 3,
+            "nodes": 279,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 8
+          },
+          "player": 2,
+          "engine": "medium-d3@base-c24c7f8",
+          "ply": 9,
+          "metrics": {
+            "depth": 3,
+            "nodes": 258,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 3
+          },
+          "player": 1,
+          "engine": "medium-d3",
+          "ply": 10,
+          "metrics": {
+            "depth": 0,
+            "nodes": 6,
+            "ttHits": 0,
+            "reason": "win",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 4,
+            "y": 2
+          },
+          "player": 2,
+          "engine": "medium-d3@base-c24c7f8",
+          "ply": 11,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 7
+          },
+          "player": 1,
+          "engine": "medium-d3",
+          "ply": 12,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "win",
+            "elapsedMs": 0
+          }
+        }
+      ],
+      "error": null,
+      "failAtMove": null,
+      "elapsedMs": 113
+    },
+    {
+      "opening": "offset-first",
+      "black": "medium-d3@base-c24c7f8",
+      "white": "medium-d3",
+      "outcome": "black-win",
+      "winner": 1,
+      "moves": [
+        {
+          "point": {
+            "x": 6,
+            "y": 6
+          },
+          "player": 1,
+          "engine": "medium-d3@base-c24c7f8",
+          "ply": 2,
+          "metrics": {
+            "depth": 3,
+            "nodes": 268,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 8
+          },
+          "player": 2,
+          "engine": "medium-d3",
+          "ply": 3,
+          "metrics": {
+            "depth": 3,
+            "nodes": 215,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 6
+          },
+          "player": 1,
+          "engine": "medium-d3@base-c24c7f8",
+          "ply": 4,
+          "metrics": {
+            "depth": 3,
+            "nodes": 233,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 6
+          },
+          "player": 2,
+          "engine": "medium-d3",
+          "ply": 5,
+          "metrics": {
+            "depth": 3,
+            "nodes": 229,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 5
+          },
+          "player": 1,
+          "engine": "medium-d3@base-c24c7f8",
+          "ply": 6,
+          "metrics": {
+            "depth": 3,
+            "nodes": 228,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 8
+          },
+          "player": 2,
+          "engine": "medium-d3",
+          "ply": 7,
+          "metrics": {
+            "depth": 3,
+            "nodes": 213,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 4
+          },
+          "player": 1,
+          "engine": "medium-d3@base-c24c7f8",
+          "ply": 8,
+          "metrics": {
+            "depth": 3,
+            "nodes": 279,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 8
+          },
+          "player": 2,
+          "engine": "medium-d3",
+          "ply": 9,
+          "metrics": {
+            "depth": 3,
+            "nodes": 258,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 3
+          },
+          "player": 1,
+          "engine": "medium-d3@base-c24c7f8",
+          "ply": 10,
+          "metrics": {
+            "depth": 0,
+            "nodes": 6,
+            "ttHits": 0,
+            "reason": "win",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 4,
+            "y": 2
+          },
+          "player": 2,
+          "engine": "medium-d3",
+          "ply": 11,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 7
+          },
+          "player": 1,
+          "engine": "medium-d3@base-c24c7f8",
+          "ply": 12,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "win",
+            "elapsedMs": 0
+          }
+        }
+      ],
+      "error": null,
+      "failAtMove": null,
+      "elapsedMs": 107
+    }
+  ]
+}

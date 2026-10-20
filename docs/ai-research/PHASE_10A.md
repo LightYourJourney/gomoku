@@ -1,6 +1,6 @@
 # Phase 10A · AI 棋力评测基础设施
 
-**结论**：评测系统已建立并跑通三次真实评测；**本阶段没有优化搜索算法，也没有改动五档参数**。
+**结论**：评测系统已建立并跑通三次棋力实测 + 一次版本对照链路联调；**本阶段没有优化搜索算法，也没有改动五档参数**。
 新增能力：确定性评测、真实预算评测、公平配对赛、独立证明器、覆盖率完整的结果报告、可对照历史版本的引擎打包。
 
 - 协议：[BENCHMARK_PROTOCOL.md](BENCHMARK_PROTOCOL.md)
@@ -37,7 +37,7 @@
 ```
 bench/strength/
   types.ts            评测系统的类型（引擎、对局、结局、报告）
-  positions.ts        16 个标准局面（12 类）
+  positions.ts        16 个标准局面（13 类）
   proof.ts            独立强制胜证明器（只依赖 core/rules）
   openings.ts         8 条固定开局手顺
   local.ts            当前源码的引擎适配器（唯一参数拼装点）
@@ -55,13 +55,13 @@ bench/strength/
   results/            每次实验的 JSON + MD（gitignore，不覆盖）
 vitest.strength.config.ts
 docs/ai-research/{PHASE_10A,BENCHMARK_PROTOCOL,BASELINE_STRENGTH}.md
-docs/ai-research/runs/  三次实验的摘要与报告归档
+docs/ai-research/runs/  四次实验的报告归档（含 schema 差异说明 README）
 ```
 
 同时修改：
 - `vite.config.ts`：`test.include` 纳入 `bench/strength/**/*.test.ts`——评测器自测必须每次提交都跑；
 - `package.json`：`strength` / `strength:bundle`；
-- `tsconfig.bench.json`、`.gitignore`、`quality/tests.baseline.json`（1085 → 1154）。
+- `tsconfig.bench.json`、`.gitignore`、`quality/tests.baseline.json`（1085 → 1161）。
 
 ## 3. 评测器设计
 
@@ -97,15 +97,19 @@ interface Engine {
 
 ### 3.4 报告
 
-JSON 含完整手顺与逐手度量；Markdown 只放摘要。文件名带 UTC 时间戳，绝不覆盖。
+JSON 含完整手顺与逐手度量、双方**实际生效参数**（`resolved`）、开局集指纹
+（`openingsVersion`）、统计方法与种子、以及结果文件自身路径（`meta.resultFile`）；
+Markdown 只放摘要。文件名带 UTC 时间戳；同一时间戳撞名时退到 `-2`、`-3`，**绝不覆盖**。
 
 ## 4. 标准局面集
 
-16 个局面覆盖 12 类（空盘、开局、安静中盘、直接成五、冲四、必堵、多胜点、活三、双威胁、
+16 个局面覆盖 13 类（空盘、开局、安静中盘、直接成五、冲四、必堵、多胜点、活三、双威胁、
 VCF、威胁非必胜、置换、残局）。
 
 - 每条声明**可独立证明的性质**（规则判定或 `proof.ts` 的强制胜证明），不拿引擎输出当答案；
 - 不可由合法手顺到达的战术局面显式标 `synthetic`，并禁止作为对局起点；
+- `transposition` 局面记录**两条合法手顺**（`orders`），由测试逐条 `replay()` 验证落在同一盘面——
+  「同一局面、不同路径」不能只靠注释声称；
 - `positions.test.ts` 逐条验证合法性、无五连、性质成立、类别覆盖。
 
 独立证明器只证明「3 手强制胜」（我走一步 → 对手任意应手 → 我仍能成五），
@@ -123,7 +127,7 @@ VCF、威胁非必胜、置换、残局）。
 
 ### 6.1 评测器自测（每次提交都跑）
 
-`bench/strength/*.test.ts`：**69 条**，覆盖任务书 §十二 的 15 项：
+`bench/strength/*.test.ts`：**76 条**，覆盖任务书 §十二 的 15 项：
 
 | # | 要求 | 用例 |
 | --- | --- | --- |
@@ -138,27 +142,36 @@ VCF、威胁非必胜、置换、残局）。
 | 9 | 胜负计分 | `stats.test.ts > 得分`、`汇总计数`（手算期望） |
 | 10 | 超时分类 | `实验超时记为 aborted`、`引擎抛错时记录 id 与手数` |
 | 11 | 异常可追踪 | `引擎修改传入棋盘会被抓住`、错误串含引擎 id 与手数 |
-| 12 | JSON 完整 | `报告完整性`（commit / 指纹 / 游戏数 / 字段齐全） |
+| 12 | JSON 完整 | `报告完整性`（commit / 指纹 / 游戏数 / 字段齐全）、`结果文件路径回填`、`同一时间戳跑两次也不覆盖` |
 | 13 | 两版对照不混淆 | `两个引擎包不会互相污染`（各自返回自己的着法，指纹不同） |
 | 14 | 引擎不修改输入 | 同上（运行时比对副本） |
 | 15 | 无明显资源泄漏 | `大批量对局后堆内存没有明显增长`（300 局，阈值宽松） |
 
-另加：打包后引擎与进程内引擎**逐局面给出相同着法**（16 个局面 × 着法/reason/深度/节点）。
+另加：打包后引擎与进程内引擎**逐局面给出相同着法**（16 个局面 × 着法/reason/深度/节点）；
+`repeats>1` 时逐开局按重复合并统计（并核对结局明细聚合）；阶段划分按**绝对手数**而不是
+`moves` 数组下标；`environment-error` 单独计数、不混进引擎异常。
 
-### 6.2 三次真实评测
+### 6.2 四次真实评测
 
 | 实验 | 局数 | 结果 | 得分率 | 工时 |
 | --- | --- | --- | --- | --- |
 | 入门 vs 初级（真实预算） | 4 | 2 / 2 / 0 | 50.0% | 0.2 s |
 | medium 固定深度 2 vs 4 | 8 | 1 / 6 / 0 + 1 截断 | **14.3%**（CI 0–37.5%） | 5.0 s |
 | 中级 vs 高级（真实预算） | 4 | 1 / 3 / 0 | 25.0%（CI 0–50%） | 83.3 s |
+| 版本对照联调：源码 vs `c24c7f8` 打包（固定深度 3） | 8 | 4 / 4 / 0 | 50.0%（CI 50–50%） | 1.0 s |
 
-读数与解读见 [BASELINE_STRENGTH.md](BASELINE_STRENGTH.md)。**这三组是小样本，不构成五档排名。**
+前三组是棋力观测，读数与解读见 [BASELINE_STRENGTH.md](BASELINE_STRENGTH.md)。
+**这三组是小样本，不构成五档排名。**
+
+第四组不是棋力对照，而是**对照链路的等价性检查**：同一份引擎分别以「当前源码」和
+「独立打包模块」加载，配对赛 4:4、置信区间退化为一点、**同一开局的 A-黑 / B-黑两局逐手序列完全相同**。
+如果打包入口或加载链路引入了偏差，这里会先出现不对称。它同时验证了默认 id 带包名
+（`medium-d3` vs `medium-d3@base-c24c7f8`）——没有这一项，同难度的版本对照会因 id 相同而开跑即失败。
 
 ### 6.3 仓库门禁
 
-`yarn lint` / `typecheck` / `test`（**1154** / 70 文件）/ `build` / `gates` 全绿；
-`e2e` 162 条、`e2e:prod` 5 条不受影响。
+`yarn lint` / `typecheck` / `test`（**1161** / 70 文件）/ `build` / `gates` 全绿；
+`e2e` 162 条实测通过；`e2e:prod` 5 条不受影响（本轮未改产品代码路径）。
 
 ## 7. 运行命令
 
@@ -166,22 +179,29 @@ VCF、威胁非必胜、置换、残局）。
 yarn strength                                    # 冒烟（默认 beginner vs easy）
 STRENGTH_MODE=standard STRENGTH_A=medium STRENGTH_B=hard yarn strength
 STRENGTH_A=medium STRENGTH_A_FIXED=2 STRENGTH_B=medium STRENGTH_B_FIXED=4 yarn strength
-STRENGTH_A=hard STRENGTH_B=hard STRENGTH_B_MODULE=.engines/base.mjs yarn strength
-yarn strength:bundle -- --root <源码树> --out <输出.mjs>
+yarn strength:bundle -- --root <源码树> --out bench/strength/.engines/<commit>.mjs
+STRENGTH_A=medium STRENGTH_A_FIXED=3 STRENGTH_B=medium STRENGTH_B_FIXED=3 \
+  STRENGTH_B_MODULE=bench/strength/.engines/<commit>.mjs yarn strength
 ```
 
 环境变量：`STRENGTH_MODE` / `STRENGTH_A|B`（难度）/ `_FIXED`（固定深度）/
-`_BUDGET` / `_WIDTH` / `_MODULE` / `_ID`、`STRENGTH_REPEATS`、`STRENGTH_MAX_MOVES`、
-`STRENGTH_OPENINGS`、`STRENGTH_ABORT_MS`。
+`_BUDGET` / `_WIDTH` / `_THREAT_PLIES` / `_TRANSPOSITION` / `_THREAT_THREES` /
+`_MODULE` / `_ID` / `_LABEL`、`STRENGTH_REPEATS`、`STRENGTH_MAX_MOVES`、
+`STRENGTH_OPENINGS`、`STRENGTH_ABORT_MS`、`STRENGTH_BASELINE`。
+
+开跑前会拦下三类「能跑但结论没意义」的配置：A/B 时钟模式不一致（一边 `fixed`、一边 `real`）、
+`fixed` 没给深度、`real` 又给了深度。默认 id 形如 `medium-d3@base-c24c7f8`——
+**同难度做版本对照时自动带上包名**，不需要手设 `_ID`。
 
 ## 8. 实验成本（实测）
 
 | 配置 | 工时 |
 | --- | --- |
-| 评测器自测 | 0.6 秒 |
+| 评测器自测 | 1.0–1.5 秒（含打包等价性用例） |
 | smoke（入门 vs 初级） | 0.2 秒 |
-| smoke（中级 vs 高级） | 82 秒 |
+| smoke（中级 vs 高级） | 83 秒 |
 | standard（固定深度 2 vs 4） | 5 秒 |
+| standard（同引擎两路径对照，固定深度 3） | 1.0 秒（冷启动首跑 2.9 秒） |
 | extended（8 开局 × 2，未跑） | 按 standard 外推约 1–3 分钟（确定性）/ 20–40 分钟（真实预算高档） |
 
 CI 只跑自测，不跑真实对局。

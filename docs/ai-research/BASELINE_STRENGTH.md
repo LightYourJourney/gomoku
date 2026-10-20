@@ -2,6 +2,7 @@
 
 > **先说清楚这不是什么**：这不是「五档棋力排名」，也不是「Elo 等级」。
 > 这里只有三次**小样本**实测，用来证明评测系统能跑通、能分辨强弱、能公平对照。
+> 另有一条「同一引擎经两条加载路径」的等价性检查（§4），它不是棋力结论。
 > 置信区间很宽，任何「X 档比 Y 档强 N 分」的说法都超出了数据支持的范围。
 
 日期：2026-10-20 ｜ 环境：Apple Silicon（arm64）/ 8 CPU / Node v26.12.0 / 提交 `c24c7f8`（工作区含未提交改动）
@@ -46,9 +47,9 @@ B 的胜率明显更高，且 B 是**通过引擎包加载**的——同时验�
 | 预算 | 中级 1000 ms / 高级 1600 ms |
 | 结果 | A（中级）1 胜 / B（高级）3 胜 / 0 和 |
 | 得分率 | **25.0%**（95% CI **0.0–50.0%**） |
-| 工时 | 83.3 秒（负载均值 3.22） |
+| 工时 | 83.3 秒（负载均值 3.40） |
 | 实测深度 | 中级 2.84、高级 3.72 |
-| 平均节点 | 中级 543、高级 5 481 |
+| 平均节点 | 中级 542.9、高级 5 443.9 |
 | 超时回退 | 中级 0 / 86 手；高级 **24 / 87 手** |
 
 两点值得记录：
@@ -71,11 +72,17 @@ STRENGTH_B=medium STRENGTH_B_FIXED=4 yarn strength
 # 真实预算对照
 STRENGTH_MODE=smoke STRENGTH_A=medium STRENGTH_B=hard yarn strength
 
-# 与历史版本对照
+# 与历史版本对照：把目标源码树打成独立引擎，再让当前源码与它配对
 git worktree add /tmp/gomoku-base <commit>
-node bench/strength/bundle-engine.mjs --root /tmp/gomoku-base --out bench/strength/.engines/base.mjs
-STRENGTH_A=hard STRENGTH_B=hard STRENGTH_B_MODULE=bench/strength/.engines/base.mjs yarn strength
+node bench/strength/bundle-engine.mjs --root /tmp/gomoku-base --out bench/strength/.engines/base-<commit>.mjs
+STRENGTH_A=medium STRENGTH_A_FIXED=3 STRENGTH_B=medium STRENGTH_B_FIXED=3 \
+  STRENGTH_B_MODULE=bench/strength/.engines/base-<commit>.mjs yarn strength
 ```
+
+最后一条命令实际跑过（对手是 `c24c7f8` 的打包引擎）：8 局 4:4、逐手序列与当前源码完全一致，
+归档在 [`runs/`](runs/)。`src/ai/` 与 `src/core/` 在两个提交之间没有任何差异
+（`git diff --stat c24c7f8 HEAD -- src/ai src/core` 为空），所以本来就该完全对称。
+它是**对照链路的等价性检查**，不是棋力结论——出现不对称才说明加载链路引入了偏差。
 
 ## 5. 统计局限
 
@@ -91,5 +98,6 @@ STRENGTH_A=hard STRENGTH_B=hard STRENGTH_B_MODULE=bench/strength/.engines/base.m
 2. 固定深度 2 → 4 带来可观测的棋力提升（14.3%，CI 上限 37.5%），说明「加深」这条方向是有效的。
 3. 真实预算下高级对中级 **小样本**占优（25% vs 75%），但样本不足以给出精确差距。
 4. 高级档约 28% 的着法吃满预算（24/87），深度上限 6 未稳定达成（平均 3.72 层）——这是下一步的候选优化点。
+5. 版本对照链路可用：同一引擎以「当前源码」和「独立打包模块」两种方式加载，配对赛 4:4、逐手一致。
 
 **不能说的**：五档的完整强弱排序、任何一档的 Elo 值、与人类棋手的对应关系。

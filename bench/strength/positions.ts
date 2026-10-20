@@ -15,6 +15,9 @@ import { nearlyFullBoard } from '../../src/test/board-fixtures'
  * 是否已有五连、某一方是否有立即成五点、是否存在「我方走一步后对手无论如何
  * 应手我都还能成五」的强制胜。这些都不经过搜索引擎。
  *
+ * 所有性质都按**本仓库的规则**声明：15×15、自由规则、长连（≥5）有效。
+ * 换规则集（例如禁手）会让这里的 `forced-win` 结论失效，不能直接复用。
+ *
  * ## 局面怎么来的
  *
  * - `构造`：为评测专门摆的，人工可复核，坐标写在注释里；
@@ -41,8 +44,10 @@ export type PositionCategory =
   | 'must-block'
   /** 多个直接胜点 */
   | 'multi-win'
-  /** 活三 / 冲四 */
+  /** 活三：无立即成五，但可证明的短链强制胜 */
   | 'open-three'
+  /** 冲四：一端被堵的四，只有一个成五点，与活三不是一回事 */
+  | 'rush-four'
   /** 双重威胁 */
   | 'double-threat'
   /** 可证明的强制胜（VCF 一类的短链） */
@@ -92,6 +97,13 @@ export interface BenchPosition {
    * 对局起点走 `openings.ts`，那里的每条手顺都由 `replay()` 验证过。
    */
   readonly synthetic?: true
+  /**
+   * 到达**同一局面**的两条以上合法手顺（仅 `transposition` 类使用）。
+   *
+   * 棋盘快照证明不了「这是同一局面经由不同路径到达」——只有能手顺真的重放出来才算。
+   * `positions.test.ts` 会逐条 `replay()` 并断言各自得到的盘面与 `lines` 一致。
+   */
+  readonly orders?: readonly (readonly Point[])[]
 }
 
 const EMPTY_ROW = '...............'
@@ -145,7 +157,7 @@ export const POSITIONS: readonly BenchPosition[] = [
     id: 'quiet-midgame',
     category: 'quiet',
     player: 2,
-    // 黑：(5,5) (7,4) (6,7) (8,7)；白：(7,3) (6,6) (7,6) (9,7)
+    // 黑：(7,4) (5,5) (7,6) (6,7) (8,7)；白：(7,3) (11,5) (6,6) (4,7) (7,8)
     lines: rows([
       '',
       '',
@@ -159,7 +171,7 @@ export const POSITIONS: readonly BenchPosition[] = [
     ]),
     source: '构造',
     expects: [{ kind: 'no-immediate-win-for-either' }],
-    note: '双方各四子、都不成四，用来量「安静局面下的搜索深度与节点数」。',
+    note: '双方各五子、都不成四，用来量「安静局面下的搜索深度与节点数」。',
   },
   {
     id: 'direct-win-open',
@@ -173,7 +185,7 @@ export const POSITIONS: readonly BenchPosition[] = [
   },
   {
     id: 'rush-four',
-    category: 'open-three',
+    category: 'rush-four',
     player: 1,
     // 白堵住左端，只剩 (10,7)
     lines: rows(['', '', '', '', '', '', '', '.....WBBBB.....']),
@@ -301,13 +313,36 @@ export const POSITIONS: readonly BenchPosition[] = [
     id: 'transposed',
     category: 'transposition',
     player: 1,
-    // 与 opening-diagonal 同形，但注释里记录它可由两条手顺到达：
-    // (7,7) (8,8) 或 (8,8)? —— 黑先手不可能先下白点，因此实际手顺是
-    // 黑 (7,7)、白 (8,8)。这里保留为「同一局面进哈希表时不应区分路径」的样本。
-    lines: rows(['', '', '', '', '', '', '', '.......B.......', '........W......']),
-    source: '构造（与 opening-diagonal 同形）',
+    // 黑 (6,6) (7,7)；白 (8,8) (6,7)
+    lines: rows([
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '......B........',
+      '......WB.......',
+      '........W......',
+    ]),
+    // 两条手顺，落子顺序不同、盘面相同
+    orders: [
+      [
+        { x: 7, y: 7 },
+        { x: 8, y: 8 },
+        { x: 6, y: 6 },
+        { x: 6, y: 7 },
+      ],
+      [
+        { x: 6, y: 6 },
+        { x: 6, y: 7 },
+        { x: 7, y: 7 },
+        { x: 8, y: 8 },
+      ],
+    ],
+    source: '构造（同一盘面的两条合法手顺）',
     expects: [{ kind: 'no-immediate-win-for-either' }],
-    note: '置换样本：与 opening-diagonal 局面相同、id 不同，用来验证置换表不区分到达路径。',
+    note: '置换样本：两条手顺在 `orders` 里各自重放出同一盘面，用来验证置换表不区分到达路径。',
   },
   {
     id: 'endgame-eight-holes',

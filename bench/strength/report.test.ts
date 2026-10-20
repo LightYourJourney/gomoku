@@ -37,6 +37,14 @@ const SETS: PairedGameSet[] = [
 ]
 
 function makeReport(startedAt: string): ExperimentReport {
+  const resolved = {
+    budgetMs: 1_000_000_000,
+    maxDepth: 1,
+    width: 12,
+    threatPlies: 5,
+    threatThrees: true,
+    transposition: true,
+  }
   return {
     meta: {
       commit: 'deadbeef',
@@ -51,10 +59,27 @@ function makeReport(startedAt: string): ExperimentReport {
       durationMs: 1000,
       mode: 'smoke',
       command: 'yarn strength',
+      openingsVersion: '0123456789abcdef',
+      statistics: {
+        method: '配对 Bootstrap，以开局为簇重采样',
+        bootstrapSamples: 100,
+        bootstrapSeed: 1,
+        clusterUnit: 'opening',
+      },
       notes: ['测试用'],
     },
-    a: { spec: { id: 'A', clock: 'fixed', maxDepth: 1 }, digest: 'a'.repeat(64), kind: 'source' },
-    b: { spec: { id: 'B', clock: 'fixed', maxDepth: 1 }, digest: 'b'.repeat(64), kind: 'module' },
+    a: {
+      spec: { id: 'A', label: 'A', difficulty: 'medium', clock: 'fixed', maxDepth: 1 },
+      resolved,
+      digest: 'a'.repeat(64),
+      kind: 'source',
+    },
+    b: {
+      spec: { id: 'B', label: 'B', difficulty: 'medium', clock: 'fixed', maxDepth: 1 },
+      resolved,
+      digest: 'b'.repeat(64),
+      kind: 'module',
+    },
     openings: [{ id: 'o1', moves: [{ x: 7, y: 7 }] }],
     maxMoves: 100,
     repeats: 1,
@@ -113,6 +138,9 @@ describe('JSON 落盘', () => {
 
     expect(raw.meta.commit).toBe('deadbeef')
     expect(raw.meta.engineVersion).toBe('search-1')
+    expect(raw.meta.openingsVersion).toHaveLength(16)
+    expect(raw.meta.statistics.clusterUnit).toBe('opening')
+    expect(raw.a.resolved.maxDepth).toBe(1)
     expect(raw.a.digest).toHaveLength(64)
     expect(raw.b.kind).toBe('module')
     expect(raw.openings).toHaveLength(1)
@@ -120,6 +148,33 @@ describe('JSON 落盘', () => {
     expect(raw.search.a.moves).toBe(0)
     expect(raw.games).toHaveLength(2)
     expect(raw.games[0]!.outcome).toBe('black-win')
+  })
+
+  it('结果文件路径回填到报告里，可从 Markdown 追到完整数据', async () => {
+    const written = await writeReport(makeReport('2026-10-20T03:00:00.000Z'), dir)
+    const raw = JSON.parse(await readFile(written.jsonPath, 'utf8')) as ExperimentReport
+
+    expect(raw.meta.resultFile).toBe(written.jsonPath)
+    // Markdown 也要带上，否则单独分发 Markdown 时追不回去
+    const markdown = await readFile(written.markdownPath, 'utf8')
+    expect(markdown).toContain(written.jsonPath)
+  })
+
+  it('同一时间戳跑两次也不覆盖，退到带序号的文件名', async () => {
+    const stamp = '2026-10-20T04:00:00.000Z'
+    const first = await writeReport(makeReport(stamp), dir)
+    const second = await writeReport(makeReport(stamp), dir)
+
+    expect(second.jsonPath).not.toBe(first.jsonPath)
+    expect(second.markdownPath).not.toBe(first.markdownPath)
+    // JSON 与 MD 必须同名同后缀序号，否则事后按名配对会错
+    expect(second.jsonPath.replace(/\.json$/, '')).toBe(second.markdownPath.replace(/\.md$/, ''))
+    expect(second.jsonPath).toMatch(/-2\.json$/)
+    // 两份都能重新解析，先写的那份没有被第二次写入吃掉
+    const firstRaw = JSON.parse(await readFile(first.jsonPath, 'utf8')) as ExperimentReport
+    const secondRaw = JSON.parse(await readFile(second.jsonPath, 'utf8')) as ExperimentReport
+    expect(firstRaw.meta.resultFile).toBe(first.jsonPath)
+    expect(secondRaw.meta.resultFile).toBe(second.jsonPath)
   })
 
   it('两次实验各自成文件，不覆盖历史', async () => {

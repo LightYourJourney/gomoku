@@ -370,11 +370,13 @@ Negamax + Alpha-Beta，配合迭代加深：
 
 `bench/strength/` —— **棋力评测基础设施**（Phase 10A）。两种模式：固定时钟 + 固定深度的
 确定性算法评测，以及真实预算的棋力评测；配对赛（同开局双方各执黑一次）抵消先手优势；
-结局分类把「手数上限」「超时」「非法着法」「引擎异常」与和棋分开计数。
+结局分类把「手数上限」「超时」「非法着法」「无着法」「引擎异常」「评测环境错误」
+与和棋分开计数。
 
 - 协议与统计方法：[ai-research/BENCHMARK_PROTOCOL.md](ai-research/BENCHMARK_PROTOCOL.md)
 - 实测基线与解读：[ai-research/BASELINE_STRENGTH.md](ai-research/BASELINE_STRENGTH.md)
-- 版本对照：[`bundle-engine.mjs`](../bench/strength/bundle-engine.mjs) 把任意源码树打成独立引擎包
+- 版本对照：[`bundle-engine.mjs`](../bench/strength/bundle-engine.mjs) 把任意源码树打成独立引擎包。
+  这条链路已实测：同一份引擎经「当前源码」与「打包模块」两条路径加载，配对赛 4:4、逐手序列一致。
 
 `selfplay.test.ts` 证明不了档位强弱这一点没有变；**五档之间的强弱由 `yarn strength` 负责测量**，
 且当前只有小样本（4–8 局/组），不构成排名。

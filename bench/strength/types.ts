@@ -28,11 +28,6 @@ export interface EngineMove extends MoveMetrics {
   readonly move: Point | null
 }
 
-export interface EngineContext {
-  /** 这是全局第几手（0-based），供适配器记录阶段。 */
-  readonly moveIndex: number
-}
-
 /**
  * 引擎适配器。
  *
@@ -41,7 +36,7 @@ export interface EngineContext {
  */
 export interface Engine {
   readonly id: string
-  choose(board: Board, player: Player, context: EngineContext): EngineMove
+  choose(board: Board, player: Player): EngineMove
 }
 
 /**
@@ -91,6 +86,8 @@ export type GameOutcomeKind =
   | 'no-move'
   | 'engine-error'
   | 'aborted'
+  /** 评测编排本身出错（例如开局手顺非法）——与引擎缺陷区分开。 */
+  | 'environment-error'
 
 /** 计入胜率统计的结局。其余一律单独计数。 */
 export const SCORED_OUTCOMES: readonly GameOutcomeKind[] = ['black-win', 'white-win', 'draw']
@@ -99,6 +96,13 @@ export interface PlayedMove {
   readonly point: Point
   readonly player: Player
   readonly engine: string
+  /**
+   * **全局**手序号（0-based）：开局已有的手也计入。
+   *
+   * 不能拿 `moves` 数组下标代替——`moves` 只记录开局之后的着法，
+   * 2/4/6 手的开局会让「开局 1–20 手」的阶段划分整体前移。
+   */
+  readonly ply: number
   readonly metrics: MoveMetrics
 }
 

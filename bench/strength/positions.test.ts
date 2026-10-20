@@ -1,6 +1,7 @@
 // @vitest-environment node
 import { describe, expect, it } from 'vitest'
 import { idx, opponentOf } from '../../src/core/board'
+import { replay } from '../../src/core/game'
 import { findWinLine } from '../../src/core/rules'
 import { BOARD_SIZE, type Board } from '../../src/core/types'
 import { OPENINGS, openingState } from './openings'
@@ -103,7 +104,7 @@ describe('标准局面库', () => {
     expect(new Set(ids).size).toBe(ids.length)
   })
 
-  it('覆盖任务要求的类别', () => {
+  it('覆盖声明的全部类别（任务要求 12 类，冲四另立一类）', () => {
     const required = [
       'empty',
       'opening',
@@ -112,6 +113,7 @@ describe('标准局面库', () => {
       'must-block',
       'multi-win',
       'open-three',
+      'rush-four',
       'double-threat',
       'forced-win',
       'threat-not-win',
@@ -129,6 +131,27 @@ describe('标准局面库', () => {
 
   it.each(POSITIONS.map((p) => [p.id, p] as const))('%s 的局面合法且声明成立', (_id, position) => {
     check(position)
+  })
+
+  it('置换局面确实能由两条不同手顺到达同一盘面', () => {
+    const position = POSITIONS.find((p) => p.category === 'transposition')!
+    expect(position.orders, `${position.id} 没有记录到达手顺`).toBeDefined()
+    expect(position.orders!.length, `${position.id} 至少需要两条手顺`).toBeGreaterThanOrEqual(2)
+
+    const target = boardOf(position)
+    const sequences = new Set<string>()
+    for (const order of position.orders!) {
+      const state = replay(order)
+      expect(state.moves, `${position.id} 的手顺有非法着法`).toHaveLength(order.length)
+      expect(state.status, `${position.id} 的手顺中途分出了胜负`).toBe('playing')
+      expect(
+        Array.from(state.board),
+        `${position.id} 的手顺重放出的盘面与 lines 不一致`,
+      ).toEqual(Array.from(target))
+      sequences.add(order.map((p) => `${p.x},${p.y}`).join(' '))
+    }
+    // 真的不同路径，而不是把同一条手顺抄了两遍
+    expect(sequences.size, `${position.id} 的两条手顺其实是同一条`).toBe(position.orders!.length)
   })
 
   it('每个局面都写清来源与预期', () => {
@@ -200,11 +223,13 @@ describe('棋子数守恒的边界', () => {
 
   it('synthetic 局面不得作为对局起点', () => {
     // 对局起点全部来自 openings.ts，那里每条手顺都由 replay() 验过；
-    // 这条用例钉住「两边没有混用」：局面库里的 id 不出现在开局集里。
-    const openingIds = new Set(OPENINGS.map((o) => o.id))
+    // 这条按**盘面**比对，而不是按 id——id 不同但盘面相同的局面照样不能当起点。
+    const openingBoards = OPENINGS.map((o) => Array.from(openingState(o).board))
     for (const position of POSITIONS) {
       if (position.synthetic !== true) continue
-      expect(openingIds.has(position.id), `${position.id} 是 synthetic，却被当成开局`).toBe(false)
+      const board = Array.from(boardOf(position))
+      const clash = openingBoards.some((openingBoard) => openingBoard.every((cell, i) => cell === board[i]))
+      expect(clash, `${position.id} 是 synthetic，其盘面却出现在开局集里`).toBe(false)
     }
   })
 })

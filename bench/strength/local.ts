@@ -56,8 +56,36 @@ export function assertSpec(spec: EngineSpec): void {
       `引擎 ${spec.id}：真实棋力评测不能用 maxDepth 覆盖深度——那测的是固定深度，不是正式棋力`,
     )
   }
-  if (spec.clock === 'real' && spec.budgetMs === undefined) {
-    // 允许，但在报告里会显示为「难度自带预算」。这里只做提醒性校验，不抛错。
+}
+
+/** 报告用的「实际生效参数」。 */
+export interface ResolvedOptions {
+  readonly budgetMs: number
+  readonly maxDepth: number
+  readonly width: number
+  readonly threatPlies: number
+  readonly threatThrees: boolean
+  readonly transposition: boolean
+}
+
+/**
+ * 解析出这次运行**实际使用**的参数，写进报告。
+ *
+ * 只记录 `{difficulty, clock}` 是不够的：报告读者无法知道 1000 ms、宽度 10、
+ * 算杀 5 手这些数字从哪来。注意外部引擎包用的是**它自己的**难度表，
+ * 所以这里的解析仅对 `kind: 'source'` 精确；报告会注明这一点。
+ */
+export function resolveOptions(spec: EngineSpec): ResolvedOptions {
+  const params = DIFFICULTY_PARAMS[spec.difficulty]
+  if (params === undefined) throw new Error(`未知难度：${spec.difficulty}`)
+  const options = optionsFromSpec(spec, params)
+  return {
+    budgetMs: options.budgetMs,
+    maxDepth: options.maxDepth,
+    width: options.width,
+    threatPlies: options.threatPlies,
+    threatThrees: options.threatThrees,
+    transposition: options.transposition,
   }
 }
 
@@ -65,6 +93,7 @@ export function assertSpec(spec: EngineSpec): void {
 export function createLocalEngine(spec: EngineSpec): Engine {
   assertSpec(spec)
   const params = DIFFICULTY_PARAMS[spec.difficulty]
+  if (params === undefined) throw new Error(`未知难度：${spec.difficulty}`)
   const options = optionsFromSpec(spec, params)
   const clock = spec.clock === 'fixed' ? FIXED_CLOCK : Date.now
 

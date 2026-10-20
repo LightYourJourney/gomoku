@@ -23,7 +23,7 @@ function record(
   black: string,
   white: string,
   outcome: GameOutcomeKind,
-  moves: { engine: string; nodes: number; depth: number; reason?: string }[] = [],
+  moves: { engine: string; nodes: number; depth: number; reason?: string; ply?: number }[] = [],
 ): GameRecord {
   return {
     opening,
@@ -35,6 +35,8 @@ function record(
       point: { x: i, y: 0 },
       player: (i % 2 === 0 ? 1 : 2) as 1 | 2,
       engine: m.engine,
+      // 默认按数组下标填；需要构造「开局已走若干手」的用例时显式给 ply
+      ply: m.ply ?? i,
       metrics: {
         depth: m.depth,
         nodes: m.nodes,
@@ -66,7 +68,14 @@ describe('得分', () => {
   })
 
   it('未完成的结局不给分', () => {
-    for (const outcome of ['move-limit', 'aborted', 'illegal-move', 'no-move', 'engine-error'] as const) {
+    for (const outcome of [
+      'move-limit',
+      'aborted',
+      'illegal-move',
+      'no-move',
+      'engine-error',
+      'environment-error',
+    ] as const) {
       expect(scoreFor(record('o', 'A', 'B', outcome), 'A')).toBeNull()
     }
   })
@@ -129,6 +138,35 @@ describe('汇总计数', () => {
     const o2 = summary.perOpening.find((row) => row.opening === 'o2')!
     expect(o2.aScoreRate).toBe(0.25)
   })
+
+  it('环境错误单独计数，不当成引擎异常', () => {
+    const t = tally(
+      [pair('o1', record('o1', 'A', 'B', 'environment-error'), record('o1', 'B', 'A', 'engine-error'))],
+      'A',
+    )
+    expect(t.environmentError).toBe(1)
+    expect(t.engineError).toBe(1)
+    expect(t.scored).toBe(0)
+    expect(t.games).toBe(2)
+  })
+
+  it('同一开局的重复合并统计，结局明细也聚合', () => {
+    // 同一开局重复两轮：只保留第一组会得到 50%，正确值是 62.5%
+    const repeated = [
+      pair('o1', record('o1', 'A', 'B', 'black-win'), record('o1', 'B', 'A', 'black-win')),
+      pair('o1', record('o1', 'A', 'B', 'draw'), record('o1', 'B', 'A', 'white-win')),
+    ]
+    const summary = summarize(repeated, 'A', 'B')
+
+    // 第一轮 A 得 1 + 0 = 1；第二轮 A 得 0.5 + 1 = 1.5 → 2.5 / 4
+    expect(summary.scoreRate).toBeCloseTo(0.625, 10)
+    expect(summary.perOpening).toHaveLength(1)
+    const row = summary.perOpening[0]!
+    expect(row.repeats).toBe(2)
+    expect(row.aScoreRate).toBeCloseTo(0.625, 10)
+    expect(row.aBlackOutcomes).toBe('black-win×1 · draw×1')
+    expect(row.bBlackOutcomes).toBe('black-win×1 · white-win×1')
+  })
 })
 
 describe('置信区间', () => {
@@ -180,6 +218,22 @@ describe('搜索指标', () => {
     expect(phaseOf(20)).toBe('middle')
     expect(phaseOf(59)).toBe('middle')
     expect(phaseOf(60)).toBe('end')
+  })
+
+  it('阶段按绝对手数划分，开局已走的几手不会被算成中盘', () => {
+    // 一手 ply=21 的着法在数组里只有下标 2：按数组下标算会错归到「开局」
+    const game = record('o1', 'A', 'B', 'white-win', [
+      { engine: 'A', nodes: 10, depth: 1, ply: 4 },
+      { engine: 'B', nodes: 1, depth: 1, ply: 5 },
+      { engine: 'A', nodes: 30, depth: 3, ply: 21 },
+    ])
+    const stats = searchStats([pair('o1', game, record('o1', 'B', 'A', 'black-win'))], 'A')
+
+    expect(stats.phases.opening.moves).toBe(1)
+    expect(stats.phases.opening.avgNodes).toBe(10)
+    expect(stats.phases.middle.moves).toBe(1)
+    expect(stats.phases.middle.avgNodes).toBe(30)
+    expect(stats.phases.end.moves).toBe(0)
   })
 
   it('按引擎拆开统计，不把对手的节点算进来', () => {

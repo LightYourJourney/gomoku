@@ -24,6 +24,7 @@ export interface Tally {
   readonly illegalMove: number
   readonly noMove: number
   readonly engineError: number
+  readonly environmentError: number
 }
 
 /** 一局对 `aId` 的得分：胜 1、和 0.5、负 0；未完成返回 null。 */
@@ -56,6 +57,7 @@ export function tally(sets: readonly PairedGameSet[], aId: string): Tally {
   let illegalMove = 0
   let noMove = 0
   let engineError = 0
+  let environmentError = 0
 
   for (const record of allGames(sets)) {
     switch (record.outcome) {
@@ -86,11 +88,15 @@ export function tally(sets: readonly PairedGameSet[], aId: string): Tally {
       case 'engine-error':
         engineError++
         break
+      case 'environment-error':
+        environmentError++
+        break
     }
   }
 
   return {
-    games: aWins + bWins + draws + moveLimit + aborted + illegalMove + noMove + engineError,
+    games:
+      aWins + bWins + draws + moveLimit + aborted + illegalMove + noMove + engineError + environmentError,
     scored,
     aWins,
     bWins,
@@ -100,6 +106,7 @@ export function tally(sets: readonly PairedGameSet[], aId: string): Tally {
     illegalMove,
     noMove,
     engineError,
+    environmentError,
   }
 }
 
@@ -236,8 +243,20 @@ export interface OpeningSummary {
   readonly repeats: number
   /** A 在该开局全部计分局里的得分率。 */
   readonly aScoreRate: number | null
-  readonly aBlackOutcome: string
-  readonly bBlackOutcome: string
+  /** A 执黑时各结局的次数（重复对局聚合，形如 `black-win×2 · move-limit×1`）。 */
+  readonly aBlackOutcomes: string
+  /** B 执黑时各结局的次数。 */
+  readonly bBlackOutcomes: string
+}
+
+/** 把一组结局压成 `outcome×n` 的紧凑串；顺序按出现次数降序、同次数按名字。 */
+function summarizeOutcomes(records: readonly { outcome: string }[]): string {
+  const counts = new Map<string, number>()
+  for (const record of records) counts.set(record.outcome, (counts.get(record.outcome) ?? 0) + 1)
+  return [...counts.entries()]
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+    .map(([outcome, count]) => `${outcome}×${count}`)
+    .join(' · ')
 }
 
 export interface StrengthSummary {
@@ -249,6 +268,9 @@ export interface StrengthSummary {
   readonly elo: number | null
   readonly asBlack: ColorSplit
   readonly asWhite: ColorSplit
+  /** B 的先后手拆分。只报 A 的话，读者无法判断不对称是否来自同一侧。 */
+  readonly bAsBlack: ColorSplit
+  readonly bAsWhite: ColorSplit
   readonly perOpening: readonly OpeningSummary[]
 }
 
@@ -272,36 +294,28 @@ export function summarize(
   }
   const scoreRate = counted === 0 ? null : sum / counted
 
-  const byOpening = new Map<string, { aBlack: GameRecord; bBlack: GameRecord; repeats: number }>()
+  // 按开局分组，同时累计该开局的得分——重复对局必须合并，只留第一组会算错
+  const byOpening = new Map<string, { aBlack: GameRecord[]; bBlack: GameRecord[]; sum: number; count: number }>()
   for (const set of sets) {
-    const existing = byOpening.get(set.opening)
-    if (existing) existing.repeats++
-    else byOpening.set(set.opening, { aBlack: set.aBlack, bBlack: set.bBlack, repeats: 1 })
-  }
-
-  // 逐开局得分率：把该开局的所有重复都算进去
-  const perOpeningRates = new Map<string, { sum: number; count: number }>()
-  for (const set of sets) {
-    const entry = perOpeningRates.get(set.opening) ?? { sum: 0, count: 0 }
+    const entry = byOpening.get(set.opening) ?? { aBlack: [], bBlack: [], sum: 0, count: 0 }
+    entry.aBlack.push(set.aBlack)
+    entry.bBlack.push(set.bBlack)
     for (const record of [set.aBlack, set.bBlack]) {
       const score = scoreFor(record, aId)
       if (score === null) continue
       entry.sum += score
       entry.count++
     }
-    perOpeningRates.set(set.opening, entry)
+    byOpening.set(set.opening, entry)
   }
 
-  const perOpening: OpeningSummary[] = [...byOpening.entries()].map(([opening, group]) => {
-    const entry = perOpeningRates.get(opening)
-    return {
-      opening,
-      repeats: group.repeats,
-      aScoreRate: entry === undefined || entry.count === 0 ? null : entry.sum / entry.count,
-      aBlackOutcome: group.aBlack.outcome,
-      bBlackOutcome: group.bBlack.outcome,
-    }
-  })
+  const perOpening: OpeningSummary[] = [...byOpening.entries()].map(([opening, group]) => ({
+    opening,
+    repeats: group.aBlack.length,
+    aScoreRate: group.count === 0 ? null : group.sum / group.count,
+    aBlackOutcomes: summarizeOutcomes(group.aBlack),
+    bBlackOutcomes: summarizeOutcomes(group.bBlack),
+  }))
 
   return {
     aId,
@@ -312,6 +326,8 @@ export function summarize(
     elo: scoreRate === null ? null : descriptiveElo(scoreRate),
     asBlack: colorSplit(sets, aId, true),
     asWhite: colorSplit(sets, aId, false),
+    bAsBlack: colorSplit(sets, bId, true),
+    bAsWhite: colorSplit(sets, bId, false),
     perOpening,
   }
 }
@@ -370,14 +386,15 @@ function median(values: readonly number[]): number {
 }
 
 export function searchStats(sets: readonly PairedGameSet[], engineId: string): SearchStats {
-  const rows: { index: number; nodes: number; depth: number; elapsedMs: number; reason: string; ttHits: number }[] = []
+  const rows: { ply: number; nodes: number; depth: number; elapsedMs: number; reason: string; ttHits: number }[] = []
 
   for (const set of sets) {
     for (const record of [set.aBlack, set.bBlack]) {
-      record.moves.forEach((move, index) => {
+      record.moves.forEach((move) => {
         if (move.engine !== engineId) return
         rows.push({
-          index,
+          // 绝对手数（开局的手也算），否则 2/4/6 手开局会把阶段划分整体前移
+          ply: move.ply,
           nodes: move.metrics.nodes,
           depth: move.metrics.depth,
           elapsedMs: move.metrics.elapsedMs,
@@ -393,7 +410,7 @@ export function searchStats(sets: readonly PairedGameSet[], engineId: string): S
 
   const phases: Record<Phase, PhaseStats> = { opening: EMPTY_PHASE, middle: EMPTY_PHASE, end: EMPTY_PHASE }
   for (const phase of ['opening', 'middle', 'end'] as const) {
-    const subset = rows.filter((r) => phaseOf(r.index) === phase)
+    const subset = rows.filter((r) => phaseOf(r.ply) === phase)
     phases[phase] = {
       moves: subset.length,
       avgNodes: average(subset.map((r) => r.nodes)),
