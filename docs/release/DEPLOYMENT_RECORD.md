@@ -9,6 +9,7 @@
 | 项 | 值 |
 | --- | --- |
 | 发布版本 | `2ec65fa`（`fix(review): 两轴评审整改——复盘可靠度措辞、基准可复现与文档口径`） |
+| 当前 `main` | `46e3652`（仅文档/配置 + 线上验收配置，**运行时产物与 `2ec65fa` 逐字节相同**，已在本地重建比对） |
 | 部署平台 | Cloudflare Pages（账号 `[redacted-email]`，账号信息已脱敏） |
 | 生产项目 | `gomoku-lab` |
 | 生产地址 | **https://gomoku-lab.pages.dev** |
@@ -81,6 +82,16 @@
 
 `docs/release/screenshots/`：`desktop-light.png`、`desktop-dark.png`、
 `mobile-light.png`、`mobile-dark.png`（1280×900 / 390×844，生产地址实拍）。
+
+## 3.5 发布过程中修复的一个门禁问题
+
+第一次推送被 `pre-push` 拒绝：`knip` 把 `playwright.remote.config.ts` 判成
+「无人使用的文件」——它只通过 CLI 参数被引用，不在 import 图里。
+处理方式不是删掉它，而是转成正式能力：加 `yarn e2e:remote`、
+纳入 `tsconfig.e2e.json`、在 `knip.jsonc` 的 `entry` 里登记并写明理由。
+
+另外两次推送失败是**网络层**（`HTTP2 framing layer` / 连接超时）而非门禁；
+改用 SSH 推送成功，`origin` 仍是 HTTPS，未改动仓库的远程配置。
 
 ## 4. 自动部署与更新流程
 
