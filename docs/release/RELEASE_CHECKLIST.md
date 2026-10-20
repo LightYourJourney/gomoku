@@ -77,5 +77,9 @@
 | 公开发布授权 | 未授权（Phase 09A） |
 
 > **Phase 09A 状态**：A–C 已在本地执行并全部通过（见
-> [RELEASE_READINESS.md](RELEASE_READINESS.md) §9）；D–F 未执行，
-> 因为没有创建任何托管项目，也没有对外发布。
+> [RELEASE_READINESS.md](RELEASE_READINESS.md) §9）。
+>
+> **Phase 09B 状态（2026-10-20）**：A–D **已在真实生产环境执行并通过**——
+> 线上 <https://gomoku-lab.pages.dev>，提交 `2ec65fa`，全量 e2e 162/162、
+> 业务流程烟雾 16/16。逐项读数见 [DEPLOYMENT_RECORD.md](DEPLOYMENT_RECORD.md) §3。
+> E 中「Safari / Firefox 冒烟」仍未做；自定义域名未绑定。

@@ -11,5 +11,10 @@
   // DIFFICULTIES 与 AVAILABLE_DIFFICULTIES 是同值别名，knip 报成 duplicate exports。
   // 但这是有意的分界点：前者「定义了哪些档」，后者「界面开放哪些档」
   // （src/ai/difficulty.ts 的注释写着「Phase 2 起五档全开」）。今天两者恰好相等。
-  "ignoreIssues": { "src/ai/difficulty.ts": ["duplicates"] }
+  "ignoreIssues": { "src/ai/difficulty.ts": ["duplicates"] },
+
+  // 这份配置只通过 `yarn e2e:remote` 的 CLI 参数引用，import 图里没有它——
+  // 不登记的话 knip 报「无人使用的文件」，pre-push 直接红（Phase 09B 真踩过）。
+  // 它是**发布后验线上**的唯一入口，不能删：见 docs/release/RELEASE_CHECKLIST.md §D。
+  "entry": ["playwright.remote.config.ts"]
 }

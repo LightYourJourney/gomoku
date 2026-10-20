@@ -5,7 +5,9 @@
 页面加载时从**同源**取静态资源；之后的对局、教学与复盘全部在本机完成（不含 Service Worker，
 断网后刷新页面仍需能访问宿主）。
 
-**当前进度：Phase 1–5、UI/UX 改版 Phase 00–07、Phase 08 独立审计与 Phase 09A 发布加固全部完成。**
+**线上地址：<https://gomoku-lab.pages.dev>**（Cloudflare Pages，提交 `2ec65fa`）。
+
+**当前进度：Phase 1–5、UI/UX 改版 Phase 00–07、Phase 08 独立审计、Phase 09A 发布加固与 Phase 09B 正式部署全部完成。**
 键盘与读屏可用、平板与触屏专项验证过、生产构建有独立的冒烟通道、用法有[使用说明](docs/USAGE.md)；
 发布就绪评估与部署方案见 [RELEASE_READINESS.md](docs/release/RELEASE_READINESS.md)；
 最终审计与残留问题见 [FINAL_AUDIT.md](docs/ui-redesign/FINAL_AUDIT.md) 与 [KNOWN_ISSUES.md](docs/ui-redesign/KNOWN_ISSUES.md)。
@@ -35,6 +37,7 @@ yarn dev          # 开发服务器
 | `yarn lint` | oxlint |
 | `yarn e2e` | 端到端测试（Playwright + 本机 Chrome）：桌面 / 移动触屏 / 平板触屏 |
 | `yarn e2e:prod` | 生产构建冒烟：自带一次 `yarn build`，跑在 `dist` 上 |
+| `yarn e2e:remote` | **对线上站点**跑全量 e2e（默认 `https://gomoku-lab.pages.dev`；`REMOTE_BASE=…` 可指向预览部署） |
 | `yarn bench` | 引擎基准（约一两分钟），数字见 [docs/AI_ENGINE.md](docs/AI_ENGINE.md) 的「实测」 |
 | `yarn bench:check` | 引擎基准**数值门禁**：`yarn bench` + 断言。只断言余量充足的行（`bench/baseline.json` 里 `gated` 冻结），跳过的逐行打印原因 |
 | `yarn bench:render` | 首屏与落子成本的浏览器实测，数字见 [docs/TEST_REPORT.md](docs/TEST_REPORT.md) |
@@ -188,6 +191,7 @@ bench/         引擎基准与渲染探针（不进常规测试套件）
 - [docs/release/DEPLOYMENT_PLAN.md](docs/release/DEPLOYMENT_PLAN.md) —— 托管平台对比与部署步骤
 - [docs/release/ROLLBACK_PLAN.md](docs/release/ROLLBACK_PLAN.md) —— 回滚路径、数据影响与演练
 - [docs/release/RELEASE_CHECKLIST.md](docs/release/RELEASE_CHECKLIST.md) —— 发布前 / staging / 公开发布清单
+- [docs/release/DEPLOYMENT_RECORD.md](docs/release/DEPLOYMENT_RECORD.md) —— 已发生的那次部署：版本、地址、验收读数、回滚与更新流程
 - [AGENTS.md](AGENTS.md) —— 参与开发前的约定
 
 ## 移动端

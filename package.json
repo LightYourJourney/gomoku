@@ -12,6 +12,7 @@
     "test:watch": "vitest",
     "e2e": "playwright test",
     "e2e:prod": "playwright test --config playwright.prod.config.ts",
+    "e2e:remote": "playwright test --config playwright.remote.config.ts",
     "lint": "oxlint",
     "bench": "vitest run --config vitest.bench.config.ts",
     "bench:render": "yarn build && node bench/render.probe.mjs",

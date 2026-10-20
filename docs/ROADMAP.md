@@ -12,6 +12,7 @@
 | UI/UX Phase 00–07 | 视觉系统、四个页面重构、响应式与无障碍终审 | ✅ 已完成并通过两轴评审 |
 | Phase 08 | 独立产品验收审计（第三方视角，不改代码） | ✅ 达到发布候选标准（见 [审计报告](audit/POST_UI_REDESIGN_AUDIT.md)） |
 | Phase 09A | 发布前可靠性加固与发布准备（不对外发布） | ✅ 完成；可进入 staging，公开发布仍需授权与真实托管验证 |
+| Phase 09B | 正式部署与生产环境验收 | ✅ 已上线：<https://gomoku-lab.pages.dev>（见 [部署记录](release/DEPLOYMENT_RECORD.md)） |
 
 一次只推进一个阶段，每个阶段跑完「类型检查 → 单元测试 → 生产构建 → 真实浏览器验证」再进入下一个。
 
@@ -608,6 +609,24 @@ AI 必防与取胜 + 五档实测深度节点（1/2/4/6/7 层，12→104,511 节
 
 **明确未做**：未发布；未创建托管项目；未加第三方统计/广告/远程字体/新外部 API；
 未做完整导入导出；未把求解挪进 Worker；未改 AI 决策。
+
+## Phase 09B · 正式部署与生产环境验收 ✅
+
+**结论**：已部署到 Cloudflare Pages，公开可访问：**<https://gomoku-lab.pages.dev>**。
+版本 `2ec65fa`，生产部署 ID `e5a32d20`。完整读数见
+[DEPLOYMENT_RECORD.md](release/DEPLOYMENT_RECORD.md)。
+
+- 预览环境（`gomoku-lab-preview`）与生产环境用**同一份 `dist/`**，产物 SHA-256 逐字节一致。
+- 对线上 URL 跑全量 e2e：预览 **162/162**、生产 **162/162**。
+- 按业务流程的生产烟雾 **16/16**：对战→AI→悔棋→认输→入库→复盘、教学完成→刷新→进度恢复、
+  残局正确落子→下一题、深色主题刷新保持、移动端无溢出并能触摸落子。
+- 控制台 / 网络 / CSP：error 0、4xx 0、外源请求 0、CSP 违规 0。
+- 安全头（CSP / HSTS / X-Frame-Options / Referrer-Policy / Permissions-Policy）按
+  `public/_headers` 真实下发；`/assets/*` 一年 immutable，入口 must-revalidate。
+- 新增 `yarn e2e:remote`（`playwright.remote.config.ts`），发布后可一键复验线上。
+
+**未做**：未启用 Git 自动部署（仍是手动 `wrangler pages deploy`）；未绑定自定义域名；
+未在 Safari/Firefox 实测。
 
 ## 长期待办
 
