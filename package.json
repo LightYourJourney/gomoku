@@ -18,6 +18,8 @@
     "bench:render": "yarn build && node bench/render.probe.mjs",
     "bench:learn": "vitest run --config vitest.learn.config.ts",
     "bench:blocking": "node bench/blocking.probe.mjs",
+    "strength": "vitest run --config vitest.strength.config.ts",
+    "strength:bundle": "node bench/strength/bundle-engine.mjs",
     "ui:probe": "node bench/ui.probe.mjs",
     "check:cycles": "madge --circular --extensions ts,tsx src",
     "check:deadcode": "knip --reporter compact",

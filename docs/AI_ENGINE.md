@@ -367,3 +367,14 @@ Negamax + Alpha-Beta，配合迭代加深：
 那条「同一局面下高档在相同预算内达到的深度不低于低档」**刻意没有写成断言**：它依赖真实时钟，在不同机器上会 flaky，而且在实测里并不总成立——专家档宽度更大，同一层展开的节点多得多，多出来的预算会被这一项吃掉。
 
 `bench/engine.bench.ts` —— 本文档「实测」一节的全部数字，用 `yarn bench` 重跑。
+
+`bench/strength/` —— **棋力评测基础设施**（Phase 10A）。两种模式：固定时钟 + 固定深度的
+确定性算法评测，以及真实预算的棋力评测；配对赛（同开局双方各执黑一次）抵消先手优势；
+结局分类把「手数上限」「超时」「非法着法」「引擎异常」与和棋分开计数。
+
+- 协议与统计方法：[ai-research/BENCHMARK_PROTOCOL.md](ai-research/BENCHMARK_PROTOCOL.md)
+- 实测基线与解读：[ai-research/BASELINE_STRENGTH.md](ai-research/BASELINE_STRENGTH.md)
+- 版本对照：[`bundle-engine.mjs`](../bench/strength/bundle-engine.mjs) 把任意源码树打成独立引擎包
+
+`selfplay.test.ts` 证明不了档位强弱这一点没有变；**五档之间的强弱由 `yarn strength` 负责测量**，
+且当前只有小样本（4–8 局/组），不构成排名。

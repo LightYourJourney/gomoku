@@ -43,6 +43,8 @@ yarn dev          # 开发服务器
 | `yarn bench:render` | 首屏与落子成本的浏览器实测，数字见 [docs/TEST_REPORT.md](docs/TEST_REPORT.md) |
 | `yarn bench:learn` | 教学/残局判题与求解的纯函数耗时（CPU 最小值最慢 9.08 ms 求解 / 4.32 ms 判题；空载 wall 4.81–5.15 / 2.39–2.97 ms），写 `bench/learn-last-run.json` |
 | `yarn bench:blocking` | 真实浏览器页内耗时探针：提示点击 → DOM 变更（需先 `yarn preview --port 5192`；数字随机器负载变化） |
+| `yarn strength` | **AI 棋力评测**：配对赛 + 置信区间 + 搜索指标。`STRENGTH_MODE=smoke/standard/extended`、`STRENGTH_A/B=<难度>`；报告写 `bench/strength/results/` |
+| `yarn strength:bundle` | 把任意源码树（含 `git worktree`）的引擎打成独立包，用于**版本对照** |
 | `yarn gates` | 四道防退化闸门串跑（`check:cycles` + `check:deadcode` + `check:dupes` + `check:tests`）。**pre-push 钩子跑的就是它**，见 [AGENTS.md](AGENTS.md) |
 | `yarn check:tests` | 测试条数棘轮：单测/e2e 条数与跳过数只许涨不许跌。删用例、加 `.skip` 都会红，要减就显式改 `quality/tests.baseline.json`。e2e 的跳过是**静态扫 spec 文件**数出来的——`playwright --list` 对跳过的用例不打标记，工具这条路走不通 |
 | `yarn check:coverage` | 覆盖棘轮：探针扫到的状态、每行的控件与棋盘，必须是入库基线的**超集**。**基线**的来源是 `docs/ui-redesign/screenshots/after-phase02/measurements.json`（写在 `quality/coverage.baseline.json` 的 `source` 里）；脚本本地默认读 `docs/ui-redesign/screenshots/after-phase06/measurements.json`（`quality/coverage.ratchet.mjs` 的默认值，可用 `--current` 指定；CI 显式传当期探针产物）。**改了界面之后要在 CI 的 probe job 里跑**（本地单跑用的是上一期产物，不是这次的新量测） |
@@ -192,6 +194,9 @@ bench/         引擎基准与渲染探针（不进常规测试套件）
 - [docs/release/ROLLBACK_PLAN.md](docs/release/ROLLBACK_PLAN.md) —— 回滚路径、数据影响与演练
 - [docs/release/RELEASE_CHECKLIST.md](docs/release/RELEASE_CHECKLIST.md) —— 发布前 / staging / 公开发布清单
 - [docs/release/DEPLOYMENT_RECORD.md](docs/release/DEPLOYMENT_RECORD.md) —— 已发生的那次部署：版本、地址、验收读数、回滚与更新流程
+- [docs/ai-research/BENCHMARK_PROTOCOL.md](docs/ai-research/BENCHMARK_PROTOCOL.md) —— 棋力评测协议：两种模式、局面库、赛制与统计
+- [docs/ai-research/BASELINE_STRENGTH.md](docs/ai-research/BASELINE_STRENGTH.md) —— 基线测量与它的局限
+- [docs/ai-research/PHASE_10A.md](docs/ai-research/PHASE_10A.md) —— 评测基础设施的阶段报告
 - [AGENTS.md](AGENTS.md) —— 参与开发前的约定
 
 ## 移动端

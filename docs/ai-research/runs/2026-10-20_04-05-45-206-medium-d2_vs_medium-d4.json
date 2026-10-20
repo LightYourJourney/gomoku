@@ -1,0 +1,321 @@
+{
+  "meta": {
+    "commit": "c24c7f83442d8b3dda2edc5299db56ad11381fb7",
+    "dirty": true,
+    "engineVersion": "search-1",
+    "node": "v26.12.0",
+    "platform": "darwin",
+    "arch": "arm64",
+    "cpuCount": 8,
+    "startedAt": "2026-10-20T04:05:45.206Z",
+    "finishedAt": "2026-10-20T04:05:50.185Z",
+    "durationMs": 4979,
+    "mode": "standard",
+    "command": "yarn strength STRENGTH_MODE=standard STRENGTH_A=medium STRENGTH_A_FIXED=2 STRENGTH_B=medium STRENGTH_B_FIXED=4 STRENGTH_B_MODULE=bench/strength/.engines/current.mjs",
+    "notes": [
+      "确定性模式（时钟固定、深度固定）：可复现，但**不代表**正式难度下的棋力。",
+      "负载均值（1 分钟）：3.38"
+    ]
+  },
+  "a": {
+    "spec": {
+      "id": "medium-d2",
+      "label": "medium",
+      "difficulty": "medium",
+      "clock": "fixed",
+      "maxDepth": 2
+    },
+    "digest": "source",
+    "kind": "source"
+  },
+  "b": {
+    "spec": {
+      "id": "medium-d4",
+      "label": "medium",
+      "difficulty": "medium",
+      "clock": "fixed",
+      "maxDepth": 4,
+      "module": "bench/strength/.engines/current.mjs"
+    },
+    "digest": "0bca23d16aaca0e4991bd928cc9a4cd9de89cd0cfe915f6d70a403f1c31bd7fc",
+    "kind": "module"
+  },
+  "openings": [
+    {
+      "id": "center-adjacent",
+      "moves": [
+        {
+          "x": 7,
+          "y": 7
+        },
+        {
+          "x": 7,
+          "y": 8
+        }
+      ]
+    },
+    {
+      "id": "center-diagonal",
+      "moves": [
+        {
+          "x": 7,
+          "y": 7
+        },
+        {
+          "x": 8,
+          "y": 8
+        }
+      ]
+    },
+    {
+      "id": "center-knight",
+      "moves": [
+        {
+          "x": 7,
+          "y": 7
+        },
+        {
+          "x": 8,
+          "y": 6
+        }
+      ]
+    },
+    {
+      "id": "offset-first",
+      "moves": [
+        {
+          "x": 6,
+          "y": 7
+        },
+        {
+          "x": 7,
+          "y": 7
+        }
+      ]
+    }
+  ],
+  "maxMoves": 120,
+  "repeats": 1,
+  "summary": {
+    "aId": "medium-d2",
+    "bId": "medium-d4",
+    "tally": {
+      "games": 8,
+      "scored": 7,
+      "aWins": 1,
+      "bWins": 6,
+      "draws": 0,
+      "moveLimit": 1,
+      "aborted": 0,
+      "illegalMove": 0,
+      "noMove": 0,
+      "engineError": 0
+    },
+    "scoreRate": 0.14285714285714285,
+    "ci": {
+      "low": 0,
+      "high": 0.375,
+      "level": 0.95,
+      "samples": 2000
+    },
+    "elo": -311.26050015345743,
+    "asBlack": {
+      "games": 3,
+      "wins": 1,
+      "draws": 0,
+      "losses": 2,
+      "scoreRate": 0.3333333333333333
+    },
+    "asWhite": {
+      "games": 4,
+      "wins": 0,
+      "draws": 0,
+      "losses": 4,
+      "scoreRate": 0
+    },
+    "perOpening": [
+      {
+        "opening": "center-adjacent",
+        "repeats": 1,
+        "aScoreRate": 0,
+        "aBlackOutcome": "move-limit",
+        "bBlackOutcome": "black-win"
+      },
+      {
+        "opening": "center-diagonal",
+        "repeats": 1,
+        "aScoreRate": 0.5,
+        "aBlackOutcome": "black-win",
+        "bBlackOutcome": "black-win"
+      },
+      {
+        "opening": "center-knight",
+        "repeats": 1,
+        "aScoreRate": 0,
+        "aBlackOutcome": "white-win",
+        "bBlackOutcome": "black-win"
+      },
+      {
+        "opening": "offset-first",
+        "repeats": 1,
+        "aScoreRate": 0,
+        "aBlackOutcome": "white-win",
+        "bBlackOutcome": "black-win"
+      }
+    ]
+  },
+  "search": {
+    "a": {
+      "moves": 225,
+      "avgNodes": 46.72,
+      "medianNodes": 61,
+      "maxNodes": 81,
+      "avgDepth": 1.4133333333333333,
+      "avgElapsedMs": 0,
+      "ttHits": 0,
+      "timeouts": 0,
+      "shortcuts": 66,
+      "searched": 159,
+      "phases": {
+        "opening": {
+          "moves": 80,
+          "avgNodes": 51.6125,
+          "maxNodes": 81,
+          "avgDepth": 1.575,
+          "avgElapsedMs": 0
+        },
+        "middle": {
+          "moves": 112,
+          "avgNodes": 40.8125,
+          "maxNodes": 80,
+          "avgDepth": 1.2142857142857142,
+          "avgElapsedMs": 0
+        },
+        "end": {
+          "moves": 33,
+          "avgNodes": 54.90909090909091,
+          "maxNodes": 75,
+          "avgDepth": 1.696969696969697,
+          "avgElapsedMs": 0
+        }
+      }
+    },
+    "b": {
+      "moves": 228,
+      "avgNodes": 467.3859649122807,
+      "medianNodes": 586,
+      "maxNodes": 1169,
+      "avgDepth": 2.6666666666666665,
+      "avgElapsedMs": 0,
+      "ttHits": 1296,
+      "timeouts": 0,
+      "shortcuts": 76,
+      "searched": 152,
+      "phases": {
+        "opening": {
+          "moves": 80,
+          "avgNodes": 653.55,
+          "maxNodes": 980,
+          "avgDepth": 3.7,
+          "avgElapsedMs": 0
+        },
+        "middle": {
+          "moves": 115,
+          "avgNodes": 363.10434782608695,
+          "maxNodes": 1153,
+          "avgDepth": 2.121739130434783,
+          "avgElapsedMs": 0
+        },
+        "end": {
+          "moves": 33,
+          "avgNodes": 379.4848484848485,
+          "maxNodes": 1169,
+          "avgDepth": 2.0606060606060606,
+          "avgElapsedMs": 0
+        }
+      }
+    }
+  },
+  "gamesSummary": [
+    {
+      "opening": "center-adjacent",
+      "black": "medium-d2",
+      "white": "medium-d4",
+      "outcome": "move-limit",
+      "winner": null,
+      "plies": 118,
+      "elapsedMs": 1824,
+      "error": "达到手数上限 120，局面仍未结束"
+    },
+    {
+      "opening": "center-adjacent",
+      "black": "medium-d4",
+      "white": "medium-d2",
+      "outcome": "black-win",
+      "winner": 1,
+      "plies": 51,
+      "elapsedMs": 481,
+      "error": null
+    },
+    {
+      "opening": "center-diagonal",
+      "black": "medium-d2",
+      "white": "medium-d4",
+      "outcome": "black-win",
+      "winner": 1,
+      "plies": 45,
+      "elapsedMs": 402,
+      "error": null
+    },
+    {
+      "opening": "center-diagonal",
+      "black": "medium-d4",
+      "white": "medium-d2",
+      "outcome": "black-win",
+      "winner": 1,
+      "plies": 59,
+      "elapsedMs": 531,
+      "error": null
+    },
+    {
+      "opening": "center-knight",
+      "black": "medium-d2",
+      "white": "medium-d4",
+      "outcome": "white-win",
+      "winner": 2,
+      "plies": 34,
+      "elapsedMs": 264,
+      "error": null
+    },
+    {
+      "opening": "center-knight",
+      "black": "medium-d4",
+      "white": "medium-d2",
+      "outcome": "black-win",
+      "winner": 1,
+      "plies": 27,
+      "elapsedMs": 251,
+      "error": null
+    },
+    {
+      "opening": "offset-first",
+      "black": "medium-d2",
+      "white": "medium-d4",
+      "outcome": "white-win",
+      "winner": 2,
+      "plies": 68,
+      "elapsedMs": 747,
+      "error": null
+    },
+    {
+      "opening": "offset-first",
+      "black": "medium-d4",
+      "white": "medium-d2",
+      "outcome": "black-win",
+      "winner": 1,
+      "plies": 51,
+      "elapsedMs": 465,
+      "error": null
+    }
+  ]
+}

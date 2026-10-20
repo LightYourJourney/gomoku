@@ -45,7 +45,9 @@ export default defineConfig({
     // 主题对比度守卫要读 index.css 的原文（?raw）；关着 CSS 处理时它返回空串。
     css: true,
     setupFiles: ['./src/test/setup.ts'],
-    include: ['src/**/*.test.{ts,tsx}'],
+    // `bench/strength` 是评测器自身的单元测试：它们必须与产品测试一样每次提交都跑，
+    // 否则「评测器算错了」只会在真正做强度对比时才暴露（而那时更容易怀疑引擎）。
+    include: ['src/**/*.test.{ts,tsx}', 'bench/strength/**/*.test.ts'],
     /*
      * 默认的 5 秒在**负载机器上会假红**——这条是量出来的，不是猜的。
      *
