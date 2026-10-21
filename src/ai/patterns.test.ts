@@ -319,6 +319,19 @@ describe('analyzeFast 与数组版（analyzeDirection）随机差分', () => {
             ).toEqual(referenceFast(board, point, player))
           }
         }
+
+        // 再问一个可能落在**棋盘外**的点：公开函数没有界内前置条件，
+        // 两条实现必须对同样的输入给同样的答案（生产调用点都在界内，但这条更便宜也更明确）。
+        const off = {
+          x: Math.floor(random() * 19) - 2,
+          y: Math.floor(random() * 19) - 2,
+        }
+        for (const player of [BLACK, WHITE]) {
+          expect(
+            analyzeFast(board, off, player),
+            `种子 ${seed} 第 ${move + 1} 手，点 (${off.x},${off.y})，'${player === BLACK ? '黑' : '白'}'`,
+          ).toEqual(referenceFast(board, off, player))
+        }
       }
     }
   })

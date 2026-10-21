@@ -32,8 +32,8 @@
 
 | 文件 | 内容 |
 | --- | --- |
-| `0722-phase10c-{cpu-profile,real-budget,micro,incremental}` | 接入增量评估后的剖析（负载约 7.0，读法与 10B 相同） |
-| `0730-phase10c-upgrade-ab` | 旧包 vs 新包的固定深度计时；16 个局面的节点 / `ttHits` / 深度 / 着法逐项相同 |
+| `0722-phase10c-{cpu-profile,real-budget,micro,incremental}` | 接入增量评估后的剖析（负载约 7.0，读法与 10B 相同）。**`real-budget` 是负载约 7 时的一次运行**：旧引擎在 double-three 上没走完第 6 层，这是负载产物；同会话对照以 `0753` 的 `realBudget` 段为准 |
+| `0753-phase10c-upgrade-ab` | 旧包 vs 新包的固定深度计时（16 局面，节点 / `ttHits` / 深度 / 着法逐项相同）＋**同一会话的真实预算段**（hard 1600 ms，3 局面） |
 
 `2026-10-21_07-23-*`、`07-23-39-*`、`07-24-43-*` 三组 `*_vs_*` 是引擎对局：
 

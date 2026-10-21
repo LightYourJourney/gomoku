@@ -156,29 +156,55 @@ function indexToPoint(point: Point, dir: Point, index: number): Point {
 }
 
 /**
+ * 一个方向上「有没有五 / 成五点在哪」。
+ *
+ * `winningSteps` 是**相对落点的步数**（-4..4），不是行内下标（0..8）——
+ * 两个单位都只是裸 `number`，类型名与注释是唯一的区分手段。
+ */
+interface DirectionScan {
+  readonly five: boolean
+  readonly winningSteps: readonly number[]
+}
+
+/**
  * 与 `buildLine` + `scanLine` 同义，但**不物化那一行**。
  *
  * 搜索热路径只关心「这条线上有没有五、成五点在哪」，中间那 9 格数组没有第二个
  * 读者；而 `analyzeDirection` 要拿它逐格试放，所以那边保留数组版本。
  *
- * 两处必然有重复的窗口逻辑，`patterns.test.ts` 用随机棋盘把两条路径逐项对齐。
- *
- * 返回值里的下标是**相对落点的步数**（-4..4），不是行内下标 0..8。
+ * 两处必然有重复的窗口逻辑，`patterns.test.ts` 用随机棋盘把两条路径逐项对齐
+ * （包括界外落点）。
  */
 function scanDirection(
   board: Board,
   point: Point,
   player: Player,
   dir: Point,
-): { five: boolean; winningSteps: readonly number[] } {
+): DirectionScan {
+  /*
+   * 界外落点退回数组版：`base + stride * step` 在 x 越界时仍可能落在 0..224 里，
+   * 于是会读到**无关行**的格子。生产调用点全部来自界内的 `candidateMoves`，
+   * 但公开函数没有这条前置条件，两条实现就必须对同样的输入给同样的答案。
+   * 这个分支在热路径上恒定不成立，成本可忽略。
+   */
+  if (point.x < 0 || point.x >= BOARD_SIZE || point.y < 0 || point.y >= BOARD_SIZE) {
+    const line = new Int8Array(WINDOW_SIZE)
+    buildLine(board, point, player, dir, line)
+    const scan = scanLine(line)
+    return {
+      five: scan.five,
+      winningSteps: scan.winningIndices.map((index) => index - CENTER),
+    }
+  }
+
   const dx = dir.x
   const dy = dir.y
-  // 该方向上还能走几格（含越界即停）；两个轴取较小者。
-  const forward = Math.min(
+  // 该方向上还能走几格；两个轴取较小者（与棋盘边界的距离，含落点所在格）。
+  const forwardSteps = Math.min(
     dx > 0 ? BOARD_SIZE - 1 - point.x : dx < 0 ? point.x : BOARD_SIZE,
     dy > 0 ? BOARD_SIZE - 1 - point.y : dy < 0 ? point.y : BOARD_SIZE,
   )
-  const backward = Math.min(
+  const backwardSteps = Math.min(
     dx > 0 ? point.x : dx < 0 ? BOARD_SIZE - 1 - point.x : BOARD_SIZE,
     dy > 0 ? point.y : dy < 0 ? BOARD_SIZE - 1 - point.y : BOARD_SIZE,
   )
@@ -188,7 +214,7 @@ function scanDirection(
 
   for (let start = -WINDOW_RADIUS; start <= 0; start++) {
     // 窗口只要有一格在棋盘外就作废——与「棋盘外记为被堵」是同一件事。
-    if (start < -backward || start + WIN_LENGTH - 1 > forward) continue
+    if (start < -backwardSteps || start + WIN_LENGTH - 1 > forwardSteps) continue
 
     let own = 0
     let emptyStep = -1

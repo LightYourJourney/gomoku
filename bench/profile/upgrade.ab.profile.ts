@@ -14,8 +14,12 @@ import { candidateCount, searchWorkloads } from './workloads'
  * 同一个引擎、同样的节点数，**包比源码快约 5 倍**。拿「包 vs 源码」当 A/B 会得到
  * 一条与代码改动无关的假结论（详见 PHASE_10C.md 的「测量陷阱」一节）。
  *
- * 只比「固定深度」：节点数由 `search.equivalence.test.ts` 钉住，所以耗时比就是
- * **单节点计算速度**的比，不掺搜索策略。
+ * 两段测量：
+ *
+ * 1. **固定深度**：节点数由 `search.equivalence.test.ts` 钉住，所以耗时比就是
+ *    **单节点计算速度**的比，不掺搜索策略。
+ * 2. **真实预算**（hard 1600 ms）：两边在同一进程、同一时段里交替跑，
+ *    回答「用户等的那 1.6 秒里发生了什么」。跨会话比毫秒数会把负载差当成加速比。
  *
  * 旧包需要先手工生成一次（产物 gitignore）：
  *
@@ -38,12 +42,75 @@ const DEPTH = 4
  * 结论只取「奇数轮不可信」。详见 PHASE_10C.md 的「测量陷阱」。
  */
 const ROUNDS = 12
+/** 真实预算对局面的耗时随负载波动，取 3 轮的最快值；顺序仍然交替。 */
+const REAL_BUDGET_ROUNDS = 3
+const REAL_BUDGET_IDS = ['opening-adjacent', 'bench-midgame', 'bench-double-three'] as const
 
-function specFor(id: string): EngineSpec {
+function fixedSpec(id: string): EngineSpec {
   return { id, label: id, difficulty: 'hard', clock: 'fixed', maxDepth: DEPTH }
 }
 
-interface Row {
+function realSpec(id: string): EngineSpec {
+  return { id, label: id, difficulty: 'hard', clock: 'real' }
+}
+
+interface TimedMove {
+  readonly ms: number
+  readonly result: EngineMove
+}
+
+interface PairedTiming {
+  readonly old: TimedMove[]
+  readonly new: TimedMove[]
+}
+
+/**
+ * 两边交替跑、各自记录每次耗时。顺序按轮次交替，避免「谁先跑谁占缓存」。
+ *
+ * **轮数必须成对地用**：奇数轮时先跑的一方多一次，见 `ROUNDS` 的注释。
+ */
+function timePaired(
+  oldRun: () => EngineMove,
+  newRun: () => EngineMove,
+  rounds: number,
+): PairedTiming {
+  const oldRuns: TimedMove[] = []
+  const newRuns: TimedMove[] = []
+
+  const time = (run: () => EngineMove, into: TimedMove[]): void => {
+    const startedAt = performance.now()
+    const result = run()
+    into.push({ ms: performance.now() - startedAt, result })
+  }
+
+  for (let round = 0; round < rounds; round++) {
+    if (round % 2 === 0) {
+      time(oldRun, oldRuns)
+      time(newRun, newRuns)
+    } else {
+      time(newRun, newRuns)
+      time(oldRun, oldRuns)
+    }
+  }
+
+  return { old: oldRuns, new: newRuns }
+}
+
+function fastest(runs: readonly TimedMove[]): TimedMove {
+  return runs.reduce((best, run) => (run.ms < best.ms ? run : best))
+}
+
+function sameSearch(left: EngineMove, right: EngineMove): boolean {
+  return (
+    JSON.stringify(left.move) === JSON.stringify(right.move) &&
+    left.nodes === right.nodes &&
+    left.depth === right.depth &&
+    left.ttHits === right.ttHits &&
+    left.reason === right.reason
+  )
+}
+
+interface FixedRow {
   readonly id: string
   readonly category: string
   readonly candidates: number
@@ -52,15 +119,28 @@ interface Row {
   readonly ratio: number
   readonly sameMove: boolean
   /** 逐字段留档：耗时比只有配上「两边算的是同一棵树」才可解释。 */
-  readonly oldNodes: number | null
-  readonly newNodes: number | null
-  readonly oldTtHits: number | null
-  readonly newTtHits: number | null
-  readonly oldDepth: number | null
-  readonly newDepth: number | null
+  readonly oldNodes: number
+  readonly newNodes: number
+  readonly oldTtHits: number
+  readonly newTtHits: number
+  readonly oldDepth: number
+  readonly newDepth: number
 }
 
-test('引擎升级 A/B：固定深度', async () => {
+interface BudgetRow {
+  readonly id: string
+  readonly candidates: number
+  readonly oldMs: number
+  readonly newMs: number
+  readonly oldNodes: number
+  readonly newNodes: number
+  readonly oldDepth: number
+  readonly newDepth: number
+  readonly oldReason: string
+  readonly newReason: string
+}
+
+test('引擎升级 A/B：固定深度与真实预算', async () => {
   if (!existsSync(BASE_MODULE)) {
     console.log(
       `\n[跳过] 找不到旧引擎包 ${BASE_MODULE}\n` +
@@ -74,63 +154,64 @@ test('引擎升级 A/B：固定深度', async () => {
     stdio: 'pipe',
   })
 
-  const base = await loadEngine({ ...specFor('base'), module: BASE_MODULE })
-  const next = await loadEngine({ ...specFor('next'), module: NEW_MODULE })
-  const rows: Row[] = []
+  const base = await loadEngine({ ...fixedSpec('base'), module: BASE_MODULE })
+  const next = await loadEngine({ ...fixedSpec('next'), module: NEW_MODULE })
+  const rows: FixedRow[] = []
 
   for (const workload of searchWorkloads()) {
-    const oldTimes: number[] = []
-    const newTimes: number[] = []
-    // 用对象持有：TS 的控制流分析看不到闭包里的赋值，会把它窄化成 null
-    const seen: { old: EngineMove | null; next: EngineMove | null } = { old: null, next: null }
+    const timing = timePaired(
+      () => base.engine.choose(workload.board.slice(), workload.player),
+      () => next.engine.choose(workload.board.slice(), workload.player),
+      ROUNDS,
+    )
+    const old = fastest(timing.old)
+    const now = fastest(timing.new)
 
-    for (let round = 0; round < ROUNDS; round++) {
-      const runOld = (): void => {
-        const startedAt = performance.now()
-        const result = base.engine.choose(workload.board.slice(), workload.player)
-        oldTimes.push(performance.now() - startedAt)
-        if (round === 0) seen.old = result
-      }
-      const runNew = (): void => {
-        const startedAt = performance.now()
-        const result = next.engine.choose(workload.board.slice(), workload.player)
-        newTimes.push(performance.now() - startedAt)
-        if (round === 0) seen.next = result
-      }
-
-      // 交替顺序，避免「谁先跑谁占缓存」的系统性偏差
-      if (round % 2 === 0) {
-        runOld()
-        runNew()
-      } else {
-        runNew()
-        runOld()
-      }
-    }
-
-    const sameMove =
-      JSON.stringify(seen.old?.move ?? null) === JSON.stringify(seen.next?.move ?? null) &&
-      seen.old?.nodes === seen.next?.nodes &&
-      seen.old?.depth === seen.next?.depth &&
-      seen.old?.ttHits === seen.next?.ttHits &&
-      seen.old?.reason === seen.next?.reason
-
-    const oldMs = Math.min(...oldTimes)
-    const newMs = Math.min(...newTimes)
     rows.push({
       id: workload.id,
       category: workload.category,
       candidates: candidateCount(workload),
-      oldMs,
-      newMs,
-      ratio: newMs === 0 ? Number.POSITIVE_INFINITY : oldMs / newMs,
-      sameMove,
-      oldNodes: seen.old?.nodes ?? null,
-      newNodes: seen.next?.nodes ?? null,
-      oldTtHits: seen.old?.ttHits ?? null,
-      newTtHits: seen.next?.ttHits ?? null,
-      oldDepth: seen.old?.depth ?? null,
-      newDepth: seen.next?.depth ?? null,
+      oldMs: old.ms,
+      newMs: now.ms,
+      ratio: now.ms === 0 ? Number.POSITIVE_INFINITY : old.ms / now.ms,
+      sameMove: sameSearch(old.result, now.result),
+      oldNodes: old.result.nodes,
+      newNodes: now.result.nodes,
+      oldTtHits: old.result.ttHits,
+      newTtHits: now.result.ttHits,
+      oldDepth: old.result.depth,
+      newDepth: now.result.depth,
+    })
+  }
+
+  const baseReal = await loadEngine({ ...realSpec('base-real'), module: BASE_MODULE })
+  const nextReal = await loadEngine({ ...realSpec('next-real'), module: NEW_MODULE })
+  const budgetRows: BudgetRow[] = []
+  const byId = new Map(searchWorkloads().map((workload) => [workload.id, workload]))
+
+  for (const id of REAL_BUDGET_IDS) {
+    const workload = byId.get(id)
+    if (workload === undefined) throw new Error(`未知局面：${id}`)
+
+    const timing = timePaired(
+      () => baseReal.engine.choose(workload.board.slice(), workload.player),
+      () => nextReal.engine.choose(workload.board.slice(), workload.player),
+      REAL_BUDGET_ROUNDS,
+    )
+    const old = fastest(timing.old)
+    const now = fastest(timing.new)
+
+    budgetRows.push({
+      id,
+      candidates: candidateCount(workload),
+      oldMs: old.ms,
+      newMs: now.ms,
+      oldNodes: old.result.nodes,
+      newNodes: now.result.nodes,
+      oldDepth: old.result.depth,
+      newDepth: now.result.depth,
+      oldReason: old.result.reason,
+      newReason: now.result.reason,
     })
   }
 
@@ -154,6 +235,11 @@ test('引擎升级 A/B：固定深度', async () => {
       ratio: totals.next === 0 ? Number.POSITIVE_INFINITY : totals.old / totals.next,
       mismatches,
     },
+    realBudget: {
+      difficulty: 'hard',
+      rounds: REAL_BUDGET_ROUNDS,
+      rows: budgetRows,
+    },
   }
 
   writeFileSync(new URL('./last-upgrade-ab.json', import.meta.url), `${JSON.stringify(payload, null, 2)}\n`)
@@ -170,5 +256,17 @@ test('引擎升级 A/B：固定深度', async () => {
     `合计\t旧版 ${totals.old.toFixed(1)} ms\t新版 ${totals.next.toFixed(1)} ms\t` +
       `${(totals.old / totals.next).toFixed(2)}x\t不一致 ${mismatches} 个局面`,
   )
+
+  console.log(`\n=== 真实预算（hard 1600 ms，${REAL_BUDGET_ROUNDS} 轮取最快，同一会话）===`)
+  console.log('局面\t候选\t旧版(ms)\t新版(ms)\t旧深度\t新深度\t旧节点\t新节点\t判断')
+  for (const row of budgetRows) {
+    // 两边都是 timeout 时，耗时必然都贴近预算，只能读节点数（吞吐）。
+    const note = row.oldReason === 'timeout' && row.newReason === 'timeout' ? '双超时，读节点' : '同层完成'
+    console.log(
+      `${row.id}\t${row.candidates}\t${row.oldMs.toFixed(0)}\t${row.newMs.toFixed(0)}\t` +
+        `${row.oldDepth}\t${row.newDepth}\t${row.oldNodes}\t${row.newNodes}\t${note}`,
+    )
+  }
+
   console.log(`结果已写入 bench/profile/last-upgrade-ab.json`)
 }, 900_000)

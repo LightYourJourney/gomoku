@@ -320,6 +320,26 @@ describe('searchBoard —— 置换表与注入时钟', () => {
     expect(result.move).not.toBeNull()
     expect(MIDGAME[result.move!.y * 15 + result.move!.x]).toBe(0)
   })
+
+  it('预算在子树中途耗尽时仍返回合法着法', () => {
+    // 时钟在第 N 次读取后突然跳过预算：前面几次读取让搜索真正进入子树、落子若干层，
+    // 再触发 hasExpired。这条覆盖的是**早退路径**——撤销栈若在这个出口上失衡，
+    // 多出来的 undo 会直接抛错。它不单独证明分数等价（那由增量评估的差分测试负责）。
+    for (const limit of [5, 15, 40]) {
+      let ticks = 0
+      const clock = (): number => {
+        ticks++
+        if (ticks === 1) return 0
+        return ticks > limit ? 10_000 : 1
+      }
+
+      const result = searchBoard(MIDGAME, WHITE, { ...options, budgetMs: 100 }, clock)
+
+      expect(result.reason).toBe('timeout')
+      expect(result.move).not.toBeNull()
+      expect(MIDGAME[result.move!.y * 15 + result.move!.x]).toBe(0)
+    }
+  })
 })
 
 describe('searchBoard —— 提示用的候选与紧急度', () => {
