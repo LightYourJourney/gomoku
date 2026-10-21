@@ -2,7 +2,12 @@ import { BLACK, CELL_COUNT, WHITE, type Board, type Player } from '../core/types
 import { EVALUATION_LINES, scoreLine } from './evaluate'
 
 /**
- * 增量局面评估（Phase 10B 的**实验性原型**）。
+ * 增量局面评估（Phase 10B 原型，Phase 10C 接入生产搜索）。
+ *
+ * 搜索的 `negamax` / `searchRoot` 在每次落子与撤销时同步调用 `place` / `undo`，
+ * 叶子取分走 `score(player)`。接入后的语义由三处一起钉住：
+ * 本文件的随机差分、`search.equivalence.test.ts` 的固定深度快照、
+ * 以及旧版 vs 新版的逐手对局（见 `docs/ai-research/ENGINE_AB_RESULTS.md`）。
  *
  * ## 它解决什么
  *

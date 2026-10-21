@@ -3,7 +3,8 @@ import { BOARD_SIZE, type Board, type Player, type Point } from '../core/types'
 import { candidateMoves } from './candidates'
 import { countCall } from './metrics'
 import { DIFFICULTY_PARAMS, type DifficultyParams } from './difficulty'
-import { evaluateBoard, WIN_SCORE } from './evaluate'
+import { WIN_SCORE } from './evaluate'
+import { createIncrementalEvaluator, type IncrementalEvaluator } from './incrementalEvaluate'
 import {
   analyzeFast,
   analyzePoint,
@@ -125,6 +126,12 @@ interface SearchContext {
   readonly deadline: number
   readonly table: TranspositionTable | null
   readonly killers: Array<Array<Point | null>>
+  /**
+   * 与棋盘同步的增量评估器：`place` / `undo` 必须与搜索里对棋盘的那对写操作
+   * **紧邻成对**执行，否则叶子分数会偏离当前局面。取分一律走 `score(player)`，
+   * 它在任意局面上都等于 `evaluateBoard(board, player)`（见 incrementalEvaluate.test.ts）。
+   */
+  readonly evaluator: IncrementalEvaluator
   nodes: number
   ttHits: number
   expired: boolean
@@ -287,7 +294,7 @@ function negamax(
 ): number {
   ctx.nodes++
 
-  if (hasExpired(ctx)) return evaluateBoard(board, player)
+  if (hasExpired(ctx)) return ctx.evaluator.score(player)
 
   const alphaOrigin = alpha
   const cached = ctx.table?.probe(key, depth) ?? null
@@ -304,7 +311,7 @@ function negamax(
     if (alpha >= beta) return cachedScore
   }
 
-  if (depth <= 0) return evaluateBoard(board, player)
+  if (depth <= 0) return ctx.evaluator.score(player)
 
   const candidates = orderMoves(
     board,
@@ -317,7 +324,7 @@ function negamax(
   )
 
   if (candidates.winNow !== null) return WIN_SCORE - ply
-  if (candidates.points.length === 0) return evaluateBoard(board, player)
+  if (candidates.points.length === 0) return ctx.evaluator.score(player)
 
   let best = -Infinity
   let bestMove: Point | null = null
@@ -326,6 +333,7 @@ function negamax(
   for (const point of candidates.points) {
     const index = idx(point.x, point.y)
     board[index] = player
+    ctx.evaluator.place(index, player)
     const childKey = toggleTurn(toggleStone(key, index, player))
     const value = -negamax(
       board,
@@ -337,6 +345,7 @@ function negamax(
       -lowerBound,
       ctx,
     )
+    ctx.evaluator.undo()
     board[index] = 0
 
     if (value > best) {
@@ -414,9 +423,11 @@ function searchRoot(
 
     const index = idx(point.x, point.y)
     board[index] = player
+    ctx.evaluator.place(index, player)
     ctx.nodes++
     const childKey = toggleTurn(toggleStone(key, index, player))
     const value = -negamax(board, opponentOf(player), childKey, depth - 1, 1, -Infinity, -alpha, ctx)
+    ctx.evaluator.undo()
     board[index] = 0
 
     if (best === null || value > best.score) best = { move: point, score: value, depth }
@@ -506,6 +517,9 @@ export function searchBoard(
     options,
     now,
     deadline,
+    // 在算杀之后创建：算杀会临时落子，虽然它成对还原，但这里没有理由
+    // 让评估器去承担那份「还原是否完整」的假设。
+    evaluator: createIncrementalEvaluator(own),
     table: options.transposition ? createTranspositionTable() : null,
     killers: Array.from({ length: options.maxDepth + 2 }, () =>
       Array.from({ length: KILLER_SLOTS }, () => null as Point | null),

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { createBoard, DIRECTIONS } from '../core/board'
 import { findWinLine } from '../core/rules'
-import { BLACK, WHITE, type Board, type Point } from '../core/types'
+import { BLACK, CELL_COUNT, WHITE, type Board, type Point, type Player } from '../core/types'
 import { boardFromLines } from '../test/board-fixtures'
 import {
   analyzeDirection,
@@ -12,6 +12,7 @@ import {
   isWinningPoint,
   shapeScore,
   threatAt,
+  type FastThreat,
   type ShapeCount,
 } from './patterns'
 
@@ -237,6 +238,88 @@ describe('analyzeFast —— 搜索热路径用的廉价档', () => {
       expect(fast.openFour).toBe(full.kind === 'openFour')
       expect(fast.four).toBe(full.kind === 'four')
       expect(fast.winningPoints).toEqual(full.winningPoints)
+    }
+  })
+})
+
+/**
+ * `analyzeFast` 内部走的是「直接扫窗口」的版本，`analyzeDirection` 走的是
+ * 「先建 9 格数组再扫」的版本。两段窗口逻辑重复，所以这里用随机棋盘把
+ * 直扫版的四个聚合字段与数组版逐项对齐——不是抽样比对，是逐局面全等。
+ */
+function referenceFast(board: Board, point: Point, player: Player): FastThreat {
+  let five = false
+  let maxWinningInOneDirection = 0
+  const winningPoints: Point[] = []
+
+  for (const dir of DIRECTIONS) {
+    const threat = analyzeDirection(board, point, player, dir)
+    if (threat.kind === 'five') {
+      five = true
+      break
+    }
+    if (threat.winningPoints.length > maxWinningInOneDirection) {
+      maxWinningInOneDirection = threat.winningPoints.length
+    }
+    for (const q of threat.winningPoints) {
+      if (!winningPoints.some((p) => p.x === q.x && p.y === q.y)) winningPoints.push(q)
+    }
+  }
+
+  if (five) return { five: true, openFour: false, four: false, winningPoints: [] }
+
+  const openFour = maxWinningInOneDirection >= 2
+  return {
+    five: false,
+    openFour,
+    four: !openFour && winningPoints.length > 0,
+    winningPoints,
+  }
+}
+
+/** 可复现的伪随机数（mulberry32）。差分测试必须能在失败时按种子重放。 */
+function mulberry32(seed: number): () => number {
+  let state = seed >>> 0
+  return () => {
+    state = (state + 0x6d2b79f5) >>> 0
+    let t = state
+    t = Math.imul(t ^ (t >>> 15), t | 1)
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61)
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+  }
+}
+
+describe('analyzeFast 与数组版（analyzeDirection）随机差分', () => {
+  it('20 个种子 × 60 手随机棋局上逐项一致', () => {
+    const SEEDS = 20
+    const MOVES = 60
+
+    for (let seed = 1; seed <= SEEDS; seed++) {
+      const random = mulberry32(seed)
+      const board = createBoard()
+      const empty = Array.from({ length: CELL_COUNT }, (_, i) => i)
+
+      for (let move = 0; move < MOVES; move++) {
+        const pick = Math.floor(random() * empty.length)
+        const cell = empty[pick]
+        empty[pick] = empty[empty.length - 1]
+        empty.pop()
+        board[cell] = random() < 0.5 ? BLACK : WHITE
+
+        // 每个局面问三个点、黑白两方——包含**已有棋子**的点，
+        // 那正是「落点无条件当己方」这条前置行为要覆盖的分支。
+        for (let probe = 0; probe < 3; probe++) {
+          const at = Math.floor(random() * CELL_COUNT)
+          const point = { x: at % 15, y: Math.floor(at / 15) }
+
+          for (const player of [BLACK, WHITE]) {
+            expect(
+              analyzeFast(board, point, player),
+              `种子 ${seed} 第 ${move + 1} 手，点 (${point.x},${point.y})，'${player === BLACK ? '黑' : '白'}'`,
+            ).toEqual(referenceFast(board, point, player))
+          }
+        }
+      }
     }
   })
 })

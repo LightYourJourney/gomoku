@@ -1,5 +1,5 @@
 import { DIRECTIONS, idx, inBounds } from '../core/board'
-import { WIN_LENGTH, type Board, type Player, type Point } from '../core/types'
+import { BOARD_SIZE, WIN_LENGTH, type Board, type Player, type Point } from '../core/types'
 import { countCall } from './metrics'
 import { WIN_SCORE, type ThreatKind } from './types'
 
@@ -67,30 +67,39 @@ function createShapeCount(): ShapeCount {
 }
 
 /**
- * 沿 `dir` 取以 `point` 为中心的一行，并**假定 `player` 已经落在 `point` 上**。
+ * 沿 `dir` 取以 `point` 为中心的一行，写入调用方给的 `line`，并**假定
+ * `player` 已经落在 `point` 上**。
  *
  * 棋盘外面记为「被堵」而不是「空」——外面放不下棋子，对一条连线来说那和
  * 对手挡着是一回事。这个区别正是「贴边的 mmmm. 是冲四而不是活四」的由来。
+ *
+ * 边界与索引在这里直接展开，不走 `inBounds` / `idx`：这两个函数在剖析里合计
+ * 占 15% 的自耗时，而逐个候选、逐个方向、逐个格子的调用点让每次调用都在做
+ * 同一件事。展开后行为不变——非整数坐标落到 `board[小数下标]` 得到 `undefined`，
+ * 与 `inBounds` 判假一样记为 -1。
  */
-function buildLine(board: Board, point: Point, player: Player, dir: Point): Line {
-  const line = new Int8Array(WINDOW_SIZE)
-
+function buildLine(
+  board: Board,
+  point: Point,
+  player: Player,
+  dir: Point,
+  line: Line,
+): void {
   for (let i = 0; i < WINDOW_SIZE; i++) {
     const step = i - CENTER
     const x = point.x + dir.x * step
     const y = point.y + dir.y * step
 
-    if (!inBounds(x, y)) {
+    if (x < 0 || x >= BOARD_SIZE || y < 0 || y >= BOARD_SIZE) {
       line[i] = -1
       continue
     }
 
-    const cell = board[idx(x, y)]
+    const cell = board[y * BOARD_SIZE + x]
     line[i] = cell === 0 ? 0 : cell === player ? 1 : -1
   }
 
   line[CENTER] = 1
-  return line
 }
 
 interface LineScan {
@@ -147,6 +156,78 @@ function indexToPoint(point: Point, dir: Point, index: number): Point {
 }
 
 /**
+ * 与 `buildLine` + `scanLine` 同义，但**不物化那一行**。
+ *
+ * 搜索热路径只关心「这条线上有没有五、成五点在哪」，中间那 9 格数组没有第二个
+ * 读者；而 `analyzeDirection` 要拿它逐格试放，所以那边保留数组版本。
+ *
+ * 两处必然有重复的窗口逻辑，`patterns.test.ts` 用随机棋盘把两条路径逐项对齐。
+ *
+ * 返回值里的下标是**相对落点的步数**（-4..4），不是行内下标 0..8。
+ */
+function scanDirection(
+  board: Board,
+  point: Point,
+  player: Player,
+  dir: Point,
+): { five: boolean; winningSteps: readonly number[] } {
+  const dx = dir.x
+  const dy = dir.y
+  // 该方向上还能走几格（含越界即停）；两个轴取较小者。
+  const forward = Math.min(
+    dx > 0 ? BOARD_SIZE - 1 - point.x : dx < 0 ? point.x : BOARD_SIZE,
+    dy > 0 ? BOARD_SIZE - 1 - point.y : dy < 0 ? point.y : BOARD_SIZE,
+  )
+  const backward = Math.min(
+    dx > 0 ? point.x : dx < 0 ? BOARD_SIZE - 1 - point.x : BOARD_SIZE,
+    dy > 0 ? point.y : dy < 0 ? BOARD_SIZE - 1 - point.y : BOARD_SIZE,
+  )
+  const base = point.y * BOARD_SIZE + point.x
+  const stride = dy * BOARD_SIZE + dx
+  const winningSteps: number[] = []
+
+  for (let start = -WINDOW_RADIUS; start <= 0; start++) {
+    // 窗口只要有一格在棋盘外就作废——与「棋盘外记为被堵」是同一件事。
+    if (start < -backward || start + WIN_LENGTH - 1 > forward) continue
+
+    let own = 0
+    let emptyStep = -1
+    let blocked = false
+
+    for (let k = 0; k < WIN_LENGTH; k++) {
+      const step = start + k
+      // 落点无条件当成己方已落下（`buildLine` 的 `line[CENTER] = 1`）。
+      if (step === 0) {
+        own++
+        continue
+      }
+
+      const cell = board[base + stride * step]
+      if (cell === player) {
+        own++
+      } else if (cell === 0) {
+        if (emptyStep >= 0) {
+          blocked = true
+          break
+        }
+        emptyStep = step
+      } else {
+        blocked = true
+        break
+      }
+    }
+
+    if (blocked) continue
+    if (own === WIN_LENGTH) return { five: true, winningSteps: [] }
+    if (own === WIN_LENGTH - 1 && !winningSteps.includes(emptyStep)) {
+      winningSteps.push(emptyStep)
+    }
+  }
+
+  return { five: false, winningSteps }
+}
+
+/**
  * 单方向棋型判定。
  *
  * 五与四用成五点计数：两个及以上成五点即活四（对手堵一个还剩一个），
@@ -162,7 +243,8 @@ export function analyzeDirection(
   player: Player,
   dir: Point,
 ): DirectionThreat {
-  const line = buildLine(board, point, player, dir)
+  const line = new Int8Array(WINDOW_SIZE)
+  buildLine(board, point, player, dir, line)
   const scan = scanLine(line)
 
   if (scan.five) return { kind: 'five', winningPoints: [] }
@@ -215,20 +297,19 @@ export function analyzeFast(board: Board, point: Point, player: Player): FastThr
   let maxWinningInOneDirection = 0
 
   for (const dir of DIRECTIONS) {
-    const line = buildLine(board, point, player, dir)
-    const scan = scanLine(line)
+    const scan = scanDirection(board, point, player, dir)
 
     if (scan.five) {
       five = true
       break
     }
 
-    if (scan.winningIndices.length > maxWinningInOneDirection) {
-      maxWinningInOneDirection = scan.winningIndices.length
+    if (scan.winningSteps.length > maxWinningInOneDirection) {
+      maxWinningInOneDirection = scan.winningSteps.length
     }
 
-    for (const index of scan.winningIndices) {
-      const candidate = indexToPoint(point, dir, index)
+    for (const step of scan.winningSteps) {
+      const candidate = { x: point.x + dir.x * step, y: point.y + dir.y * step }
       if (!winningPoints.some((q) => q.x === candidate.x && q.y === candidate.y)) {
         winningPoints.push(candidate)
       }

@@ -22,12 +22,19 @@ analysis   learn        ← 分析结论与教学内容（两条互不依赖的�
 `types.ts` 常量与类型；`board.ts` 索引换算、边界、读格；`rules.ts` 胜负判定与落子合法性；`game.ts` 对局状态机。全部是不可变纯函数。
 
 **`ai/`** —— 引擎。
-`patterns.ts` 单点棋型分析（窗口枚举，含隔子型）；`evaluate.ts` 整盘线段评估；`candidates.ts` 候选点生成；`difficulty.ts` 五档参数表；`transposition.ts` Zobrist 置换表；`threat.ts` 算杀搜索（VCF / VCT）；`search.ts` 搜索主体。`worker.ts` 是 Worker 外壳，`engine.ts` 是主线程侧的请求分发，`browserEngine.ts` 负责把两者接起来。
+`patterns.ts` 单点棋型分析（窗口枚举，含隔子型）；`evaluate.ts` 整盘线段评估；`incrementalEvaluate.ts` 与棋盘同步的增量评估（搜索叶子取分用）；`candidates.ts` 候选点生成；`difficulty.ts` 五档参数表；`transposition.ts` Zobrist 置换表；`threat.ts` 算杀搜索（VCF / VCT）；`search.ts` 搜索主体。`worker.ts` 是 Worker 外壳，`engine.ts` 是主线程侧的请求分发，`browserEngine.ts` 负责把两者接起来。
 
 `search.ts` 内部分成两层，这个分工是刻意的：
 
 - `chooseMove(request)` 是**协议层**——把难度换算成搜索选项、负责 `elapsedMs` 计时。
 - `searchBoard(board, player, options, now)` 是**主体层**——不读时钟（`now` 注入）、不改传入的棋盘。
+
+`searchBoard` 每次会建一个 `IncrementalEvaluator`（棋盘副本 + 72 条线分），
+`negamax` / `searchRoot` 的每一次落子与撤销都与棋盘的写操作**紧邻成对**：
+`board[i] = player` → `place(i, player)`，递归返回 → `undo()` → `board[i] = 0`。
+叶子取分走 `score(player)`，与 `evaluateBoard(board, player)` 逐位相等
+（`incrementalEvaluate.test.ts` 与 `search.equivalence.test.ts` 钉住）。
+**新增棋盘写操作时必须同时补上 `place` / `undo`**，否则叶子分数会偏离当前局面。
 
 分开是为了可测：注入时钟让超时行为可以确定性复现，不必依赖真实时间，也不会因机器快慢而 flaky。
 

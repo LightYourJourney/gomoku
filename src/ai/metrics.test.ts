@@ -75,8 +75,9 @@ describe('调用计数器', () => {
     stopAiCounters()
 
     expect(counted).toEqual(plain)
-    // 顺带确认这次运行真的经过了计数器，而不是「两边都没数」的假一致
-    expect(counters.evaluateBoard).toBeGreaterThan(0)
+    // 顺带确认这次运行真的经过了计数器，而不是「两边都没数」的假一致。
+    // 搜索的叶子取分已改走增量评估、不再调用 `evaluateBoard`，所以这里数的是排序路径。
+    expect(counters.analyzeFast).toBeGreaterThan(0)
     expect(counters.orderMoves).toBeGreaterThan(0)
   })
 })

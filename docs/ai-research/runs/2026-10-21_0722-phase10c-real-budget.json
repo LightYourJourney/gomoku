@@ -1,0 +1,439 @@
+{
+  "sampledAt": "2026-10-21T07:21:47.459Z",
+  "node": "v26.12.0",
+  "platform": "darwin arm64",
+  "budgetMs": 1600,
+  "difficulty": "hard",
+  "loadAverage": 6.95458984375,
+  "tasks": [
+    {
+      "id": "opening-adjacent",
+      "category": "开局",
+      "nodes": 10177,
+      "depth": 6,
+      "reason": "search",
+      "elapsedMs": 579.8032909999997,
+      "candidates": 28
+    },
+    {
+      "id": "bench-midgame",
+      "category": "安静中盘",
+      "nodes": 7202,
+      "depth": 6,
+      "reason": "search",
+      "elapsedMs": 501.88175,
+      "candidates": 44
+    },
+    {
+      "id": "bench-double-three",
+      "category": "高候选数中盘",
+      "nodes": 19261,
+      "depth": 5,
+      "reason": "timeout",
+      "elapsedMs": 1599.639542,
+      "candidates": 62
+    }
+  ],
+  "counting": {
+    "tasks": [
+      {
+        "id": "opening-adjacent",
+        "category": "开局",
+        "nodes": 10177,
+        "depth": 6,
+        "reason": "search",
+        "elapsedMs": 952.094916,
+        "candidates": 28
+      },
+      {
+        "id": "bench-midgame",
+        "category": "安静中盘",
+        "nodes": 7202,
+        "depth": 6,
+        "reason": "search",
+        "elapsedMs": 470.45612500000016,
+        "candidates": 44
+      },
+      {
+        "id": "bench-double-three",
+        "category": "高候选数中盘",
+        "nodes": 18690,
+        "depth": 5,
+        "reason": "timeout",
+        "elapsedMs": 1599.3270409999998,
+        "candidates": 62
+      }
+    ],
+    "calls": {
+      "evaluateBoard": 0,
+      "candidateMoves": 10499,
+      "orderMoves": 10484,
+      "orderCandidates": 610082,
+      "analyzeFast": 1219627,
+      "threatScoreWith": 1217906,
+      "ttProbe": 35842,
+      "ttStore": 9198,
+      "forcedWin": 3
+    }
+  },
+  "totals": {
+    "totalUs": 2743314,
+    "busyUs": 2743314,
+    "functions": [
+      {
+        "name": "scanDirection",
+        "url": "patterns.ts",
+        "selfUs": 1093459,
+        "share": 0.39859053684703977,
+        "hits": 6868
+      },
+      {
+        "name": "analyzeFast",
+        "url": "patterns.ts",
+        "selfUs": 235375,
+        "share": 0.08579951110226536,
+        "hits": 1504
+      },
+      {
+        "name": "(匿名)",
+        "url": "types.ts",
+        "selfUs": 210363,
+        "share": 0.07668207139248369,
+        "hits": 1351
+      },
+      {
+        "name": "inBounds",
+        "url": "board.ts",
+        "selfUs": 198116,
+        "share": 0.07221776289553437,
+        "hits": 1284
+      },
+      {
+        "name": "idx",
+        "url": "board.ts",
+        "selfUs": 112348,
+        "share": 0.04095338703480535,
+        "hits": 727
+      },
+      {
+        "name": "threatScoreWith",
+        "url": "patterns.ts",
+        "selfUs": 108776,
+        "share": 0.039651312244970864,
+        "hits": 697
+      },
+      {
+        "name": "scoreSegment",
+        "url": "evaluate.ts",
+        "selfUs": 98692,
+        "share": 0.035975466169749434,
+        "hits": 643
+      },
+      {
+        "name": "isEmptyAt",
+        "url": "patterns.ts",
+        "selfUs": 87994,
+        "share": 0.03207580320736161,
+        "hits": 569
+      },
+      {
+        "name": "(匿名)",
+        "url": "board.ts",
+        "selfUs": 84300,
+        "share": 0.030729256658187872,
+        "hits": 536
+      },
+      {
+        "name": "isOwn",
+        "url": "patterns.ts",
+        "selfUs": 81978,
+        "share": 0.029882835140271947,
+        "hits": 530
+      },
+      {
+        "name": "candidateMoves",
+        "url": "candidates.ts",
+        "selfUs": 73157,
+        "share": 0.026667381130997037,
+        "hits": 473
+      },
+      {
+        "name": "analyzeRuns",
+        "url": "patterns.ts",
+        "selfUs": 53387,
+        "share": 0.019460768982333048,
+        "hits": 344
+      },
+      {
+        "name": "negamax",
+        "url": "search.ts",
+        "selfUs": 51338,
+        "share": 0.01871386213900414,
+        "hits": 330
+      },
+      {
+        "name": "orderMoves",
+        "url": "search.ts",
+        "selfUs": 51302,
+        "share": 0.018700739324772883,
+        "hits": 329
+      },
+      {
+        "name": "post",
+        "url": "node:inspector",
+        "selfUs": 36758,
+        "share": 0.013399122375346023,
+        "hits": 2
+      },
+      {
+        "name": "place",
+        "url": "incrementalEvaluate.ts",
+        "selfUs": 15280,
+        "share": 0.005569905595932511,
+        "hits": 99
+      },
+      {
+        "name": "scoreLine",
+        "url": "evaluate.ts",
+        "selfUs": 14285,
+        "share": 0.005207205591485335,
+        "hits": 90
+      },
+      {
+        "name": "(匿名)",
+        "url": "search.ts",
+        "selfUs": 7173,
+        "share": 0.0026147207355774805,
+        "hits": 46
+      },
+      {
+        "name": "(匿名)",
+        "url": "metrics.ts",
+        "selfUs": 4527,
+        "share": 0.0016501938895802668,
+        "hits": 29
+      },
+      {
+        "name": "(匿名)",
+        "url": "patterns.ts",
+        "selfUs": 4250,
+        "share": 0.0015492211245231133,
+        "hits": 25
+      },
+      {
+        "name": "isKiller",
+        "url": "search.ts",
+        "selfUs": 2442,
+        "share": 0.0008901642320201041,
+        "hits": 13
+      },
+      {
+        "name": "probe",
+        "url": "transposition.ts",
+        "selfUs": 2189,
+        "share": 0.0007979400097837871,
+        "hits": 14
+      },
+      {
+        "name": "shapeScore",
+        "url": "patterns.ts",
+        "selfUs": 2119,
+        "share": 0.0007724234265563476,
+        "hits": 14
+      },
+      {
+        "name": "undo",
+        "url": "incrementalEvaluate.ts",
+        "selfUs": 1584,
+        "share": 0.0005774038261752027,
+        "hits": 10
+      },
+      {
+        "name": "hasExpired",
+        "url": "search.ts",
+        "selfUs": 1251,
+        "share": 0.0004560177945360976,
+        "hits": 8
+      },
+      {
+        "name": "createShapeCount",
+        "url": "patterns.ts",
+        "selfUs": 1076,
+        "share": 0.0003922263364674988,
+        "hits": 7
+      },
+      {
+        "name": "scoreThreeRuns",
+        "url": "evaluate.ts",
+        "selfUs": 849,
+        "share": 0.0003094797022870878,
+        "hits": 5
+      },
+      {
+        "name": "toggleStone",
+        "url": "transposition.ts",
+        "selfUs": 744,
+        "share": 0.00027120482744592855,
+        "hits": 5
+      },
+      {
+        "name": "(匿名)",
+        "url": "real-budget.profile.ts",
+        "selfUs": 641,
+        "share": 0.00023365899783983897,
+        "hits": 3
+      },
+      {
+        "name": "toggleTurn",
+        "url": "transposition.ts",
+        "selfUs": 473,
+        "share": 0.00017241919809398413,
+        "hits": 3
+      },
+      {
+        "name": "(匿名)",
+        "url": "evaluate.ts",
+        "selfUs": 469,
+        "share": 0.00017096110762384472,
+        "hits": 3
+      },
+      {
+        "name": "store",
+        "url": "transposition.ts",
+        "selfUs": 459,
+        "share": 0.00016731588144849624,
+        "hits": 3
+      },
+      {
+        "name": "slotOf",
+        "url": "transposition.ts",
+        "selfUs": 459,
+        "share": 0.00016731588144849624,
+        "hits": 3
+      },
+      {
+        "name": "doubleThreat",
+        "url": "patterns.ts",
+        "selfUs": 457,
+        "share": 0.00016658683621342653,
+        "hits": 3
+      },
+      {
+        "name": "(匿名)",
+        "url": "transposition.ts",
+        "selfUs": 320,
+        "share": 0.00011664723761115206,
+        "hits": 2
+      },
+      {
+        "name": "countCall",
+        "url": "metrics.ts",
+        "selfUs": 310,
+        "share": 0.00011300201143580356,
+        "hits": 2
+      },
+      {
+        "name": "score",
+        "url": "incrementalEvaluate.ts",
+        "selfUs": 308,
+        "share": 0.00011227296620073385,
+        "hits": 2
+      },
+      {
+        "name": "(匿名)",
+        "url": "types.ts",
+        "selfUs": 307,
+        "share": 0.00011190844358319901,
+        "hits": 2
+      },
+      {
+        "name": "opponentOf",
+        "url": "board.ts",
+        "selfUs": 301,
+        "share": 0.00010972130787798991,
+        "hits": 2
+      },
+      {
+        "name": "toTableScore",
+        "url": "search.ts",
+        "selfUs": 300,
+        "share": 0.00010935678526045505,
+        "hits": 2
+      },
+      {
+        "name": "searchRoot",
+        "url": "search.ts",
+        "selfUs": 298,
+        "share": 0.00010862774002538536,
+        "hits": 2
+      },
+      {
+        "name": "dispatch",
+        "url": "(native)",
+        "selfUs": 160,
+        "share": 0.00005832361880557603,
+        "hits": 1
+      },
+      {
+        "name": "searchBoard",
+        "url": "search.ts",
+        "selfUs": 158,
+        "share": 0.00005759457357050633,
+        "hits": 1
+      },
+      {
+        "name": "runSearches",
+        "url": "real-budget.profile.ts",
+        "selfUs": 153,
+        "share": 0.00005577196048283208,
+        "hits": 1
+      },
+      {
+        "name": "frameAt",
+        "url": "incrementalEvaluate.ts",
+        "selfUs": 151,
+        "share": 0.00005504291524776238,
+        "hits": 1
+      },
+      {
+        "name": "createIncrementalEvaluator",
+        "url": "incrementalEvaluate.ts",
+        "selfUs": 151,
+        "share": 0.00005504291524776238,
+        "hits": 1
+      },
+      {
+        "name": "searchForcing",
+        "url": "threat.ts",
+        "selfUs": 150,
+        "share": 0.000054678392630227525,
+        "hits": 1
+      }
+    ],
+    "gcUs": 14562,
+    "idleUs": 0,
+    "programUs": 87615,
+    "anonymousUs": 312350
+  },
+  "calls": {
+    "evaluateBoard": 0,
+    "candidateMoves": 10499,
+    "orderMoves": 10484,
+    "orderCandidates": 610082,
+    "analyzeFast": 1219627,
+    "threatScoreWith": 1217906,
+    "ttProbe": 35842,
+    "ttStore": 9198,
+    "forcedWin": 3
+  },
+  "derived": {
+    "evaluationsPerNode": 0,
+    "evaluateShare": 0,
+    "gcShare": 0.0053081783565424884,
+    "anonymousShare": 0.11385863958701045,
+    "countedNodes": 36069,
+    "profiledNodes": 36640,
+    "timeouts": 1,
+    "countedInSeparatePass": true
+  }
+}

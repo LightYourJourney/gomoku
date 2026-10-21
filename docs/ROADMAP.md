@@ -15,6 +15,7 @@
 | Phase 09B | 正式部署与生产环境验收 | ✅ 已上线：<https://gomoku-lab.pages.dev>（见 [部署记录](release/DEPLOYMENT_RECORD.md)） |
 | Phase 10A | AI 棋力评测基础设施 | ✅ 完成；评测系统跑通三次棋力实测 + 一次版本对照联调（见 [PHASE_10A](ai-research/PHASE_10A.md)） |
 | Phase 10B | 搜索热点分析与增量评估实验 | ✅ 完成；**排序 46–47%、评估 ≈31%**；增量评估逐位一致但端到端只有 1.40×（见 [PHASE_10B](ai-research/PHASE_10B.md)） |
+| Phase 10C | 生产搜索优化与引擎 A/B | ✅ 完成；固定深度 **2.27–2.30×**、真实 hard 对局 **1.64×**，行为逐位不变；增量评估已接入（见 [PHASE_10C](ai-research/PHASE_10C.md)） |
 
 一次只推进一个阶段，每个阶段跑完「类型检查 → 单元测试 → 生产构建 → 真实浏览器验证」再进入下一个。
 
@@ -681,11 +682,41 @@ AI 必防与取胜 + 五档实测深度节点（1/2/4/6/7 层，12→104,511 节
 
 **明确未做**：未改 `negamax` / 五档参数 / `bench/baseline.json`；未把增量评估接进搜索。
 
+## Phase 10C · 生产搜索优化与引擎 A/B ✅
+
+**定位**：只做行为等价的性能优化；是否接入增量评估由 Phase 10B 的数据与验收条件决定。
+**不改搜索策略、难度参数、剪枝宽度与评分语义。**
+
+- **测量协议**：bundle-vs-bundle（源码经 vitest 转换后比打包产物慢约 5 倍，不能混比）；
+  12 轮严格交替取 min。控制组（同一份源码打两个包）回到 **0.978×**；
+  5 轮奇数协议会得到 1.06–1.09× 的假加速。
+- **三项优化**：行构造内联边界/索引 → 热路径直接扫窗口 → 接入增量评估。
+  固定深度合计 **2.27–2.30×**（三次运行），16 个局面的
+  着法 / 节点 / `ttHits` / 深度 / 原因全部相同。
+- **真实预算**：hard 档 `opening-adjacent` / `bench-midgame` 仍是深度 6，
+  耗时 1,324 / 986 ms → **580 / 502 ms**；`bench-double-three` 同预算多搜 86% 节点、
+  **仍未跨过第 6 层**。
+- **对局**：medium d4 固定深度 4 局、hard 真实预算 4 + 8 局，**逐手完全一致**；
+  得分率 50%（换色对称）。hard standard 的逐手配对耗时 **1.64×**。
+- **门禁**：1,195 单测、162 e2e、5 条 prod e2e、19/19 bench 断言 + 29 项不变量；
+  `bench/baseline.json` 未改。
+
+**交付**：[PHASE_10C.md](ai-research/PHASE_10C.md)、
+[SEARCH_OPTIMIZATION.md](ai-research/SEARCH_OPTIMIZATION.md)、
+[ENGINE_AB_RESULTS.md](ai-research/ENGINE_AB_RESULTS.md)；产物在 `ai-research/runs/`。
+
+**明确未做**：未做候选预筛/剪枝改动（Class B，需单独棋力实验）；未启用 VCT；
+未推送、未进入 Phase 10D。
+
 ## 长期待办
 
 以下事项已识别但尚未排期：
 
-- **排序优化**（Phase 10B 实测后的新优先级）：CPU 的 46–47% 花在着法排序上——每个节点给 56 个候选打分、只留 12–14 个。先做 `inBounds`/`idx` 快速路径与「一次扫描算双方威胁」，再评估候选预筛（需棋力 A/B）。见 [OPTIMIZATION_CANDIDATES.md](ai-research/OPTIMIZATION_CANDIDATES.md)。
-- **增量局面评估**：原型已完成（`src/ai/incrementalEvaluate.ts`，与全盘评估逐位相等、单次快 17.4–18.5×），但只占 CPU ≈31%，端到端投影 1.40×，**不够多搜一层**。等排序优化把评估占比抬上去之后再接入。
-
+- **候选预筛**（当前唯一有量级空间的方向）：排序仍占固定深度剖面的七成以上。
+  每个节点给 56 个候选全部打分、只留 12–14 个。预筛会改变哪些候选进入搜索，
+  **属于策略变更**，必须先做棋力 A/B。见 [OPTIMIZATION_CANDIDATES.md](ai-research/OPTIMIZATION_CANDIDATES.md)。
+- **滑动窗口化 `scanDirection`**：可把每方向最多 25 次棋盘读降到 9 次，
+  估算再快 1.1–1.2×；代价是同一段窗口逻辑出现第三份实现，暂不做。
+- **增量评估的固定初始化成本**（75–113 µs/次搜索）在小局面上把加速比压到 1.25×；
+  若要继续，可考虑复用实例或增量延迟初始化。
 - **Web Worker 降级**：极老的浏览器不支持 module worker 时目前没有回退路径。

@@ -118,10 +118,13 @@ chooseMove({
 
 评估是**纯局面**的，不含「轮到谁走」的信息。先手优势由搜索本身的必胜判断处理，不在评估函数里近似。
 
-> **性能提示（Phase 10B 重新测量后改写）**：单次 `evaluateBoard` 在空闲机器上约 **76 µs**
-> （归档 `7a08f32`），负载机器上 84–233 µs。但**它不是最大的那一项**：
-> CPU 剖析显示**着法排序占 46–47%**，局面评估只占 **≈31%**。
-> 详见 [`ai-research/CPU_PROFILE.md`](ai-research/CPU_PROFILE.md)。
+> **性能提示（Phase 10C 更新）**：单次 `evaluateBoard` 在空闲机器上约 **70–82 µs**。
+> **搜索的叶子取分已不再调用它**——Phase 10C 把增量评估接进了 Negamax，
+> 由落子/撤销时维护的线段分直接取分（`score(player)` 与 `evaluateBoard` 逐位相等，
+> 固定深度节点数、`ttHits`、着法全部不变）。`evaluateBoard` 现在用于提示、诊断
+> 与评估器初始化。优化后的固定深度剖析里，着法排序约占 **72%**、评估器初始化约 **4.5%**。
+> 详见 [`ai-research/PHASE_10C.md`](ai-research/PHASE_10C.md) 与
+> [`ai-research/SEARCH_OPTIMIZATION.md`](ai-research/SEARCH_OPTIMIZATION.md)。
 
 ## 搜索
 
@@ -150,7 +153,10 @@ Negamax + Alpha-Beta，配合迭代加深：
 在根节点围绕上一层分数开 ±20,000 的窗口、失败则开全窗重搜，节点数只降约 10%，
 **五个局面上的完成深度一个都没变**，专家档仍然停在 6 层。收益这么小，却要在根节点加一条
 「窄窗失败 → 全窗重搜」的分支，而这条分支连一条能触发它的测试都构造不出来。按
-「最小代码、不做没验证的复杂度」把它撤掉了。真正能推动深度的是下面的增量评估。
+「最小代码、不做没验证的复杂度」把它撤掉了。Phase 10C 改为接入增量评估：
+`searchBoard` 为每次搜索建一个评估器，`negamax` / `searchRoot` 的落子与撤销紧邻调用
+`place` / `undo`，叶子直接取 `score(player)`。固定深度合计 **2.27–2.30×**，
+真实 `hard` 对局逐手配对 **1.64×**，节点数与深度不变。
 
 ### 算杀（VCF / VCT）
 
@@ -305,11 +311,12 @@ Negamax + Alpha-Beta，配合迭代加深：
 
 对照上表：专家档一次 2.6 秒的搜索约 2 万节点，若其中大部分是叶子，光局面评估就占一秒以上。
 
-**但 Phase 10B 的采样改变了优化的优先级**：评估只占 ≈31%，排序占 46–47%。
-增量评估（只重算受落子影响的那几条线段）已经证明**与全盘评估逐位相等**、
-单次快 17–21 倍，投影到整次搜索却只有 1.40 倍——不够多搜一层。
-所以下一步先动排序，再回头看评估。详见
-[`ai-research/PHASE_10B.md`](ai-research/PHASE_10B.md)。
+**Phase 10B 的采样改变了优化的优先级**（评估 ≈31%、排序 46–47%），Phase 10C 据此先做排序、
+再接入增量评估：叶子取分不再扫全盘，固定深度合计 **2.27–2.30×**。
+真实预算下 hard 档的 `opening-adjacent` 与 `bench-midgame` 仍完成深度 6，
+但耗时从 1,324 / 986 ms 降到 **580 / 502 ms**；唯一紧预算局面 `bench-double-three`
+在同样 1.6 秒里节点数从 10,357 涨到 19,261，**仍未跨过第 6 层**。
+详见 [`ai-research/PHASE_10C.md`](ai-research/PHASE_10C.md)。
 
 ### 算杀（VCF）
 
@@ -351,29 +358,36 @@ Negamax + Alpha-Beta，配合迭代加深：
 2. **不算 VCT**（连续活三的杀）。实现与测试都在 `threat.ts` / `threat.test.ts`，默认关闭。代价实测为 VCF 的 **38–520 倍**，而在测过的每个局面上 VCF 都给出了同样的结论——账算不过来。结果是「先做活三逼出弱点、再用冲四收掉」这类需要两层活三的杀型找不到。
 3. **算杀的活三链只允许一层**（`MAX_THREE_LAYERS = 1`），更长的活三链是有意保留的漏杀。
 4. **局面评估不识别跨方向的组合形状**。单点分析有双四/四三/双活三的加成，但整盘评估是按线段独立累加的，看不到它们的联动。
-5. **真正的瓶颈是着法排序，不是评估**（Phase 10B 实测纠正）。
-   CPU 剖析：排序 **46–47%**、评估 **≈31%**、递归 ~3%、候选生成 ~2%、置换表与算杀 <0.2%、GC <1%。
-   排序之所以贵：**每个内部节点给 56 个候选全部打分，只留宽度 12–14 个**，
+5. **真正的瓶颈仍是着法排序**（Phase 10B 测量、Phase 10C 优化后依旧）。
+   Phase 10C 的固定深度剖析：`scanDirection` **38.5%**、`analyzeFast` 8.5%、
+   `inBounds` + `idx` 10.9%、`threatScoreWith` 4.0%、其余排序辅助约 10%，
+   合计 **七成以上**；评估器初始化降到约 4.5%。
+   排序之贵在于**每个内部节点给 56 个候选全部打分，只留宽度 12–14 个**，
    约 78% 的计算被丢掉；每个候选还要算两次 `analyzeFast`（我方 / 对方）。
-   增量评估原型已把叶子评估降到 3.7–4.4 µs（全盘 68–77 µs，17–21 倍），
-   但投影到整次搜索只有 1.40 倍，**不足以多搜一层**（每加一层要 2.3–4.7 倍节点）。
-   下一步的排序见 [`ai-research/OPTIMIZATION_CANDIDATES.md`](ai-research/OPTIMIZATION_CANDIDATES.md)。
+   Phase 10C 已把每节点的排序成本压低（固定深度合计 2.27–2.30×），
+   再往下压需要**候选预筛**——那会改变哪些候选进入搜索，是一次策略变更，
+   必须单独做棋力实验。见 [`ai-research/OPTIMIZATION_CANDIDATES.md`](ai-research/OPTIMIZATION_CANDIDATES.md)。
 6. **提示的整轮棋型分析只值约 0.53 ms**（`buildSuggestions`，44 个候选点、攻防各一次；见上方实测表）。这一条原先写的是「比搜索贵得多」——那是错的，差了三四个数量级。单次 `analyzePoint` 与 `analyzeFast` 的比是约 3.4 倍。
 
 ## 测试锚点
 
 `src/ai/search.test.ts` —— 必胜与必防、战术判断、开局与边界、时间预算、置换表与注入时钟（含必胜分值不随深度漂移）、提示候选与紧急度、难度差异。
 
-`src/ai/patterns.test.ts` —— 窗口枚举的棋型判定，含隔子型（`mm.mm` 能看见）与贴边棋型（贴边的四不是活四）。
+`src/ai/search.equivalence.test.ts` —— **纯性能优化的行为红线**：四个固定深度局面的
+着法 / 分值 / 节点数 / `ttHits` / 深度 / 原因快照。优化若不改策略，这些数字一个都不能变。
+
+`src/ai/patterns.test.ts` —— 窗口枚举的棋型判定，含隔子型（`mm.mm` 能看见）与贴边棋型（贴边的四不是活四）；
+另有 `analyzeFast`（直扫窗口）与 `analyzeDirection`（数组版）在 20 个种子 × 60 手随机棋局上的逐项差分。
 
 `src/ai/evaluate.test.ts` —— 空盘为 0、成五最高、活四高于冲四、活三高于眠三、两端堵死不计分、黑白互换相等、对角线活三与横向同分。
 
 `src/ai/incrementalEvaluate.test.ts` —— **增量评估与全盘评估逐位相等**：基础棋型、双方重叠、
 贴边、长连、连续落子 / 撤销、随机差分（固定种子、失败时打印完整手顺）、含五连终局。
 
-`bench/profile/` —— Phase 10B 的剖析脚本（`yarn profile`）：固定深度与真实预算两种 CPU 采样、
-热点函数单价、增量评估生命周期与内存。结果解读见
-[`ai-research/CPU_PROFILE.md`](ai-research/CPU_PROFILE.md)。
+`bench/profile/` —— 剖析与 A/B 脚本（`yarn profile`）：固定深度与真实预算两种 CPU 采样、
+热点函数单价、增量评估生命周期与内存、旧版 vs 新版的 bundle-vs-bundle 计时。
+结果解读见 [`ai-research/CPU_PROFILE.md`](ai-research/CPU_PROFILE.md) 与
+[`ai-research/SEARCH_OPTIMIZATION.md`](ai-research/SEARCH_OPTIMIZATION.md)。
 
 `src/ai/threat.test.ts` —— VCF 与 VCT 的命中与**不误报**（对手能反先成五时不算杀）、`maxPlies` 用尽即收手、超时绝不返回未验证的着法。
 

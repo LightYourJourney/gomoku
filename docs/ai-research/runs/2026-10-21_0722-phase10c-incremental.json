@@ -1,0 +1,130 @@
+{
+  "measuredAt": "2026-10-21T07:21:57.971Z",
+  "node": "v26.12.0",
+  "platform": "darwin arm64",
+  "loadAverage": 6.98046875,
+  "sink": 1070092800,
+  "lifecycle": [
+    {
+      "board": "opening-adjacent",
+      "emptyCells": 24,
+      "fullUs": 72.81937499999998,
+      "initUs": 73.24916999999999,
+      "scoreUs": 0.02184180000000424,
+      "lifecycleUs": 4.218312500000025,
+      "guardedUs": 4.213103999999987,
+      "tryFinallyUs": -0.005208500000037475,
+      "ratio": 17.26267909264654
+    },
+    {
+      "board": "bench-midgame",
+      "emptyCells": 24,
+      "fullUs": 68.39124999999996,
+      "initUs": 71.74874999999929,
+      "scoreUs": 0.02153319999999894,
+      "lifecycleUs": 3.648958499999992,
+      "guardedUs": 3.6421039999999607,
+      "tryFinallyUs": -0.006854500000031294,
+      "ratio": 18.742676848750158
+    },
+    {
+      "board": "quiet-midgame",
+      "emptyCells": 24,
+      "fullUs": 66.7595799999998,
+      "initUs": 69.29458000000068,
+      "scoreUs": 0.02098320000000058,
+      "lifecycleUs": 3.6372709999999984,
+      "guardedUs": 3.5526460000000384,
+      "tryFinallyUs": -0.08462499999995998,
+      "ratio": 18.354304642134124
+    },
+    {
+      "board": "bench-double-three",
+      "emptyCells": 24,
+      "fullUs": 70.74125000000095,
+      "initUs": 72.51042000000098,
+      "scoreUs": 0.021075000000018915,
+      "lifecycleUs": 3.832520999999929,
+      "guardedUs": 3.8614374999999654,
+      "tryFinallyUs": 0.02891650000003665,
+      "ratio": 18.458150653317297
+    },
+    {
+      "board": "nearly-full",
+      "emptyCells": 8,
+      "fullUs": 8.54270999999926,
+      "initUs": 12.624580000001515,
+      "scoreUs": 0.02074999999999818,
+      "lifecycleUs": 1.0249585000000252,
+      "guardedUs": 1.0135834999999815,
+      "tryFinallyUs": -0.011375000000043656,
+      "ratio": 8.33468867275997
+    }
+  ],
+  "stack": [
+    {
+      "board": "opening-adjacent",
+      "placeUs": 7.141981481483812,
+      "undoUs": 0.05519444444088448
+    },
+    {
+      "board": "bench-midgame",
+      "placeUs": 3.97956481481498,
+      "undoUs": 0.03935185185565825
+    },
+    {
+      "board": "quiet-midgame",
+      "placeUs": 3.9320925925936634,
+      "undoUs": 0.03819444444590974
+    },
+    {
+      "board": "bench-double-three",
+      "placeUs": 4.34221296296334,
+      "undoUs": 0.03858333333171147
+    },
+    {
+      "board": "nearly-full",
+      "placeUs": 1.1689861111108257,
+      "undoUs": 0.04280555555485282
+    }
+  ],
+  "trees": [
+    {
+      "board": "bench-midgame",
+      "depth": 3,
+      "width": 6,
+      "leaves": 216,
+      "fullMs": 15.131916799999999,
+      "incrementalMs": 1.4844167999999627,
+      "ratio": 10.193846364444529
+    },
+    {
+      "board": "quiet-midgame",
+      "depth": 3,
+      "width": 6,
+      "leaves": 216,
+      "fullMs": 14.788124999999946,
+      "incrementalMs": 1.600066599999991,
+      "ratio": 9.242193418698964
+    },
+    {
+      "board": "bench-double-three",
+      "depth": 2,
+      "width": 8,
+      "leaves": 64,
+      "fullMs": 4.592508200000066,
+      "incrementalMs": 0.3696331999999529,
+      "ratio": 12.424501370549644
+    }
+  ],
+  "memory": [
+    {
+      "label": "createIncrementalEvaluator（棋盘副本 + 144 个线分）",
+      "instances": 5000,
+      "heapDeltaBytes": 8017768,
+      "externalDeltaBytes": 6786922,
+      "bytesPerInstance": 2960.938,
+      "gcAvailable": true
+    }
+  ]
+}

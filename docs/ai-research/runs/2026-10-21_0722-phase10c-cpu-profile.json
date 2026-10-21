@@ -1,0 +1,565 @@
+{
+  "sampleIntervalUs": 100,
+  "sampledAt": "2026-10-21T07:21:50.489Z",
+  "node": "v26.12.0",
+  "platform": "darwin arm64",
+  "cpuCount": 8,
+  "loadAverage": 6.95458984375,
+  "tasks": [
+    {
+      "id": "opening-adjacent",
+      "category": "开局",
+      "kind": "search",
+      "depth": 4,
+      "candidates": 28,
+      "nodes": 1122,
+      "depthReached": 4,
+      "reason": "search",
+      "elapsedMs": 49.52029199999993,
+      "synthetic": false
+    },
+    {
+      "id": "opening-diagonal",
+      "category": "开局",
+      "kind": "search",
+      "depth": 4,
+      "candidates": 32,
+      "nodes": 1125,
+      "depthReached": 4,
+      "reason": "search",
+      "elapsedMs": 50.13904099999991,
+      "synthetic": false
+    },
+    {
+      "id": "opening-knight",
+      "category": "开局",
+      "kind": "search",
+      "depth": 4,
+      "candidates": 32,
+      "nodes": 1239,
+      "depthReached": 4,
+      "reason": "search",
+      "elapsedMs": 57.08375000000001,
+      "synthetic": false
+    },
+    {
+      "id": "bench-opening",
+      "category": "开局",
+      "kind": "search",
+      "depth": 4,
+      "candidates": 28,
+      "nodes": 989,
+      "depthReached": 4,
+      "reason": "search",
+      "elapsedMs": 45.63179200000013,
+      "synthetic": false
+    },
+    {
+      "id": "bench-midgame",
+      "category": "安静中盘",
+      "kind": "search",
+      "depth": 4,
+      "candidates": 44,
+      "nodes": 786,
+      "depthReached": 4,
+      "reason": "search",
+      "elapsedMs": 45.27358400000003,
+      "synthetic": false
+    },
+    {
+      "id": "bench-midgame",
+      "category": "安静中盘",
+      "kind": "search",
+      "depth": 5,
+      "candidates": 44,
+      "nodes": 1788,
+      "depthReached": 5,
+      "reason": "search",
+      "elapsedMs": 125.87475000000018,
+      "synthetic": false
+    },
+    {
+      "id": "quiet-midgame",
+      "category": "高候选数中盘",
+      "kind": "search",
+      "depth": 4,
+      "candidates": 81,
+      "nodes": 890,
+      "depthReached": 4,
+      "reason": "search",
+      "elapsedMs": 85.90066699999988,
+      "synthetic": false
+    },
+    {
+      "id": "quiet-midgame",
+      "category": "高候选数中盘",
+      "kind": "search",
+      "depth": 5,
+      "candidates": 81,
+      "nodes": 3962,
+      "depthReached": 5,
+      "reason": "search",
+      "elapsedMs": 292.9622079999999,
+      "synthetic": false
+    },
+    {
+      "id": "bench-double-three",
+      "category": "高候选数中盘",
+      "kind": "search",
+      "depth": 4,
+      "candidates": 62,
+      "nodes": 1117,
+      "depthReached": 4,
+      "reason": "search",
+      "elapsedMs": 82.19825000000037,
+      "synthetic": false
+    },
+    {
+      "id": "bench-double-three",
+      "category": "高候选数中盘",
+      "kind": "search",
+      "depth": 5,
+      "candidates": 62,
+      "nodes": 5282,
+      "depthReached": 5,
+      "reason": "search",
+      "elapsedMs": 337.391666,
+      "synthetic": false
+    },
+    {
+      "id": "double-threat",
+      "category": "复杂攻防",
+      "kind": "search",
+      "depth": 4,
+      "candidates": 40,
+      "nodes": 2,
+      "depthReached": 0,
+      "reason": "win",
+      "elapsedMs": 0.4465829999999187,
+      "synthetic": true
+    },
+    {
+      "id": "threat-not-win",
+      "category": "复杂攻防",
+      "kind": "search",
+      "depth": 4,
+      "candidates": 51,
+      "nodes": 0,
+      "depthReached": 0,
+      "reason": "block",
+      "elapsedMs": 0.1672920000000886,
+      "synthetic": false
+    },
+    {
+      "id": "real-game-ply6",
+      "category": "复杂攻防",
+      "kind": "search",
+      "depth": 4,
+      "candidates": 46,
+      "nodes": 1153,
+      "depthReached": 4,
+      "reason": "search",
+      "elapsedMs": 71.87908299999981,
+      "synthetic": false
+    },
+    {
+      "id": "endgame-eight-holes",
+      "category": "接近满盘",
+      "kind": "search",
+      "depth": 4,
+      "candidates": 8,
+      "nodes": 265,
+      "depthReached": 4,
+      "reason": "search",
+      "elapsedMs": 23.424875000000156,
+      "synthetic": true
+    },
+    {
+      "id": "nearly-full",
+      "category": "接近满盘",
+      "kind": "search",
+      "depth": 4,
+      "candidates": 8,
+      "nodes": 265,
+      "depthReached": 4,
+      "reason": "search",
+      "elapsedMs": 23.175500000000284,
+      "synthetic": true
+    },
+    {
+      "id": "open-three",
+      "category": "VCF 有杀",
+      "kind": "threat",
+      "depth": null,
+      "candidates": 32,
+      "nodes": 4,
+      "depthReached": 0,
+      "reason": "win(3)",
+      "elapsedMs": 0.6022499999999127,
+      "synthetic": true
+    },
+    {
+      "id": "bench-vcf-win",
+      "category": "VCF 有杀",
+      "kind": "threat",
+      "depth": null,
+      "candidates": 32,
+      "nodes": 4,
+      "depthReached": 0,
+      "reason": "win(3)",
+      "elapsedMs": 0.4701249999998254,
+      "synthetic": true
+    },
+    {
+      "id": "bench-vcf-counters",
+      "category": "VCF 无杀",
+      "kind": "threat",
+      "depth": null,
+      "candidates": 68,
+      "nodes": 1,
+      "depthReached": 0,
+      "reason": "no-win",
+      "elapsedMs": 0.31691700000010314,
+      "synthetic": true
+    },
+    {
+      "id": "bench-vcf-quiet",
+      "category": "VCF 无杀",
+      "kind": "threat",
+      "depth": null,
+      "candidates": 33,
+      "nodes": 1,
+      "depthReached": 0,
+      "reason": "no-win",
+      "elapsedMs": 0.0845830000002934,
+      "synthetic": true
+    }
+  ],
+  "totals": {
+    "totalUs": 1314817,
+    "busyUs": 1314817,
+    "functions": [
+      {
+        "name": "scanDirection",
+        "url": "patterns.ts",
+        "selfUs": 506406,
+        "share": 0.3851532190411289,
+        "hits": 3284
+      },
+      {
+        "name": "analyzeFast",
+        "url": "patterns.ts",
+        "selfUs": 111724,
+        "share": 0.08497304187578957,
+        "hits": 730
+      },
+      {
+        "name": "(匿名)",
+        "url": "types.ts",
+        "selfUs": 97922,
+        "share": 0.07447576354732255,
+        "hits": 640
+      },
+      {
+        "name": "inBounds",
+        "url": "board.ts",
+        "selfUs": 93390,
+        "share": 0.07102889603648264,
+        "hits": 610
+      },
+      {
+        "name": "threatScoreWith",
+        "url": "patterns.ts",
+        "selfUs": 52165,
+        "share": 0.03967472279412268,
+        "hits": 339
+      },
+      {
+        "name": "scoreSegment",
+        "url": "evaluate.ts",
+        "selfUs": 50816,
+        "share": 0.03864872449930294,
+        "hits": 331
+      },
+      {
+        "name": "idx",
+        "url": "board.ts",
+        "selfUs": 49929,
+        "share": 0.03797410590219019,
+        "hits": 326
+      },
+      {
+        "name": "candidateMoves",
+        "url": "candidates.ts",
+        "selfUs": 45670,
+        "share": 0.034734871849086225,
+        "hits": 298
+      },
+      {
+        "name": "(匿名)",
+        "url": "board.ts",
+        "selfUs": 42141,
+        "share": 0.032050848140843934,
+        "hits": 275
+      },
+      {
+        "name": "isEmptyAt",
+        "url": "patterns.ts",
+        "selfUs": 39744,
+        "share": 0.030227780748195376,
+        "hits": 260
+      },
+      {
+        "name": "isOwn",
+        "url": "patterns.ts",
+        "selfUs": 38838,
+        "share": 0.029538711470873894,
+        "hits": 252
+      },
+      {
+        "name": "negamax",
+        "url": "search.ts",
+        "selfUs": 30106,
+        "share": 0.022897483071788696,
+        "hits": 196
+      },
+      {
+        "name": "analyzeRuns",
+        "url": "patterns.ts",
+        "selfUs": 27345,
+        "share": 0.020797571068825547,
+        "hits": 178
+      },
+      {
+        "name": "post",
+        "url": "node:inspector",
+        "selfUs": 22096,
+        "share": 0.01680538052063519,
+        "hits": 1
+      },
+      {
+        "name": "orderMoves",
+        "url": "search.ts",
+        "selfUs": 20768,
+        "share": 0.015795354030256684,
+        "hits": 136
+      },
+      {
+        "name": "place",
+        "url": "incrementalEvaluate.ts",
+        "selfUs": 8866,
+        "share": 0.006743143722662545,
+        "hits": 58
+      },
+      {
+        "name": "scoreLine",
+        "url": "evaluate.ts",
+        "selfUs": 7520,
+        "share": 0.005719427114191556,
+        "hits": 49
+      },
+      {
+        "name": "(匿名)",
+        "url": "search.ts",
+        "selfUs": 3968,
+        "share": 0.003017910477275545,
+        "hits": 26
+      },
+      {
+        "name": "(匿名)",
+        "url": "metrics.ts",
+        "selfUs": 3202,
+        "share": 0.002435319896228905,
+        "hits": 21
+      },
+      {
+        "name": "shapeScore",
+        "url": "patterns.ts",
+        "selfUs": 1377,
+        "share": 0.0010472940340747038,
+        "hits": 9
+      },
+      {
+        "name": "(匿名)",
+        "url": "patterns.ts",
+        "selfUs": 1232,
+        "share": 0.0009370125272186167,
+        "hits": 8
+      },
+      {
+        "name": "toggleStone",
+        "url": "transposition.ts",
+        "selfUs": 768,
+        "share": 0.0005841117052791377,
+        "hits": 5
+      },
+      {
+        "name": "isKiller",
+        "url": "search.ts",
+        "selfUs": 765,
+        "share": 0.0005818300189303911,
+        "hits": 5
+      },
+      {
+        "name": "store",
+        "url": "transposition.ts",
+        "selfUs": 615,
+        "share": 0.0004677457014930595,
+        "hits": 4
+      },
+      {
+        "name": "probe",
+        "url": "transposition.ts",
+        "selfUs": 615,
+        "share": 0.0004677457014930595,
+        "hits": 4
+      },
+      {
+        "name": "searchRoot",
+        "url": "search.ts",
+        "selfUs": 462,
+        "share": 0.0003513796977069813,
+        "hits": 3
+      },
+      {
+        "name": "undo",
+        "url": "incrementalEvaluate.ts",
+        "selfUs": 454,
+        "share": 0.00034529520077699027,
+        "hits": 3
+      },
+      {
+        "name": "countCall",
+        "url": "metrics.ts",
+        "selfUs": 334,
+        "share": 0.000254027746827125,
+        "hits": 2
+      },
+      {
+        "name": "frameAt",
+        "url": "incrementalEvaluate.ts",
+        "selfUs": 322,
+        "share": 0.0002449010014321385,
+        "hits": 2
+      },
+      {
+        "name": "createShapeCount",
+        "url": "patterns.ts",
+        "selfUs": 307,
+        "share": 0.0002334925696884053,
+        "hits": 2
+      },
+      {
+        "name": "toggleTurn",
+        "url": "transposition.ts",
+        "selfUs": 305,
+        "share": 0.00023197144545590754,
+        "hits": 2
+      },
+      {
+        "name": "opponentOf",
+        "url": "board.ts",
+        "selfUs": 303,
+        "share": 0.0002304503212234098,
+        "hits": 2
+      },
+      {
+        "name": "(匿名)",
+        "url": "evaluate.ts",
+        "selfUs": 301,
+        "share": 0.00022892919699091206,
+        "hits": 2
+      },
+      {
+        "name": "scoreThreeRuns",
+        "url": "evaluate.ts",
+        "selfUs": 193,
+        "share": 0.0001467884884360333,
+        "hits": 1
+      },
+      {
+        "name": "(匿名)",
+        "url": "candidates.ts",
+        "selfUs": 156,
+        "share": 0.00011864769013482485,
+        "hits": 1
+      },
+      {
+        "name": "slotOf",
+        "url": "transposition.ts",
+        "selfUs": 156,
+        "share": 0.00011864769013482485,
+        "hits": 1
+      },
+      {
+        "name": "winningPointsNow",
+        "url": "threat.ts",
+        "selfUs": 154,
+        "share": 0.00011712656590232709,
+        "hits": 1
+      },
+      {
+        "name": "runTask",
+        "url": "cpu.profile.ts",
+        "selfUs": 154,
+        "share": 0.00011712656590232709,
+        "hits": 1
+      },
+      {
+        "name": "(匿名)",
+        "url": "types.ts",
+        "selfUs": 153,
+        "share": 0.00011636600378607821,
+        "hits": 1
+      },
+      {
+        "name": "searchForcing",
+        "url": "threat.ts",
+        "selfUs": 153,
+        "share": 0.00011636600378607821,
+        "hits": 1
+      },
+      {
+        "name": "processTicksAndRejections",
+        "url": "task_queues",
+        "selfUs": 152,
+        "share": 0.00011560544166982933,
+        "hits": 1
+      },
+      {
+        "name": "recordKiller",
+        "url": "search.ts",
+        "selfUs": 151,
+        "share": 0.00011484487955358045,
+        "hits": 1
+      }
+    ],
+    "gcUs": 5015,
+    "idleUs": 0,
+    "programUs": 47604,
+    "anonymousUs": 149075
+  },
+  "calls": {
+    "evaluateBoard": 0,
+    "candidateMoves": 5474,
+    "orderMoves": 5355,
+    "orderCandidates": 300158,
+    "analyzeFast": 603887,
+    "threatScoreWith": 600100,
+    "ttProbe": 19355,
+    "ttStore": 4635,
+    "forcedWin": 18
+  },
+  "derived": {
+    "searchNodes": 19983,
+    "timeoutNodes": 0,
+    "evaluateCalls": 0,
+    "evaluationsPerNode": 0,
+    "candidatesPerOrdering": 56.05191409897292,
+    "analyzeFastPerCandidate": 2.0118970675444268,
+    "evaluateShare": 0,
+    "gcShare": 0.0038142190129881195,
+    "anonymousShare": 0.11338079747980137,
+    "countedInSeparatePass": true
+  }
+}
