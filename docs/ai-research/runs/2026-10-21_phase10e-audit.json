@@ -1,0 +1,217 @@
+{
+  "phase": "10E",
+  "auditedAt": "2026-10-21",
+  "head": "8160d9288c3e78ef688864a5cda3c334364e65f8",
+  "worktreeDirty": true,
+  "dirtyReason": "新增审计探针 bench/strength/audit.probe.test.ts（未提交）",
+  "environment": {
+    "hardware": "Apple M3 / 8 核 / 16 GB",
+    "os": "macOS 26.6.2（Darwin 25.6.0）",
+    "node": "v26.12.0",
+    "yarn": "1.22.22",
+    "engineVersion": "search-1"
+  },
+  "gates": {
+    "lint": "pass",
+    "typecheck": "pass",
+    "unit": { "files": 75, "tests": 1215, "passed": 1215, "skipped": 0, "todo": 0 },
+    "build": {
+      "command": "yarn build",
+      "assets": {
+        "index.html": "dist/index.html",
+        "main": "assets/index-maCHdY9Y.js",
+        "css": "assets/index-DcvwGzkf.css",
+        "worker": "assets/worker-B6Ge9L6W.js"
+      },
+      "sizes": {
+        "mainRaw": 343278,
+        "mainGzip": 108880,
+        "cssRaw": 35177,
+        "workerRaw": 13994
+      }
+    },
+    "gates": {
+      "cycles": "0",
+      "knip": "pass",
+      "jscpdClones": 0,
+      "testRatchet": { "unit": 1215, "e2e": 162, "pending": 0, "todo": 0 }
+    },
+    "benchCheck": {
+      "gatedRows": "19/19",
+      "skippedRows": 6,
+      "invariants": 29,
+      "skipped": [
+        "hard|开局",
+        "hard|中盘",
+        "hard|双三",
+        "expert|开局",
+        "expert|中盘",
+        "expert|双三"
+      ],
+      "note": "跳过与否由冻结的 baseline.gated 决定，不由当次耗时决定；6 行均为基线 gated=false。"
+    },
+    "e2e": { "tests": 162, "passed": 162, "durationSeconds": 318.68 },
+    "e2eProd": { "tests": 5, "passed": 5, "durationSeconds": 17.64 },
+    "e2eRemoteProduction": {
+      "base": "https://gomoku-lab.pages.dev",
+      "tests": 162,
+      "passed": 162,
+      "durationSeconds": 260,
+      "note": "线上仍是 Phase 09B 旧构建；此运行证明旧构建与完整 e2e 套件均健康。"
+    },
+    "coverageRatchet": { "states": 21, "rows": 3084, "result": "pass" },
+    "ci": {
+      "workflow": "quality",
+      "runId": 39588812185,
+      "headSha": "8160d9288c3e78ef688864a5cda3c334364e65f8",
+      "conclusion": "success",
+      "duration": "7m3s"
+    }
+  },
+  "engineAB": {
+    "fixedDepth": {
+      "depth": 4,
+      "rounds": 12,
+      "positions": 16,
+      "oldMs": 268.56041700000105,
+      "newMs": 117.62624999999935,
+      "ratio": 2.2831673797303114,
+      "mismatches": 0,
+      "loadAverage1m": 12.58740234375,
+      "measuredAt": "2026-10-21T11:24:04.819Z",
+      "note": "同一会话内 12 轮严格交替、每边取 min；16 个局面的着法/节点/ttHits/深度全部一致。"
+    },
+    "realBudget": {
+      "difficulty": "hard",
+      "budgetMs": 1600,
+      "rounds": 3,
+      "rows": [
+        { "id": "opening-adjacent", "oldMs": 310.2735420000008, "newMs": 132.26150000000052, "nodes": 10177, "depth": 6, "reason": "search" },
+        { "id": "bench-midgame", "oldMs": 188.54600000000028, "newMs": 97.73783300000105, "nodes": 7202, "depth": 6, "reason": "search" },
+        { "id": "bench-double-three", "oldMs": 815.3351249999996, "newMs": 331.6920420000006, "nodes": 19289, "depth": 6, "reason": "search" }
+      ]
+    },
+    "gameMatch": {
+      "mode": "smoke",
+      "difficulty": "hard",
+      "budgetMs": 1600,
+      "games": 4,
+      "scored": 2,
+      "moveLimit": 2,
+      "aWins": 1,
+      "bWins": 1,
+      "draws": 0,
+      "aScoreRate": 0.5,
+      "ci95": [0.5, 0.5],
+      "pairedPlies": 107,
+      "pairedMetricsIdentical": true,
+      "aTotalMs": 20259,
+      "bTotalMs": 30843,
+      "wallClockRatio": 1.52,
+      "loadAverage1m": 24.46,
+      "report": "bench/strength/results/2026-10-21_11-54-40-443-hard-phase10d-base_vs_hard-base-6e16ed0.json",
+      "note": "A=当前源码包，B=Phase 10C 前基线包；两局同开局换色，棋谱逐手相同，仅执行者互换。"
+    }
+  },
+  "fiveTierSmoke": [
+    { "a": "beginner", "b": "easy", "games": 4, "scored": 4, "aScoreRate": 0.5, "aWin": 2, "bWin": 2, "moveLimit": 0, "loadAverage1m": 15.87 },
+    { "a": "easy", "b": "medium", "games": 4, "scored": 3, "aScoreRate": 0.3333333333333333, "aWin": 1, "bWin": 2, "moveLimit": 1, "loadAverage1m": 15.24 },
+    { "a": "medium", "b": "hard", "games": 4, "scored": 3, "aScoreRate": 0, "aWin": 0, "bWin": 3, "moveLimit": 1, "loadAverage1m": 14.97 },
+    { "a": "hard", "b": "expert", "games": 4, "scored": 3, "aScoreRate": 0.3333333333333333, "aWin": 1, "bWin": 2, "moveLimit": 1, "loadAverage1m": 9.48 }
+  ],
+  "tactics": {
+    "run": "bench/strength/results/2026-10-21_11-15-18-153-tactics.json",
+    "loadAverage1m": 95.0078125,
+    "tiers": [
+      { "difficulty": "beginner", "cases": 16, "pass": 15, "diagnostic": 1 },
+      { "difficulty": "easy", "cases": 16, "pass": 15, "diagnostic": 1 },
+      { "difficulty": "medium", "cases": 16, "pass": 15, "diagnostic": 1 },
+      { "difficulty": "hard", "cases": 16, "pass": 15, "diagnostic": 1 },
+      { "difficulty": "expert", "cases": 16, "pass": 15, "diagnostic": 1 }
+    ],
+    "tightBudget": { "budgetMs": 1, "tiers": 5, "allLegal": true }
+  },
+  "browserAcceptance": {
+    "build": "dist（vite preview，生产构建）",
+    "chromium": "Chrome via Playwright",
+    "tiers": [
+      { "tier": "入门", "elapsedMs": 109, "depth": 1, "nodes": 12, "status": "轮到你落子" },
+      { "tier": "初级", "elapsedMs": 51, "depth": 2, "nodes": 59, "status": "轮到你落子" },
+      { "tier": "中级", "elapsedMs": 53, "depth": 4, "nodes": 656, "status": "轮到你落子" },
+      { "tier": "高级", "elapsedMs": 1045, "depth": 6, "nodes": 20952, "status": "轮到你落子" },
+      { "tier": "专家", "elapsedMs": 2644, "depth": 6, "nodes": 60757, "status": "轮到你落子" }
+    ],
+    "hintSpam": { "clicks": 8, "stones": 1, "marks": 3, "status": "轮到白棋" },
+    "undoDuringThink": { "stones": 0, "status": "轮到你落子", "dwellMs": 3800 },
+    "restartDuringThink": { "stones": 0, "status": "轮到你落子", "dwellMs": 3800 },
+    "hintInvalidation": { "marks": 0 },
+    "analysisSwitch": { "records": 2, "counterAfterSwitch": "0 / 9", "progress": "已完成 9 / 9 手", "verdictCards": 2 },
+    "workerEvents": 10,
+    "workerPerPageLoad": 1,
+    "consoleErrors": 0,
+    "pageErrors": 0
+  },
+  "expertTimeout": {
+    "moves": [
+      { "move": 1, "elapsedMs": 2666, "warning": true, "depth": 6, "reason": "超时回退", "confidence": "启发式" },
+      { "move": 2, "elapsedMs": 2658, "warning": true, "depth": 7, "reason": "超时回退", "confidence": "启发式" },
+      { "move": 3, "elapsedMs": 2659, "warning": true, "depth": 7, "reason": "超时回退", "confidence": "启发式" },
+      { "move": 4, "elapsedMs": 81, "warning": false, "depth": 0, "reason": "算到必胜", "confidence": "精确" }
+    ],
+    "consoleErrors": 0
+  },
+  "longRunMemory": {
+    "cycles": 25,
+    "cycle": "落子 → AI 应手 → 求提示 → 收起提示 → 悔棋",
+    "pageHeapUsedBytes": [3226200, 4465804, 4533584, 4662280, 4727560, 4760116],
+    "workerHeapUsedBytes": null,
+    "workerHeapNote": "Worker 上下文无 performance.memory，未取得 Worker 堆读数。",
+    "workers": 1,
+    "errors": 0
+  },
+  "renderProbe": {
+    "ttfbMs": 5,
+    "appWorkMs": 51,
+    "fcpMs": 144,
+    "lcpMs": 144,
+    "moveMedianMs": 0.1,
+    "moveMaxMs": 0.3,
+    "domElements": 676,
+    "replaySeekMedianMs": 1.7,
+    "replaySeekMaxMs": 1.7,
+    "loadAverage1m": 5.95
+  },
+  "productionVsCandidate": {
+    "production": {
+      "main": { "file": "assets/index-BZwilo3W.js", "raw": 342495, "gzip": 106843, "sha256": "5d7c966c18440aee3705e1df0933d11efbd8524d7d91e46720a6d5046b3a39e6" },
+      "worker": { "file": "assets/worker-N-PbjJma.js", "raw": 11771, "gzip": 4449, "sha256": "32d0674594c728c40508bb818ba9fe478b19d3fc4444c9463ecba62467d4eecd" }
+    },
+    "candidate": {
+      "main": { "file": "assets/index-maCHdY9Y.js", "raw": 343278, "gzip": 107191, "sha256": "e2fce81d690cdd81d4fcc0c0dfdf41d2e84cd2cd0dbd05d351f0cd81bb44366e" },
+      "worker": { "file": "assets/worker-B6Ge9L6W.js", "raw": 13994, "gzip": 5394, "sha256": "696a075240aa0f825239004f3ba70d7e6f085bb9d22ebfeb3e32c238c59aa79b" }
+    },
+    "delta": {
+      "mainRaw": 783,
+      "mainRawPercent": 0.229,
+      "mainGzip": 348,
+      "mainGzipPercent": 0.326,
+      "workerRaw": 2223,
+      "workerRawPercent": 18.89,
+      "workerGzip": 945,
+      "workerGzipPercent": 21.24,
+      "css": "unchanged"
+    }
+  },
+  "auditProbe": {
+    "file": "bench/strength/audit.probe.test.ts",
+    "tests": 12,
+    "passed": 12,
+    "covers": [
+      "规则：四个方向成五、长连、非法落子、终局后落子",
+      "搜索：立即取胜、必防、深度上限、安静局面、不得虚报必胜",
+      "置换表：探测顺序无关、落子/撤销可逆",
+      "增量评估：与全盘评估逐位一致、撤销恢复",
+      "五档：固定深度下返回合法着法"
+    ]
+  }
+}

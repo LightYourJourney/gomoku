@@ -17,6 +17,7 @@
 | Phase 10B | 搜索热点分析与增量评估实验 | ✅ 完成；**排序 46–47%、评估 ≈31%**；增量评估逐位一致但端到端只有 1.40×（见 [PHASE_10B](ai-research/PHASE_10B.md)） |
 | Phase 10C | 生产搜索优化与引擎 A/B | ✅ 完成；固定深度 **2.27–2.30×**、真实 hard 对局 **1.64×**，行为逐位不变；增量评估已接入（见 [PHASE_10C](ai-research/PHASE_10C.md)） |
 | Phase 10D | 五档难度重新标定与实战体验 | ✅ 完成；梯度方向单调、无倒挂（低档合计 25–31%）；**参数全部保持不变**；专家 2600 ms 有实验支撑（见 [PHASE_10D](ai-research/PHASE_10D.md)） |
+| Phase 10E | AI 引擎独立审计与发布候选验收 | ✅ 完成；**无 P0/P1**；2.28× 与逐手等价独立复现；**有条件可以发布**（见 [PHASE_10E](ai-research/PHASE_10E_AUDIT.md)） |
 
 一次只推进一个阶段，每个阶段跑完「类型检查 → 单元测试 → 生产构建 → 真实浏览器验证」再进入下一个。
 
@@ -734,6 +735,35 @@ AI 必防与取胜 + 五档实测深度节点（1/2/4/6/7 层，12→104,511 节
 
 **明确未做**：未改 `DIFFICULTY_PARAMS`、搜索算法、Worker、store、UI 结构；
 未启用 VCT；未用验证集反复调参；未进入 Phase 10E。
+
+## Phase 10E · AI 引擎独立审计与发布候选验收 ✅
+
+**定位**：不再优化，只独立验证 10A–10D 的成果与发布候选；不部署。
+
+- **规则 / 搜索 / 增量 / 算杀**：独立探针 12 条 + 既有 66 条引擎测试全部通过；
+  没有发现确定性缺陷。
+- **性能**：固定深度 **2.28×**（历史 2.27–2.30×）、真实 hard 预算 **1.93–2.46×**；
+  新旧引擎真实对局 107 个配对手逐手指标相同（墙钟 1.52×）。
+- **棋力**：没有证据表明变强；A/B 棋谱逐手相同，五档参数未改。
+  五档独立 smoke 高档 9/13 = 69.2%，方向与 10D 一致，无倒挂。
+- **战术**：五档 15/15，仍是天花板效应；1 ms 预算下全部返回合法着法。
+- **浏览器**：五档应手、深度显示、超时回退（专家 2.66 s / 启发式警示）、
+  思考中悔棋/重开、提示连点与失效、分析中换棋谱、刷新恢复全部通过；
+  每页 1 个 Worker，25 轮长跑堆增长趋缓。
+- **门禁**：lint / typecheck / test 1,215 / build / gates / bench 19+29 /
+  e2e 162 / e2e:prod 5 / 线上旧构建 162 全绿；CI @ `8160d92` 成功。
+- **问题**：1 个 P2（A/B 复现文档的旧包构建命令指错目录）、6 个 P3；
+  全部不阻塞运行时代码。
+
+**交付**：[PHASE_10E_AUDIT.md](ai-research/PHASE_10E_AUDIT.md)、
+[FINAL_PERFORMANCE_REPORT.md](ai-research/FINAL_PERFORMANCE_REPORT.md)、
+[FINAL_STRENGTH_REPORT.md](ai-research/FINAL_STRENGTH_REPORT.md)、
+[KNOWN_LIMITATIONS.md](ai-research/KNOWN_LIMITATIONS.md)、
+[AI_ENGINE_RELEASE_READINESS.md](release/AI_ENGINE_RELEASE_READINESS.md)；
+原始数据在 `ai-research/runs/2026-10-21_phase10e-audit.json`。
+
+**结论：有条件可以发布**——先经批准部署隔离预览并跑线上 e2e，再生产发布并复验；
+发布说明保留专家等待与测量边界。**本次未部署、未改域名/环境变量/数据策略。**
 
 ## 长期待办
 

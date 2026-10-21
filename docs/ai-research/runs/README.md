@@ -71,3 +71,13 @@
    不是归档时漏抄。要逐手数据只能重跑。
 2. **`meta.resultFile` 指向产出的原始路径**（`bench/strength/results/…`，已 gitignore）。
    归档副本与该路径内容一致；原路径在本机之外不存在，这不影响报告本身的可读性。
+
+## Phase 10E 的独立审计产物
+
+| 文件 | 内容 |
+| --- | --- |
+| `2026-10-21_phase10e-audit.json` | 独立审计汇总：门禁、固定深度/真实预算 A/B、新旧对局、五档 smoke、战术、浏览器验收、超时回退、长跑内存、产物哈希与大小 |
+
+本文件是**审计汇总**，不是棋力实验；各子项的原始数据仍在
+`bench/strength/results/`（gitignore）与 `bench/profile/last-upgrade-ab.json`。
+读法与结论见 [PHASE_10E_AUDIT.md](../PHASE_10E_AUDIT.md)。
