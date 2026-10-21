@@ -204,3 +204,7 @@ bench/         引擎基准、渲染探针与棋力评测（测量脚本不进�
 ## 移动端
 
 ![移动端](docs/screenshots/mobile-light.png)
+
+## License
+
+[MIT](LICENSE) © 2026 Yanjin Li

@@ -10,7 +10,7 @@
 | --- | --- |
 | 发布版本 | `2ec65fa`（`fix(review): 两轴评审整改——复盘可靠度措辞、基准可复现与文档口径`） |
 | 当前 `main` | `46e3652`（仅文档/配置 + 线上验收配置，**运行时产物与 `2ec65fa` 逐字节相同**，已在本地重建比对） |
-| 部署平台 | Cloudflare Pages（账号 `[redacted-email]`，账号信息已脱敏） |
+| 部署平台 | Cloudflare Pages（账号信息已脱敏：账号与 Account ID 不随仓库公开，部署者可在本地 `wrangler` 配置中查看） |
 | 生产项目 | `gomoku-lab` |
 | 生产地址 | **https://gomoku-lab.pages.dev** |
 | 部署 ID | `e5a32d20-5523-4cdd-b6a8-88db36a35f1f` |
