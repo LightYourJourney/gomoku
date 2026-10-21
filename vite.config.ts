@@ -1,6 +1,59 @@
+import { execFileSync } from 'node:child_process'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
+
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
+import type { Plugin } from 'vite'
 import { configDefaults, defineConfig } from 'vitest/config'
+
+import { ENGINE_VERSION } from './src/ai/version.ts'
+
+/**
+ * 构建版本标识。三样东西必须分得清，发布记录里也分开写：
+ *
+ *   - **应用版本**（`package.json`）：面向使用者的发布号；
+ *   - **引擎版本**（`ENGINE_VERSION`）：搜索语义的版本，决策不变就不递增；
+ *   - **提交号**：这次构建到底来自哪份源码。
+ *
+ * 注入 `index.html` 的 meta，`curl` 就能核对，不必打开页面，也不在运行时访问
+ * GitHub。**不写构建时间**：那会让同一提交的两次构建产出不同哈希，而本项目
+ * 靠「重复构建哈希一致」判断产物可复现。
+ */
+const APP_VERSION = (
+  JSON.parse(readFileSync(resolve(import.meta.dirname, 'package.json'), 'utf8')) as { version: string }
+).version
+
+function readCommit(): string {
+  try {
+    const cwd = import.meta.dirname
+    const sha = execFileSync('git', ['rev-parse', 'HEAD'], { cwd, encoding: 'utf8' }).trim()
+    // 只跟踪已跟踪文件的改动：`dist/`、测试报告等都是忽略项，不该让发布产物
+    // 被标成 dirty；反过来，源码有未提交改动时必须标出来，不能冒充某个提交。
+    const dirty = execFileSync('git', ['status', '--porcelain', '--untracked-files=no'], {
+      cwd,
+      encoding: 'utf8',
+    }).trim()
+    return dirty === '' ? sha : `${sha}-dirty`
+  } catch {
+    return 'unknown'
+  }
+}
+
+const BUILD_COMMIT = readCommit()
+
+function buildInfo(): Plugin {
+  return {
+    name: 'gomoku-build-info',
+    transformIndexHtml() {
+      return [
+        { tag: 'meta', attrs: { name: 'app-version', content: APP_VERSION }, injectTo: 'head' },
+        { tag: 'meta', attrs: { name: 'engine-version', content: ENGINE_VERSION }, injectTo: 'head' },
+        { tag: 'meta', attrs: { name: 'build-commit', content: BUILD_COMMIT }, injectTo: 'head' },
+      ]
+    },
+  }
+}
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -8,7 +61,7 @@ export default defineConfig({
   // 写成构建期常量而不是运行时读 location：资源 URL 一旦生成就没法改，
   // 让产物自己知道它被放在哪，比运行时猜可靠。
   base: process.env.VITE_BASE ?? '/',
-  plugins: [react(), tailwindcss()],
+  plugins: [react(), tailwindcss(), buildInfo()],
   server: {
     /*
      * **别让「不在模块图里的文件」触发整页重载。**
