@@ -83,7 +83,7 @@ SHA-256：
 ## 6. Cloudflare Pages 配置
 
 - 项目：`gomoku-lab`，生产地址 <https://gomoku-lab.pages.dev>。
-- 预览项目：`gomoku-lab-preview`（同一账号；本次未部署）。
+- 预览项目：`gomoku-lab-preview`（同一账号；评估时未部署，Phase 10F 已部署 `b21394c5…`）。
 - 部署方式：手动 `wrangler pages deploy dist --project-name gomoku-lab --branch main`；
   未启用 Git 自动部署。
 - `_headers` 未变：CSP 含 `worker-src 'self'`；`/assets/*` 一年 immutable；
