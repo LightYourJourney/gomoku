@@ -76,8 +76,12 @@
 
 | 文件 | 内容 |
 | --- | --- |
-| `2026-10-21_phase10e-audit.json` | 独立审计汇总：门禁、固定深度/真实预算 A/B、新旧对局、五档 smoke、战术、浏览器验收、超时回退、长跑内存、产物哈希与大小 |
+| `2026-10-21_phase10e-audit.json` | 独立审计汇总：门禁、固定深度/真实预算 A/B、新旧对局、五档 smoke、战术、浏览器验收、超时回退、长跑内存、CPU 限速、产物哈希与大小 |
+| `2026-10-21_11-24-18-270-beginner-phase10d-base_vs_easy-phase10d-base.json` | 独立 smoke：入门 vs 初级 |
+| `2026-10-21_11-24-19-755-easy-phase10d-base_vs_medium-phase10d-base.json` | 独立 smoke：初级 vs 中级 |
+| `2026-10-21_11-24-22-542-medium-phase10d-base_vs_hard-phase10d-base.json` | 独立 smoke：中级 vs 高级 |
+| `2026-10-21_11-24-56-245-hard-phase10d-base_vs_expert-phase10d-base.json` | 独立 smoke：高级 vs 专家 |
+| `2026-10-21_11-54-40-443-hard-phase10d-base_vs_hard-base-6e16ed0.json` | 独立引擎 A/B 对局：当前源码包 vs 10C 前基线包 |
 
-本文件是**审计汇总**，不是棋力实验；各子项的原始数据仍在
-`bench/strength/results/`（gitignore）与 `bench/profile/last-upgrade-ab.json`。
-读法与结论见 [PHASE_10E_AUDIT.md](../PHASE_10E_AUDIT.md)。
+各文件与 `bench/strength/results/` 下的同名产物一致。读法与结论见
+[PHASE_10E_AUDIT.md](../PHASE_10E_AUDIT.md)。

@@ -2,7 +2,7 @@ import { BLACK, CELL_COUNT, WHITE, type Board, type Player } from '../core/types
 import { EVALUATION_LINES, scoreLine } from './evaluate'
 
 /**
- * 增量局面评估（Phase 10B 原型，Phase 10C 接入生产搜索）。
+ * 增量局面评估（Phase 10B 原型，Phase 10C 起接入生产搜索）。
  *
  * 搜索的 `negamax` / `searchRoot` 在每次落子与撤销时同步调用 `place` / `undo`，
  * 叶子取分走 `score(player)`。接入后的语义由三处一起钉住：
@@ -33,7 +33,7 @@ import { EVALUATION_LINES, scoreLine } from './evaluate'
  * ## 它不是什么
  *
  * - **不是新的启发式**。分值规则完全沿用现有评估，不调整任何权重。
- * - **不是生产路径**。搜索还没有接它（那要看 Phase 10B 的实测结论）。
+ * - **只服务搜索**。`evaluateBoard()` 仍保留为测试与剖析的参照实现，不是并行生产路径。
  * - **不拥有全局状态**。每个实例自带棋盘副本与撤销栈，可以同时存在多个。
  */
 

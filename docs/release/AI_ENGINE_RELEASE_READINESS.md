@@ -32,7 +32,7 @@ SHA-256：
 | --- | --- |
 | `yarn build` | ✅ 确定性输出（重复构建哈希一致） |
 | `yarn lint` / `typecheck` | ✅ |
-| `yarn test` | ✅ 1,215 / 1,215（75 文件） |
+| `yarn test` | ✅ 1,220 / 1,220（75 文件） |
 | `yarn e2e` | ✅ 162 / 162 |
 | `yarn e2e:prod`（本机 dist） | ✅ 5 / 5 |
 | `yarn gates` | ✅ 环 / 死代码 / 重复 / 测试棘轮 |

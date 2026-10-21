@@ -8,7 +8,7 @@
 
 | 限制 | 影响 | 证据 |
 | --- | --- | --- |
-| 每对 16 局、4 个开局簇 | 95% CI 宽达 0–85.7%；只能谈方向，不能谈精确胜率 | [TOURNAMENT_RESULTS.md](TOURNAMENT_RESULTS.md) §2–4 |
+| 每对合计 16 局、8 个开局；开发/验证各 4 簇 | 两套 CI 分开算，未合并重算；宽达 0–85.7%，只能谈方向 | [TOURNAMENT_RESULTS.md](TOURNAMENT_RESULTS.md) §2–4 |
 | 只有内部对手 | 没有对真人、其他引擎或 Elo 标定；不能宣称绝对棋力 | 同上 |
 | 开局固定且靠近中心 | 8 个 6 手开局不足以外推到边角/非常规开局 | [openings.ts](../../bench/strength/openings.ts) |
 | 验证集开局修正过一次 | 「验证集只跑一次」在 `three-each` 上不成立；作废报告已归档 | [TOURNAMENT_RESULTS.md](TOURNAMENT_RESULTS.md) §3.1 |

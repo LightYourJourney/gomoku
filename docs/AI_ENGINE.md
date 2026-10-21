@@ -298,7 +298,8 @@ Negamax + Alpha-Beta，配合迭代加深：
 **更新本节的流程**：跑 `yarn bench` → 把 `bench/last-run.json` 另存为
 `bench/runs/<当前提交>.json` → 更新下面的表格 → 把出处段落里的提交名一起改掉。
 
-两次运行的实测差异，逐项核对如下（`git show 7a08f32:bench/last-run.json` 与当时的工作区文件逐节 diff）：
+两次运行的实测差异，逐项核对如下（`7a08f32` 是 2026-10-21 历史重写前的标签，
+当前仓库无法解析；核对方法与原因见 [HISTORY_REWRITE.md](HISTORY_REWRITE.md)）：
 
 | 表 | `7a08f32`（归档的那份） | 另一次运行 | 差异 |
 | --- | --- | --- | --- |

@@ -1,15 +1,23 @@
+/**
+ * Phase 10E 独立审计探针。
+ *
+ * 不调用评测脚本的对局设施，也不拿引擎自己的评分当标准：规则用 `core/rules`，
+ * 强制胜用 `bench/strength/proof.ts` 的独立证明器，增量评估与全盘评估逐位比对。
+ * 这组用例的作用是给「优化没有改变语义」留一份不依赖历史报告的回归证据；
+ * 覆盖范围见 `docs/ai-research/PHASE_10E_AUDIT.md` §4。
+ */
 import { describe, expect, it } from 'vitest'
 import { createBoard, idx } from '../../src/core/board'
 import { applyMove, createGame } from '../../src/core/game'
 import { findWinLine, validateMove } from '../../src/core/rules'
 import { BLACK, WHITE, type Board } from '../../src/core/types'
-import { boardFromLines } from '../../src/test/board-fixtures'
+import { boardFromLines, nearlyFullBoard } from '../../src/test/board-fixtures'
 import { DIFFICULTY_PARAMS } from '../../src/ai/difficulty'
 import { evaluateBoard } from '../../src/ai/evaluate'
 import { createIncrementalEvaluator } from '../../src/ai/incrementalEvaluate'
 import { searchBoard, searchOptionsFor } from '../../src/ai/search'
 import { computeKey, toggleStone, toggleTurn } from '../../src/ai/transposition'
-import { proveForcedWin } from './proof'
+import { isForcedWinMove, proveForcedWin } from './proof'
 
 const CLOCK = () => 0
 const OPTIONS = {
@@ -54,6 +62,13 @@ describe('审计探针 · 规则', () => {
     for (const x of [3, 4, 5, 6, 7, 8]) board = place(board, x, 7, BLACK)
 
     expect(findWinLine(board, { x: 8, y: 7 })).toHaveLength(6)
+  })
+
+  it('边界上的五连同样判胜', () => {
+    let board = createBoard()
+    for (const x of [0, 1, 2, 3, 4]) board = place(board, x, 0, BLACK)
+
+    expect(findWinLine(board, { x: 4, y: 0 })).toHaveLength(5)
   })
 
   it('非法落子与终局落子被拒', () => {
@@ -134,6 +149,44 @@ describe('审计探针 · 搜索', () => {
       '.......W.......',
     ])
     expect(proveForcedWin(quiet, BLACK)).toBeNull()
+  })
+
+  it('活四：证明器给出的首手确实直接成五', () => {
+    const openFour = boardFromLines(['...............', '...............', '...............', '....BBBB.......'])
+    const proof = proveForcedWin(openFour, BLACK)
+    expect(proof).not.toBeNull()
+    const after = place(openFour, proof!.move.x, proof!.move.y, BLACK)
+    expect(findWinLine(after, proof!.move)).not.toBeNull()
+  })
+
+  it('冲四：只有一个成五点，白棋必须堵在那一端', () => {
+    // 黑 x=3..6 四连，x=7 被白堵住，只剩 x=2 能成五。
+    const oneEnded = boardFromLines([
+      ...Array.from({ length: 7 }, () => '...............'),
+      '...BBBBW.......',
+    ])
+    const defense = searchBoard(oneEnded, WHITE, { ...OPTIONS, maxDepth: 1 }, CLOCK)
+
+    expect(defense.reason).toBe('block')
+    expect(defense.move).toEqual({ x: 2, y: 7 })
+  })
+
+  it('双重威胁：双四局面存在五手强制胜，证明器能独立确认', () => {
+    // (7,7) 落下后，横竖各成一个四，对手只能堵一边。
+    const doubleFour = boardFromLines([
+      '...............', '...............', '...............', '...............',
+      '.......B.......', '.......B.......', '.......B.......', '....BBB.W......',
+      '.......W.......',
+    ])
+    expect(isForcedWinMove(doubleFour, BLACK, { x: 7, y: 7 }, 2)).toBe(true)
+  })
+
+  it('近满盘：只返回合法着法，不越界也不崩溃', () => {
+    const nearly = nearlyFullBoard()
+    const result = searchBoard(nearly, BLACK, { ...OPTIONS, maxDepth: 2 }, CLOCK)
+
+    expect(result.move).not.toBeNull()
+    expect(validateMove(nearly, result.move!)).toBeNull()
   })
 })
 

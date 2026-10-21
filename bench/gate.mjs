@@ -9,7 +9,7 @@
  * 所以判据分两半：
  *   1. `search` 里**余量充足**的行（基线耗时 ≤ 预算 × maxBudgetRatio，即 ≥5 倍余量）：
  *      断言 depth/nodes 与基线**完全相等**。跑成 timeout 是**响亮地红**——不是静默跳过。
- *      余量不足的行**跳过**，但逐行打印为什么跳过。
+ *      余量不足（耗时占比超过 `maxBudgetRatio`）的行**跳过**，但逐行打印为什么跳过。
  *   2. **与机器速度无关的不变量**（棋型判定、VCT 结果、调用次数）：成本为零，一律断言。
  *
  * 断言集由 `bench/baseline.json` 的 `gated` 字段决定，**不由当次运行结果决定**：
@@ -86,7 +86,7 @@ for (const [k, b] of baseRows) {
     const pct = ((c.elapsedMs / b.budgetMs) * 100).toFixed(0)
     skipped.push(
       `${k}：未被断言（基线的 gated=false）——本次耗时占预算 ${pct}%，` +
-        `余量不足 ${baseline.maxBudgetRatio * 100}% 这条线，跨机器断言会变成假红`,
+        `超过 ${baseline.maxBudgetRatio * 100}% 的断言线，跨机器断言会变成假红`,
     )
     continue
   }

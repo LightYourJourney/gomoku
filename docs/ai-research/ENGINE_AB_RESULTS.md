@@ -107,8 +107,11 @@ VCF 与候选生成都**没有**在本次优化里改动，它们在真实预算
 ## 6. 复现
 
 ```bash
-# 旧包（只需一次；产物 gitignore）
-node bench/strength/bundle-engine.mjs --root . --out bench/strength/.engines/base-6e16ed0.mjs
+# 旧包（只需一次；产物 gitignore）。**必须从 10C 之前的提交打包，不能 --root .**
+# 历史标签 6e16ed0 对应重写后的 52fe044（原因见 docs/HISTORY_REWRITE.md）。
+git worktree add /tmp/gomoku-10c-base 52fe044
+node bench/strength/bundle-engine.mjs --root /tmp/gomoku-10c-base \
+  --out bench/strength/.engines/base-6e16ed0.mjs
 
 # 新包：profile 每次会自动重打，也可手工
 node bench/strength/bundle-engine.mjs --root . --out bench/strength/.engines/ab-new.mjs
@@ -118,6 +121,9 @@ STRENGTH_A_MODULE=bench/strength/.engines/ab-new.mjs \
 STRENGTH_B=hard STRENGTH_B_MODULE=bench/strength/.engines/base-6e16ed0.mjs \
 yarn strength
 ```
+
+打包后先确认两个模块的 SHA-256 不同；相同说明旧包指错了源码树，
+跑出来的比值会接近 1.0，不能当成「优化无效」的证据。
 
 时间预算对局依赖真实时钟，**同一台机器、同一负载下才可复现**；
 换机器后请重跑，不要沿用本文的毫秒数。

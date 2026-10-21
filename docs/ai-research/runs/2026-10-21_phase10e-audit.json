@@ -14,7 +14,7 @@
   "gates": {
     "lint": "pass",
     "typecheck": "pass",
-    "unit": { "files": 75, "tests": 1215, "passed": 1215, "skipped": 0, "todo": 0 },
+    "unit": { "files": 75, "tests": 1220, "passed": 1220, "skipped": 0, "todo": 0 },
     "build": {
       "command": "yarn build",
       "assets": {
@@ -25,7 +25,7 @@
       },
       "sizes": {
         "mainRaw": 343278,
-        "mainGzip": 108880,
+        "mainGzipVite": 108880,
         "cssRaw": 35177,
         "workerRaw": 13994
       }
@@ -34,7 +34,7 @@
       "cycles": "0",
       "knip": "pass",
       "jscpdClones": 0,
-      "testRatchet": { "unit": 1215, "e2e": 162, "pending": 0, "todo": 0 }
+      "testRatchet": { "unit": 1220, "e2e": 162, "pending": 0, "todo": 0 }
     },
     "benchCheck": {
       "gatedRows": "19/19",
@@ -183,32 +183,45 @@
   },
   "productionVsCandidate": {
     "production": {
-      "main": { "file": "assets/index-BZwilo3W.js", "raw": 342495, "gzip": 106843, "sha256": "5d7c966c18440aee3705e1df0933d11efbd8524d7d91e46720a6d5046b3a39e6" },
-      "worker": { "file": "assets/worker-N-PbjJma.js", "raw": 11771, "gzip": 4449, "sha256": "32d0674594c728c40508bb818ba9fe478b19d3fc4444c9463ecba62467d4eecd" }
+      "main": { "file": "assets/index-BZwilo3W.js", "raw": 342495, "gzip9": 106843, "sha256": "5d7c966c18440aee3705e1df0933d11efbd8524d7d91e46720a6d5046b3a39e6" },
+      "worker": { "file": "assets/worker-N-PbjJma.js", "raw": 11771, "gzip9": 4449, "sha256": "32d0674594c728c40508bb818ba9fe478b19d3fc4444c9463ecba62467d4eecd" }
     },
     "candidate": {
-      "main": { "file": "assets/index-maCHdY9Y.js", "raw": 343278, "gzip": 107191, "sha256": "e2fce81d690cdd81d4fcc0c0dfdf41d2e84cd2cd0dbd05d351f0cd81bb44366e" },
-      "worker": { "file": "assets/worker-B6Ge9L6W.js", "raw": 13994, "gzip": 5394, "sha256": "696a075240aa0f825239004f3ba70d7e6f085bb9d22ebfeb3e32c238c59aa79b" }
+      "main": { "file": "assets/index-maCHdY9Y.js", "raw": 343278, "gzip9": 107191, "sha256": "e2fce81d690cdd81d4fcc0c0dfdf41d2e84cd2cd0dbd05d351f0cd81bb44366e" },
+      "worker": { "file": "assets/worker-B6Ge9L6W.js", "raw": 13994, "gzip9": 5394, "sha256": "696a075240aa0f825239004f3ba70d7e6f085bb9d22ebfeb3e32c238c59aa79b" }
     },
     "delta": {
       "mainRaw": 783,
       "mainRawPercent": 0.229,
-      "mainGzip": 348,
+      "mainGzip9": 348,
       "mainGzipPercent": 0.326,
       "workerRaw": 2223,
       "workerRawPercent": 18.89,
-      "workerGzip": 945,
+      "workerGzip9": 945,
       "workerGzipPercent": 21.24,
       "css": "unchanged"
-    }
+    },
+    "gzipNote": "gzip9 = gzip -9 实测；gates.build.sizes.mainGzipVite 是 Vite 构建输出的 gzip 估算（108,880 B），两者口径不同。"
+  },
+  "cpuThrottle": {
+    "rate": 4,
+    "note": "CDP Emulation.setCPUThrottlingRate；仅作敏感性参考，不等于低端真机。",
+    "expertMoves": [
+      { "elapsedMs": 2834, "depth": 5, "nodes": 28923, "reason": "超时回退", "warning": true },
+      { "elapsedMs": 2903, "depth": 6, "nodes": 23773, "reason": "超时回退", "warning": true },
+      { "elapsedMs": 2879, "depth": 7, "nodes": 100239, "reason": "超时回退", "warning": true }
+    ],
+    "undoDuringThink": { "clickMs": 149, "stonesAfterDwell": 0 },
+    "errors": 0
   },
   "auditProbe": {
     "file": "bench/strength/audit.probe.test.ts",
-    "tests": 12,
-    "passed": 12,
+    "tests": 17,
+    "passed": 17,
     "covers": [
-      "规则：四个方向成五、长连、非法落子、终局后落子",
-      "搜索：立即取胜、必防、深度上限、安静局面、不得虚报必胜",
+      "规则：四个方向成五、长连、边界五连、非法落子、终局后落子",
+      "搜索：立即取胜、必防、冲四防守、深度上限、安静局面、近满盘合法着法、不得虚报必胜",
+      "强制胜证明：活三三手胜、活四直接成五、双四五手胜",
       "置换表：探测顺序无关、落子/撤销可逆",
       "增量评估：与全盘评估逐位一致、撤销恢复",
       "五档：固定深度下返回合法着法"
