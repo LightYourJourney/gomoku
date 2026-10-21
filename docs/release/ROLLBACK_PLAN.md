@@ -33,26 +33,33 @@ curl -sI "$BASE/" | grep -i content-security-policy
 # 再走一遍 RELEASE_CHECKLIST 的 staging 冒烟
 ```
 
-### 2.2 Git revert + 重新部署（需要保留提交历史时）
+### 2.2 Git revert + 重新部署（仅在启用 Git 自动部署后可用）
+
+**当前项目未启用 Git 集成**（Cloudflare Pages 显示 `Git Provider: No`），
+所以 `git push` 不会自动构建、也不会自动上线。只有将来显式开启 Git 集成后，
+下面这条才会触发部署：
 
 ```bash
 git revert --no-edit <bad-commit>
-git push origin main        # 触发自动构建
+git push origin main        # 仅在启用 Git 集成后触发构建
 ```
 
-构建约几分钟。适合“问题明确、回滚后还要继续修”的场景。
-**注意**：这会新增一个提交；不要用 `git reset --hard` 改写已发布的历史。
+当前若要保留提交历史地回滚，revert 之后必须再按 2.3 手动部署。
+**注意**：revert 会新增一个提交；不要用 `git reset --hard` 改写已发布的历史。
 
-### 2.3 紧急直传（Git 集成不可用时）
+### 2.3 手动直传（当前实际方式）
 
 ```bash
 git checkout <last-good-commit>
 yarn install --frozen-lockfile
 yarn build
-npx wrangler pages deploy dist --project-name gomoku-lab
+npx wrangler pages deploy dist --project-name gomoku-lab --branch main \
+  --commit-hash "$(git rev-parse HEAD)" --commit-message "rollback to <last-good-commit>"
 ```
 
-仅在前两条都不可用时使用；执行前必须确认 `git status` 干净、提交号正确。
+这是当前所有发布的实际路径（2.1 的 Dashboard Rollback 除外），不是「紧急」专用。
+执行前必须确认 `git status` 干净、提交号正确、`dist/index.html` 的
+`build-commit` 与目标提交一致。
 
 ## 3. 回滚不会修好什么
 
@@ -71,7 +78,8 @@ npx wrangler pages deploy dist --project-name gomoku-lab
 - 当前生产部署 `d3f5f6cc-673e-4391-a418-13b5830d633a`（`b67ea93`）；
   上一部署 `e5a32d20-5523-4cdd-b6a8-88db36a35f1f`（`2ec65fa`）保留为回滚目标。
 - 进度写入是 latest-wins 串行队列；回滚只影响后续写入的格式，不影响已落盘数据。
-- 升级方向（旧 → 新）已验证：v1 只有 progress 表的老库升级到 v2 后，旧进度原样读回。
+- 升级方向（旧 → 新）已验证：v1 只有 progress 表的老库升级到 v2 后，旧进度原样读回；
+  另注入 `schemaVersion = 1` 的旧棋谱，复盘页能正常列出。
 
 ## 5. 回滚演练（2026-10-21，已执行）
 

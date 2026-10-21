@@ -456,14 +456,14 @@ Negamax + Alpha-Beta，配合迭代加深：
 | --- | --- | --- |
 | 应用版本 | `0.2.0`（`package.json`） | 对外发布时 |
 | 引擎语义版本 | `search-1`（`src/ai/version.ts`） | **搜索决策语义**变化时（同一局面给出不同着法/评分）；纯性能优化不递增 |
-| Worker 请求协议 | v1：`requestId` + `gameVersion` 双闸门 | 消息字段或配对方语义变化时 |
+| Worker 请求协议 | 无独立版本号：`requestId` + `gameVersion` 双闸门 | 消息字段或配对方语义变化时 |
 | 构建来源 | 提交 `b67ea93`；生产部署 `d3f5f6cc…` | 每次构建/部署 |
 
 为什么 Phase 10C 不递增 `ENGINE_VERSION`：它只改执行速度，固定深度快照、
 107 个配对手与 4 局棋谱的决策全部一致；递增会让复盘分析缓存无谓失效，
 也会把「更快」误读成「换了一个引擎」。实现变了、语义没变，用提交号区分。
 
-构建期把后三项注入 `index.html`：
+构建期把应用版本、引擎版本与构建来源注入 `index.html`：
 
 ```html
 <meta name="app-version" content="0.2.0">

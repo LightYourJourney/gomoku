@@ -21,6 +21,25 @@
 | 上一生产部署（回滚目标） | `e5a32d20-5523-4cdd-b6a8-88db36a35f1f`（`2ec65fa`） |
 | 产物 | 8 文件 / 416 KB；`index.html`、`assets/index-maCHdY9Y.js`、`assets/index-DcvwGzkf.css`、`assets/worker-B6Ge9L6W.js` |
 
+### 发布授权与前置状态
+
+- **授权**：用户于 2026-10-21 在本会话中明确批准将提交 `b67ea93` 发布到生产，
+  并批准创建 `v0.2.0` 标签；授权只覆盖该提交与标签，不包含域名、环境变量、
+  数据策略或权限变更。
+- **未启用 Git 自动部署**：Cloudflare Pages 项目显示 `Git Provider: No`；
+  本次仍为手动 Wrangler 覆盖，推送 `main` 不会自动上线。
+- **发布前核实**（2026-10-21，部署前）：
+
+| 项 | 发布前状态 |
+| --- | --- |
+| `main` | `fa78e39` |
+| 最新 CI | run `39615200353` 成功（`fa78e39`，四个 job 全绿） |
+| 生产部署 | `e5a32d20-5523-4cdd-b6a8-88db36a35f1f`，Source `2ec65fa` |
+| 生产入口 / Worker | `assets/index-BZwilo3W.js` / `assets/worker-N-PbjJma.js`（11,771 B） |
+| 增量评估 | 旧 Worker 不含该路径；候选 `search.ts` 走 `createIncrementalEvaluator` |
+| 仓库与生产差异 | 生产停在 `2ec65fa`；仓库已含 Phase 10D / 10E / 10F |
+| 发布记录 | 只有 Phase 09B；需要补 Phase 10F |
+
 ### 1. 资源指纹（生产实测，与本地 `dist/` 逐字节一致）
 
 | 资源 | 大小 | SHA-256 |
@@ -29,6 +48,10 @@
 | `assets/index-maCHdY9Y.js` | 343,278 B | `e2fce81d690cdd81d4fcc0c0dfdf41d2e84cd2cd0dbd05d351f0cd81bb44366e` |
 | `assets/worker-B6Ge9L6W.js` | 13,994 B | `696a075240aa0f825239004f3ba70d7e6f085bb9d22ebfeb3e32c238c59aa79b` |
 | `assets/index-DcvwGzkf.css` | 35,177 B | `2ed40fe89e4ab1a2e74fafea78f07be7257a87ff54cb3f342e62908cfba55a97` |
+
+增量评估的构建证据：Phase 09B 的 `worker-N-PbjJma.js` 为 11,771 B，不含该路径；
+本次 `worker-B6Ge9L6W.js` 为 13,994 B，SHA 与 `b67ea93` 的本地构建一致，
+而该提交的 `src/ai/search.ts` 叶子评分走 `createIncrementalEvaluator`。
 
 `index.html` 的 meta 直接给出可核验的版本：
 
@@ -56,12 +79,13 @@ build-commit   = b67ea930528375e2cff21bcb3c9332c82061a75e
 | 项 | 预览 | 生产 |
 | --- | --- | --- |
 | `yarn e2e:remote` | **162 / 162** | **162 / 162** |
-| 五档 AI 应手 | ✅ 深度 1 / 2 / 4 / 6 / 6 | ✅ 同左 |
+| 五档 AI 应手 | ✅ 本次 1 / 2 / 4 / 6 / 6 | ✅ 本次复验 1 / 2 / 4 / 5 / 6（高级 1600 ms、专家 2600 ms 均超时回退） |
 | 专家 2600 ms 超时回退 | ✅ 显示启发式免责说明 | ✅ 实际观测到 |
 | 提示 | ✅ 3 个候选，手数不变 | ✅ 同左 |
 | 复盘分析 | ✅ 9 / 9，引擎 `search-1` | ✅ 同左 |
 | Worker | ✅ 每页 1 个 `worker-B6Ge9L6W.js` | ✅ 同左 |
 | CSP / 4xx / 第三方请求 | ✅ 0 / 0 / 0 | ✅ 0 / 0 / 0 |
+| 移动端 | ✅ Pixel 7 触屏 11 条 | ✅ 同左（另含 iPad 横竖屏 9 条） |
 | 边缘配置 | — | ✅ `worker-src 'self'`、`/assets/*` immutable、入口 `must-revalidate`、自定义 404 |
 
 ### 4. 回滚演练（预览环境真实执行）
@@ -75,7 +99,8 @@ build-commit   = b67ea930528375e2cff21bcb3c9332c82061a75e
 
 学习进度 `schemaVersion = 1`、棋谱 `1`、对局存档 `2`，本次均未改动。
 真实浏览器中把 v1 旧库（只有 `progress`）升级到 v2（`progress` + `records`），
-旧学习进度原样读回；回滚不会触发丢弃路径。
+旧学习进度原样读回；另注入 `schemaVersion = 1` 的旧棋谱，复盘页正常列出
+「黑方胜 · 双人 · 9 手」。回滚不会触发丢弃路径。
 
 ### 6. 已知限制
 

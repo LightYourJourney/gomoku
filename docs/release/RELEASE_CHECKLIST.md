@@ -54,6 +54,7 @@
 - [ ] 390 / 768 / 1440 三档无横向溢出、棋盘完整可见
 - [ ] 不存在的路径返回 404 且 404 页可返回应用
 - [ ] 缓存头：`/assets/*` 为 `immutable`，入口为 `must-revalidate`
+- [ ] 首页 meta 的 `app-version` / `engine-version` / `build-commit` 与目标提交一致（`curl` 即可）
 - [ ] 回滚演练完成一次（见 ROLLBACK_PLAN §5）
 
 ## E. 公开发布前（额外）
@@ -84,7 +85,8 @@
 > 业务流程烟雾 16/16。逐项读数见 [DEPLOYMENT_RECORD.md](DEPLOYMENT_RECORD.md) §3。
 > E 中「Safari / Firefox 冒烟」仍未做；自定义域名未绑定。
 >
-> **Phase 10F 状态（2026-10-21）**：A–D **已在真实生产环境执行并通过**——
+> **Phase 10F 状态（2026-10-21）**：用户已明确批准提交 `b67ea93` 的生产发布与
+> `v0.2.0` 标签；A–D **已在真实生产环境执行并通过**——
 > 应用 `0.2.0`、提交 `b67ea93`、部署 `d3f5f6cc…`；预览与生产线上 e2e 均 162/162，
 > 定向验收（五档、专家超时、提示、复盘、Worker、CSP、旧库）全过。
 > `ui:probe` 与覆盖棘轮由 CI `probe` job 执行（本阶段未改界面）。

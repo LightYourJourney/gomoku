@@ -1,3 +1,5 @@
+import { execFileSync } from 'node:child_process'
+
 import { expect, test } from '@playwright/test'
 
 /**
@@ -79,8 +81,11 @@ test('构建版本标识可核对：应用版本、引擎版本与提交号', as
   // 版本号是有意的硬编码：升级版本却忘了改这里，说明发布记录也会漏。
   expect(info.app).toBe('0.2.0')
   expect(info.engine).toBe('search-1')
-  // 完整 40 位提交号；CI 里必须来自干净工作区，本地构建允许带 -dirty。
-  expect(info.commit).toMatch(process.env.CI ? /^[0-9a-f]{40}$/ : /^[0-9a-f]{40}(-dirty)?$/)
+
+  // 只验 40 位十六进制不够——插件写死一个合法 SHA 也会通过。直接和当前
+  // 检出比对：CI 必须完全相等；本地未提交的工作区允许 -dirty。
+  const head = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim()
+  expect(info.commit).toMatch(process.env.CI ? new RegExp(`^${head}$`) : new RegExp(`^${head}(-dirty)?$`))
 })
 
 test('复盘页进得去——代码分割后的 chunk 在生产环境要能取到', async ({ page }) => {
