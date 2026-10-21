@@ -7,9 +7,9 @@ import { evaluateBoard } from '../../src/ai/evaluate'
 import { analyzeFast, threatScoreWith } from '../../src/ai/patterns'
 import { computeKey, createTranspositionTable, toggleStone } from '../../src/ai/transposition'
 import { findForcedWin } from '../../src/ai/threat'
-import { BLACK, WHITE, type Board } from '../../src/core/types'
+import { BLACK, WHITE } from '../../src/core/types'
 import { measureRetained, measureUs, sink, type Measurement } from './measure'
-import { WORKLOADS } from './workloads'
+import { workloadBoard } from './workloads'
 
 /**
  * 热点函数的**单价**（`yarn profile` 会一并跑）。
@@ -33,17 +33,11 @@ interface Row {
   readonly divisor: number
 }
 
-function boardOf(id: string): Board {
-  const workload = WORKLOADS.find((w) => w.id === id)
-  if (workload === undefined) throw new Error(`没有局面 ${id}`)
-  return workload.board
-}
-
 const BOARDS = ['bench-midgame', 'quiet-midgame', 'bench-double-three', 'nearly-full'] as const
 
 function evaluateRows(): Row[] {
   return BOARDS.map((id) => {
-    const board = boardOf(id)
+    const board = workloadBoard(id)
     return {
       name: 'evaluateBoard（单方）',
       board: id,
@@ -57,7 +51,7 @@ function evaluateRows(): Row[] {
 
 function candidateRows(): Row[] {
   return BOARDS.map((id) => {
-    const board = boardOf(id)
+    const board = workloadBoard(id)
     return {
       name: 'candidateMoves',
       board: id,
@@ -70,7 +64,7 @@ function candidateRows(): Row[] {
 }
 
 function patternRows(): Row[] {
-  const board = boardOf('quiet-midgame')
+  const board = workloadBoard('quiet-midgame')
   const points = candidateMoves(board)
 
   return [
@@ -109,7 +103,7 @@ function patternRows(): Row[] {
 }
 
 function transpositionRows(): Row[] {
-  const board = boardOf('bench-midgame')
+  const board = workloadBoard('bench-midgame')
   const base = computeKey(board, BLACK)
   const table = createTranspositionTable()
 
@@ -199,7 +193,7 @@ function primitiveRows(): Row[] {
 
 function vcfRows(): Row[] {
   return ['bench-vcf-win', 'bench-vcf-counters'].map((id) => {
-    const board = boardOf(id)
+    const board = workloadBoard(id)
     return {
       name: 'findForcedWin',
       board: id,

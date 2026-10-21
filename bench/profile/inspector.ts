@@ -143,3 +143,8 @@ export function aggregate(profile: CpuProfile): Aggregate {
 
 export const pct = (value: number): string => `${(value * 100).toFixed(1)}%`
 export const ms = (us: number): string => `${(us / 1000).toFixed(1)} ms`
+
+/** 某个函数在采样总时长里的占比；没出现过就是 0。 */
+export function shareOf(aggregate: Aggregate, name: string): number {
+  return aggregate.functions.find((row) => row.name === name)?.share ?? 0
+}

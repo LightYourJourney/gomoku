@@ -1,5 +1,5 @@
 import { BLACK, CELL_COUNT, WHITE, type Board, type Player } from '../core/types'
-import { EVALUATION_LINES, LINES_BY_CELL, scoreLine } from './evaluate'
+import { EVALUATION_LINES, scoreLine } from './evaluate'
 
 /**
  * 增量局面评估（Phase 10B 的**实验性原型**）。
@@ -31,6 +31,24 @@ import { EVALUATION_LINES, LINES_BY_CELL, scoreLine } from './evaluate'
  * - **不是生产路径**。搜索还没有接它（那要看 Phase 10B 的实测结论）。
  * - **不拥有全局状态**。每个实例自带棋盘副本与撤销栈，可以同时存在多个。
  */
+
+/**
+ * 交叉点 → 经过它的线段下标集合。
+ *
+ * 一个点最多被横、竖、两条斜向共 4 条线经过；边角上的斜线可能因长度不足 5
+ * 而不在评估集合里，所以实际是 2–4 条。增量评估靠它把「一次落子」的更新范围
+ * 从 72 条线缩到这几条。
+ *
+ * 建在本模块而不是 `evaluate.ts`：只有这里用它，放到那边会让**生产模块加载时**
+ * 白建一张 225 项的表，还顺带把 `LINES_BY_CELL` 变成公开 API。
+ */
+const LINES_BY_CELL: readonly (readonly number[])[] = (() => {
+  const byCell: number[][] = Array.from({ length: CELL_COUNT }, () => [])
+  EVALUATION_LINES.forEach((line, lineIndex) => {
+    for (const cell of line) byCell[cell]!.push(lineIndex)
+  })
+  return byCell
+})()
 
 /** 一个交叉点最多被 4 条评估线段经过（横 / 竖 / 两条斜向）。 */
 const MAX_LINES_PER_CELL = 4

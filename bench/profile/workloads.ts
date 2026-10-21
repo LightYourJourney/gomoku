@@ -213,6 +213,13 @@ export const WORKLOADS: readonly Workload[] = [
   },
 ]
 
+/** 按 id 取局面（剖析脚本命中的第一个错误通常就是这里写错了 id）。 */
+export function workloadBoard(id: string): Board {
+  const workload = WORKLOADS.find((w) => w.id === id)
+  if (workload === undefined) throw new Error(`没有局面 ${id}`)
+  return workload.board
+}
+
 /** 候选点数量：解释「为什么这个局面贵」的第一个线索。 */
 export function candidateCount(workload: Workload): number {
   return candidateMoves(workload.board).length

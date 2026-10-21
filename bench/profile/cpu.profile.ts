@@ -5,7 +5,7 @@ import { DIFFICULTY_PARAMS } from '../../src/ai/difficulty'
 import { startAiCounters, stopAiCounters } from '../../src/ai/metrics'
 import { searchBoard, searchOptionsFor, type SearchOptions } from '../../src/ai/search'
 import { findForcedWin } from '../../src/ai/threat'
-import { aggregate, ms, pct, startProfiling, stopProfiling } from './inspector'
+import { aggregate, ms, pct, shareOf, startProfiling, stopProfiling } from './inspector'
 import { candidateCount, searchWorkloads, vcfWorkloads, type Workload } from './workloads'
 
 /**
@@ -124,14 +124,21 @@ test('搜索热点 CPU 剖析', async () => {
   // 预热：把 JIT 编译与首次分配排除在采样之外
   for (const task of TASKS.slice(0, 4)) runTask(task)
 
+  /*
+   * **两遍跑**，而不是「开着计数器采样」：
+   * 计数通道单独跑一遍拿精确调用次数；剖析通道把计数器关掉再采样，
+   * 测到的才是发布路径（计数器默认关闭时的样子）。
+   * 开着计数器采样会让 `countCall` 出现在样本里，把「测量工具的开销」
+   * 混进「被测代码的占比」——任务书明确不许这么做。
+   */
   const counter = startAiCounters()
-  const session = await startProfiling(SAMPLE_INTERVAL_US)
+  for (const task of TASKS) runTask(task)
+  stopAiCounters()
 
+  const session = await startProfiling(SAMPLE_INTERVAL_US)
   const results: TaskResult[] = []
   for (const task of TASKS) results.push(runTask(task))
-
   const profile = await stopProfiling(session)
-  stopAiCounters()
 
   const totals = aggregate(profile)
   const searchNodes = results.filter((r) => r.kind === 'search' && r.reason === 'search').reduce((s, r) => s + r.nodes, 0)
@@ -146,9 +153,10 @@ test('搜索热点 CPU 剖析', async () => {
     evaluationsPerNode: total === 0 ? 0 : evalCalls / total,
     candidatesPerOrdering: counter.orderMoves === 0 ? 0 : counter.orderCandidates / counter.orderMoves,
     analyzeFastPerCandidate: counter.orderCandidates === 0 ? 0 : counter.analyzeFast / counter.orderCandidates,
-    evaluateShare: totals.functions.find((f) => f.name === 'evaluateBoard')?.share ?? 0,
+    evaluateShare: shareOf(totals, 'evaluateBoard'),
     gcShare: totals.totalUs === 0 ? 0 : totals.gcUs / totals.totalUs,
     anonymousShare: totals.totalUs === 0 ? 0 : totals.anonymousUs / totals.totalUs,
+    countedInSeparatePass: true,
   }
 
   const payload = {

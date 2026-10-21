@@ -1,10 +1,10 @@
 {
   "sampleIntervalUs": 100,
-  "sampledAt": "2026-10-20T17:31:05.915Z",
+  "sampledAt": "2026-10-21T04:29:51.945Z",
   "node": "v26.12.0",
   "platform": "darwin arm64",
   "cpuCount": 8,
-  "loadAverage": 28.30615234375,
+  "loadAverage": 3.20654296875,
   "tasks": [
     {
       "id": "opening-adjacent",
@@ -15,7 +15,7 @@
       "nodes": 1122,
       "depthReached": 4,
       "reason": "search",
-      "elapsedMs": 122.17570799999999,
+      "elapsedMs": 120.76525000000038,
       "synthetic": false
     },
     {
@@ -27,7 +27,7 @@
       "nodes": 1125,
       "depthReached": 4,
       "reason": "search",
-      "elapsedMs": 116.09749999999997,
+      "elapsedMs": 126.09295900000006,
       "synthetic": false
     },
     {
@@ -39,7 +39,7 @@
       "nodes": 1239,
       "depthReached": 4,
       "reason": "search",
-      "elapsedMs": 130.72787499999993,
+      "elapsedMs": 143.08341599999994,
       "synthetic": false
     },
     {
@@ -51,7 +51,7 @@
       "nodes": 989,
       "depthReached": 4,
       "reason": "search",
-      "elapsedMs": 106.19570799999985,
+      "elapsedMs": 108.58341599999994,
       "synthetic": false
     },
     {
@@ -63,7 +63,7 @@
       "nodes": 786,
       "depthReached": 4,
       "reason": "search",
-      "elapsedMs": 93.80954200000019,
+      "elapsedMs": 89.29424999999992,
       "synthetic": false
     },
     {
@@ -75,7 +75,7 @@
       "nodes": 1788,
       "depthReached": 5,
       "reason": "search",
-      "elapsedMs": 236.22354199999995,
+      "elapsedMs": 239.73300000000063,
       "synthetic": false
     },
     {
@@ -87,7 +87,7 @@
       "nodes": 890,
       "depthReached": 4,
       "reason": "search",
-      "elapsedMs": 150.891167,
+      "elapsedMs": 157.98625000000084,
       "synthetic": false
     },
     {
@@ -99,7 +99,7 @@
       "nodes": 3962,
       "depthReached": 5,
       "reason": "search",
-      "elapsedMs": 586.5485409999999,
+      "elapsedMs": 612.8993340000006,
       "synthetic": false
     },
     {
@@ -111,7 +111,7 @@
       "nodes": 1117,
       "depthReached": 4,
       "reason": "search",
-      "elapsedMs": 161.30712499999981,
+      "elapsedMs": 161.84637500000008,
       "synthetic": false
     },
     {
@@ -123,7 +123,7 @@
       "nodes": 5282,
       "depthReached": 5,
       "reason": "search",
-      "elapsedMs": 711.8180830000001,
+      "elapsedMs": 694.7076660000002,
       "synthetic": false
     },
     {
@@ -135,7 +135,7 @@
       "nodes": 2,
       "depthReached": 0,
       "reason": "win",
-      "elapsedMs": 0.6016669999999067,
+      "elapsedMs": 0.5592500000002474,
       "synthetic": true
     },
     {
@@ -147,7 +147,7 @@
       "nodes": 0,
       "depthReached": 0,
       "reason": "block",
-      "elapsedMs": 0.23370900000008987,
+      "elapsedMs": 0.22325000000000728,
       "synthetic": false
     },
     {
@@ -159,7 +159,7 @@
       "nodes": 1153,
       "depthReached": 4,
       "reason": "search",
-      "elapsedMs": 147.25387499999988,
+      "elapsedMs": 145.72104200000012,
       "synthetic": false
     },
     {
@@ -171,7 +171,7 @@
       "nodes": 265,
       "depthReached": 4,
       "reason": "search",
-      "elapsedMs": 26.961459000000104,
+      "elapsedMs": 25.914749999999913,
       "synthetic": true
     },
     {
@@ -183,7 +183,7 @@
       "nodes": 265,
       "depthReached": 4,
       "reason": "search",
-      "elapsedMs": 26.763792000000194,
+      "elapsedMs": 26.15324999999939,
       "synthetic": true
     },
     {
@@ -195,7 +195,7 @@
       "nodes": 4,
       "depthReached": 0,
       "reason": "win(3)",
-      "elapsedMs": 0.8123749999999745,
+      "elapsedMs": 0.7230420000005324,
       "synthetic": true
     },
     {
@@ -207,7 +207,7 @@
       "nodes": 4,
       "depthReached": 0,
       "reason": "win(3)",
-      "elapsedMs": 0.6730830000001333,
+      "elapsedMs": 0.6532919999999649,
       "synthetic": true
     },
     {
@@ -219,7 +219,7 @@
       "nodes": 1,
       "depthReached": 0,
       "reason": "no-win",
-      "elapsedMs": 0.45791700000017954,
+      "elapsedMs": 0.45554099999935715,
       "synthetic": true
     },
     {
@@ -231,376 +231,334 @@
       "nodes": 1,
       "depthReached": 0,
       "reason": "no-win",
-      "elapsedMs": 0.11462499999970532,
+      "elapsedMs": 0.11149999999997817,
       "synthetic": true
     }
   ],
   "totals": {
-    "totalUs": 2643544,
-    "busyUs": 2643544,
+    "totalUs": 2685243,
+    "busyUs": 2685243,
     "functions": [
       {
         "name": "scoreSegment",
         "url": "evaluate.ts",
-        "selfUs": 637894,
-        "share": 0.24130258471203808,
-        "hits": 4153
+        "selfUs": 648654,
+        "share": 0.24156249546130462,
+        "hits": 4957
       },
       {
         "name": "buildLine",
         "url": "patterns.ts",
-        "selfUs": 293620,
-        "share": 0.1110705931128818,
-        "hits": 1912
+        "selfUs": 301965,
+        "share": 0.11245350979408568,
+        "hits": 2314
       },
       {
         "name": "inBounds",
         "url": "board.ts",
-        "selfUs": 265443,
-        "share": 0.10041179568034427,
-        "hits": 1732
+        "selfUs": 271336,
+        "share": 0.10104709331706666,
+        "hits": 2100
       },
       {
         "name": "(匿名)",
         "url": "types.ts",
-        "selfUs": 199852,
-        "share": 0.0756000278414129,
-        "hits": 1295
+        "selfUs": 210561,
+        "share": 0.07841413235226756,
+        "hits": 1596
       },
       {
         "name": "scanLine",
         "url": "patterns.ts",
-        "selfUs": 197396,
-        "share": 0.07467097199819636,
-        "hits": 1290
+        "selfUs": 192407,
+        "share": 0.07165347791615136,
+        "hits": 1468
       },
       {
         "name": "orderMoves",
         "url": "search.ts",
-        "selfUs": 144745,
-        "share": 0.05475414821920876,
-        "hits": 945
+        "selfUs": 148151,
+        "share": 0.05517228794563472,
+        "hits": 1132
       },
       {
         "name": "idx",
         "url": "board.ts",
-        "selfUs": 141933,
-        "share": 0.05369042467233381,
-        "hits": 924
+        "selfUs": 143466,
+        "share": 0.05342756689059426,
+        "hits": 1099
       },
       {
         "name": "(匿名)",
         "url": "board.ts",
-        "selfUs": 107707,
-        "share": 0.04074341111780246,
-        "hits": 699
+        "selfUs": 101970,
+        "share": 0.037974216858585985,
+        "hits": 781
       },
       {
         "name": "scoreLine",
         "url": "evaluate.ts",
-        "selfUs": 87086,
-        "share": 0.0329428978674083,
-        "hits": 567
+        "selfUs": 101521,
+        "share": 0.037807006665690965,
+        "hits": 749
       },
       {
         "name": "negamax",
         "url": "search.ts",
-        "selfUs": 76161,
-        "share": 0.028810188141373854,
-        "hits": 499
+        "selfUs": 82647,
+        "share": 0.030778220071703007,
+        "hits": 631
       },
       {
         "name": "evaluateBoard",
         "url": "evaluate.ts",
-        "selfUs": 75794,
-        "share": 0.02867135935698441,
-        "hits": 496
+        "selfUs": 74394,
+        "share": 0.02770475521209812,
+        "hits": 570
       },
       {
         "name": "threatScoreWith",
         "url": "patterns.ts",
-        "selfUs": 57845,
-        "share": 0.02188161044416132,
-        "hits": 379
+        "selfUs": 54562,
+        "share": 0.020319203885830816,
+        "hits": 406
       },
       {
         "name": "candidateMoves",
         "url": "candidates.ts",
-        "selfUs": 52945,
-        "share": 0.020028038118525736,
-        "hits": 345
-      },
-      {
-        "name": "isEmptyAt",
-        "url": "patterns.ts",
-        "selfUs": 45392,
-        "share": 0.01717088877658174,
-        "hits": 296
+        "selfUs": 53455,
+        "share": 0.01990695069310301,
+        "hits": 412
       },
       {
         "name": "isOwn",
         "url": "patterns.ts",
-        "selfUs": 41839,
-        "share": 0.01582685970046271,
-        "hits": 271
+        "selfUs": 43822,
+        "share": 0.016319565864243945,
+        "hits": 337
       },
       {
-        "name": "analyzeRuns",
+        "name": "isEmptyAt",
         "url": "patterns.ts",
-        "selfUs": 26045,
-        "share": 0.009852304330852825,
-        "hits": 170
+        "selfUs": 40982,
+        "share": 0.015261933463749836,
+        "hits": 311
       },
       {
         "name": "post",
         "url": "node:inspector",
-        "selfUs": 23721,
-        "share": 0.008973181456408519,
-        "hits": 2
+        "selfUs": 28687,
+        "share": 0.010683204462314955,
+        "hits": 1
+      },
+      {
+        "name": "analyzeRuns",
+        "url": "patterns.ts",
+        "selfUs": 28415,
+        "share": 0.010581910091563408,
+        "hits": 220
       },
       {
         "name": "analyzeFast",
         "url": "patterns.ts",
-        "selfUs": 23263,
-        "share": 0.008799929185971559,
-        "hits": 153
-      },
-      {
-        "name": "countCall",
-        "url": "metrics.ts",
-        "selfUs": 11661,
-        "share": 0.004411123854946239,
-        "hits": 76
-      },
-      {
-        "name": "(匿名)",
-        "url": "search.ts",
-        "selfUs": 2948,
-        "share": 0.0011151696359130016,
-        "hits": 19
-      },
-      {
-        "name": "probe",
-        "url": "transposition.ts",
-        "selfUs": 1840,
-        "share": 0.0006960353222794854,
-        "hits": 12
+        "selfUs": 20596,
+        "share": 0.007670069338231214,
+        "hits": 157
       },
       {
         "name": "(匿名)",
         "url": "patterns.ts",
-        "selfUs": 1694,
-        "share": 0.0006408064325768741,
-        "hits": 11
+        "selfUs": 1936,
+        "share": 0.0007209775800551384,
+        "hits": 15
       },
       {
         "name": "(匿名)",
         "url": "metrics.ts",
-        "selfUs": 1679,
-        "share": 0.0006351322315800305,
-        "hits": 11
-      },
-      {
-        "name": "shapeScore",
-        "url": "patterns.ts",
-        "selfUs": 1459,
-        "share": 0.0005519106169596572,
-        "hits": 10
-      },
-      {
-        "name": "isKiller",
-        "url": "search.ts",
-        "selfUs": 1216,
-        "share": 0.00045998856081079037,
-        "hits": 8
+        "selfUs": 1836,
+        "share": 0.0006837370025729515,
+        "hits": 14
       },
       {
         "name": "opponentOf",
         "url": "board.ts",
-        "selfUs": 919,
-        "share": 0.0003476393810732865,
-        "hits": 6
+        "selfUs": 1542,
+        "share": 0.000574249704775322,
+        "hits": 12
+      },
+      {
+        "name": "shapeScore",
+        "url": "patterns.ts",
+        "selfUs": 1293,
+        "share": 0.00048152066684467663,
+        "hits": 10
       },
       {
         "name": "store",
         "url": "transposition.ts",
-        "selfUs": 762,
-        "share": 0.00028824941063965647,
-        "hits": 5
+        "selfUs": 1026,
+        "share": 0.0003820883249672376,
+        "hits": 8
       },
       {
-        "name": "scoreThreeRuns",
-        "url": "evaluate.ts",
-        "selfUs": 454,
-        "share": 0.0001717391501711339,
-        "hits": 3
+        "name": "isKiller",
+        "url": "search.ts",
+        "selfUs": 904,
+        "share": 0.00033665482043896956,
+        "hits": 7
+      },
+      {
+        "name": "probe",
+        "url": "transposition.ts",
+        "selfUs": 886,
+        "share": 0.00032995151649217595,
+        "hits": 7
+      },
+      {
+        "name": "(匿名)",
+        "url": "search.ts",
+        "selfUs": 764,
+        "share": 0.00028451801196390793,
+        "hits": 6
+      },
+      {
+        "name": "searchRoot",
+        "url": "search.ts",
+        "selfUs": 648,
+        "share": 0.00024131894208457113,
+        "hits": 5
       },
       {
         "name": "searchBoard",
         "url": "search.ts",
-        "selfUs": 321,
-        "share": 0.0001214279013324537,
-        "hits": 2
+        "selfUs": 647,
+        "share": 0.00024094653630974924,
+        "hits": 5
+      },
+      {
+        "name": "countCall",
+        "url": "metrics.ts",
+        "selfUs": 501,
+        "share": 0.00018657529318575638,
+        "hits": 4
+      },
+      {
+        "name": "(匿名)",
+        "url": "evaluate.ts",
+        "selfUs": 392,
+        "share": 0.00014598306373017264,
+        "hits": 3
+      },
+      {
+        "name": "toggleStone",
+        "url": "transposition.ts",
+        "selfUs": 386,
+        "share": 0.00014374862908124144,
+        "hits": 3
+      },
+      {
+        "name": "createShapeCount",
+        "url": "patterns.ts",
+        "selfUs": 382,
+        "share": 0.00014225900598195397,
+        "hits": 3
       },
       {
         "name": "slotOf",
         "url": "transposition.ts",
-        "selfUs": 309,
-        "share": 0.0001168885405349788,
+        "selfUs": 260,
+        "share": 0.00009682550145368594,
         "hits": 2
       },
       {
         "name": "fourMakers",
         "url": "threat.ts",
-        "selfUs": 308,
-        "share": 0.00011651026046852256,
+        "selfUs": 259,
+        "share": 0.00009645309567886408,
         "hits": 2
       },
       {
-        "name": "runTask",
-        "url": "cpu.profile.ts",
-        "selfUs": 305,
-        "share": 0.00011537542026915383,
+        "name": "scoreThreeRuns",
+        "url": "evaluate.ts",
+        "selfUs": 258,
+        "share": 0.00009608068990404221,
         "hits": 2
       },
       {
-        "name": "toggleStone",
-        "url": "transposition.ts",
-        "selfUs": 305,
-        "share": 0.00011537542026915383,
-        "hits": 2
-      },
-      {
-        "name": "doubleThreat",
-        "url": "patterns.ts",
-        "selfUs": 305,
-        "share": 0.00011537542026915383,
+        "name": "candidateCount",
+        "url": "workloads.ts",
+        "selfUs": 258,
+        "share": 0.00009608068990404221,
         "hits": 2
       },
       {
         "name": "threatAt",
         "url": "patterns.ts",
-        "selfUs": 304,
-        "share": 0.00011499714020269759,
+        "selfUs": 256,
+        "share": 0.00009533587835439846,
         "hits": 2
       },
       {
-        "name": "createShapeCount",
-        "url": "patterns.ts",
-        "selfUs": 301,
-        "share": 0.00011386230000332886,
-        "hits": 2
-      },
-      {
-        "name": "toggleTurn",
-        "url": "transposition.ts",
-        "selfUs": 301,
-        "share": 0.00011386230000332886,
-        "hits": 2
-      },
-      {
-        "name": "recordKiller",
-        "url": "search.ts",
-        "selfUs": 300,
-        "share": 0.00011348401993687263,
-        "hits": 2
-      },
-      {
-        "name": "searchRoot",
-        "url": "search.ts",
-        "selfUs": 293,
-        "share": 0.00011083605947167893,
-        "hits": 2
-      },
-      {
-        "name": "computeKey",
-        "url": "transposition.ts",
-        "selfUs": 243,
-        "share": 0.00009192205614886682,
-        "hits": 2
-      },
-      {
-        "name": "toTableScore",
-        "url": "search.ts",
-        "selfUs": 225,
-        "share": 0.00008511301495265447,
-        "hits": 2
-      },
-      {
-        "name": "searchForcing",
+        "name": "findForcedWin",
         "url": "threat.ts",
-        "selfUs": 158,
-        "share": 0.000059768250500086244,
-        "hits": 1
-      },
-      {
-        "name": "candidateCount",
-        "url": "workloads.ts",
-        "selfUs": 154,
-        "share": 0.00005825513023426128,
+        "selfUs": 132,
+        "share": 0.00004915756227648671,
         "hits": 1
       },
       {
         "name": "(匿名)",
-        "url": "transposition.ts",
-        "selfUs": 153,
-        "share": 0.00005787685016780504,
+        "url": "types.ts",
+        "selfUs": 129,
+        "share": 0.000048040344952021104,
         "hits": 1
       },
       {
-        "name": "hasExpired",
+        "name": "post",
+        "url": "inspector.ts",
+        "selfUs": 129,
+        "share": 0.000048040344952021104,
+        "hits": 1
+      },
+      {
+        "name": "searchOptionsFor",
         "url": "search.ts",
-        "selfUs": 153,
-        "share": 0.00005787685016780504,
-        "hits": 1
-      },
-      {
-        "name": "indexToPoint",
-        "url": "patterns.ts",
-        "selfUs": 152,
-        "share": 0.000057498570101348797,
-        "hits": 1
-      },
-      {
-        "name": "(匿名)",
-        "url": "evaluate.ts",
-        "selfUs": 152,
-        "share": 0.000057498570101348797,
+        "selfUs": 128,
+        "share": 0.00004766793917719923,
         "hits": 1
       },
       {
         "name": "isWinningPoint",
         "url": "patterns.ts",
-        "selfUs": 151,
-        "share": 0.000057120290034892555,
+        "selfUs": 128,
+        "share": 0.00004766793917719923,
         "hits": 1
       },
       {
-        "name": "timeUp",
-        "url": "threat.ts",
-        "selfUs": 147,
-        "share": 0.00005560716976906758,
+        "name": "recordKiller",
+        "url": "search.ts",
+        "selfUs": 127,
+        "share": 0.00004729553340237736,
         "hits": 1
       },
       {
-        "name": "winningPointsNow",
-        "url": "threat.ts",
-        "selfUs": 147,
-        "share": 0.00005560716976906758,
+        "name": "indexToPoint",
+        "url": "patterns.ts",
+        "selfUs": 125,
+        "share": 0.00004655072185273363,
         "hits": 1
       },
       {
         "name": "dispatch",
         "url": "(native)",
-        "selfUs": 37,
-        "share": 0.000013996362458880956,
+        "selfUs": 59,
+        "share": 0.00002197194071449027,
         "hits": 1
       }
     ],
-    "gcUs": 11518,
+    "gcUs": 13935,
     "idleUs": 0,
-    "programUs": 103489,
-    "anonymousUs": 314185
+    "programUs": 108326,
+    "anonymousUs": 317588
   },
   "calls": {
     "evaluateBoard": 13741,
@@ -620,8 +578,9 @@
     "evaluationsPerNode": 0.6876344893159185,
     "candidatesPerOrdering": 56.05191409897292,
     "analyzeFastPerCandidate": 2.0118970675444268,
-    "evaluateShare": 0.02867135935698441,
-    "gcShare": 0.004357029805442996,
-    "anonymousShare": 0.11884992267955441
+    "evaluateShare": 0.02770475521209812,
+    "gcShare": 0.0051894744721427445,
+    "anonymousShare": 0.11827160521412773,
+    "countedInSeparatePass": true
   }
 }

@@ -13,7 +13,7 @@
 
 ## Phase 10B 的剖析产物
 
-`2026-10-20_1708-phase10b-*.json` 是 `yarn profile` 的四份输出，**不是棋力实验**：
+`2026-10-21_0429-phase10b-*.json` 是 `yarn profile` 的四份输出，**不是棋力实验**：
 
 | 文件 | 内容 |
 | --- | --- |
@@ -23,7 +23,7 @@
 | `incremental` | 增量评估生命周期、落子/撤销单价、递归树、内存 |
 
 它们由 `bench/profile/*.profile.ts` 生成，**每次 `yarn profile` 都会覆盖**
-`bench/profile/last-*.json`；这里存的是被文档引用的一次运行（负载 11.5–12.8，8 核）。
+`bench/profile/last-*.json`；这里存的是被文档引用的一次运行（8 核；结束时记录 1 分钟负载均值 3.1–3.3）。
 绝对微秒数随负载变化，读法与噪声说明见 [CPU_PROFILE.md](../CPU_PROFILE.md) §1。
 
 ## 两点注意

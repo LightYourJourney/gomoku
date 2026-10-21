@@ -7,7 +7,7 @@ import { createIncrementalEvaluator, type IncrementalEvaluator } from '../../src
 import { idx } from '../../src/core/board'
 import { BLACK, WHITE, type Board, type Player } from '../../src/core/types'
 import { measureRetained, measureUs, sink } from './measure'
-import { WORKLOADS } from './workloads'
+import { workloadBoard } from './workloads'
 
 /**
  * 增量评估的**全生命周期**对照（`yarn profile` 会一并跑）。
@@ -20,12 +20,6 @@ import { WORKLOADS } from './workloads'
  * 因此**比值**比绝对数字可靠；绝对值连同负载一起报。
  */
 
-function boardOf(id: string): Board {
-  const workload = WORKLOADS.find((w) => w.id === id)
-  if (workload === undefined) throw new Error(`没有局面 ${id}`)
-  return workload.board
-}
-
 const BOARDS = ['opening-adjacent', 'bench-midgame', 'quiet-midgame', 'bench-double-three', 'nearly-full'] as const
 
 const PLAYER: Player = BLACK
@@ -37,6 +31,10 @@ interface Row {
   readonly initUs: number
   readonly scoreUs: number
   readonly lifecycleUs: number
+  /** 同一段生命周期套上 `try/finally` 之后的单价。 */
+  readonly guardedUs: number
+  /** `guardedUs - lifecycleUs`：保护撤销本身的额外开销。 */
+  readonly tryFinallyUs: number
   readonly ratio: number
 }
 
@@ -90,7 +88,7 @@ function measureStackCost(
 }
 
 function measureBoard(id: string): Row {
-  const board = boardOf(id)
+  const board = workloadBoard(id)
   const indices = emptyIndices(board)
 
   const full = measureUs(() => {
@@ -117,6 +115,22 @@ function measureBoard(id: string): Row {
     evaluator.undo()
   }, { warmup: 500, inner: 2000 })
 
+  /*
+   * 同一段生命周期加 `try/finally` 保护：任务书要求量「保护撤销」本身的额外开销。
+   * 没有异常时它几乎免费，但「几乎」要有数，不能凭印象。
+   */
+  let guardedCursor = 0
+  const guarded = measureUs(() => {
+    const index = indices[guardedCursor % indices.length]!
+    guardedCursor++
+    try {
+      evaluator.place(index, PLAYER)
+      sink.value += evaluator.score(PLAYER)
+    } finally {
+      evaluator.undo()
+    }
+  }, { warmup: 500, inner: 2000 })
+
   return {
     board: id,
     emptyCells: indices.length,
@@ -124,6 +138,8 @@ function measureBoard(id: string): Row {
     initUs: init.minUs,
     scoreUs: score.minUs,
     lifecycleUs: lifecycle.minUs,
+    guardedUs: guarded.minUs,
+    tryFinallyUs: guarded.minUs - lifecycle.minUs,
     ratio: lifecycle.minUs === 0 ? Number.POSITIVE_INFINITY : full.minUs / lifecycle.minUs,
   }
 }
@@ -135,7 +151,7 @@ interface StackRow {
 }
 
 function measureStack(id: string): StackRow {
-  const board = boardOf(id)
+  const board = workloadBoard(id)
   const indices = emptyIndices(board, 12)
   const { placeUs, undoUs } = measureStackCost(createIncrementalEvaluator(board), indices, PLAYER)
   return { board: id, placeUs, undoUs }
@@ -157,6 +173,11 @@ interface TreeRow {
   readonly ratio: number
 }
 
+/*
+ * 两棵树**刻意各写一遍**，不抽成「带打分回调的通用 walk」：
+ * 回调会把一次间接调用塞进被计时的叶子路径，两个分支的差值就不再只来自评估本身。
+ * 结构上的重复在这里是测量保真度的代价。
+ */
 function walkFull(board: Board, player: Player, depth: number, width: number, leaves: { count: number; sum: number }): void {
   if (depth === 0) {
     leaves.count++
@@ -165,7 +186,7 @@ function walkFull(board: Board, player: Player, depth: number, width: number, le
   }
 
   for (const point of candidateMoves(board).slice(0, width)) {
-    const index = point.y * 15 + point.x
+    const index = idx(point.x, point.y)
     board[index] = player
     walkFull(board, player === BLACK ? WHITE : BLACK, depth - 1, width, leaves)
     board[index] = 0
@@ -186,7 +207,7 @@ function walkIncremental(
   }
 
   for (const point of candidateMoves(evaluator.board).slice(0, width)) {
-    const index = point.y * 15 + point.x
+    const index = idx(point.x, point.y)
     evaluator.place(index, player)
     walkIncremental(evaluator, player === BLACK ? WHITE : BLACK, depth - 1, width, leaves)
     evaluator.undo()
@@ -194,7 +215,7 @@ function walkIncremental(
 }
 
 function measureTree(id: string, depth: number, width: number): TreeRow {
-  const source = boardOf(id)
+  const source = workloadBoard(id)
 
   const fullBoard = source.slice()
   const fullLeaves = { count: 0, sum: 0 }
@@ -244,7 +265,7 @@ interface MemoryRow {
 }
 
 function measureMemory(): MemoryRow[] {
-  const board = boardOf('bench-midgame')
+  const board = workloadBoard('bench-midgame')
 
   const keep: IncrementalEvaluator[] = []
   const retained = measureRetained(() => {
@@ -290,10 +311,11 @@ test('增量评估生命周期', () => {
   writeFileSync(new URL('./last-incremental.json', import.meta.url), `${JSON.stringify(payload, null, 2)}\n`)
 
   console.log(`\n=== 全生命周期（min 值，单位 µs）===`)
-  console.log('局面\t全盘评估\tscore 读取\tinit\t落子+取分+撤销\t加速比')
+  console.log('局面\t全盘评估\tscore 读取\tinit\t落子+取分+撤销\ttry/finally\t加速比')
   for (const row of rows) {
     console.log(
-      `${row.board}\t${row.fullUs.toFixed(2)}\t${row.scoreUs.toFixed(3)}\t${row.initUs.toFixed(2)}\t${row.lifecycleUs.toFixed(3)}\t${row.ratio.toFixed(2)}x`,
+      `${row.board}\t${row.fullUs.toFixed(2)}\t${row.scoreUs.toFixed(3)}\t${row.initUs.toFixed(2)}\t${row.lifecycleUs.toFixed(3)}\t` +
+        `+${row.tryFinallyUs.toFixed(3)}\t${row.ratio.toFixed(2)}x`,
     )
   }
 

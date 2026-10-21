@@ -1,8 +1,8 @@
 {
-  "measuredAt": "2026-10-20T17:31:15.758Z",
+  "measuredAt": "2026-10-21T04:29:57.928Z",
   "node": "v26.12.0",
   "platform": "darwin arm64",
-  "loadAverage": 24.48876953125,
+  "loadAverage": 3.16796875,
   "sink": 537872200,
   "transpositionMemory": {
     "entries": 20000,
@@ -14,153 +14,153 @@
     {
       "name": "evaluateBoard（单方）",
       "board": "bench-midgame",
-      "minUs": 73.34958499999999,
-      "medianUs": 74.38750000000013,
-      "maxUs": 75.98666500000007,
+      "minUs": 73.85249999999999,
+      "medianUs": 74.974165,
+      "maxUs": 76.09562500000003,
       "calls": 1400
     },
     {
       "name": "evaluateBoard（单方）",
       "board": "quiet-midgame",
-      "minUs": 68.60124999999982,
-      "medianUs": 70.49041499999987,
-      "maxUs": 72.92749999999984,
+      "minUs": 72.90187500000002,
+      "medianUs": 73.85541500000016,
+      "maxUs": 75.50624999999997,
       "calls": 1400
     },
     {
       "name": "evaluateBoard（单方）",
       "board": "bench-double-three",
-      "minUs": 71.14333499999987,
-      "medianUs": 72.35062499999998,
-      "maxUs": 74.56896,
+      "minUs": 75.0581249999999,
+      "medianUs": 76.48500000000013,
+      "maxUs": 81.20749999999987,
       "calls": 1400
     },
     {
       "name": "evaluateBoard（单方）",
       "board": "nearly-full",
-      "minUs": 8.566459999999836,
-      "medianUs": 8.649169999999913,
-      "maxUs": 8.982914999999991,
+      "minUs": 8.789789999999869,
+      "medianUs": 8.951664999999878,
+      "maxUs": 9.575624999999945,
       "calls": 1400
     },
     {
       "name": "candidateMoves",
       "board": "bench-midgame",
-      "minUs": 13.07666800000004,
-      "medianUs": 14.755917999999838,
-      "maxUs": 16.487750000000005,
+      "minUs": 12.13066600000002,
+      "medianUs": 12.395832000000155,
+      "maxUs": 12.532500000000027,
       "calls": 3500
     },
     {
       "name": "candidateMoves",
       "board": "quiet-midgame",
-      "minUs": 14.593250000000126,
-      "medianUs": 15.464917999999898,
-      "maxUs": 16.195334000000003,
+      "minUs": 14.344918000000007,
+      "medianUs": 14.661415999999917,
+      "maxUs": 15.21208200000001,
       "calls": 3500
     },
     {
       "name": "candidateMoves",
       "board": "bench-double-three",
-      "minUs": 11.126583999999866,
-      "medianUs": 11.323666000000003,
-      "maxUs": 11.987499999999955,
+      "minUs": 10.70049999999992,
+      "medianUs": 11.1099999999999,
+      "maxUs": 11.958249999999907,
       "calls": 3500
     },
     {
       "name": "candidateMoves",
       "board": "nearly-full",
-      "minUs": 178.28933400000005,
-      "medianUs": 183.49366800000007,
-      "maxUs": 185.52583400000003,
+      "minUs": 171.14041799999995,
+      "medianUs": 172.12658399999987,
+      "maxUs": 183.9708340000002,
       "calls": 3500
     },
     {
       "name": "analyzeFast（单点）",
       "board": "quiet-midgame",
-      "minUs": 1.685720246913588,
-      "medianUs": 1.7461728395061735,
-      "maxUs": 1.838384814814836,
+      "minUs": 1.7297016049382994,
+      "medianUs": 1.816682098765425,
+      "maxUs": 1.8415020987654147,
       "calls": 700
     },
     {
       "name": "threatScoreWith（单点，含 analyzeFast）",
       "board": "quiet-midgame",
-      "minUs": 2.259783950617301,
-      "medianUs": 2.2858383950617203,
-      "maxUs": 2.5188169135802485,
+      "minUs": 2.40568407407406,
+      "medianUs": 2.443986666666666,
+      "maxUs": 2.6129577777777584,
       "calls": 700
     },
     {
       "name": "一个节点的排序原料（candidateMoves + 双方 analyzeFast + threatScoreWith）",
       "board": "quiet-midgame",
-      "minUs": 379.66081999999915,
-      "medianUs": 390.49749999999676,
-      "maxUs": 403.70750000000044,
+      "minUs": 404.5566800000006,
+      "medianUs": 412.96166000000085,
+      "maxUs": 428.8200000000006,
       "calls": 350
     },
     {
       "name": "tt.probe（命中）",
       "board": "bench-midgame",
-      "minUs": 0.04835400000001755,
-      "medianUs": 0.04866700000002311,
-      "maxUs": 0.08370850000005703,
+      "minUs": 0.049854499999923974,
+      "medianUs": 0.051750000000083674,
+      "maxUs": 0.09066649999999754,
       "calls": 14000
     },
     {
       "name": "tt.probe（未命中）",
       "board": "bench-midgame",
-      "minUs": 0.049041500000043925,
-      "medianUs": 0.049250000000029104,
-      "maxUs": 0.058625000000006366,
+      "minUs": 0.04993750000005548,
+      "medianUs": 0.05122899999992114,
+      "maxUs": 0.058145500000023276,
       "calls": 14000
     },
     {
       "name": "tt.store",
       "board": "bench-midgame",
-      "minUs": 0.03983299999981682,
-      "medianUs": 0.04137500000001637,
-      "maxUs": 0.16558299999996962,
+      "minUs": 0.0392500000000382,
+      "medianUs": 0.04049999999983811,
+      "maxUs": 0.09254099999998289,
       "calls": 7000
     },
     {
       "name": "inBounds（整数输入）",
       "board": "-",
-      "minUs": 0.02639501953125034,
-      "medianUs": 0.026669677734374897,
-      "maxUs": 0.02695271875000005,
+      "minUs": 0.027066080078125054,
+      "medianUs": 0.03085457421875004,
+      "maxUs": 0.05912361523437504,
       "calls": 14000
     },
     {
       "name": "inBounds 的等价纯比较（参考，不用于生产）",
       "board": "-",
-      "minUs": 0.007791910156250026,
-      "medianUs": 0.008013021484374772,
-      "maxUs": 0.008217773437499964,
+      "minUs": 0.00813639257812504,
+      "medianUs": 0.008371582031249769,
+      "maxUs": 0.008572917968749927,
       "calls": 14000
     },
     {
       "name": "idx",
       "board": "-",
-      "minUs": 0.02236002734375031,
-      "medianUs": 0.023108236328125642,
-      "maxUs": 0.02369628906250032,
+      "minUs": 0.02216007421874977,
+      "medianUs": 0.02392220117187538,
+      "maxUs": 0.032040689453125104,
       "calls": 14000
     },
     {
       "name": "findForcedWin",
       "board": "bench-vcf-win",
-      "minUs": 618.402500000002,
-      "medianUs": 649.2108199999984,
-      "maxUs": 660.8774999999969,
+      "minUs": 655.0008400000024,
+      "medianUs": 676.3991600000008,
+      "maxUs": 700.6083399999989,
       "calls": 350
     },
     {
       "name": "findForcedWin",
       "board": "bench-vcf-counters",
-      "minUs": 414.86666000000696,
-      "medianUs": 445.7941600000049,
-      "maxUs": 454.9975000000086,
+      "minUs": 415.4724999999962,
+      "medianUs": 448.45166000000063,
+      "maxUs": 462.4524999999994,
       "calls": 350
     }
   ]

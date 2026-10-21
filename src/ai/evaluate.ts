@@ -1,5 +1,5 @@
 import { idx, opponentOf } from '../core/board'
-import { BOARD_SIZE, CELL_COUNT, WIN_LENGTH, type Board, type Player } from '../core/types'
+import { BOARD_SIZE, WIN_LENGTH, type Board, type Player } from '../core/types'
 import { countCall } from './metrics'
 import { WIN_SCORE } from './types'
 
@@ -72,21 +72,6 @@ const LINES = buildLines()
  * 两份逐渐分叉的规则悄悄失效。
  */
 export const EVALUATION_LINES: readonly (readonly number[])[] = LINES
-
-/**
- * 交叉点 → 经过它的线段下标集合。
- *
- * 一个点最多被横、竖、两条斜向共 4 条线经过；边角上的斜线可能因长度不足 5
- * 而不在评估集合里，所以实际是 2–4 条。增量评估靠它把「一次落子」的更新范围
- * 从 72 条线缩到这几条。
- */
-export const LINES_BY_CELL: readonly (readonly number[])[] = (() => {
-  const byCell: number[][] = Array.from({ length: CELL_COUNT }, () => [])
-  LINES.forEach((line, lineIndex) => {
-    for (const cell of line) byCell[cell]!.push(lineIndex)
-  })
-  return byCell
-})()
 
 /**
  * 段内只有「己方子」与「空位」两种（对手子与棋盘边都是段的边界），
