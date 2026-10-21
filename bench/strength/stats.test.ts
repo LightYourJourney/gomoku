@@ -23,7 +23,14 @@ function record(
   black: string,
   white: string,
   outcome: GameOutcomeKind,
-  moves: { engine: string; nodes: number; depth: number; reason?: string; ply?: number }[] = [],
+  moves: {
+    engine: string
+    nodes: number
+    depth: number
+    reason?: string
+    ply?: number
+    elapsedMs?: number
+  }[] = [],
 ): GameRecord {
   return {
     opening,
@@ -42,7 +49,7 @@ function record(
         nodes: m.nodes,
         ttHits: 0,
         reason: (m.reason ?? 'search') as never,
-        elapsedMs: 1,
+        elapsedMs: m.elapsedMs ?? 1,
       },
     })),
     error: null,
@@ -251,6 +258,27 @@ describe('搜索指标', () => {
     expect(stats.avgDepth).toBe(4)
     expect(stats.timeouts).toBe(1)
     expect(stats.searched).toBe(1)
+  })
+
+  it('耗时分布：中位、P90/P95、最大值、深度直方图与预算利用', () => {
+    const game = record('o1', 'A', 'B', 'white-win', [
+      { engine: 'A', nodes: 10, depth: 1, elapsedMs: 10 },
+      { engine: 'A', nodes: 20, depth: 4, elapsedMs: 20 },
+      { engine: 'A', nodes: 30, depth: 4, elapsedMs: 30 },
+      { engine: 'A', nodes: 40, depth: 6, elapsedMs: 40 },
+      { engine: 'A', nodes: 50, depth: 6, elapsedMs: 100, reason: 'timeout' },
+    ])
+    const sets = [pair('o1', game, record('o1', 'B', 'A', 'black-win', []))]
+
+    const stats = searchStats(sets, 'A', 50)
+
+    expect(stats.medianElapsedMs).toBe(30)
+    expect(stats.p90ElapsedMs).toBe(100)
+    expect(stats.p95ElapsedMs).toBe(100)
+    expect(stats.maxElapsedMs).toBe(100)
+    expect(stats.depthHistogram).toEqual({ '1': 1, '4': 2, '6': 2 })
+    expect(stats.timeoutRate).toBeCloseTo(1 / 5)
+    expect(stats.budgetUtilization).toBeCloseTo((10 + 20 + 30 + 40 + 100) / 5 / 50)
   })
 
   it('捷径与搜索分开计数', () => {

@@ -85,6 +85,14 @@ export interface ExperimentReport {
 const pct = (value: number | null): string => (value === null ? '—' : `${(value * 100).toFixed(1)}%`)
 const num = (value: number): string => value.toFixed(2)
 
+/** 深度分布压成 `0:12 · 4:30 · 6:18`；按深度升序，0 表示只走了捷径。 */
+function formatHistogram(histogram: Readonly<Record<string, number>>): string {
+  return Object.entries(histogram)
+    .sort(([left], [right]) => Number(left) - Number(right))
+    .map(([depth, count]) => `${depth}:${count}`)
+    .join(' · ')
+}
+
 function reportSlug(aId: string, bId: string): string {
   return `${aId}_vs_${bId}`.replace(/[^a-zA-Z0-9_.-]+/g, '-')
 }
@@ -194,6 +202,20 @@ export function renderMarkdown(report: ExperimentReport): string {
       `| ${label} | ${stats.moves} | ${num(stats.avgNodes)} | ${stats.medianNodes} | ${stats.maxNodes} | ${num(stats.avgDepth)} | ${num(stats.avgElapsedMs)} ms | ${stats.timeouts} | ${stats.shortcuts} | ${stats.ttHits} |`,
     )
   }
+  lines.push('')
+  lines.push('| 引擎 | 中位耗时 | P90 | P95 | 最大耗时 | 预算利用 | 超时率 | 深度分布 |')
+  lines.push('| --- | --- | --- | --- | --- | --- | --- | --- |')
+  for (const [label, stats] of [['A', report.search.a], ['B', report.search.b]] as const) {
+    lines.push(
+      `| ${label} | ${num(stats.medianElapsedMs)} ms | ${num(stats.p90ElapsedMs)} ms | ` +
+        `${num(stats.p95ElapsedMs)} ms | ${num(stats.maxElapsedMs)} ms | ` +
+        `${stats.budgetUtilization === null ? '—' : `${(stats.budgetUtilization * 100).toFixed(0)}%`} | ` +
+        `${stats.timeoutRate === null ? '—' : `${(stats.timeoutRate * 100).toFixed(1)}%`} | ` +
+        `${formatHistogram(stats.depthHistogram)} |`,
+    )
+  }
+  lines.push('')
+  lines.push('预算利用 = 搜索类着法的平均耗时 / 该档预算；捷径不计入分母。')
   lines.push('')
   lines.push('阶段划分：开局 = 第 1–20 手，中盘 = 第 21–60 手，后期 = 第 61 手起。')
   lines.push('')

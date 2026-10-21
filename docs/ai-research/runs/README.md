@@ -46,6 +46,23 @@
 读法见 [ENGINE_AB_RESULTS.md](../ENGINE_AB_RESULTS.md)。**胜场不是结论**：
 三组对局都逐手相同，得分率必然按换色对称分布。
 
+## Phase 10D 的对局、标定与战术产物
+
+| 文件 | 内容 |
+| --- | --- |
+| `2026-10-21_09-23-19…09-24-05-*phase10d-base*` | **开发集**相邻档对局（4 个开局：center-adjacent / diagonal / knight / offset-first） |
+| `2026-10-21_09-33-32-838-expert-2600_vs_expert-1800` | 专家预算实验（2600 vs 1800，standard） |
+| `2026-10-21_09-39-57-219-expert-1800_vs_hard-base` | 降预算专家 vs 高级（standard） |
+| `2026-10-21_09-43-19-606-hard-w12_vs_hard-w14` | 固定预算下的宽度实验（smoke） |
+| `2026-10-21_09-43-56-413-expert-vcf13_vs_expert-vcf9` | 专家算杀深度实验（smoke） |
+| `2026-10-21_09-46-*phase10d-base*` | **作废的验证集**：`three-each` 开局本身是黑棋强制胜，每对白送黑棋一分。保留供复核 |
+| `2026-10-21_09-52-*phase10d-base*` | **修正后的验证集**（留出开局，openingsVersion `808a8a8fe08e5711`）：参数冻结后只跑一次 |
+| `2026-10-21_0922-phase10d-tactics` | 五档 × 16 个标准战术局面（`yarn tactics`） |
+
+读法与结论见 [TOURNAMENT_RESULTS.md](../TOURNAMENT_RESULTS.md)、
+[DIFFICULTY_CALIBRATION.md](../DIFFICULTY_CALIBRATION.md) 与
+[TACTICAL_STRENGTH.md](../TACTICAL_STRENGTH.md)。
+
 ## 两点注意
 
 1. **`2026-10-20_04-05-*` 那三份用的是旧 schema**：它们把逐局信息放在

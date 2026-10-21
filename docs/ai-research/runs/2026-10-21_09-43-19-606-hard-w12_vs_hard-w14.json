@@ -1,0 +1,4325 @@
+{
+  "meta": {
+    "commit": "8f3fbb8094c67b98059c8cccde68c7b4526aa344",
+    "dirty": true,
+    "engineVersion": "search-1",
+    "node": "v26.12.0",
+    "platform": "darwin",
+    "arch": "arm64",
+    "cpuCount": 8,
+    "startedAt": "2026-10-21T09:43:19.606Z",
+    "finishedAt": "2026-10-21T09:43:55.739Z",
+    "durationMs": 36133,
+    "mode": "smoke",
+    "command": "yarn strength STRENGTH_MODE=smoke STRENGTH_A=hard STRENGTH_A_WIDTH=12 STRENGTH_A_MODULE=bench/strength/.engines/phase10d-base.mjs STRENGTH_A_ID=hard-w12 STRENGTH_B=hard STRENGTH_B_WIDTH=14 STRENGTH_B_MODULE=bench/strength/.engines/phase10d-base.mjs STRENGTH_B_ID=hard-w14 STRENGTH_REPEATS=1 STRENGTH_MAX_MOVES=80",
+    "openingsVersion": "cd0bce94a6d4d003",
+    "statistics": {
+      "method": "配对 Bootstrap，以开局为簇重采样",
+      "bootstrapSamples": 2000,
+      "bootstrapSeed": 2654435769,
+      "clusterUnit": "opening"
+    },
+    "notes": [
+      "真实时钟 + 正式难度预算：结果依赖机器速度与当时负载。",
+      "负载均值（1 分钟）：7.77"
+    ],
+    "resultFile": "/Users/leo/leocode/vibe/games/gomoku/bench/strength/results/2026-10-21_09-43-19-606-hard-w12_vs_hard-w14.json"
+  },
+  "a": {
+    "spec": {
+      "id": "hard-w12",
+      "label": "hard",
+      "difficulty": "hard",
+      "clock": "real",
+      "width": 12,
+      "module": "bench/strength/.engines/phase10d-base.mjs"
+    },
+    "resolved": {
+      "budgetMs": 1600,
+      "maxDepth": 6,
+      "width": 12,
+      "threatPlies": 9,
+      "threatThrees": false,
+      "transposition": true
+    },
+    "digest": "fd66d1badd610cba0590e93b7e3b2a68444bee9d2121e47355f5e87a613df7c3",
+    "kind": "module"
+  },
+  "b": {
+    "spec": {
+      "id": "hard-w14",
+      "label": "hard",
+      "difficulty": "hard",
+      "clock": "real",
+      "width": 14,
+      "module": "bench/strength/.engines/phase10d-base.mjs"
+    },
+    "resolved": {
+      "budgetMs": 1600,
+      "maxDepth": 6,
+      "width": 14,
+      "threatPlies": 9,
+      "threatThrees": false,
+      "transposition": true
+    },
+    "digest": "fd66d1badd610cba0590e93b7e3b2a68444bee9d2121e47355f5e87a613df7c3",
+    "kind": "module"
+  },
+  "openings": [
+    {
+      "id": "center-adjacent",
+      "moves": [
+        {
+          "x": 7,
+          "y": 7
+        },
+        {
+          "x": 7,
+          "y": 8
+        }
+      ]
+    },
+    {
+      "id": "center-diagonal",
+      "moves": [
+        {
+          "x": 7,
+          "y": 7
+        },
+        {
+          "x": 8,
+          "y": 8
+        }
+      ]
+    }
+  ],
+  "maxMoves": 80,
+  "repeats": 1,
+  "summary": {
+    "aId": "hard-w12",
+    "bId": "hard-w14",
+    "tally": {
+      "games": 4,
+      "scored": 2,
+      "aWins": 2,
+      "bWins": 0,
+      "draws": 0,
+      "moveLimit": 2,
+      "aborted": 0,
+      "illegalMove": 0,
+      "noMove": 0,
+      "engineError": 0,
+      "environmentError": 0
+    },
+    "scoreRate": 1,
+    "ci": {
+      "low": 1,
+      "high": 1,
+      "level": 0.95,
+      "samples": 2000
+    },
+    "elo": null,
+    "asBlack": {
+      "games": 1,
+      "wins": 1,
+      "draws": 0,
+      "losses": 0,
+      "scoreRate": 1
+    },
+    "asWhite": {
+      "games": 1,
+      "wins": 1,
+      "draws": 0,
+      "losses": 0,
+      "scoreRate": 1
+    },
+    "bAsBlack": {
+      "games": 1,
+      "wins": 0,
+      "draws": 0,
+      "losses": 1,
+      "scoreRate": 0
+    },
+    "bAsWhite": {
+      "games": 1,
+      "wins": 0,
+      "draws": 0,
+      "losses": 1,
+      "scoreRate": 0
+    },
+    "perOpening": [
+      {
+        "opening": "center-adjacent",
+        "repeats": 1,
+        "aScoreRate": 1,
+        "aBlackOutcomes": "black-win×1",
+        "bBlackOutcomes": "white-win×1"
+      },
+      {
+        "opening": "center-diagonal",
+        "repeats": 1,
+        "aScoreRate": null,
+        "aBlackOutcomes": "move-limit×1",
+        "bBlackOutcomes": "move-limit×1"
+      }
+    ]
+  },
+  "search": {
+    "a": {
+      "moves": 126,
+      "avgNodes": 6318.563492063492,
+      "medianNodes": 7427,
+      "maxNodes": 20616,
+      "avgDepth": 4.142857142857143,
+      "avgElapsedMs": 115.25396825396825,
+      "medianElapsedMs": 120,
+      "p90ElapsedMs": 223,
+      "p95ElapsedMs": 244,
+      "maxElapsedMs": 505,
+      "depthHistogram": {
+        "0": 39,
+        "6": 87
+      },
+      "timeoutRate": 0,
+      "budgetUtilization": 0.1040014367816092,
+      "ttHits": 24740,
+      "timeouts": 0,
+      "shortcuts": 39,
+      "searched": 87,
+      "phases": {
+        "opening": {
+          "moves": 36,
+          "avgNodes": 8093.194444444444,
+          "maxNodes": 12896,
+          "avgDepth": 5.333333333333333,
+          "avgElapsedMs": 123.83333333333333
+        },
+        "middle": {
+          "moves": 66,
+          "avgNodes": 5905.666666666667,
+          "maxNodes": 20616,
+          "avgDepth": 3.8181818181818183,
+          "avgElapsedMs": 110.07575757575758
+        },
+        "end": {
+          "moves": 24,
+          "avgNodes": 4792.083333333333,
+          "maxNodes": 12265,
+          "avgDepth": 3.25,
+          "avgElapsedMs": 116.625
+        }
+      }
+    },
+    "b": {
+      "moves": 125,
+      "avgNodes": 9530.736,
+      "medianNodes": 10962,
+      "maxNodes": 28280,
+      "avgDepth": 4.416,
+      "avgElapsedMs": 172.568,
+      "medianElapsedMs": 180,
+      "p90ElapsedMs": 375,
+      "p95ElapsedMs": 413,
+      "maxElapsedMs": 605,
+      "depthHistogram": {
+        "0": 33,
+        "6": 92
+      },
+      "timeoutRate": 0,
+      "budgetUtilization": 0.14652173913043479,
+      "ttHits": 41960,
+      "timeouts": 0,
+      "shortcuts": 33,
+      "searched": 92,
+      "phases": {
+        "opening": {
+          "moves": 36,
+          "avgNodes": 11101.5,
+          "maxNodes": 19025,
+          "avgDepth": 5.166666666666667,
+          "avgElapsedMs": 158.80555555555554
+        },
+        "middle": {
+          "moves": 65,
+          "avgNodes": 9678.107692307693,
+          "maxNodes": 28280,
+          "avgDepth": 4.338461538461538,
+          "avgElapsedMs": 187.76923076923077
+        },
+        "end": {
+          "moves": 24,
+          "avgNodes": 6775.458333333333,
+          "maxNodes": 17176,
+          "avgDepth": 3.5,
+          "avgElapsedMs": 152.04166666666666
+        }
+      }
+    }
+  },
+  "games": [
+    {
+      "opening": "center-adjacent",
+      "black": "hard-w12",
+      "white": "hard-w14",
+      "outcome": "black-win",
+      "winner": 1,
+      "moves": [
+        {
+          "point": {
+            "x": 6,
+            "y": 8
+          },
+          "player": 1,
+          "engine": "hard-w12",
+          "ply": 2,
+          "metrics": {
+            "depth": 6,
+            "nodes": 10177,
+            "ttHits": 491,
+            "reason": "search",
+            "elapsedMs": 505
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 7
+          },
+          "player": 2,
+          "engine": "hard-w14",
+          "ply": 3,
+          "metrics": {
+            "depth": 6,
+            "nodes": 16448,
+            "ttHits": 727,
+            "reason": "search",
+            "elapsedMs": 194
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 6
+          },
+          "player": 1,
+          "engine": "hard-w12",
+          "ply": 4,
+          "metrics": {
+            "depth": 6,
+            "nodes": 8711,
+            "ttHits": 396,
+            "reason": "search",
+            "elapsedMs": 100
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 6
+          },
+          "player": 2,
+          "engine": "hard-w14",
+          "ply": 5,
+          "metrics": {
+            "depth": 6,
+            "nodes": 17971,
+            "ttHits": 875,
+            "reason": "search",
+            "elapsedMs": 206
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 7
+          },
+          "player": 1,
+          "engine": "hard-w12",
+          "ply": 6,
+          "metrics": {
+            "depth": 6,
+            "nodes": 12295,
+            "ttHits": 679,
+            "reason": "search",
+            "elapsedMs": 145
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 9
+          },
+          "player": 2,
+          "engine": "hard-w14",
+          "ply": 7,
+          "metrics": {
+            "depth": 6,
+            "nodes": 12254,
+            "ttHits": 339,
+            "reason": "search",
+            "elapsedMs": 140
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 8
+          },
+          "player": 1,
+          "engine": "hard-w12",
+          "ply": 8,
+          "metrics": {
+            "depth": 6,
+            "nodes": 8706,
+            "ttHits": 171,
+            "reason": "search",
+            "elapsedMs": 108
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 5
+          },
+          "player": 2,
+          "engine": "hard-w14",
+          "ply": 9,
+          "metrics": {
+            "depth": 6,
+            "nodes": 12663,
+            "ttHits": 239,
+            "reason": "search",
+            "elapsedMs": 124
+          }
+        },
+        {
+          "point": {
+            "x": 4,
+            "y": 6
+          },
+          "player": 1,
+          "engine": "hard-w12",
+          "ply": 10,
+          "metrics": {
+            "depth": 6,
+            "nodes": 10422,
+            "ttHits": 582,
+            "reason": "search",
+            "elapsedMs": 141
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 9
+          },
+          "player": 2,
+          "engine": "hard-w14",
+          "ply": 11,
+          "metrics": {
+            "depth": 6,
+            "nodes": 12198,
+            "ttHits": 222,
+            "reason": "search",
+            "elapsedMs": 131
+          }
+        },
+        {
+          "point": {
+            "x": 3,
+            "y": 6
+          },
+          "player": 1,
+          "engine": "hard-w12",
+          "ply": 12,
+          "metrics": {
+            "depth": 6,
+            "nodes": 10720,
+            "ttHits": 511,
+            "reason": "search",
+            "elapsedMs": 155
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 6
+          },
+          "player": 2,
+          "engine": "hard-w14",
+          "ply": 13,
+          "metrics": {
+            "depth": 6,
+            "nodes": 9978,
+            "ttHits": 118,
+            "reason": "search",
+            "elapsedMs": 111
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 9
+          },
+          "player": 1,
+          "engine": "hard-w12",
+          "ply": 14,
+          "metrics": {
+            "depth": 6,
+            "nodes": 8107,
+            "ttHits": 316,
+            "reason": "search",
+            "elapsedMs": 137
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 10
+          },
+          "player": 2,
+          "engine": "hard-w14",
+          "ply": 15,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 3,
+            "y": 5
+          },
+          "player": 1,
+          "engine": "hard-w12",
+          "ply": 16,
+          "metrics": {
+            "depth": 6,
+            "nodes": 10289,
+            "ttHits": 378,
+            "reason": "search",
+            "elapsedMs": 168
+          }
+        },
+        {
+          "point": {
+            "x": 2,
+            "y": 4
+          },
+          "player": 2,
+          "engine": "hard-w14",
+          "ply": 17,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 2,
+            "y": 6
+          },
+          "player": 1,
+          "engine": "hard-w12",
+          "ply": 18,
+          "metrics": {
+            "depth": 6,
+            "nodes": 10978,
+            "ttHits": 256,
+            "reason": "search",
+            "elapsedMs": 207
+          }
+        },
+        {
+          "point": {
+            "x": 1,
+            "y": 6
+          },
+          "player": 2,
+          "engine": "hard-w14",
+          "ply": 19,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 3,
+            "y": 7
+          },
+          "player": 1,
+          "engine": "hard-w12",
+          "ply": 20,
+          "metrics": {
+            "depth": 6,
+            "nodes": 12265,
+            "ttHits": 273,
+            "reason": "search",
+            "elapsedMs": 242
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 10
+          },
+          "player": 2,
+          "engine": "hard-w14",
+          "ply": 21,
+          "metrics": {
+            "depth": 6,
+            "nodes": 4187,
+            "ttHits": 7,
+            "reason": "search",
+            "elapsedMs": 56
+          }
+        },
+        {
+          "point": {
+            "x": 10,
+            "y": 11
+          },
+          "player": 1,
+          "engine": "hard-w12",
+          "ply": 22,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 9
+          },
+          "player": 2,
+          "engine": "hard-w14",
+          "ply": 23,
+          "metrics": {
+            "depth": 6,
+            "nodes": 3553,
+            "ttHits": 22,
+            "reason": "search",
+            "elapsedMs": 48
+          }
+        },
+        {
+          "point": {
+            "x": 3,
+            "y": 3
+          },
+          "player": 1,
+          "engine": "hard-w12",
+          "ply": 24,
+          "metrics": {
+            "depth": 0,
+            "nodes": 24,
+            "ttHits": 0,
+            "reason": "win",
+            "elapsedMs": 2
+          }
+        },
+        {
+          "point": {
+            "x": 3,
+            "y": 4
+          },
+          "player": 2,
+          "engine": "hard-w14",
+          "ply": 25,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 3,
+            "y": 8
+          },
+          "player": 1,
+          "engine": "hard-w12",
+          "ply": 26,
+          "metrics": {
+            "depth": 0,
+            "nodes": 31,
+            "ttHits": 0,
+            "reason": "win",
+            "elapsedMs": 2
+          }
+        },
+        {
+          "point": {
+            "x": 3,
+            "y": 9
+          },
+          "player": 2,
+          "engine": "hard-w14",
+          "ply": 27,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 4,
+            "y": 8
+          },
+          "player": 1,
+          "engine": "hard-w12",
+          "ply": 28,
+          "metrics": {
+            "depth": 0,
+            "nodes": 17,
+            "ttHits": 0,
+            "reason": "win",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 10
+          },
+          "player": 2,
+          "engine": "hard-w14",
+          "ply": 29,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 1,
+            "y": 5
+          },
+          "player": 1,
+          "engine": "hard-w12",
+          "ply": 30,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "win",
+            "elapsedMs": 0
+          }
+        }
+      ],
+      "error": null,
+      "failAtMove": null,
+      "elapsedMs": 2925
+    },
+    {
+      "opening": "center-adjacent",
+      "black": "hard-w14",
+      "white": "hard-w12",
+      "outcome": "white-win",
+      "winner": 2,
+      "moves": [
+        {
+          "point": {
+            "x": 6,
+            "y": 8
+          },
+          "player": 1,
+          "engine": "hard-w14",
+          "ply": 2,
+          "metrics": {
+            "depth": 6,
+            "nodes": 14725,
+            "ttHits": 748,
+            "reason": "search",
+            "elapsedMs": 129
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 7
+          },
+          "player": 2,
+          "engine": "hard-w12",
+          "ply": 3,
+          "metrics": {
+            "depth": 6,
+            "nodes": 11408,
+            "ttHits": 410,
+            "reason": "search",
+            "elapsedMs": 107
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 6
+          },
+          "player": 1,
+          "engine": "hard-w14",
+          "ply": 4,
+          "metrics": {
+            "depth": 6,
+            "nodes": 12828,
+            "ttHits": 688,
+            "reason": "search",
+            "elapsedMs": 136
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 6
+          },
+          "player": 2,
+          "engine": "hard-w12",
+          "ply": 5,
+          "metrics": {
+            "depth": 6,
+            "nodes": 12896,
+            "ttHits": 580,
+            "reason": "search",
+            "elapsedMs": 145
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 7
+          },
+          "player": 1,
+          "engine": "hard-w14",
+          "ply": 6,
+          "metrics": {
+            "depth": 6,
+            "nodes": 17636,
+            "ttHits": 1133,
+            "reason": "search",
+            "elapsedMs": 193
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 9
+          },
+          "player": 2,
+          "engine": "hard-w12",
+          "ply": 7,
+          "metrics": {
+            "depth": 6,
+            "nodes": 9087,
+            "ttHits": 222,
+            "reason": "search",
+            "elapsedMs": 102
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 8
+          },
+          "player": 1,
+          "engine": "hard-w14",
+          "ply": 8,
+          "metrics": {
+            "depth": 6,
+            "nodes": 12692,
+            "ttHits": 309,
+            "reason": "search",
+            "elapsedMs": 146
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 5
+          },
+          "player": 2,
+          "engine": "hard-w12",
+          "ply": 9,
+          "metrics": {
+            "depth": 6,
+            "nodes": 9625,
+            "ttHits": 195,
+            "reason": "search",
+            "elapsedMs": 101
+          }
+        },
+        {
+          "point": {
+            "x": 4,
+            "y": 6
+          },
+          "player": 1,
+          "engine": "hard-w14",
+          "ply": 10,
+          "metrics": {
+            "depth": 6,
+            "nodes": 14501,
+            "ttHits": 979,
+            "reason": "search",
+            "elapsedMs": 184
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 9
+          },
+          "player": 2,
+          "engine": "hard-w12",
+          "ply": 11,
+          "metrics": {
+            "depth": 6,
+            "nodes": 12135,
+            "ttHits": 361,
+            "reason": "search",
+            "elapsedMs": 149
+          }
+        },
+        {
+          "point": {
+            "x": 3,
+            "y": 6
+          },
+          "player": 1,
+          "engine": "hard-w14",
+          "ply": 12,
+          "metrics": {
+            "depth": 6,
+            "nodes": 16701,
+            "ttHits": 922,
+            "reason": "search",
+            "elapsedMs": 243
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 6
+          },
+          "player": 2,
+          "engine": "hard-w12",
+          "ply": 13,
+          "metrics": {
+            "depth": 6,
+            "nodes": 7150,
+            "ttHits": 96,
+            "reason": "search",
+            "elapsedMs": 108
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 9
+          },
+          "player": 1,
+          "engine": "hard-w14",
+          "ply": 14,
+          "metrics": {
+            "depth": 6,
+            "nodes": 12234,
+            "ttHits": 533,
+            "reason": "search",
+            "elapsedMs": 215
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 10
+          },
+          "player": 2,
+          "engine": "hard-w12",
+          "ply": 15,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 3,
+            "y": 5
+          },
+          "player": 1,
+          "engine": "hard-w14",
+          "ply": 16,
+          "metrics": {
+            "depth": 6,
+            "nodes": 15470,
+            "ttHits": 669,
+            "reason": "search",
+            "elapsedMs": 250
+          }
+        },
+        {
+          "point": {
+            "x": 2,
+            "y": 4
+          },
+          "player": 2,
+          "engine": "hard-w12",
+          "ply": 17,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 3,
+            "y": 4
+          },
+          "player": 1,
+          "engine": "hard-w14",
+          "ply": 18,
+          "metrics": {
+            "depth": 6,
+            "nodes": 19025,
+            "ttHits": 487,
+            "reason": "search",
+            "elapsedMs": 302
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 10
+          },
+          "player": 2,
+          "engine": "hard-w12",
+          "ply": 19,
+          "metrics": {
+            "depth": 6,
+            "nodes": 9854,
+            "ttHits": 156,
+            "reason": "search",
+            "elapsedMs": 132
+          }
+        },
+        {
+          "point": {
+            "x": 10,
+            "y": 11
+          },
+          "player": 1,
+          "engine": "hard-w14",
+          "ply": 20,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 3,
+            "y": 7
+          },
+          "player": 2,
+          "engine": "hard-w12",
+          "ply": 21,
+          "metrics": {
+            "depth": 6,
+            "nodes": 5346,
+            "ttHits": 89,
+            "reason": "search",
+            "elapsedMs": 74
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 9
+          },
+          "player": 1,
+          "engine": "hard-w14",
+          "ply": 22,
+          "metrics": {
+            "depth": 6,
+            "nodes": 16070,
+            "ttHits": 532,
+            "reason": "search",
+            "elapsedMs": 300
+          }
+        },
+        {
+          "point": {
+            "x": 4,
+            "y": 7
+          },
+          "player": 2,
+          "engine": "hard-w12",
+          "ply": 23,
+          "metrics": {
+            "depth": 6,
+            "nodes": 4840,
+            "ttHits": 81,
+            "reason": "search",
+            "elapsedMs": 64
+          }
+        },
+        {
+          "point": {
+            "x": 2,
+            "y": 6
+          },
+          "player": 1,
+          "engine": "hard-w14",
+          "ply": 24,
+          "metrics": {
+            "depth": 6,
+            "nodes": 16228,
+            "ttHits": 500,
+            "reason": "search",
+            "elapsedMs": 302
+          }
+        },
+        {
+          "point": {
+            "x": 1,
+            "y": 6
+          },
+          "player": 2,
+          "engine": "hard-w12",
+          "ply": 25,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 3,
+            "y": 3
+          },
+          "player": 1,
+          "engine": "hard-w14",
+          "ply": 26,
+          "metrics": {
+            "depth": 6,
+            "nodes": 18125,
+            "ttHits": 712,
+            "reason": "search",
+            "elapsedMs": 338
+          }
+        },
+        {
+          "point": {
+            "x": 3,
+            "y": 2
+          },
+          "player": 2,
+          "engine": "hard-w12",
+          "ply": 27,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 4,
+            "y": 10
+          },
+          "player": 1,
+          "engine": "hard-w14",
+          "ply": 28,
+          "metrics": {
+            "depth": 6,
+            "nodes": 23420,
+            "ttHits": 1215,
+            "reason": "search",
+            "elapsedMs": 434
+          }
+        },
+        {
+          "point": {
+            "x": 3,
+            "y": 11
+          },
+          "player": 2,
+          "engine": "hard-w12",
+          "ply": 29,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 1,
+            "y": 7
+          },
+          "player": 1,
+          "engine": "hard-w14",
+          "ply": 30,
+          "metrics": {
+            "depth": 6,
+            "nodes": 23600,
+            "ttHits": 662,
+            "reason": "search",
+            "elapsedMs": 412
+          }
+        },
+        {
+          "point": {
+            "x": 4,
+            "y": 4
+          },
+          "player": 2,
+          "engine": "hard-w12",
+          "ply": 31,
+          "metrics": {
+            "depth": 6,
+            "nodes": 11376,
+            "ttHits": 147,
+            "reason": "search",
+            "elapsedMs": 192
+          }
+        },
+        {
+          "point": {
+            "x": 4,
+            "y": 9
+          },
+          "player": 1,
+          "engine": "hard-w14",
+          "ply": 32,
+          "metrics": {
+            "depth": 6,
+            "nodes": 15610,
+            "ttHits": 284,
+            "reason": "search",
+            "elapsedMs": 266
+          }
+        },
+        {
+          "point": {
+            "x": 3,
+            "y": 9
+          },
+          "player": 2,
+          "engine": "hard-w12",
+          "ply": 33,
+          "metrics": {
+            "depth": 6,
+            "nodes": 5964,
+            "ttHits": 137,
+            "reason": "search",
+            "elapsedMs": 109
+          }
+        },
+        {
+          "point": {
+            "x": 3,
+            "y": 8
+          },
+          "player": 1,
+          "engine": "hard-w14",
+          "ply": 34,
+          "metrics": {
+            "depth": 6,
+            "nodes": 13394,
+            "ttHits": 311,
+            "reason": "search",
+            "elapsedMs": 236
+          }
+        },
+        {
+          "point": {
+            "x": 4,
+            "y": 8
+          },
+          "player": 2,
+          "engine": "hard-w12",
+          "ply": 35,
+          "metrics": {
+            "depth": 6,
+            "nodes": 10000,
+            "ttHits": 180,
+            "reason": "search",
+            "elapsedMs": 155
+          }
+        },
+        {
+          "point": {
+            "x": 2,
+            "y": 3
+          },
+          "player": 1,
+          "engine": "hard-w14",
+          "ply": 36,
+          "metrics": {
+            "depth": 6,
+            "nodes": 14263,
+            "ttHits": 335,
+            "reason": "search",
+            "elapsedMs": 301
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 10
+          },
+          "player": 2,
+          "engine": "hard-w12",
+          "ply": 37,
+          "metrics": {
+            "depth": 6,
+            "nodes": 7462,
+            "ttHits": 134,
+            "reason": "search",
+            "elapsedMs": 136
+          }
+        },
+        {
+          "point": {
+            "x": 4,
+            "y": 5
+          },
+          "player": 1,
+          "engine": "hard-w14",
+          "ply": 38,
+          "metrics": {
+            "depth": 6,
+            "nodes": 14354,
+            "ttHits": 643,
+            "reason": "search",
+            "elapsedMs": 258
+          }
+        },
+        {
+          "point": {
+            "x": 1,
+            "y": 2
+          },
+          "player": 2,
+          "engine": "hard-w12",
+          "ply": 39,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 4,
+            "y": 3
+          },
+          "player": 1,
+          "engine": "hard-w14",
+          "ply": 40,
+          "metrics": {
+            "depth": 6,
+            "nodes": 8469,
+            "ttHits": 109,
+            "reason": "search",
+            "elapsedMs": 133
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 10
+          },
+          "player": 2,
+          "engine": "hard-w12",
+          "ply": 41,
+          "metrics": {
+            "depth": 6,
+            "nodes": 9089,
+            "ttHits": 149,
+            "reason": "search",
+            "elapsedMs": 161
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 10
+          },
+          "player": 1,
+          "engine": "hard-w14",
+          "ply": 42,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 8
+          },
+          "player": 2,
+          "engine": "hard-w12",
+          "ply": 43,
+          "metrics": {
+            "depth": 6,
+            "nodes": 9516,
+            "ttHits": 128,
+            "reason": "search",
+            "elapsedMs": 181
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 7
+          },
+          "player": 1,
+          "engine": "hard-w14",
+          "ply": 44,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 3
+          },
+          "player": 2,
+          "engine": "hard-w12",
+          "ply": 45,
+          "metrics": {
+            "depth": 6,
+            "nodes": 11120,
+            "ttHits": 217,
+            "reason": "search",
+            "elapsedMs": 191
+          }
+        },
+        {
+          "point": {
+            "x": 1,
+            "y": 3
+          },
+          "player": 1,
+          "engine": "hard-w14",
+          "ply": 46,
+          "metrics": {
+            "depth": 6,
+            "nodes": 17668,
+            "ttHits": 353,
+            "reason": "search",
+            "elapsedMs": 340
+          }
+        },
+        {
+          "point": {
+            "x": 0,
+            "y": 3
+          },
+          "player": 2,
+          "engine": "hard-w12",
+          "ply": 47,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 11
+          },
+          "player": 1,
+          "engine": "hard-w14",
+          "ply": 48,
+          "metrics": {
+            "depth": 6,
+            "nodes": 15065,
+            "ttHits": 394,
+            "reason": "search",
+            "elapsedMs": 252
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 12
+          },
+          "player": 2,
+          "engine": "hard-w12",
+          "ply": 49,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 11
+          },
+          "player": 1,
+          "engine": "hard-w14",
+          "ply": 50,
+          "metrics": {
+            "depth": 6,
+            "nodes": 9197,
+            "ttHits": 131,
+            "reason": "search",
+            "elapsedMs": 180
+          }
+        },
+        {
+          "point": {
+            "x": 10,
+            "y": 10
+          },
+          "player": 2,
+          "engine": "hard-w12",
+          "ply": 51,
+          "metrics": {
+            "depth": 6,
+            "nodes": 6667,
+            "ttHits": 57,
+            "reason": "search",
+            "elapsedMs": 167
+          }
+        },
+        {
+          "point": {
+            "x": 11,
+            "y": 10
+          },
+          "player": 1,
+          "engine": "hard-w14",
+          "ply": 52,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 12
+          },
+          "player": 2,
+          "engine": "hard-w12",
+          "ply": 53,
+          "metrics": {
+            "depth": 6,
+            "nodes": 2065,
+            "ttHits": 8,
+            "reason": "search",
+            "elapsedMs": 52
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 11
+          },
+          "player": 1,
+          "engine": "hard-w14",
+          "ply": 54,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 11
+          },
+          "player": 2,
+          "engine": "hard-w12",
+          "ply": 55,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 4,
+            "y": 11
+          },
+          "player": 1,
+          "engine": "hard-w14",
+          "ply": 56,
+          "metrics": {
+            "depth": 6,
+            "nodes": 6286,
+            "ttHits": 119,
+            "reason": "search",
+            "elapsedMs": 151
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 11
+          },
+          "player": 2,
+          "engine": "hard-w12",
+          "ply": 57,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 4,
+            "y": 12
+          },
+          "player": 1,
+          "engine": "hard-w14",
+          "ply": 58,
+          "metrics": {
+            "depth": 6,
+            "nodes": 6660,
+            "ttHits": 112,
+            "reason": "search",
+            "elapsedMs": 177
+          }
+        },
+        {
+          "point": {
+            "x": 4,
+            "y": 13
+          },
+          "player": 2,
+          "engine": "hard-w12",
+          "ply": 59,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 11,
+            "y": 9
+          },
+          "player": 1,
+          "engine": "hard-w14",
+          "ply": 60,
+          "metrics": {
+            "depth": 6,
+            "nodes": 6235,
+            "ttHits": 73,
+            "reason": "search",
+            "elapsedMs": 141
+          }
+        },
+        {
+          "point": {
+            "x": 10,
+            "y": 12
+          },
+          "player": 2,
+          "engine": "hard-w12",
+          "ply": 61,
+          "metrics": {
+            "depth": 0,
+            "nodes": 17,
+            "ttHits": 0,
+            "reason": "win",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 11,
+            "y": 13
+          },
+          "player": 1,
+          "engine": "hard-w14",
+          "ply": 62,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 12
+          },
+          "player": 2,
+          "engine": "hard-w12",
+          "ply": 63,
+          "metrics": {
+            "depth": 0,
+            "nodes": 88,
+            "ttHits": 0,
+            "reason": "win",
+            "elapsedMs": 6
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 12
+          },
+          "player": 1,
+          "engine": "hard-w14",
+          "ply": 64,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 9
+          },
+          "player": 2,
+          "engine": "hard-w12",
+          "ply": 65,
+          "metrics": {
+            "depth": 0,
+            "nodes": 456,
+            "ttHits": 0,
+            "reason": "win",
+            "elapsedMs": 28
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 8
+          },
+          "player": 1,
+          "engine": "hard-w14",
+          "ply": 66,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 13
+          },
+          "player": 2,
+          "engine": "hard-w12",
+          "ply": 67,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "win",
+            "elapsedMs": 0
+          }
+        }
+      ],
+      "error": null,
+      "failAtMove": null,
+      "elapsedMs": 8388
+    },
+    {
+      "opening": "center-diagonal",
+      "black": "hard-w12",
+      "white": "hard-w14",
+      "outcome": "move-limit",
+      "winner": null,
+      "moves": [
+        {
+          "point": {
+            "x": 9,
+            "y": 7
+          },
+          "player": 1,
+          "engine": "hard-w12",
+          "ply": 2,
+          "metrics": {
+            "depth": 6,
+            "nodes": 10966,
+            "ttHits": 505,
+            "reason": "search",
+            "elapsedMs": 120
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 6
+          },
+          "player": 2,
+          "engine": "hard-w14",
+          "ply": 3,
+          "metrics": {
+            "depth": 6,
+            "nodes": 16454,
+            "ttHits": 1108,
+            "reason": "search",
+            "elapsedMs": 210
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 7
+          },
+          "player": 1,
+          "engine": "hard-w12",
+          "ply": 4,
+          "metrics": {
+            "depth": 6,
+            "nodes": 5588,
+            "ttHits": 421,
+            "reason": "search",
+            "elapsedMs": 67
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 7
+          },
+          "player": 2,
+          "engine": "hard-w14",
+          "ply": 5,
+          "metrics": {
+            "depth": 6,
+            "nodes": 7892,
+            "ttHits": 229,
+            "reason": "search",
+            "elapsedMs": 77
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 6
+          },
+          "player": 1,
+          "engine": "hard-w12",
+          "ply": 6,
+          "metrics": {
+            "depth": 6,
+            "nodes": 11730,
+            "ttHits": 671,
+            "reason": "search",
+            "elapsedMs": 148
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 8
+          },
+          "player": 2,
+          "engine": "hard-w14",
+          "ply": 7,
+          "metrics": {
+            "depth": 6,
+            "nodes": 11884,
+            "ttHits": 269,
+            "reason": "search",
+            "elapsedMs": 126
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 8
+          },
+          "player": 1,
+          "engine": "hard-w12",
+          "ply": 8,
+          "metrics": {
+            "depth": 6,
+            "nodes": 6836,
+            "ttHits": 579,
+            "reason": "search",
+            "elapsedMs": 94
+          }
+        },
+        {
+          "point": {
+            "x": 10,
+            "y": 9
+          },
+          "player": 2,
+          "engine": "hard-w14",
+          "ply": 9,
+          "metrics": {
+            "depth": 6,
+            "nodes": 10907,
+            "ttHits": 156,
+            "reason": "search",
+            "elapsedMs": 105
+          }
+        },
+        {
+          "point": {
+            "x": 10,
+            "y": 7
+          },
+          "player": 1,
+          "engine": "hard-w12",
+          "ply": 10,
+          "metrics": {
+            "depth": 6,
+            "nodes": 8145,
+            "ttHits": 505,
+            "reason": "search",
+            "elapsedMs": 119
+          }
+        },
+        {
+          "point": {
+            "x": 11,
+            "y": 7
+          },
+          "player": 2,
+          "engine": "hard-w14",
+          "ply": 11,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 9
+          },
+          "player": 1,
+          "engine": "hard-w12",
+          "ply": 12,
+          "metrics": {
+            "depth": 6,
+            "nodes": 10752,
+            "ttHits": 460,
+            "reason": "search",
+            "elapsedMs": 195
+          }
+        },
+        {
+          "point": {
+            "x": 11,
+            "y": 6
+          },
+          "player": 2,
+          "engine": "hard-w14",
+          "ply": 13,
+          "metrics": {
+            "depth": 6,
+            "nodes": 6793,
+            "ttHits": 127,
+            "reason": "search",
+            "elapsedMs": 183
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 6
+          },
+          "player": 1,
+          "engine": "hard-w12",
+          "ply": 14,
+          "metrics": {
+            "depth": 6,
+            "nodes": 8775,
+            "ttHits": 482,
+            "reason": "search",
+            "elapsedMs": 182
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 5
+          },
+          "player": 2,
+          "engine": "hard-w14",
+          "ply": 15,
+          "metrics": {
+            "depth": 6,
+            "nodes": 10115,
+            "ttHits": 108,
+            "reason": "search",
+            "elapsedMs": 116
+          }
+        },
+        {
+          "point": {
+            "x": 11,
+            "y": 8
+          },
+          "player": 1,
+          "engine": "hard-w12",
+          "ply": 16,
+          "metrics": {
+            "depth": 6,
+            "nodes": 7427,
+            "ttHits": 296,
+            "reason": "search",
+            "elapsedMs": 143
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 5
+          },
+          "player": 2,
+          "engine": "hard-w14",
+          "ply": 17,
+          "metrics": {
+            "depth": 6,
+            "nodes": 5941,
+            "ttHits": 82,
+            "reason": "search",
+            "elapsedMs": 63
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 10
+          },
+          "player": 1,
+          "engine": "hard-w12",
+          "ply": 18,
+          "metrics": {
+            "depth": 6,
+            "nodes": 8946,
+            "ttHits": 185,
+            "reason": "search",
+            "elapsedMs": 173
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 9
+          },
+          "player": 2,
+          "engine": "hard-w14",
+          "ply": 19,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 10
+          },
+          "player": 1,
+          "engine": "hard-w12",
+          "ply": 20,
+          "metrics": {
+            "depth": 6,
+            "nodes": 6464,
+            "ttHits": 255,
+            "reason": "search",
+            "elapsedMs": 118
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 11
+          },
+          "player": 2,
+          "engine": "hard-w14",
+          "ply": 21,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 5
+          },
+          "player": 1,
+          "engine": "hard-w12",
+          "ply": 22,
+          "metrics": {
+            "depth": 6,
+            "nodes": 10607,
+            "ttHits": 336,
+            "reason": "search",
+            "elapsedMs": 187
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 4
+          },
+          "player": 2,
+          "engine": "hard-w14",
+          "ply": 23,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 12,
+            "y": 9
+          },
+          "player": 1,
+          "engine": "hard-w12",
+          "ply": 24,
+          "metrics": {
+            "depth": 6,
+            "nodes": 10347,
+            "ttHits": 478,
+            "reason": "search",
+            "elapsedMs": 190
+          }
+        },
+        {
+          "point": {
+            "x": 13,
+            "y": 10
+          },
+          "player": 2,
+          "engine": "hard-w14",
+          "ply": 25,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 10
+          },
+          "player": 1,
+          "engine": "hard-w12",
+          "ply": 26,
+          "metrics": {
+            "depth": 6,
+            "nodes": 15164,
+            "ttHits": 407,
+            "reason": "search",
+            "elapsedMs": 256
+          }
+        },
+        {
+          "point": {
+            "x": 10,
+            "y": 10
+          },
+          "player": 2,
+          "engine": "hard-w14",
+          "ply": 27,
+          "metrics": {
+            "depth": 6,
+            "nodes": 12017,
+            "ttHits": 115,
+            "reason": "search",
+            "elapsedMs": 164
+          }
+        },
+        {
+          "point": {
+            "x": 12,
+            "y": 8
+          },
+          "player": 1,
+          "engine": "hard-w12",
+          "ply": 28,
+          "metrics": {
+            "depth": 6,
+            "nodes": 20616,
+            "ttHits": 443,
+            "reason": "search",
+            "elapsedMs": 384
+          }
+        },
+        {
+          "point": {
+            "x": 10,
+            "y": 5
+          },
+          "player": 2,
+          "engine": "hard-w14",
+          "ply": 29,
+          "metrics": {
+            "depth": 6,
+            "nodes": 16773,
+            "ttHits": 310,
+            "reason": "search",
+            "elapsedMs": 280
+          }
+        },
+        {
+          "point": {
+            "x": 11,
+            "y": 5
+          },
+          "player": 1,
+          "engine": "hard-w12",
+          "ply": 30,
+          "metrics": {
+            "depth": 6,
+            "nodes": 12265,
+            "ttHits": 325,
+            "reason": "search",
+            "elapsedMs": 210
+          }
+        },
+        {
+          "point": {
+            "x": 10,
+            "y": 8
+          },
+          "player": 2,
+          "engine": "hard-w14",
+          "ply": 31,
+          "metrics": {
+            "depth": 6,
+            "nodes": 14331,
+            "ttHits": 258,
+            "reason": "search",
+            "elapsedMs": 236
+          }
+        },
+        {
+          "point": {
+            "x": 12,
+            "y": 7
+          },
+          "player": 1,
+          "engine": "hard-w12",
+          "ply": 32,
+          "metrics": {
+            "depth": 6,
+            "nodes": 12029,
+            "ttHits": 535,
+            "reason": "search",
+            "elapsedMs": 198
+          }
+        },
+        {
+          "point": {
+            "x": 12,
+            "y": 6
+          },
+          "player": 2,
+          "engine": "hard-w14",
+          "ply": 33,
+          "metrics": {
+            "depth": 6,
+            "nodes": 5804,
+            "ttHits": 79,
+            "reason": "search",
+            "elapsedMs": 115
+          }
+        },
+        {
+          "point": {
+            "x": 13,
+            "y": 5
+          },
+          "player": 1,
+          "engine": "hard-w12",
+          "ply": 34,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 10
+          },
+          "player": 2,
+          "engine": "hard-w14",
+          "ply": 35,
+          "metrics": {
+            "depth": 6,
+            "nodes": 15256,
+            "ttHits": 496,
+            "reason": "search",
+            "elapsedMs": 268
+          }
+        },
+        {
+          "point": {
+            "x": 10,
+            "y": 11
+          },
+          "player": 1,
+          "engine": "hard-w12",
+          "ply": 36,
+          "metrics": {
+            "depth": 6,
+            "nodes": 8880,
+            "ttHits": 99,
+            "reason": "search",
+            "elapsedMs": 149
+          }
+        },
+        {
+          "point": {
+            "x": 11,
+            "y": 10
+          },
+          "player": 2,
+          "engine": "hard-w14",
+          "ply": 37,
+          "metrics": {
+            "depth": 6,
+            "nodes": 16564,
+            "ttHits": 573,
+            "reason": "search",
+            "elapsedMs": 303
+          }
+        },
+        {
+          "point": {
+            "x": 10,
+            "y": 6
+          },
+          "player": 1,
+          "engine": "hard-w12",
+          "ply": 38,
+          "metrics": {
+            "depth": 6,
+            "nodes": 9180,
+            "ttHits": 266,
+            "reason": "search",
+            "elapsedMs": 203
+          }
+        },
+        {
+          "point": {
+            "x": 12,
+            "y": 10
+          },
+          "player": 2,
+          "engine": "hard-w14",
+          "ply": 39,
+          "metrics": {
+            "depth": 6,
+            "nodes": 11471,
+            "ttHits": 351,
+            "reason": "search",
+            "elapsedMs": 245
+          }
+        },
+        {
+          "point": {
+            "x": 14,
+            "y": 10
+          },
+          "player": 1,
+          "engine": "hard-w12",
+          "ply": 40,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 11,
+            "y": 11
+          },
+          "player": 2,
+          "engine": "hard-w14",
+          "ply": 41,
+          "metrics": {
+            "depth": 6,
+            "nodes": 10462,
+            "ttHits": 657,
+            "reason": "search",
+            "elapsedMs": 192
+          }
+        },
+        {
+          "point": {
+            "x": 12,
+            "y": 12
+          },
+          "player": 1,
+          "engine": "hard-w12",
+          "ply": 42,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 11,
+            "y": 12
+          },
+          "player": 2,
+          "engine": "hard-w14",
+          "ply": 43,
+          "metrics": {
+            "depth": 6,
+            "nodes": 13972,
+            "ttHits": 628,
+            "reason": "search",
+            "elapsedMs": 231
+          }
+        },
+        {
+          "point": {
+            "x": 11,
+            "y": 13
+          },
+          "player": 1,
+          "engine": "hard-w12",
+          "ply": 44,
+          "metrics": {
+            "depth": 6,
+            "nodes": 9091,
+            "ttHits": 189,
+            "reason": "search",
+            "elapsedMs": 151
+          }
+        },
+        {
+          "point": {
+            "x": 12,
+            "y": 11
+          },
+          "player": 2,
+          "engine": "hard-w14",
+          "ply": 45,
+          "metrics": {
+            "depth": 6,
+            "nodes": 16438,
+            "ttHits": 974,
+            "reason": "search",
+            "elapsedMs": 276
+          }
+        },
+        {
+          "point": {
+            "x": 13,
+            "y": 11
+          },
+          "player": 1,
+          "engine": "hard-w12",
+          "ply": 46,
+          "metrics": {
+            "depth": 6,
+            "nodes": 8402,
+            "ttHits": 243,
+            "reason": "search",
+            "elapsedMs": 146
+          }
+        },
+        {
+          "point": {
+            "x": 10,
+            "y": 14
+          },
+          "player": 2,
+          "engine": "hard-w14",
+          "ply": 47,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 10,
+            "y": 13
+          },
+          "player": 1,
+          "engine": "hard-w12",
+          "ply": 48,
+          "metrics": {
+            "depth": 6,
+            "nodes": 10934,
+            "ttHits": 252,
+            "reason": "search",
+            "elapsedMs": 180
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 9
+          },
+          "player": 2,
+          "engine": "hard-w14",
+          "ply": 49,
+          "metrics": {
+            "depth": 6,
+            "nodes": 12969,
+            "ttHits": 500,
+            "reason": "search",
+            "elapsedMs": 232
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 8
+          },
+          "player": 1,
+          "engine": "hard-w12",
+          "ply": 50,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 12
+          },
+          "player": 2,
+          "engine": "hard-w14",
+          "ply": 51,
+          "metrics": {
+            "depth": 6,
+            "nodes": 12463,
+            "ttHits": 417,
+            "reason": "search",
+            "elapsedMs": 290
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 13
+          },
+          "player": 1,
+          "engine": "hard-w12",
+          "ply": 52,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 13
+          },
+          "player": 2,
+          "engine": "hard-w14",
+          "ply": 53,
+          "metrics": {
+            "depth": 6,
+            "nodes": 19420,
+            "ttHits": 549,
+            "reason": "search",
+            "elapsedMs": 381
+          }
+        },
+        {
+          "point": {
+            "x": 10,
+            "y": 12
+          },
+          "player": 1,
+          "engine": "hard-w12",
+          "ply": 54,
+          "metrics": {
+            "depth": 6,
+            "nodes": 5862,
+            "ttHits": 191,
+            "reason": "search",
+            "elapsedMs": 108
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 12
+          },
+          "player": 2,
+          "engine": "hard-w14",
+          "ply": 55,
+          "metrics": {
+            "depth": 6,
+            "nodes": 9819,
+            "ttHits": 384,
+            "reason": "search",
+            "elapsedMs": 187
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 11
+          },
+          "player": 1,
+          "engine": "hard-w12",
+          "ply": 56,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 11
+          },
+          "player": 2,
+          "engine": "hard-w14",
+          "ply": 57,
+          "metrics": {
+            "depth": 6,
+            "nodes": 6430,
+            "ttHits": 187,
+            "reason": "search",
+            "elapsedMs": 127
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 13
+          },
+          "player": 1,
+          "engine": "hard-w12",
+          "ply": 58,
+          "metrics": {
+            "depth": 6,
+            "nodes": 5902,
+            "ttHits": 167,
+            "reason": "search",
+            "elapsedMs": 108
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 12
+          },
+          "player": 2,
+          "engine": "hard-w14",
+          "ply": 59,
+          "metrics": {
+            "depth": 6,
+            "nodes": 9856,
+            "ttHits": 269,
+            "reason": "search",
+            "elapsedMs": 195
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 12
+          },
+          "player": 1,
+          "engine": "hard-w12",
+          "ply": 60,
+          "metrics": {
+            "depth": 6,
+            "nodes": 7788,
+            "ttHits": 110,
+            "reason": "search",
+            "elapsedMs": 145
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 10
+          },
+          "player": 2,
+          "engine": "hard-w14",
+          "ply": 61,
+          "metrics": {
+            "depth": 6,
+            "nodes": 16636,
+            "ttHits": 967,
+            "reason": "search",
+            "elapsedMs": 323
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 13
+          },
+          "player": 1,
+          "engine": "hard-w12",
+          "ply": 62,
+          "metrics": {
+            "depth": 6,
+            "nodes": 6775,
+            "ttHits": 136,
+            "reason": "search",
+            "elapsedMs": 156
+          }
+        },
+        {
+          "point": {
+            "x": 4,
+            "y": 9
+          },
+          "player": 2,
+          "engine": "hard-w14",
+          "ply": 63,
+          "metrics": {
+            "depth": 6,
+            "nodes": 12202,
+            "ttHits": 779,
+            "reason": "search",
+            "elapsedMs": 386
+          }
+        },
+        {
+          "point": {
+            "x": 3,
+            "y": 8
+          },
+          "player": 1,
+          "engine": "hard-w12",
+          "ply": 64,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 4,
+            "y": 11
+          },
+          "player": 2,
+          "engine": "hard-w14",
+          "ply": 65,
+          "metrics": {
+            "depth": 6,
+            "nodes": 15540,
+            "ttHits": 880,
+            "reason": "search",
+            "elapsedMs": 413
+          }
+        },
+        {
+          "point": {
+            "x": 3,
+            "y": 12
+          },
+          "player": 1,
+          "engine": "hard-w12",
+          "ply": 66,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 4,
+            "y": 10
+          },
+          "player": 2,
+          "engine": "hard-w14",
+          "ply": 67,
+          "metrics": {
+            "depth": 6,
+            "nodes": 17176,
+            "ttHits": 749,
+            "reason": "search",
+            "elapsedMs": 410
+          }
+        },
+        {
+          "point": {
+            "x": 4,
+            "y": 13
+          },
+          "player": 1,
+          "engine": "hard-w12",
+          "ply": 68,
+          "metrics": {
+            "depth": 6,
+            "nodes": 8953,
+            "ttHits": 98,
+            "reason": "search",
+            "elapsedMs": 197
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 13
+          },
+          "player": 2,
+          "engine": "hard-w14",
+          "ply": 69,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 4,
+            "y": 8
+          },
+          "player": 1,
+          "engine": "hard-w12",
+          "ply": 70,
+          "metrics": {
+            "depth": 6,
+            "nodes": 10767,
+            "ttHits": 150,
+            "reason": "search",
+            "elapsedMs": 223
+          }
+        },
+        {
+          "point": {
+            "x": 13,
+            "y": 12
+          },
+          "player": 2,
+          "engine": "hard-w14",
+          "ply": 71,
+          "metrics": {
+            "depth": 6,
+            "nodes": 15400,
+            "ttHits": 198,
+            "reason": "search",
+            "elapsedMs": 333
+          }
+        },
+        {
+          "point": {
+            "x": 14,
+            "y": 13
+          },
+          "player": 1,
+          "engine": "hard-w12",
+          "ply": 72,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 3,
+            "y": 9
+          },
+          "player": 2,
+          "engine": "hard-w14",
+          "ply": 73,
+          "metrics": {
+            "depth": 6,
+            "nodes": 11444,
+            "ttHits": 214,
+            "reason": "search",
+            "elapsedMs": 295
+          }
+        },
+        {
+          "point": {
+            "x": 12,
+            "y": 13
+          },
+          "player": 1,
+          "engine": "hard-w12",
+          "ply": 74,
+          "metrics": {
+            "depth": 6,
+            "nodes": 6787,
+            "ttHits": 112,
+            "reason": "search",
+            "elapsedMs": 244
+          }
+        },
+        {
+          "point": {
+            "x": 13,
+            "y": 13
+          },
+          "player": 2,
+          "engine": "hard-w14",
+          "ply": 75,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 12,
+            "y": 4
+          },
+          "player": 1,
+          "engine": "hard-w12",
+          "ply": 76,
+          "metrics": {
+            "depth": 6,
+            "nodes": 6903,
+            "ttHits": 95,
+            "reason": "search",
+            "elapsedMs": 176
+          }
+        },
+        {
+          "point": {
+            "x": 13,
+            "y": 3
+          },
+          "player": 2,
+          "engine": "hard-w14",
+          "ply": 77,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 9
+          },
+          "player": 1,
+          "engine": "hard-w12",
+          "ply": 78,
+          "metrics": {
+            "depth": 6,
+            "nodes": 4588,
+            "ttHits": 40,
+            "reason": "search",
+            "elapsedMs": 108
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 9
+          },
+          "player": 2,
+          "engine": "hard-w14",
+          "ply": 79,
+          "metrics": {
+            "depth": 0,
+            "nodes": 26,
+            "ttHits": 0,
+            "reason": "win",
+            "elapsedMs": 1
+          }
+        }
+      ],
+      "error": "达到手数上限 80，局面仍未结束",
+      "failAtMove": null,
+      "elapsedMs": 11850
+    },
+    {
+      "opening": "center-diagonal",
+      "black": "hard-w14",
+      "white": "hard-w12",
+      "outcome": "move-limit",
+      "winner": null,
+      "moves": [
+        {
+          "point": {
+            "x": 9,
+            "y": 7
+          },
+          "player": 1,
+          "engine": "hard-w14",
+          "ply": 2,
+          "metrics": {
+            "depth": 6,
+            "nodes": 15574,
+            "ttHits": 811,
+            "reason": "search",
+            "elapsedMs": 159
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 6
+          },
+          "player": 2,
+          "engine": "hard-w12",
+          "ply": 3,
+          "metrics": {
+            "depth": 6,
+            "nodes": 11651,
+            "ttHits": 708,
+            "reason": "search",
+            "elapsedMs": 142
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 7
+          },
+          "player": 1,
+          "engine": "hard-w14",
+          "ply": 4,
+          "metrics": {
+            "depth": 6,
+            "nodes": 7925,
+            "ttHits": 590,
+            "reason": "search",
+            "elapsedMs": 99
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 7
+          },
+          "player": 2,
+          "engine": "hard-w12",
+          "ply": 5,
+          "metrics": {
+            "depth": 6,
+            "nodes": 5705,
+            "ttHits": 163,
+            "reason": "search",
+            "elapsedMs": 65
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 6
+          },
+          "player": 1,
+          "engine": "hard-w14",
+          "ply": 6,
+          "metrics": {
+            "depth": 6,
+            "nodes": 16494,
+            "ttHits": 1078,
+            "reason": "search",
+            "elapsedMs": 204
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 8
+          },
+          "player": 2,
+          "engine": "hard-w12",
+          "ply": 7,
+          "metrics": {
+            "depth": 6,
+            "nodes": 8277,
+            "ttHits": 199,
+            "reason": "search",
+            "elapsedMs": 96
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 8
+          },
+          "player": 1,
+          "engine": "hard-w14",
+          "ply": 8,
+          "metrics": {
+            "depth": 6,
+            "nodes": 9832,
+            "ttHits": 934,
+            "reason": "search",
+            "elapsedMs": 181
+          }
+        },
+        {
+          "point": {
+            "x": 10,
+            "y": 9
+          },
+          "player": 2,
+          "engine": "hard-w12",
+          "ply": 9,
+          "metrics": {
+            "depth": 6,
+            "nodes": 7803,
+            "ttHits": 130,
+            "reason": "search",
+            "elapsedMs": 115
+          }
+        },
+        {
+          "point": {
+            "x": 10,
+            "y": 7
+          },
+          "player": 1,
+          "engine": "hard-w14",
+          "ply": 10,
+          "metrics": {
+            "depth": 6,
+            "nodes": 11368,
+            "ttHits": 885,
+            "reason": "search",
+            "elapsedMs": 177
+          }
+        },
+        {
+          "point": {
+            "x": 11,
+            "y": 7
+          },
+          "player": 2,
+          "engine": "hard-w12",
+          "ply": 11,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 9
+          },
+          "player": 1,
+          "engine": "hard-w14",
+          "ply": 12,
+          "metrics": {
+            "depth": 6,
+            "nodes": 15086,
+            "ttHits": 789,
+            "reason": "search",
+            "elapsedMs": 376
+          }
+        },
+        {
+          "point": {
+            "x": 11,
+            "y": 6
+          },
+          "player": 2,
+          "engine": "hard-w12",
+          "ply": 13,
+          "metrics": {
+            "depth": 6,
+            "nodes": 4978,
+            "ttHits": 95,
+            "reason": "search",
+            "elapsedMs": 92
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 6
+          },
+          "player": 1,
+          "engine": "hard-w14",
+          "ply": 14,
+          "metrics": {
+            "depth": 6,
+            "nodes": 12015,
+            "ttHits": 777,
+            "reason": "search",
+            "elapsedMs": 254
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 5
+          },
+          "player": 2,
+          "engine": "hard-w12",
+          "ply": 15,
+          "metrics": {
+            "depth": 6,
+            "nodes": 6939,
+            "ttHits": 93,
+            "reason": "search",
+            "elapsedMs": 107
+          }
+        },
+        {
+          "point": {
+            "x": 11,
+            "y": 8
+          },
+          "player": 1,
+          "engine": "hard-w14",
+          "ply": 16,
+          "metrics": {
+            "depth": 6,
+            "nodes": 10962,
+            "ttHits": 494,
+            "reason": "search",
+            "elapsedMs": 266
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 5
+          },
+          "player": 2,
+          "engine": "hard-w12",
+          "ply": 17,
+          "metrics": {
+            "depth": 6,
+            "nodes": 4277,
+            "ttHits": 62,
+            "reason": "search",
+            "elapsedMs": 89
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 10
+          },
+          "player": 1,
+          "engine": "hard-w14",
+          "ply": 18,
+          "metrics": {
+            "depth": 6,
+            "nodes": 13088,
+            "ttHits": 322,
+            "reason": "search",
+            "elapsedMs": 417
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 9
+          },
+          "player": 2,
+          "engine": "hard-w12",
+          "ply": 19,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 10
+          },
+          "player": 1,
+          "engine": "hard-w14",
+          "ply": 20,
+          "metrics": {
+            "depth": 6,
+            "nodes": 10419,
+            "ttHits": 536,
+            "reason": "search",
+            "elapsedMs": 251
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 11
+          },
+          "player": 2,
+          "engine": "hard-w12",
+          "ply": 21,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 5
+          },
+          "player": 1,
+          "engine": "hard-w14",
+          "ply": 22,
+          "metrics": {
+            "depth": 6,
+            "nodes": 15523,
+            "ttHits": 601,
+            "reason": "search",
+            "elapsedMs": 429
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 4
+          },
+          "player": 2,
+          "engine": "hard-w12",
+          "ply": 23,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 12,
+            "y": 9
+          },
+          "player": 1,
+          "engine": "hard-w14",
+          "ply": 24,
+          "metrics": {
+            "depth": 6,
+            "nodes": 14283,
+            "ttHits": 801,
+            "reason": "search",
+            "elapsedMs": 478
+          }
+        },
+        {
+          "point": {
+            "x": 13,
+            "y": 10
+          },
+          "player": 2,
+          "engine": "hard-w12",
+          "ply": 25,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 10
+          },
+          "player": 1,
+          "engine": "hard-w14",
+          "ply": 26,
+          "metrics": {
+            "depth": 6,
+            "nodes": 18587,
+            "ttHits": 477,
+            "reason": "search",
+            "elapsedMs": 436
+          }
+        },
+        {
+          "point": {
+            "x": 10,
+            "y": 10
+          },
+          "player": 2,
+          "engine": "hard-w12",
+          "ply": 27,
+          "metrics": {
+            "depth": 6,
+            "nodes": 8809,
+            "ttHits": 100,
+            "reason": "search",
+            "elapsedMs": 183
+          }
+        },
+        {
+          "point": {
+            "x": 12,
+            "y": 8
+          },
+          "player": 1,
+          "engine": "hard-w14",
+          "ply": 28,
+          "metrics": {
+            "depth": 6,
+            "nodes": 28280,
+            "ttHits": 717,
+            "reason": "search",
+            "elapsedMs": 605
+          }
+        },
+        {
+          "point": {
+            "x": 10,
+            "y": 5
+          },
+          "player": 2,
+          "engine": "hard-w12",
+          "ply": 29,
+          "metrics": {
+            "depth": 6,
+            "nodes": 12354,
+            "ttHits": 243,
+            "reason": "search",
+            "elapsedMs": 314
+          }
+        },
+        {
+          "point": {
+            "x": 11,
+            "y": 5
+          },
+          "player": 1,
+          "engine": "hard-w14",
+          "ply": 30,
+          "metrics": {
+            "depth": 6,
+            "nodes": 16248,
+            "ttHits": 387,
+            "reason": "search",
+            "elapsedMs": 375
+          }
+        },
+        {
+          "point": {
+            "x": 10,
+            "y": 8
+          },
+          "player": 2,
+          "engine": "hard-w12",
+          "ply": 31,
+          "metrics": {
+            "depth": 6,
+            "nodes": 11152,
+            "ttHits": 236,
+            "reason": "search",
+            "elapsedMs": 215
+          }
+        },
+        {
+          "point": {
+            "x": 12,
+            "y": 7
+          },
+          "player": 1,
+          "engine": "hard-w14",
+          "ply": 32,
+          "metrics": {
+            "depth": 6,
+            "nodes": 16684,
+            "ttHits": 767,
+            "reason": "search",
+            "elapsedMs": 354
+          }
+        },
+        {
+          "point": {
+            "x": 12,
+            "y": 6
+          },
+          "player": 2,
+          "engine": "hard-w12",
+          "ply": 33,
+          "metrics": {
+            "depth": 6,
+            "nodes": 4699,
+            "ttHits": 76,
+            "reason": "search",
+            "elapsedMs": 123
+          }
+        },
+        {
+          "point": {
+            "x": 13,
+            "y": 5
+          },
+          "player": 1,
+          "engine": "hard-w14",
+          "ply": 34,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 10
+          },
+          "player": 2,
+          "engine": "hard-w12",
+          "ply": 35,
+          "metrics": {
+            "depth": 6,
+            "nodes": 10777,
+            "ttHits": 296,
+            "reason": "search",
+            "elapsedMs": 217
+          }
+        },
+        {
+          "point": {
+            "x": 10,
+            "y": 11
+          },
+          "player": 1,
+          "engine": "hard-w14",
+          "ply": 36,
+          "metrics": {
+            "depth": 6,
+            "nodes": 12629,
+            "ttHits": 120,
+            "reason": "search",
+            "elapsedMs": 223
+          }
+        },
+        {
+          "point": {
+            "x": 11,
+            "y": 10
+          },
+          "player": 2,
+          "engine": "hard-w12",
+          "ply": 37,
+          "metrics": {
+            "depth": 6,
+            "nodes": 11620,
+            "ttHits": 368,
+            "reason": "search",
+            "elapsedMs": 226
+          }
+        },
+        {
+          "point": {
+            "x": 10,
+            "y": 6
+          },
+          "player": 1,
+          "engine": "hard-w14",
+          "ply": 38,
+          "metrics": {
+            "depth": 6,
+            "nodes": 12872,
+            "ttHits": 408,
+            "reason": "search",
+            "elapsedMs": 261
+          }
+        },
+        {
+          "point": {
+            "x": 12,
+            "y": 10
+          },
+          "player": 2,
+          "engine": "hard-w12",
+          "ply": 39,
+          "metrics": {
+            "depth": 6,
+            "nodes": 7890,
+            "ttHits": 210,
+            "reason": "search",
+            "elapsedMs": 182
+          }
+        },
+        {
+          "point": {
+            "x": 14,
+            "y": 10
+          },
+          "player": 1,
+          "engine": "hard-w14",
+          "ply": 40,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 11,
+            "y": 11
+          },
+          "player": 2,
+          "engine": "hard-w12",
+          "ply": 41,
+          "metrics": {
+            "depth": 6,
+            "nodes": 7095,
+            "ttHits": 394,
+            "reason": "search",
+            "elapsedMs": 145
+          }
+        },
+        {
+          "point": {
+            "x": 12,
+            "y": 12
+          },
+          "player": 1,
+          "engine": "hard-w14",
+          "ply": 42,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 11,
+            "y": 12
+          },
+          "player": 2,
+          "engine": "hard-w12",
+          "ply": 43,
+          "metrics": {
+            "depth": 6,
+            "nodes": 10128,
+            "ttHits": 400,
+            "reason": "search",
+            "elapsedMs": 183
+          }
+        },
+        {
+          "point": {
+            "x": 11,
+            "y": 13
+          },
+          "player": 1,
+          "engine": "hard-w14",
+          "ply": 44,
+          "metrics": {
+            "depth": 6,
+            "nodes": 11819,
+            "ttHits": 223,
+            "reason": "search",
+            "elapsedMs": 186
+          }
+        },
+        {
+          "point": {
+            "x": 12,
+            "y": 11
+          },
+          "player": 2,
+          "engine": "hard-w12",
+          "ply": 45,
+          "metrics": {
+            "depth": 6,
+            "nodes": 12417,
+            "ttHits": 545,
+            "reason": "search",
+            "elapsedMs": 225
+          }
+        },
+        {
+          "point": {
+            "x": 13,
+            "y": 11
+          },
+          "player": 1,
+          "engine": "hard-w14",
+          "ply": 46,
+          "metrics": {
+            "depth": 6,
+            "nodes": 11171,
+            "ttHits": 356,
+            "reason": "search",
+            "elapsedMs": 190
+          }
+        },
+        {
+          "point": {
+            "x": 10,
+            "y": 14
+          },
+          "player": 2,
+          "engine": "hard-w12",
+          "ply": 47,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 10,
+            "y": 13
+          },
+          "player": 1,
+          "engine": "hard-w14",
+          "ply": 48,
+          "metrics": {
+            "depth": 6,
+            "nodes": 14856,
+            "ttHits": 392,
+            "reason": "search",
+            "elapsedMs": 237
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 9
+          },
+          "player": 2,
+          "engine": "hard-w12",
+          "ply": 49,
+          "metrics": {
+            "depth": 6,
+            "nodes": 9176,
+            "ttHits": 282,
+            "reason": "search",
+            "elapsedMs": 169
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 8
+          },
+          "player": 1,
+          "engine": "hard-w14",
+          "ply": 50,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 12
+          },
+          "player": 2,
+          "engine": "hard-w12",
+          "ply": 51,
+          "metrics": {
+            "depth": 6,
+            "nodes": 8856,
+            "ttHits": 245,
+            "reason": "search",
+            "elapsedMs": 151
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 13
+          },
+          "player": 1,
+          "engine": "hard-w14",
+          "ply": 52,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 13
+          },
+          "player": 2,
+          "engine": "hard-w12",
+          "ply": 53,
+          "metrics": {
+            "depth": 6,
+            "nodes": 13579,
+            "ttHits": 377,
+            "reason": "search",
+            "elapsedMs": 246
+          }
+        },
+        {
+          "point": {
+            "x": 10,
+            "y": 12
+          },
+          "player": 1,
+          "engine": "hard-w14",
+          "ply": 54,
+          "metrics": {
+            "depth": 6,
+            "nodes": 7592,
+            "ttHits": 271,
+            "reason": "search",
+            "elapsedMs": 141
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 12
+          },
+          "player": 2,
+          "engine": "hard-w12",
+          "ply": 55,
+          "metrics": {
+            "depth": 6,
+            "nodes": 7686,
+            "ttHits": 324,
+            "reason": "search",
+            "elapsedMs": 149
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 11
+          },
+          "player": 1,
+          "engine": "hard-w14",
+          "ply": 56,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 11
+          },
+          "player": 2,
+          "engine": "hard-w12",
+          "ply": 57,
+          "metrics": {
+            "depth": 6,
+            "nodes": 4813,
+            "ttHits": 135,
+            "reason": "search",
+            "elapsedMs": 92
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 13
+          },
+          "player": 1,
+          "engine": "hard-w14",
+          "ply": 58,
+          "metrics": {
+            "depth": 6,
+            "nodes": 7920,
+            "ttHits": 208,
+            "reason": "search",
+            "elapsedMs": 132
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 12
+          },
+          "player": 2,
+          "engine": "hard-w12",
+          "ply": 59,
+          "metrics": {
+            "depth": 6,
+            "nodes": 7198,
+            "ttHits": 341,
+            "reason": "search",
+            "elapsedMs": 128
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 12
+          },
+          "player": 1,
+          "engine": "hard-w14",
+          "ply": 60,
+          "metrics": {
+            "depth": 6,
+            "nodes": 10565,
+            "ttHits": 156,
+            "reason": "search",
+            "elapsedMs": 164
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 10
+          },
+          "player": 2,
+          "engine": "hard-w12",
+          "ply": 61,
+          "metrics": {
+            "depth": 6,
+            "nodes": 10815,
+            "ttHits": 641,
+            "reason": "search",
+            "elapsedMs": 204
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 13
+          },
+          "player": 1,
+          "engine": "hard-w14",
+          "ply": 62,
+          "metrics": {
+            "depth": 6,
+            "nodes": 9679,
+            "ttHits": 190,
+            "reason": "search",
+            "elapsedMs": 171
+          }
+        },
+        {
+          "point": {
+            "x": 4,
+            "y": 9
+          },
+          "player": 2,
+          "engine": "hard-w12",
+          "ply": 63,
+          "metrics": {
+            "depth": 6,
+            "nodes": 7242,
+            "ttHits": 369,
+            "reason": "search",
+            "elapsedMs": 146
+          }
+        },
+        {
+          "point": {
+            "x": 3,
+            "y": 8
+          },
+          "player": 1,
+          "engine": "hard-w14",
+          "ply": 64,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 4,
+            "y": 11
+          },
+          "player": 2,
+          "engine": "hard-w12",
+          "ply": 65,
+          "metrics": {
+            "depth": 6,
+            "nodes": 10811,
+            "ttHits": 523,
+            "reason": "search",
+            "elapsedMs": 213
+          }
+        },
+        {
+          "point": {
+            "x": 3,
+            "y": 12
+          },
+          "player": 1,
+          "engine": "hard-w14",
+          "ply": 66,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 4,
+            "y": 10
+          },
+          "player": 2,
+          "engine": "hard-w12",
+          "ply": 67,
+          "metrics": {
+            "depth": 6,
+            "nodes": 12265,
+            "ttHits": 416,
+            "reason": "search",
+            "elapsedMs": 234
+          }
+        },
+        {
+          "point": {
+            "x": 4,
+            "y": 13
+          },
+          "player": 1,
+          "engine": "hard-w14",
+          "ply": 68,
+          "metrics": {
+            "depth": 6,
+            "nodes": 10289,
+            "ttHits": 75,
+            "reason": "search",
+            "elapsedMs": 192
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 13
+          },
+          "player": 2,
+          "engine": "hard-w12",
+          "ply": 69,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 4,
+            "y": 8
+          },
+          "player": 1,
+          "engine": "hard-w14",
+          "ply": 70,
+          "metrics": {
+            "depth": 6,
+            "nodes": 13687,
+            "ttHits": 192,
+            "reason": "search",
+            "elapsedMs": 266
+          }
+        },
+        {
+          "point": {
+            "x": 13,
+            "y": 12
+          },
+          "player": 2,
+          "engine": "hard-w12",
+          "ply": 71,
+          "metrics": {
+            "depth": 6,
+            "nodes": 12054,
+            "ttHits": 181,
+            "reason": "search",
+            "elapsedMs": 236
+          }
+        },
+        {
+          "point": {
+            "x": 14,
+            "y": 13
+          },
+          "player": 1,
+          "engine": "hard-w14",
+          "ply": 72,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 3,
+            "y": 9
+          },
+          "player": 2,
+          "engine": "hard-w12",
+          "ply": 73,
+          "metrics": {
+            "depth": 6,
+            "nodes": 8675,
+            "ttHits": 157,
+            "reason": "search",
+            "elapsedMs": 478
+          }
+        },
+        {
+          "point": {
+            "x": 12,
+            "y": 13
+          },
+          "player": 1,
+          "engine": "hard-w14",
+          "ply": 74,
+          "metrics": {
+            "depth": 6,
+            "nodes": 8786,
+            "ttHits": 144,
+            "reason": "search",
+            "elapsedMs": 241
+          }
+        },
+        {
+          "point": {
+            "x": 13,
+            "y": 13
+          },
+          "player": 2,
+          "engine": "hard-w12",
+          "ply": 75,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 12,
+            "y": 4
+          },
+          "player": 1,
+          "engine": "hard-w14",
+          "ply": 76,
+          "metrics": {
+            "depth": 6,
+            "nodes": 8978,
+            "ttHits": 101,
+            "reason": "search",
+            "elapsedMs": 181
+          }
+        },
+        {
+          "point": {
+            "x": 13,
+            "y": 3
+          },
+          "player": 2,
+          "engine": "hard-w12",
+          "ply": 77,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 9
+          },
+          "player": 1,
+          "engine": "hard-w14",
+          "ply": 78,
+          "metrics": {
+            "depth": 6,
+            "nodes": 5968,
+            "ttHits": 43,
+            "reason": "search",
+            "elapsedMs": 131
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 9
+          },
+          "player": 2,
+          "engine": "hard-w12",
+          "ply": 79,
+          "metrics": {
+            "depth": 0,
+            "nodes": 26,
+            "ttHits": 0,
+            "reason": "win",
+            "elapsedMs": 1
+          }
+        }
+      ],
+      "error": "达到手数上限 80，局面仍未结束",
+      "failAtMove": null,
+      "elapsedMs": 12953
+    }
+  ]
+}

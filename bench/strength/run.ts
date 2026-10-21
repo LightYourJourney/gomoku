@@ -281,7 +281,10 @@ test('AI 强度评测', async () => {
     maxMoves,
     repeats,
     summary,
-    search: { a: searchStats(sets, aSpec.id), b: searchStats(sets, bSpec.id) },
+    search: {
+      a: searchStats(sets, aSpec.id, resolveOptions(aSpec).budgetMs),
+      b: searchStats(sets, bSpec.id, resolveOptions(bSpec).budgetMs),
+    },
     games: sets.flatMap((set) => [set.aBlack, set.bBlack]),
   }
 

@@ -147,3 +147,64 @@ export function proveForcedWin(board: Board, player: Player): ForcedWinProof | n
 
   return null
 }
+
+/**
+ * 验证「某一手是否构成强制胜」。
+ *
+ * 与 `proveForcedWin` 的区别：那个枚举**所有**候选首手去找一个证明；
+ * 这个只检查**给定的那一手**。战术探针用它判断引擎选的着法是否真的赢定了，
+ * 而不是拿引擎自己的分数当标准。
+ *
+ * `playerMoves` 是**我方还能走几手**的预算：
+ * - `1`（默认，与 `proveForcedWin` 同义）：这一手之后，对手无论怎么应，
+ *   我方下一步都有成五点——即三手链；
+ * - `2`：允许再组织一手，覆盖「冲四 → 对手堵 → 做活四」这类五手链。
+ *
+ * 为什么需要 `2`：`double-threat` 局面上，五手胜同样正确，但三手证明会把它判错。
+ * 证明边界必须写在报告里，不能把「没证明到」当成「下错了」。
+ */
+export function isForcedWinMove(
+  board: Board,
+  player: Player,
+  move: Point,
+  playerMoves = 1,
+): boolean {
+  if (validateMove(board, move) !== null) return false
+
+  const afterMine = withStone(board, move, player)
+  if (findWinLine(afterMine, move) !== null) return true
+
+  return forcesWin(afterMine, player, playerMoves)
+}
+
+/**
+ * 落子之后，是否「对手怎么应都挡不住」。
+ *
+ * `remaining` 是除当前这一手之外、我方还可以用的手数。
+ */
+function forcesWin(board: Board, player: Player, remaining: number): boolean {
+  const opponent = opponentOf(player)
+  if (winningPoints(board, opponent).length > 0) return false
+
+  for (const reply of relevantPoints(board)) {
+    const afterReply = withStone(board, reply, opponent)
+    if (findWinLine(afterReply, reply) !== null) return false
+
+    // 对手这一应之后我方立刻能成五：这条应手已经被覆盖。
+    if (winningPoints(afterReply, player).length > 0) continue
+
+    if (remaining <= 1) return false
+
+    // 否则我方必须再组织一手；不要求每一手都唯一，存在一条即可。
+    let nextExists = false
+    for (const next of relevantPoints(afterReply)) {
+      if (isForcedWinMove(afterReply, player, next, remaining - 1)) {
+        nextExists = true
+        break
+      }
+    }
+    if (!nextExists) return false
+  }
+
+  return true
+}

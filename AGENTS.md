@@ -50,6 +50,7 @@ Gomoku Lab 的开发约定。通用工程原则（想清楚再写、保持简单
   例外是 `bench/strength/*.test.ts`——那是**评测器自测**（不是测量本身），已纳入 `yarn test`。评测器算错会得出漂亮的错误结论，这类断言必须每次提交都跑。
 - `yarn profile`（`bench/profile/`）是**剖析**入口：V8 采样 + 调用计数，产出的是份额与单价，同样不进 `yarn test`、同样必须真跑。它允许对**测量工具自身**做一致性自检（例如「两条走法必须得到相同的叶子数与分值和」）——那是对工具的自检，不是性能断言。剖析数字必须注明测量时的机器负载；绝对耗时跨运行不可比时以占比与比值为准。
   它还会跑旧版 vs 新版的**固定深度 A/B**（`upgrade.ab.profile.ts`）：两边都必须走打包管线，**轮数必须是偶数**（严格交替下两边当「先跑」的次数才相等）。协议与噪声底见 `docs/ai-research/SEARCH_OPTIMIZATION.md` §1。
+- `yarn tactics`（`bench/strength/tactics.run.ts`）对五档跑标准战术局面。**判据只能来自 `core/rules` 与 `proof.ts` 的独立证明器，不得拿搜索引擎的分数当正确答案**；必败局面只记录、不计入通过率。它的自测在 `bench/strength/proof.test.ts`，纳入 `yarn test`。
 
 ## 提交前
 

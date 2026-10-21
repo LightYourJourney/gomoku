@@ -20,6 +20,7 @@
     "bench:blocking": "node bench/blocking.probe.mjs",
     "profile": "vitest run --config vitest.profile.config.ts",
     "strength": "vitest run --config vitest.strength.config.ts",
+    "tactics": "vitest run --config vitest.tactics.config.ts",
     "strength:bundle": "node bench/strength/bundle-engine.mjs",
     "ui:probe": "node bench/ui.probe.mjs",
     "check:cycles": "madge --circular --extensions ts,tsx src",

@@ -195,3 +195,22 @@ describe('难度参数的取值不变量', () => {
     }
   })
 })
+
+describe('Phase 10D 标定后的精确参数快照', () => {
+  /**
+   * 五档参数经 Phase 10D 的对局矩阵与参数实验核定：**没有修改**。
+   *
+   * 这条用例把具体数值钉死，目的不是禁止调整，而是让任何调整都变成
+   * **刻意决定**——改参数的人必须同时改这里，并给出新的评测证据
+   * （见 `docs/ai-research/DIFFICULTY_CALIBRATION.md`）。
+   */
+  it('参数与标定结论一致', () => {
+    expect(DIFFICULTY_PARAMS).toEqual({
+      beginner: { width: 6, depth: 1, budgetMs: 250, attack: 1, defense: 0.6, threatPlies: 0, threatThrees: false },
+      easy: { width: 10, depth: 2, budgetMs: 500, attack: 1, defense: 1, threatPlies: 0, threatThrees: false },
+      medium: { width: 10, depth: 4, budgetMs: 1000, attack: 1, defense: 1, threatPlies: 5, threatThrees: false },
+      hard: { width: 12, depth: 6, budgetMs: 1600, attack: 1, defense: 1, threatPlies: 9, threatThrees: false },
+      expert: { width: 14, depth: 8, budgetMs: 2600, attack: 1, defense: 1, threatPlies: 13, threatThrees: false },
+    })
+  })
+})

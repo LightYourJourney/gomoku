@@ -363,6 +363,17 @@ export interface SearchStats {
   readonly maxNodes: number
   readonly avgDepth: number
   readonly avgElapsedMs: number
+  readonly medianElapsedMs: number
+  /** 决策耗时的 P90 / P95 / 最大值（含捷径的 0 ms 着法）。 */
+  readonly p90ElapsedMs: number
+  readonly p95ElapsedMs: number
+  readonly maxElapsedMs: number
+  /** 深度 → 着法数。0 表示只走了捷径或启发式兜底。 */
+  readonly depthHistogram: Readonly<Record<string, number>>
+  /** 超时 /（超时 + 正常搜索）。捷径不算分母。 */
+  readonly timeoutRate: number | null
+  /** 搜索类着法的平均耗时 / 预算。没有预算或没有搜索着法时为 null。 */
+  readonly budgetUtilization: number | null
   readonly ttHits: number
   /** `reason === 'timeout'` 的次数——真实预算下才有意义。 */
   readonly timeouts: number
@@ -385,7 +396,19 @@ function median(values: readonly number[]): number {
   return sorted[Math.floor(sorted.length / 2)]!
 }
 
-export function searchStats(sets: readonly PairedGameSet[], engineId: string): SearchStats {
+/** 最近秩分位（nearest-rank）：第 ceil(p·n) 小的值。空数组返回 0。 */
+function percentile(values: readonly number[], fraction: number): number {
+  if (values.length === 0) return 0
+  const sorted = [...values].sort((a, b) => a - b)
+  const rank = Math.ceil(fraction * sorted.length) - 1
+  return sorted[Math.min(sorted.length - 1, Math.max(0, rank))]!
+}
+
+export function searchStats(
+  sets: readonly PairedGameSet[],
+  engineId: string,
+  budgetMs?: number,
+): SearchStats {
   const rows: { ply: number; nodes: number; depth: number; elapsedMs: number; reason: string; ttHits: number }[] = []
 
   for (const set of sets) {
@@ -407,6 +430,15 @@ export function searchStats(sets: readonly PairedGameSet[], engineId: string): S
 
   const nodes = rows.map((r) => r.nodes)
   const depths = rows.map((r) => r.depth)
+  const elapsed = rows.map((r) => r.elapsedMs)
+  // 预算利用率只看真正进入搜索的着法：捷径的 0 ms 会把平均值拉成噪声。
+  const engaged = rows.filter((r) => r.reason === 'search' || r.reason === 'timeout')
+
+  const depthHistogram: Record<string, number> = {}
+  for (const depth of depths) {
+    const key = String(depth)
+    depthHistogram[key] = (depthHistogram[key] ?? 0) + 1
+  }
 
   const phases: Record<Phase, PhaseStats> = { opening: EMPTY_PHASE, middle: EMPTY_PHASE, end: EMPTY_PHASE }
   for (const phase of ['opening', 'middle', 'end'] as const) {
@@ -426,7 +458,20 @@ export function searchStats(sets: readonly PairedGameSet[], engineId: string): S
     medianNodes: median(nodes),
     maxNodes: nodes.length === 0 ? 0 : Math.max(...nodes),
     avgDepth: average(depths),
-    avgElapsedMs: average(rows.map((r) => r.elapsedMs)),
+    avgElapsedMs: average(elapsed),
+    medianElapsedMs: median(elapsed),
+    p90ElapsedMs: percentile(elapsed, 0.9),
+    p95ElapsedMs: percentile(elapsed, 0.95),
+    maxElapsedMs: elapsed.length === 0 ? 0 : Math.max(...elapsed),
+    depthHistogram,
+    timeoutRate:
+      engaged.length === 0
+        ? null
+        : engaged.filter((r) => r.reason === 'timeout').length / engaged.length,
+    budgetUtilization:
+      budgetMs === undefined || engaged.length === 0
+        ? null
+        : average(engaged.map((r) => r.elapsedMs)) / budgetMs,
     ttHits: rows.reduce((sum, r) => sum + r.ttHits, 0),
     timeouts: rows.filter((r) => r.reason === 'timeout').length,
     shortcuts: rows.filter((r) => r.reason === 'win' || r.reason === 'block' || r.reason === 'opening').length,

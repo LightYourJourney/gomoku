@@ -1,0 +1,5803 @@
+{
+  "meta": {
+    "commit": "8f3fbb8094c67b98059c8cccde68c7b4526aa344",
+    "dirty": true,
+    "engineVersion": "search-1",
+    "node": "v26.12.0",
+    "platform": "darwin",
+    "arch": "arm64",
+    "cpuCount": 8,
+    "startedAt": "2026-10-21T09:52:06.113Z",
+    "finishedAt": "2026-10-21T09:52:28.810Z",
+    "durationMs": 22697,
+    "mode": "standard",
+    "command": "yarn strength STRENGTH_MODE=standard STRENGTH_A=medium STRENGTH_A_MODULE=bench/strength/.engines/phase10d-base.mjs STRENGTH_A_ID=medium@phase10d-base STRENGTH_B=hard STRENGTH_B_MODULE=bench/strength/.engines/phase10d-base.mjs STRENGTH_B_ID=hard@phase10d-base STRENGTH_REPEATS=1 STRENGTH_MAX_MOVES=120",
+    "openingsVersion": "808a8a8fe08e5711",
+    "statistics": {
+      "method": "配对 Bootstrap，以开局为簇重采样",
+      "bootstrapSamples": 2000,
+      "bootstrapSeed": 2654435769,
+      "clusterUnit": "opening"
+    },
+    "notes": [
+      "真实时钟 + 正式难度预算：结果依赖机器速度与当时负载。",
+      "负载均值（1 分钟）：5.99"
+    ],
+    "resultFile": "/Users/leo/leocode/vibe/games/gomoku/bench/strength/results/2026-10-21_09-52-06-113-medium-phase10d-base_vs_hard-phase10d-base.json"
+  },
+  "a": {
+    "spec": {
+      "id": "medium@phase10d-base",
+      "label": "medium",
+      "difficulty": "medium",
+      "clock": "real",
+      "module": "bench/strength/.engines/phase10d-base.mjs"
+    },
+    "resolved": {
+      "budgetMs": 1000,
+      "maxDepth": 4,
+      "width": 10,
+      "threatPlies": 5,
+      "threatThrees": false,
+      "transposition": true
+    },
+    "digest": "fd66d1badd610cba0590e93b7e3b2a68444bee9d2121e47355f5e87a613df7c3",
+    "kind": "module"
+  },
+  "b": {
+    "spec": {
+      "id": "hard@phase10d-base",
+      "label": "hard",
+      "difficulty": "hard",
+      "clock": "real",
+      "module": "bench/strength/.engines/phase10d-base.mjs"
+    },
+    "resolved": {
+      "budgetMs": 1600,
+      "maxDepth": 6,
+      "width": 12,
+      "threatPlies": 9,
+      "threatThrees": false,
+      "transposition": true
+    },
+    "digest": "fd66d1badd610cba0590e93b7e3b2a68444bee9d2121e47355f5e87a613df7c3",
+    "kind": "module"
+  },
+  "openings": [
+    {
+      "id": "center-far",
+      "moves": [
+        {
+          "x": 7,
+          "y": 7
+        },
+        {
+          "x": 5,
+          "y": 5
+        }
+      ]
+    },
+    {
+      "id": "branch-a",
+      "moves": [
+        {
+          "x": 7,
+          "y": 7
+        },
+        {
+          "x": 7,
+          "y": 8
+        },
+        {
+          "x": 8,
+          "y": 8
+        },
+        {
+          "x": 6,
+          "y": 6
+        }
+      ]
+    },
+    {
+      "id": "branch-b",
+      "moves": [
+        {
+          "x": 7,
+          "y": 7
+        },
+        {
+          "x": 8,
+          "y": 8
+        },
+        {
+          "x": 8,
+          "y": 7
+        },
+        {
+          "x": 6,
+          "y": 6
+        }
+      ]
+    },
+    {
+      "id": "three-each",
+      "moves": [
+        {
+          "x": 7,
+          "y": 7
+        },
+        {
+          "x": 7,
+          "y": 8
+        },
+        {
+          "x": 6,
+          "y": 7
+        },
+        {
+          "x": 8,
+          "y": 8
+        },
+        {
+          "x": 8,
+          "y": 7
+        },
+        {
+          "x": 5,
+          "y": 7
+        }
+      ]
+    }
+  ],
+  "maxMoves": 120,
+  "repeats": 1,
+  "summary": {
+    "aId": "medium@phase10d-base",
+    "bId": "hard@phase10d-base",
+    "tally": {
+      "games": 8,
+      "scored": 7,
+      "aWins": 3,
+      "bWins": 4,
+      "draws": 0,
+      "moveLimit": 1,
+      "aborted": 0,
+      "illegalMove": 0,
+      "noMove": 0,
+      "engineError": 0,
+      "environmentError": 0
+    },
+    "scoreRate": 0.42857142857142855,
+    "ci": {
+      "low": 0,
+      "high": 0.8571428571428571,
+      "level": 0.95,
+      "samples": 2000
+    },
+    "elo": -49.97549464332,
+    "asBlack": {
+      "games": 4,
+      "wins": 2,
+      "draws": 0,
+      "losses": 2,
+      "scoreRate": 0.5
+    },
+    "asWhite": {
+      "games": 3,
+      "wins": 1,
+      "draws": 0,
+      "losses": 2,
+      "scoreRate": 0.3333333333333333
+    },
+    "bAsBlack": {
+      "games": 4,
+      "wins": 2,
+      "draws": 0,
+      "losses": 2,
+      "scoreRate": 0.5
+    },
+    "bAsWhite": {
+      "games": 3,
+      "wins": 2,
+      "draws": 0,
+      "losses": 1,
+      "scoreRate": 0.6666666666666666
+    },
+    "perOpening": [
+      {
+        "opening": "center-far",
+        "repeats": 1,
+        "aScoreRate": 0,
+        "aBlackOutcomes": "white-win×1",
+        "bBlackOutcomes": "black-win×1"
+      },
+      {
+        "opening": "branch-a",
+        "repeats": 1,
+        "aScoreRate": 0,
+        "aBlackOutcomes": "white-win×1",
+        "bBlackOutcomes": "move-limit×1"
+      },
+      {
+        "opening": "branch-b",
+        "repeats": 1,
+        "aScoreRate": 1,
+        "aBlackOutcomes": "black-win×1",
+        "bBlackOutcomes": "white-win×1"
+      },
+      {
+        "opening": "three-each",
+        "repeats": 1,
+        "aScoreRate": 0.5,
+        "aBlackOutcomes": "black-win×1",
+        "bBlackOutcomes": "black-win×1"
+      }
+    ]
+  },
+  "search": {
+    "a": {
+      "moves": 168,
+      "avgNodes": 500.6011904761905,
+      "medianNodes": 604,
+      "maxNodes": 1282,
+      "avgDepth": 2.738095238095238,
+      "avgElapsedMs": 8.291666666666666,
+      "medianElapsedMs": 7,
+      "p90ElapsedMs": 15,
+      "p95ElapsedMs": 23,
+      "maxElapsedMs": 137,
+      "depthHistogram": {
+        "0": 53,
+        "4": 115
+      },
+      "timeoutRate": 0,
+      "budgetUtilization": 0.01208695652173913,
+      "ttHits": 1152,
+      "timeouts": 0,
+      "shortcuts": 53,
+      "searched": 115,
+      "phases": {
+        "opening": {
+          "moves": 63,
+          "avgNodes": 598.4761904761905,
+          "maxNodes": 975,
+          "avgDepth": 3.4285714285714284,
+          "avgElapsedMs": 6.4603174603174605
+        },
+        "middle": {
+          "moves": 75,
+          "avgNodes": 377.0133333333333,
+          "maxNodes": 1282,
+          "avgDepth": 1.92,
+          "avgElapsedMs": 8.306666666666667
+        },
+        "end": {
+          "moves": 30,
+          "avgNodes": 604.0333333333333,
+          "maxNodes": 1118,
+          "avgDepth": 3.3333333333333335,
+          "avgElapsedMs": 12.1
+        }
+      }
+    },
+    "b": {
+      "moves": 168,
+      "avgNodes": 7262.797619047619,
+      "medianNodes": 7986,
+      "maxNodes": 19869,
+      "avgDepth": 4.285714285714286,
+      "avgElapsedMs": 126.6547619047619,
+      "medianElapsedMs": 115,
+      "p90ElapsedMs": 280,
+      "p95ElapsedMs": 381,
+      "maxElapsedMs": 778,
+      "depthHistogram": {
+        "0": 48,
+        "6": 120
+      },
+      "timeoutRate": 0,
+      "budgetUtilization": 0.11076562499999999,
+      "ttHits": 37806,
+      "timeouts": 0,
+      "shortcuts": 48,
+      "searched": 120,
+      "phases": {
+        "opening": {
+          "moves": 64,
+          "avgNodes": 6953.71875,
+          "maxNodes": 17837,
+          "avgDepth": 4.3125,
+          "avgElapsedMs": 82.953125
+        },
+        "middle": {
+          "moves": 74,
+          "avgNodes": 6603.040540540541,
+          "maxNodes": 19869,
+          "avgDepth": 4.054054054054054,
+          "avgElapsedMs": 145.7972972972973
+        },
+        "end": {
+          "moves": 30,
+          "avgNodes": 9549.566666666668,
+          "maxNodes": 19183,
+          "avgDepth": 4.8,
+          "avgElapsedMs": 172.66666666666666
+        }
+      }
+    }
+  },
+  "games": [
+    {
+      "opening": "center-far",
+      "black": "medium@phase10d-base",
+      "white": "hard@phase10d-base",
+      "outcome": "white-win",
+      "winner": 2,
+      "moves": [
+        {
+          "point": {
+            "x": 7,
+            "y": 6
+          },
+          "player": 1,
+          "engine": "medium@phase10d-base",
+          "ply": 2,
+          "metrics": {
+            "depth": 4,
+            "nodes": 624,
+            "ttHits": 19,
+            "reason": "search",
+            "elapsedMs": 17
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 4
+          },
+          "player": 2,
+          "engine": "hard@phase10d-base",
+          "ply": 3,
+          "metrics": {
+            "depth": 6,
+            "nodes": 12783,
+            "ttHits": 422,
+            "reason": "search",
+            "elapsedMs": 114
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 5
+          },
+          "player": 1,
+          "engine": "medium@phase10d-base",
+          "ply": 4,
+          "metrics": {
+            "depth": 4,
+            "nodes": 571,
+            "ttHits": 24,
+            "reason": "search",
+            "elapsedMs": 4
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 4
+          },
+          "player": 2,
+          "engine": "hard@phase10d-base",
+          "ply": 5,
+          "metrics": {
+            "depth": 6,
+            "nodes": 6927,
+            "ttHits": 130,
+            "reason": "search",
+            "elapsedMs": 52
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 8
+          },
+          "player": 1,
+          "engine": "medium@phase10d-base",
+          "ply": 6,
+          "metrics": {
+            "depth": 4,
+            "nodes": 862,
+            "ttHits": 13,
+            "reason": "search",
+            "elapsedMs": 8
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 9
+          },
+          "player": 2,
+          "engine": "hard@phase10d-base",
+          "ply": 7,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 4
+          },
+          "player": 1,
+          "engine": "medium@phase10d-base",
+          "ply": 8,
+          "metrics": {
+            "depth": 4,
+            "nodes": 656,
+            "ttHits": 20,
+            "reason": "search",
+            "elapsedMs": 6
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 5
+          },
+          "player": 2,
+          "engine": "hard@phase10d-base",
+          "ply": 9,
+          "metrics": {
+            "depth": 6,
+            "nodes": 12364,
+            "ttHits": 659,
+            "reason": "search",
+            "elapsedMs": 128
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 6
+          },
+          "player": 1,
+          "engine": "medium@phase10d-base",
+          "ply": 10,
+          "metrics": {
+            "depth": 4,
+            "nodes": 718,
+            "ttHits": 16,
+            "reason": "search",
+            "elapsedMs": 8
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 6
+          },
+          "player": 2,
+          "engine": "hard@phase10d-base",
+          "ply": 11,
+          "metrics": {
+            "depth": 6,
+            "nodes": 11022,
+            "ttHits": 375,
+            "reason": "search",
+            "elapsedMs": 124
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 3
+          },
+          "player": 1,
+          "engine": "medium@phase10d-base",
+          "ply": 12,
+          "metrics": {
+            "depth": 4,
+            "nodes": 928,
+            "ttHits": 13,
+            "reason": "search",
+            "elapsedMs": 10
+          }
+        },
+        {
+          "point": {
+            "x": 4,
+            "y": 6
+          },
+          "player": 2,
+          "engine": "hard@phase10d-base",
+          "ply": 13,
+          "metrics": {
+            "depth": 6,
+            "nodes": 11638,
+            "ttHits": 610,
+            "reason": "search",
+            "elapsedMs": 150
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 3
+          },
+          "player": 1,
+          "engine": "medium@phase10d-base",
+          "ply": 14,
+          "metrics": {
+            "depth": 4,
+            "nodes": 681,
+            "ttHits": 5,
+            "reason": "search",
+            "elapsedMs": 7
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 7
+          },
+          "player": 2,
+          "engine": "hard@phase10d-base",
+          "ply": 15,
+          "metrics": {
+            "depth": 6,
+            "nodes": 8347,
+            "ttHits": 362,
+            "reason": "search",
+            "elapsedMs": 120
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 8
+          },
+          "player": 1,
+          "engine": "medium@phase10d-base",
+          "ply": 16,
+          "metrics": {
+            "depth": 4,
+            "nodes": 520,
+            "ttHits": 1,
+            "reason": "search",
+            "elapsedMs": 6
+          }
+        },
+        {
+          "point": {
+            "x": 3,
+            "y": 7
+          },
+          "player": 2,
+          "engine": "hard@phase10d-base",
+          "ply": 17,
+          "metrics": {
+            "depth": 0,
+            "nodes": 6,
+            "ttHits": 0,
+            "reason": "win",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 2,
+            "y": 8
+          },
+          "player": 1,
+          "engine": "medium@phase10d-base",
+          "ply": 18,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 4,
+            "y": 7
+          },
+          "player": 2,
+          "engine": "hard@phase10d-base",
+          "ply": 19,
+          "metrics": {
+            "depth": 0,
+            "nodes": 5,
+            "ttHits": 0,
+            "reason": "win",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 3,
+            "y": 8
+          },
+          "player": 1,
+          "engine": "medium@phase10d-base",
+          "ply": 20,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 2,
+            "y": 7
+          },
+          "player": 2,
+          "engine": "hard@phase10d-base",
+          "ply": 21,
+          "metrics": {
+            "depth": 0,
+            "nodes": 4,
+            "ttHits": 0,
+            "reason": "win",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 7
+          },
+          "player": 1,
+          "engine": "medium@phase10d-base",
+          "ply": 22,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 1,
+            "y": 7
+          },
+          "player": 2,
+          "engine": "hard@phase10d-base",
+          "ply": 23,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "win",
+            "elapsedMs": 0
+          }
+        }
+      ],
+      "error": null,
+      "failAtMove": null,
+      "elapsedMs": 755
+    },
+    {
+      "opening": "center-far",
+      "black": "hard@phase10d-base",
+      "white": "medium@phase10d-base",
+      "outcome": "black-win",
+      "winner": 1,
+      "moves": [
+        {
+          "point": {
+            "x": 8,
+            "y": 6
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 2,
+          "metrics": {
+            "depth": 6,
+            "nodes": 13883,
+            "ttHits": 435,
+            "reason": "search",
+            "elapsedMs": 118
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 5
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 3,
+          "metrics": {
+            "depth": 4,
+            "nodes": 584,
+            "ttHits": 12,
+            "reason": "search",
+            "elapsedMs": 6
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 6
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 4,
+          "metrics": {
+            "depth": 6,
+            "nodes": 12066,
+            "ttHits": 337,
+            "reason": "search",
+            "elapsedMs": 118
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 5
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 5,
+          "metrics": {
+            "depth": 4,
+            "nodes": 602,
+            "ttHits": 3,
+            "reason": "search",
+            "elapsedMs": 5
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 5
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 6,
+          "metrics": {
+            "depth": 6,
+            "nodes": 7310,
+            "ttHits": 130,
+            "reason": "search",
+            "elapsedMs": 64
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 4
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 7,
+          "metrics": {
+            "depth": 4,
+            "nodes": 809,
+            "ttHits": 9,
+            "reason": "search",
+            "elapsedMs": 7
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 4
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 8,
+          "metrics": {
+            "depth": 6,
+            "nodes": 11744,
+            "ttHits": 414,
+            "reason": "search",
+            "elapsedMs": 122
+          }
+        },
+        {
+          "point": {
+            "x": 10,
+            "y": 3
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 9,
+          "metrics": {
+            "depth": 4,
+            "nodes": 659,
+            "ttHits": 3,
+            "reason": "search",
+            "elapsedMs": 6
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 7
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 10,
+          "metrics": {
+            "depth": 6,
+            "nodes": 8790,
+            "ttHits": 462,
+            "reason": "search",
+            "elapsedMs": 115
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 7
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 11,
+          "metrics": {
+            "depth": 4,
+            "nodes": 943,
+            "ttHits": 17,
+            "reason": "search",
+            "elapsedMs": 10
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 6
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 12,
+          "metrics": {
+            "depth": 6,
+            "nodes": 11133,
+            "ttHits": 392,
+            "reason": "search",
+            "elapsedMs": 145
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 6
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 13,
+          "metrics": {
+            "depth": 4,
+            "nodes": 634,
+            "ttHits": 3,
+            "reason": "search",
+            "elapsedMs": 6
+          }
+        },
+        {
+          "point": {
+            "x": 10,
+            "y": 6
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 14,
+          "metrics": {
+            "depth": 6,
+            "nodes": 8590,
+            "ttHits": 423,
+            "reason": "search",
+            "elapsedMs": 112
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 6
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 15,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 8
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 16,
+          "metrics": {
+            "depth": 6,
+            "nodes": 10651,
+            "ttHits": 536,
+            "reason": "search",
+            "elapsedMs": 128
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 4
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 17,
+          "metrics": {
+            "depth": 4,
+            "nodes": 877,
+            "ttHits": 21,
+            "reason": "search",
+            "elapsedMs": 10
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 8
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 18,
+          "metrics": {
+            "depth": 0,
+            "nodes": 6,
+            "ttHits": 0,
+            "reason": "win",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 9
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 19,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 9
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 20,
+          "metrics": {
+            "depth": 0,
+            "nodes": 5,
+            "ttHits": 0,
+            "reason": "win",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 10
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 21,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 7
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 22,
+          "metrics": {
+            "depth": 0,
+            "nodes": 4,
+            "ttHits": 0,
+            "reason": "win",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 10
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 23,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 11,
+            "y": 5
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 24,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "win",
+            "elapsedMs": 0
+          }
+        }
+      ],
+      "error": null,
+      "failAtMove": null,
+      "elapsedMs": 973
+    },
+    {
+      "opening": "branch-a",
+      "black": "medium@phase10d-base",
+      "white": "hard@phase10d-base",
+      "outcome": "white-win",
+      "winner": 2,
+      "moves": [
+        {
+          "point": {
+            "x": 8,
+            "y": 7
+          },
+          "player": 1,
+          "engine": "medium@phase10d-base",
+          "ply": 4,
+          "metrics": {
+            "depth": 4,
+            "nodes": 627,
+            "ttHits": 9,
+            "reason": "search",
+            "elapsedMs": 6
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 7
+          },
+          "player": 2,
+          "engine": "hard@phase10d-base",
+          "ply": 5,
+          "metrics": {
+            "depth": 6,
+            "nodes": 7894,
+            "ttHits": 359,
+            "reason": "search",
+            "elapsedMs": 66
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 9
+          },
+          "player": 1,
+          "engine": "medium@phase10d-base",
+          "ply": 6,
+          "metrics": {
+            "depth": 4,
+            "nodes": 550,
+            "ttHits": 9,
+            "reason": "search",
+            "elapsedMs": 5
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 6
+          },
+          "player": 2,
+          "engine": "hard@phase10d-base",
+          "ply": 7,
+          "metrics": {
+            "depth": 6,
+            "nodes": 4445,
+            "ttHits": 68,
+            "reason": "search",
+            "elapsedMs": 32
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 10
+          },
+          "player": 1,
+          "engine": "medium@phase10d-base",
+          "ply": 8,
+          "metrics": {
+            "depth": 4,
+            "nodes": 791,
+            "ttHits": 5,
+            "reason": "search",
+            "elapsedMs": 7
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 11
+          },
+          "player": 2,
+          "engine": "hard@phase10d-base",
+          "ply": 9,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 7
+          },
+          "player": 1,
+          "engine": "medium@phase10d-base",
+          "ply": 10,
+          "metrics": {
+            "depth": 4,
+            "nodes": 604,
+            "ttHits": 11,
+            "reason": "search",
+            "elapsedMs": 6
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 6
+          },
+          "player": 2,
+          "engine": "hard@phase10d-base",
+          "ply": 11,
+          "metrics": {
+            "depth": 6,
+            "nodes": 9716,
+            "ttHits": 315,
+            "reason": "search",
+            "elapsedMs": 102
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 6
+          },
+          "player": 1,
+          "engine": "medium@phase10d-base",
+          "ply": 12,
+          "metrics": {
+            "depth": 4,
+            "nodes": 899,
+            "ttHits": 7,
+            "reason": "search",
+            "elapsedMs": 8
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 5
+          },
+          "player": 2,
+          "engine": "hard@phase10d-base",
+          "ply": 13,
+          "metrics": {
+            "depth": 6,
+            "nodes": 12223,
+            "ttHits": 440,
+            "reason": "search",
+            "elapsedMs": 143
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 8
+          },
+          "player": 1,
+          "engine": "medium@phase10d-base",
+          "ply": 14,
+          "metrics": {
+            "depth": 4,
+            "nodes": 975,
+            "ttHits": 12,
+            "reason": "search",
+            "elapsedMs": 11
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 5
+          },
+          "player": 2,
+          "engine": "hard@phase10d-base",
+          "ply": 15,
+          "metrics": {
+            "depth": 6,
+            "nodes": 8973,
+            "ttHits": 493,
+            "reason": "search",
+            "elapsedMs": 119
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 8
+          },
+          "player": 1,
+          "engine": "medium@phase10d-base",
+          "ply": 16,
+          "metrics": {
+            "depth": 4,
+            "nodes": 832,
+            "ttHits": 5,
+            "reason": "search",
+            "elapsedMs": 8
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 3
+          },
+          "player": 2,
+          "engine": "hard@phase10d-base",
+          "ply": 17,
+          "metrics": {
+            "depth": 0,
+            "nodes": 5,
+            "ttHits": 0,
+            "reason": "win",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 4
+          },
+          "player": 1,
+          "engine": "medium@phase10d-base",
+          "ply": 18,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 10,
+            "y": 3
+          },
+          "player": 2,
+          "engine": "hard@phase10d-base",
+          "ply": 19,
+          "metrics": {
+            "depth": 0,
+            "nodes": 4,
+            "ttHits": 0,
+            "reason": "win",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 4
+          },
+          "player": 1,
+          "engine": "medium@phase10d-base",
+          "ply": 20,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 6
+          },
+          "player": 2,
+          "engine": "hard@phase10d-base",
+          "ply": 21,
+          "metrics": {
+            "depth": 0,
+            "nodes": 3,
+            "ttHits": 0,
+            "reason": "win",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 10,
+            "y": 6
+          },
+          "player": 1,
+          "engine": "medium@phase10d-base",
+          "ply": 22,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 4
+          },
+          "player": 2,
+          "engine": "hard@phase10d-base",
+          "ply": 23,
+          "metrics": {
+            "depth": 0,
+            "nodes": 2,
+            "ttHits": 0,
+            "reason": "win",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 10,
+            "y": 7
+          },
+          "player": 1,
+          "engine": "medium@phase10d-base",
+          "ply": 24,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 2
+          },
+          "player": 2,
+          "engine": "hard@phase10d-base",
+          "ply": 25,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "win",
+            "elapsedMs": 0
+          }
+        }
+      ],
+      "error": null,
+      "failAtMove": null,
+      "elapsedMs": 514
+    },
+    {
+      "opening": "branch-a",
+      "black": "hard@phase10d-base",
+      "white": "medium@phase10d-base",
+      "outcome": "move-limit",
+      "winner": null,
+      "moves": [
+        {
+          "point": {
+            "x": 8,
+            "y": 7
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 4,
+          "metrics": {
+            "depth": 6,
+            "nodes": 8675,
+            "ttHits": 437,
+            "reason": "search",
+            "elapsedMs": 76
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 7
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 5,
+          "metrics": {
+            "depth": 4,
+            "nodes": 586,
+            "ttHits": 11,
+            "reason": "search",
+            "elapsedMs": 5
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 6
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 6,
+          "metrics": {
+            "depth": 6,
+            "nodes": 8440,
+            "ttHits": 239,
+            "reason": "search",
+            "elapsedMs": 76
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 8
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 7,
+          "metrics": {
+            "depth": 4,
+            "nodes": 580,
+            "ttHits": 10,
+            "reason": "search",
+            "elapsedMs": 6
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 5
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 8,
+          "metrics": {
+            "depth": 6,
+            "nodes": 6787,
+            "ttHits": 117,
+            "reason": "search",
+            "elapsedMs": 58
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 9
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 9,
+          "metrics": {
+            "depth": 4,
+            "nodes": 771,
+            "ttHits": 19,
+            "reason": "search",
+            "elapsedMs": 8
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 10
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 10,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 9
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 11,
+          "metrics": {
+            "depth": 4,
+            "nodes": 694,
+            "ttHits": 11,
+            "reason": "search",
+            "elapsedMs": 7
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 9
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 12,
+          "metrics": {
+            "depth": 6,
+            "nodes": 9402,
+            "ttHits": 229,
+            "reason": "search",
+            "elapsedMs": 114
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 7
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 13,
+          "metrics": {
+            "depth": 4,
+            "nodes": 723,
+            "ttHits": 6,
+            "reason": "search",
+            "elapsedMs": 8
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 4
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 14,
+          "metrics": {
+            "depth": 6,
+            "nodes": 17837,
+            "ttHits": 546,
+            "reason": "search",
+            "elapsedMs": 224
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 10
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 15,
+          "metrics": {
+            "depth": 4,
+            "nodes": 853,
+            "ttHits": 13,
+            "reason": "search",
+            "elapsedMs": 10
+          }
+        },
+        {
+          "point": {
+            "x": 10,
+            "y": 11
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 16,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 3
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 17,
+          "metrics": {
+            "depth": 4,
+            "nodes": 728,
+            "ttHits": 3,
+            "reason": "search",
+            "elapsedMs": 8
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 11
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 18,
+          "metrics": {
+            "depth": 6,
+            "nodes": 16887,
+            "ttHits": 379,
+            "reason": "search",
+            "elapsedMs": 252
+          }
+        },
+        {
+          "point": {
+            "x": 4,
+            "y": 12
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 19,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 3,
+            "y": 8
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 20,
+          "metrics": {
+            "depth": 6,
+            "nodes": 15281,
+            "ttHits": 657,
+            "reason": "search",
+            "elapsedMs": 242
+          }
+        },
+        {
+          "point": {
+            "x": 4,
+            "y": 7
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 21,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 10
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 22,
+          "metrics": {
+            "depth": 6,
+            "nodes": 14595,
+            "ttHits": 464,
+            "reason": "search",
+            "elapsedMs": 251
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 6
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 23,
+          "metrics": {
+            "depth": 4,
+            "nodes": 1038,
+            "ttHits": 13,
+            "reason": "search",
+            "elapsedMs": 15
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 10
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 24,
+          "metrics": {
+            "depth": 6,
+            "nodes": 8763,
+            "ttHits": 280,
+            "reason": "search",
+            "elapsedMs": 152
+          }
+        },
+        {
+          "point": {
+            "x": 4,
+            "y": 10
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 25,
+          "metrics": {
+            "depth": 4,
+            "nodes": 849,
+            "ttHits": 14,
+            "reason": "search",
+            "elapsedMs": 12
+          }
+        },
+        {
+          "point": {
+            "x": 4,
+            "y": 9
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 26,
+          "metrics": {
+            "depth": 6,
+            "nodes": 10265,
+            "ttHits": 323,
+            "reason": "search",
+            "elapsedMs": 174
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 11
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 27,
+          "metrics": {
+            "depth": 4,
+            "nodes": 723,
+            "ttHits": 2,
+            "reason": "search",
+            "elapsedMs": 10
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 9
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 28,
+          "metrics": {
+            "depth": 6,
+            "nodes": 10665,
+            "ttHits": 554,
+            "reason": "search",
+            "elapsedMs": 171
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 8
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 29,
+          "metrics": {
+            "depth": 4,
+            "nodes": 665,
+            "ttHits": 3,
+            "reason": "search",
+            "elapsedMs": 9
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 11
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 30,
+          "metrics": {
+            "depth": 6,
+            "nodes": 14011,
+            "ttHits": 364,
+            "reason": "search",
+            "elapsedMs": 213
+          }
+        },
+        {
+          "point": {
+            "x": 4,
+            "y": 8
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 31,
+          "metrics": {
+            "depth": 4,
+            "nodes": 731,
+            "ttHits": 5,
+            "reason": "search",
+            "elapsedMs": 12
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 13
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 32,
+          "metrics": {
+            "depth": 6,
+            "nodes": 11036,
+            "ttHits": 199,
+            "reason": "search",
+            "elapsedMs": 359
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 12
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 33,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 12
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 34,
+          "metrics": {
+            "depth": 6,
+            "nodes": 11551,
+            "ttHits": 340,
+            "reason": "search",
+            "elapsedMs": 294
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 10
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 35,
+          "metrics": {
+            "depth": 4,
+            "nodes": 810,
+            "ttHits": 4,
+            "reason": "search",
+            "elapsedMs": 20
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 13
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 36,
+          "metrics": {
+            "depth": 6,
+            "nodes": 6862,
+            "ttHits": 216,
+            "reason": "search",
+            "elapsedMs": 186
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 12
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 37,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 13
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 38,
+          "metrics": {
+            "depth": 6,
+            "nodes": 10426,
+            "ttHits": 276,
+            "reason": "search",
+            "elapsedMs": 294
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 12
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 39,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 2,
+            "y": 7
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 40,
+          "metrics": {
+            "depth": 6,
+            "nodes": 5123,
+            "ttHits": 109,
+            "reason": "search",
+            "elapsedMs": 124
+          }
+        },
+        {
+          "point": {
+            "x": 1,
+            "y": 6
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 41,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 13
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 42,
+          "metrics": {
+            "depth": 6,
+            "nodes": 4054,
+            "ttHits": 55,
+            "reason": "search",
+            "elapsedMs": 106
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 13
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 43,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 11
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 44,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 11
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 45,
+          "metrics": {
+            "depth": 4,
+            "nodes": 1099,
+            "ttHits": 6,
+            "reason": "search",
+            "elapsedMs": 32
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 5
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 46,
+          "metrics": {
+            "depth": 6,
+            "nodes": 13124,
+            "ttHits": 254,
+            "reason": "search",
+            "elapsedMs": 778
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 9
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 47,
+          "metrics": {
+            "depth": 4,
+            "nodes": 610,
+            "ttHits": 1,
+            "reason": "search",
+            "elapsedMs": 23
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 8
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 48,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 3,
+            "y": 6
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 49,
+          "metrics": {
+            "depth": 4,
+            "nodes": 791,
+            "ttHits": 15,
+            "reason": "search",
+            "elapsedMs": 23
+          }
+        },
+        {
+          "point": {
+            "x": 2,
+            "y": 5
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 50,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 2,
+            "y": 6
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 51,
+          "metrics": {
+            "depth": 4,
+            "nodes": 809,
+            "ttHits": 16,
+            "reason": "search",
+            "elapsedMs": 23
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 5
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 52,
+          "metrics": {
+            "depth": 6,
+            "nodes": 14167,
+            "ttHits": 304,
+            "reason": "search",
+            "elapsedMs": 444
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 5
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 53,
+          "metrics": {
+            "depth": 4,
+            "nodes": 643,
+            "ttHits": 3,
+            "reason": "search",
+            "elapsedMs": 14
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 3
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 54,
+          "metrics": {
+            "depth": 6,
+            "nodes": 15294,
+            "ttHits": 391,
+            "reason": "search",
+            "elapsedMs": 625
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 6
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 55,
+          "metrics": {
+            "depth": 4,
+            "nodes": 474,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 137
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 6
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 56,
+          "metrics": {
+            "depth": 6,
+            "nodes": 5025,
+            "ttHits": 133,
+            "reason": "search",
+            "elapsedMs": 349
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 4
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 57,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 0,
+            "y": 6
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 58,
+          "metrics": {
+            "depth": 6,
+            "nodes": 7443,
+            "ttHits": 230,
+            "reason": "search",
+            "elapsedMs": 222
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 5
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 59,
+          "metrics": {
+            "depth": 4,
+            "nodes": 509,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 14
+          }
+        },
+        {
+          "point": {
+            "x": 4,
+            "y": 13
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 60,
+          "metrics": {
+            "depth": 6,
+            "nodes": 13362,
+            "ttHits": 307,
+            "reason": "search",
+            "elapsedMs": 436
+          }
+        },
+        {
+          "point": {
+            "x": 3,
+            "y": 13
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 61,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 4,
+            "y": 1
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 62,
+          "metrics": {
+            "depth": 6,
+            "nodes": 11844,
+            "ttHits": 236,
+            "reason": "search",
+            "elapsedMs": 395
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 2
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 63,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 3
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 64,
+          "metrics": {
+            "depth": 6,
+            "nodes": 7250,
+            "ttHits": 137,
+            "reason": "search",
+            "elapsedMs": 389
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 4
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 65,
+          "metrics": {
+            "depth": 4,
+            "nodes": 411,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 15
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 3
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 66,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 2
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 67,
+          "metrics": {
+            "depth": 4,
+            "nodes": 522,
+            "ttHits": 6,
+            "reason": "search",
+            "elapsedMs": 23
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 1
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 68,
+          "metrics": {
+            "depth": 6,
+            "nodes": 3141,
+            "ttHits": 21,
+            "reason": "search",
+            "elapsedMs": 91
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 2
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 69,
+          "metrics": {
+            "depth": 4,
+            "nodes": 593,
+            "ttHits": 6,
+            "reason": "search",
+            "elapsedMs": 17
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 2
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 70,
+          "metrics": {
+            "depth": 6,
+            "nodes": 5260,
+            "ttHits": 73,
+            "reason": "search",
+            "elapsedMs": 93
+          }
+        },
+        {
+          "point": {
+            "x": 4,
+            "y": 2
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 71,
+          "metrics": {
+            "depth": 4,
+            "nodes": 820,
+            "ttHits": 4,
+            "reason": "search",
+            "elapsedMs": 32
+          }
+        },
+        {
+          "point": {
+            "x": 3,
+            "y": 2
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 72,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 10,
+            "y": 5
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 73,
+          "metrics": {
+            "depth": 4,
+            "nodes": 1063,
+            "ttHits": 24,
+            "reason": "search",
+            "elapsedMs": 37
+          }
+        },
+        {
+          "point": {
+            "x": 11,
+            "y": 6
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 74,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 1
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 75,
+          "metrics": {
+            "depth": 4,
+            "nodes": 1031,
+            "ttHits": 8,
+            "reason": "search",
+            "elapsedMs": 44
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 3
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 76,
+          "metrics": {
+            "depth": 6,
+            "nodes": 14181,
+            "ttHits": 239,
+            "reason": "search",
+            "elapsedMs": 350
+          }
+        },
+        {
+          "point": {
+            "x": 3,
+            "y": 3
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 77,
+          "metrics": {
+            "depth": 4,
+            "nodes": 672,
+            "ttHits": 6,
+            "reason": "search",
+            "elapsedMs": 10
+          }
+        },
+        {
+          "point": {
+            "x": 4,
+            "y": 4
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 78,
+          "metrics": {
+            "depth": 6,
+            "nodes": 17290,
+            "ttHits": 233,
+            "reason": "search",
+            "elapsedMs": 249
+          }
+        },
+        {
+          "point": {
+            "x": 2,
+            "y": 3
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 79,
+          "metrics": {
+            "depth": 4,
+            "nodes": 1072,
+            "ttHits": 8,
+            "reason": "search",
+            "elapsedMs": 16
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 1
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 80,
+          "metrics": {
+            "depth": 6,
+            "nodes": 17595,
+            "ttHits": 388,
+            "reason": "search",
+            "elapsedMs": 268
+          }
+        },
+        {
+          "point": {
+            "x": 3,
+            "y": 1
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 81,
+          "metrics": {
+            "depth": 4,
+            "nodes": 1118,
+            "ttHits": 29,
+            "reason": "search",
+            "elapsedMs": 15
+          }
+        },
+        {
+          "point": {
+            "x": 3,
+            "y": 9
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 82,
+          "metrics": {
+            "depth": 6,
+            "nodes": 18156,
+            "ttHits": 478,
+            "reason": "search",
+            "elapsedMs": 282
+          }
+        },
+        {
+          "point": {
+            "x": 1,
+            "y": 3
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 83,
+          "metrics": {
+            "depth": 4,
+            "nodes": 586,
+            "ttHits": 2,
+            "reason": "search",
+            "elapsedMs": 9
+          }
+        },
+        {
+          "point": {
+            "x": 4,
+            "y": 3
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 84,
+          "metrics": {
+            "depth": 6,
+            "nodes": 19183,
+            "ttHits": 728,
+            "reason": "search",
+            "elapsedMs": 280
+          }
+        },
+        {
+          "point": {
+            "x": 2,
+            "y": 2
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 85,
+          "metrics": {
+            "depth": 4,
+            "nodes": 511,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 7
+          }
+        },
+        {
+          "point": {
+            "x": 0,
+            "y": 4
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 86,
+          "metrics": {
+            "depth": 6,
+            "nodes": 13356,
+            "ttHits": 559,
+            "reason": "search",
+            "elapsedMs": 213
+          }
+        },
+        {
+          "point": {
+            "x": 2,
+            "y": 1
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 87,
+          "metrics": {
+            "depth": 4,
+            "nodes": 714,
+            "ttHits": 6,
+            "reason": "search",
+            "elapsedMs": 9
+          }
+        },
+        {
+          "point": {
+            "x": 0,
+            "y": 5
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 88,
+          "metrics": {
+            "depth": 6,
+            "nodes": 13046,
+            "ttHits": 481,
+            "reason": "search",
+            "elapsedMs": 186
+          }
+        },
+        {
+          "point": {
+            "x": 0,
+            "y": 3
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 89,
+          "metrics": {
+            "depth": 4,
+            "nodes": 763,
+            "ttHits": 37,
+            "reason": "search",
+            "elapsedMs": 11
+          }
+        },
+        {
+          "point": {
+            "x": 2,
+            "y": 4
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 90,
+          "metrics": {
+            "depth": 6,
+            "nodes": 14814,
+            "ttHits": 485,
+            "reason": "search",
+            "elapsedMs": 217
+          }
+        },
+        {
+          "point": {
+            "x": 3,
+            "y": 4
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 91,
+          "metrics": {
+            "depth": 4,
+            "nodes": 673,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 9
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 1
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 92,
+          "metrics": {
+            "depth": 6,
+            "nodes": 11724,
+            "ttHits": 411,
+            "reason": "search",
+            "elapsedMs": 165
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 4
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 93,
+          "metrics": {
+            "depth": 4,
+            "nodes": 820,
+            "ttHits": 26,
+            "reason": "search",
+            "elapsedMs": 10
+          }
+        },
+        {
+          "point": {
+            "x": 3,
+            "y": 7
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 94,
+          "metrics": {
+            "depth": 6,
+            "nodes": 10816,
+            "ttHits": 227,
+            "reason": "search",
+            "elapsedMs": 153
+          }
+        },
+        {
+          "point": {
+            "x": 1,
+            "y": 2
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 95,
+          "metrics": {
+            "depth": 4,
+            "nodes": 492,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 8
+          }
+        },
+        {
+          "point": {
+            "x": 4,
+            "y": 5
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 96,
+          "metrics": {
+            "depth": 6,
+            "nodes": 7178,
+            "ttHits": 353,
+            "reason": "search",
+            "elapsedMs": 118
+          }
+        },
+        {
+          "point": {
+            "x": 1,
+            "y": 5
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 97,
+          "metrics": {
+            "depth": 4,
+            "nodes": 442,
+            "ttHits": 5,
+            "reason": "search",
+            "elapsedMs": 8
+          }
+        },
+        {
+          "point": {
+            "x": 1,
+            "y": 4
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 98,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 10,
+            "y": 10
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 99,
+          "metrics": {
+            "depth": 4,
+            "nodes": 528,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 10
+          }
+        },
+        {
+          "point": {
+            "x": 12,
+            "y": 8
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 100,
+          "metrics": {
+            "depth": 6,
+            "nodes": 12238,
+            "ttHits": 329,
+            "reason": "search",
+            "elapsedMs": 231
+          }
+        },
+        {
+          "point": {
+            "x": 10,
+            "y": 8
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 101,
+          "metrics": {
+            "depth": 4,
+            "nodes": 630,
+            "ttHits": 2,
+            "reason": "search",
+            "elapsedMs": 9
+          }
+        },
+        {
+          "point": {
+            "x": 10,
+            "y": 9
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 102,
+          "metrics": {
+            "depth": 6,
+            "nodes": 14866,
+            "ttHits": 300,
+            "reason": "search",
+            "elapsedMs": 202
+          }
+        },
+        {
+          "point": {
+            "x": 11,
+            "y": 10
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 103,
+          "metrics": {
+            "depth": 4,
+            "nodes": 448,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 8
+          }
+        },
+        {
+          "point": {
+            "x": 12,
+            "y": 10
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 104,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 3,
+            "y": 11
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 105,
+          "metrics": {
+            "depth": 4,
+            "nodes": 926,
+            "ttHits": 27,
+            "reason": "search",
+            "elapsedMs": 13
+          }
+        },
+        {
+          "point": {
+            "x": 12,
+            "y": 9
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 106,
+          "metrics": {
+            "depth": 6,
+            "nodes": 8728,
+            "ttHits": 193,
+            "reason": "search",
+            "elapsedMs": 138
+          }
+        },
+        {
+          "point": {
+            "x": 12,
+            "y": 7
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 107,
+          "metrics": {
+            "depth": 4,
+            "nodes": 601,
+            "ttHits": 7,
+            "reason": "search",
+            "elapsedMs": 7
+          }
+        },
+        {
+          "point": {
+            "x": 12,
+            "y": 11
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 108,
+          "metrics": {
+            "depth": 6,
+            "nodes": 10811,
+            "ttHits": 233,
+            "reason": "search",
+            "elapsedMs": 164
+          }
+        },
+        {
+          "point": {
+            "x": 12,
+            "y": 12
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 109,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 1,
+            "y": 9
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 110,
+          "metrics": {
+            "depth": 6,
+            "nodes": 8133,
+            "ttHits": 151,
+            "reason": "search",
+            "elapsedMs": 136
+          }
+        },
+        {
+          "point": {
+            "x": 2,
+            "y": 9
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 111,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 2,
+            "y": 8
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 112,
+          "metrics": {
+            "depth": 6,
+            "nodes": 11770,
+            "ttHits": 209,
+            "reason": "search",
+            "elapsedMs": 160
+          }
+        },
+        {
+          "point": {
+            "x": 11,
+            "y": 11
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 113,
+          "metrics": {
+            "depth": 4,
+            "nodes": 590,
+            "ttHits": 8,
+            "reason": "search",
+            "elapsedMs": 10
+          }
+        },
+        {
+          "point": {
+            "x": 13,
+            "y": 13
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 114,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 4,
+            "y": 6
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 115,
+          "metrics": {
+            "depth": 4,
+            "nodes": 1024,
+            "ttHits": 22,
+            "reason": "search",
+            "elapsedMs": 13
+          }
+        },
+        {
+          "point": {
+            "x": 0,
+            "y": 7
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 116,
+          "metrics": {
+            "depth": 6,
+            "nodes": 10143,
+            "ttHits": 155,
+            "reason": "search",
+            "elapsedMs": 134
+          }
+        },
+        {
+          "point": {
+            "x": 0,
+            "y": 8
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 117,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 11,
+            "y": 7
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 118,
+          "metrics": {
+            "depth": 6,
+            "nodes": 11602,
+            "ttHits": 255,
+            "reason": "search",
+            "elapsedMs": 129
+          }
+        },
+        {
+          "point": {
+            "x": 11,
+            "y": 9
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 119,
+          "metrics": {
+            "depth": 4,
+            "nodes": 1071,
+            "ttHits": 31,
+            "reason": "search",
+            "elapsedMs": 13
+          }
+        }
+      ],
+      "error": "达到手数上限 120，局面仍未结束",
+      "failAtMove": null,
+      "elapsedMs": 11732
+    },
+    {
+      "opening": "branch-b",
+      "black": "medium@phase10d-base",
+      "white": "hard@phase10d-base",
+      "outcome": "black-win",
+      "winner": 1,
+      "moves": [
+        {
+          "point": {
+            "x": 6,
+            "y": 7
+          },
+          "player": 1,
+          "engine": "medium@phase10d-base",
+          "ply": 4,
+          "metrics": {
+            "depth": 4,
+            "nodes": 651,
+            "ttHits": 32,
+            "reason": "search",
+            "elapsedMs": 5
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 7
+          },
+          "player": 2,
+          "engine": "hard@phase10d-base",
+          "ply": 5,
+          "metrics": {
+            "depth": 6,
+            "nodes": 6053,
+            "ttHits": 144,
+            "reason": "search",
+            "elapsedMs": 50
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 5
+          },
+          "player": 1,
+          "engine": "medium@phase10d-base",
+          "ply": 6,
+          "metrics": {
+            "depth": 4,
+            "nodes": 563,
+            "ttHits": 18,
+            "reason": "search",
+            "elapsedMs": 5
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 6
+          },
+          "player": 2,
+          "engine": "hard@phase10d-base",
+          "ply": 7,
+          "metrics": {
+            "depth": 6,
+            "nodes": 10450,
+            "ttHits": 372,
+            "reason": "search",
+            "elapsedMs": 93
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 7
+          },
+          "player": 1,
+          "engine": "medium@phase10d-base",
+          "ply": 8,
+          "metrics": {
+            "depth": 4,
+            "nodes": 438,
+            "ttHits": 15,
+            "reason": "search",
+            "elapsedMs": 5
+          }
+        },
+        {
+          "point": {
+            "x": 10,
+            "y": 7
+          },
+          "player": 2,
+          "engine": "hard@phase10d-base",
+          "ply": 9,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 6
+          },
+          "player": 1,
+          "engine": "medium@phase10d-base",
+          "ply": 10,
+          "metrics": {
+            "depth": 4,
+            "nodes": 580,
+            "ttHits": 24,
+            "reason": "search",
+            "elapsedMs": 6
+          }
+        },
+        {
+          "point": {
+            "x": 10,
+            "y": 8
+          },
+          "player": 2,
+          "engine": "hard@phase10d-base",
+          "ply": 11,
+          "metrics": {
+            "depth": 6,
+            "nodes": 6716,
+            "ttHits": 181,
+            "reason": "search",
+            "elapsedMs": 65
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 8
+          },
+          "player": 1,
+          "engine": "medium@phase10d-base",
+          "ply": 12,
+          "metrics": {
+            "depth": 4,
+            "nodes": 650,
+            "ttHits": 26,
+            "reason": "search",
+            "elapsedMs": 7
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 5
+          },
+          "player": 2,
+          "engine": "hard@phase10d-base",
+          "ply": 13,
+          "metrics": {
+            "depth": 6,
+            "nodes": 5375,
+            "ttHits": 87,
+            "reason": "search",
+            "elapsedMs": 50
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 3
+          },
+          "player": 1,
+          "engine": "medium@phase10d-base",
+          "ply": 14,
+          "metrics": {
+            "depth": 4,
+            "nodes": 630,
+            "ttHits": 17,
+            "reason": "search",
+            "elapsedMs": 8
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 4
+          },
+          "player": 2,
+          "engine": "hard@phase10d-base",
+          "ply": 15,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 9
+          },
+          "player": 1,
+          "engine": "medium@phase10d-base",
+          "ply": 16,
+          "metrics": {
+            "depth": 4,
+            "nodes": 833,
+            "ttHits": 26,
+            "reason": "search",
+            "elapsedMs": 10
+          }
+        },
+        {
+          "point": {
+            "x": 4,
+            "y": 10
+          },
+          "player": 2,
+          "engine": "hard@phase10d-base",
+          "ply": 17,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 10,
+            "y": 6
+          },
+          "player": 1,
+          "engine": "medium@phase10d-base",
+          "ply": 18,
+          "metrics": {
+            "depth": 4,
+            "nodes": 839,
+            "ttHits": 8,
+            "reason": "search",
+            "elapsedMs": 11
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 8
+          },
+          "player": 2,
+          "engine": "hard@phase10d-base",
+          "ply": 19,
+          "metrics": {
+            "depth": 6,
+            "nodes": 14841,
+            "ttHits": 648,
+            "reason": "search",
+            "elapsedMs": 220
+          }
+        },
+        {
+          "point": {
+            "x": 11,
+            "y": 8
+          },
+          "player": 1,
+          "engine": "medium@phase10d-base",
+          "ply": 20,
+          "metrics": {
+            "depth": 4,
+            "nodes": 659,
+            "ttHits": 2,
+            "reason": "search",
+            "elapsedMs": 10
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 6
+          },
+          "player": 2,
+          "engine": "hard@phase10d-base",
+          "ply": 21,
+          "metrics": {
+            "depth": 6,
+            "nodes": 10504,
+            "ttHits": 437,
+            "reason": "search",
+            "elapsedMs": 179
+          }
+        },
+        {
+          "point": {
+            "x": 4,
+            "y": 6
+          },
+          "player": 1,
+          "engine": "medium@phase10d-base",
+          "ply": 22,
+          "metrics": {
+            "depth": 4,
+            "nodes": 715,
+            "ttHits": 6,
+            "reason": "search",
+            "elapsedMs": 10
+          }
+        },
+        {
+          "point": {
+            "x": 11,
+            "y": 6
+          },
+          "player": 2,
+          "engine": "hard@phase10d-base",
+          "ply": 23,
+          "metrics": {
+            "depth": 6,
+            "nodes": 11847,
+            "ttHits": 375,
+            "reason": "search",
+            "elapsedMs": 172
+          }
+        },
+        {
+          "point": {
+            "x": 12,
+            "y": 5
+          },
+          "player": 1,
+          "engine": "medium@phase10d-base",
+          "ply": 24,
+          "metrics": {
+            "depth": 4,
+            "nodes": 548,
+            "ttHits": 3,
+            "reason": "search",
+            "elapsedMs": 8
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 5
+          },
+          "player": 2,
+          "engine": "hard@phase10d-base",
+          "ply": 25,
+          "metrics": {
+            "depth": 6,
+            "nodes": 10781,
+            "ttHits": 464,
+            "reason": "search",
+            "elapsedMs": 167
+          }
+        },
+        {
+          "point": {
+            "x": 11,
+            "y": 5
+          },
+          "player": 1,
+          "engine": "medium@phase10d-base",
+          "ply": 26,
+          "metrics": {
+            "depth": 4,
+            "nodes": 782,
+            "ttHits": 18,
+            "reason": "search",
+            "elapsedMs": 11
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 4
+          },
+          "player": 2,
+          "engine": "hard@phase10d-base",
+          "ply": 27,
+          "metrics": {
+            "depth": 6,
+            "nodes": 12425,
+            "ttHits": 425,
+            "reason": "search",
+            "elapsedMs": 192
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 3
+          },
+          "player": 1,
+          "engine": "medium@phase10d-base",
+          "ply": 28,
+          "metrics": {
+            "depth": 4,
+            "nodes": 957,
+            "ttHits": 14,
+            "reason": "search",
+            "elapsedMs": 14
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 4
+          },
+          "player": 2,
+          "engine": "hard@phase10d-base",
+          "ply": 29,
+          "metrics": {
+            "depth": 6,
+            "nodes": 10181,
+            "ttHits": 205,
+            "reason": "search",
+            "elapsedMs": 176
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 4
+          },
+          "player": 1,
+          "engine": "medium@phase10d-base",
+          "ply": 30,
+          "metrics": {
+            "depth": 4,
+            "nodes": 685,
+            "ttHits": 9,
+            "reason": "search",
+            "elapsedMs": 9
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 3
+          },
+          "player": 2,
+          "engine": "hard@phase10d-base",
+          "ply": 31,
+          "metrics": {
+            "depth": 6,
+            "nodes": 6066,
+            "ttHits": 168,
+            "reason": "search",
+            "elapsedMs": 196
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 2
+          },
+          "player": 1,
+          "engine": "medium@phase10d-base",
+          "ply": 32,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 5
+          },
+          "player": 2,
+          "engine": "hard@phase10d-base",
+          "ply": 33,
+          "metrics": {
+            "depth": 6,
+            "nodes": 6438,
+            "ttHits": 169,
+            "reason": "search",
+            "elapsedMs": 381
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 6
+          },
+          "player": 1,
+          "engine": "medium@phase10d-base",
+          "ply": 34,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 4
+          },
+          "player": 2,
+          "engine": "hard@phase10d-base",
+          "ply": 35,
+          "metrics": {
+            "depth": 6,
+            "nodes": 5382,
+            "ttHits": 192,
+            "reason": "search",
+            "elapsedMs": 154
+          }
+        },
+        {
+          "point": {
+            "x": 10,
+            "y": 4
+          },
+          "player": 1,
+          "engine": "medium@phase10d-base",
+          "ply": 36,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 2
+          },
+          "player": 2,
+          "engine": "hard@phase10d-base",
+          "ply": 37,
+          "metrics": {
+            "depth": 6,
+            "nodes": 6305,
+            "ttHits": 199,
+            "reason": "search",
+            "elapsedMs": 149
+          }
+        },
+        {
+          "point": {
+            "x": 4,
+            "y": 1
+          },
+          "player": 1,
+          "engine": "medium@phase10d-base",
+          "ply": 38,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 10,
+            "y": 3
+          },
+          "player": 2,
+          "engine": "hard@phase10d-base",
+          "ply": 39,
+          "metrics": {
+            "depth": 6,
+            "nodes": 7711,
+            "ttHits": 275,
+            "reason": "search",
+            "elapsedMs": 322
+          }
+        },
+        {
+          "point": {
+            "x": 11,
+            "y": 2
+          },
+          "player": 1,
+          "engine": "medium@phase10d-base",
+          "ply": 40,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 4,
+            "y": 7
+          },
+          "player": 2,
+          "engine": "hard@phase10d-base",
+          "ply": 41,
+          "metrics": {
+            "depth": 6,
+            "nodes": 13989,
+            "ttHits": 291,
+            "reason": "search",
+            "elapsedMs": 398
+          }
+        },
+        {
+          "point": {
+            "x": 3,
+            "y": 8
+          },
+          "player": 1,
+          "engine": "medium@phase10d-base",
+          "ply": 42,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 13,
+            "y": 3
+          },
+          "player": 2,
+          "engine": "hard@phase10d-base",
+          "ply": 43,
+          "metrics": {
+            "depth": 6,
+            "nodes": 19869,
+            "ttHits": 647,
+            "reason": "search",
+            "elapsedMs": 501
+          }
+        },
+        {
+          "point": {
+            "x": 10,
+            "y": 5
+          },
+          "player": 1,
+          "engine": "medium@phase10d-base",
+          "ply": 44,
+          "metrics": {
+            "depth": 4,
+            "nodes": 1282,
+            "ttHits": 22,
+            "reason": "search",
+            "elapsedMs": 24
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 10
+          },
+          "player": 2,
+          "engine": "hard@phase10d-base",
+          "ply": 45,
+          "metrics": {
+            "depth": 6,
+            "nodes": 7986,
+            "ttHits": 152,
+            "reason": "search",
+            "elapsedMs": 188
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 9
+          },
+          "player": 1,
+          "engine": "medium@phase10d-base",
+          "ply": 46,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 8
+          },
+          "player": 2,
+          "engine": "hard@phase10d-base",
+          "ply": 47,
+          "metrics": {
+            "depth": 6,
+            "nodes": 7153,
+            "ttHits": 69,
+            "reason": "search",
+            "elapsedMs": 96
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 3
+          },
+          "player": 1,
+          "engine": "medium@phase10d-base",
+          "ply": 48,
+          "metrics": {
+            "depth": 4,
+            "nodes": 931,
+            "ttHits": 8,
+            "reason": "search",
+            "elapsedMs": 16
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 2
+          },
+          "player": 2,
+          "engine": "hard@phase10d-base",
+          "ply": 49,
+          "metrics": {
+            "depth": 6,
+            "nodes": 4712,
+            "ttHits": 52,
+            "reason": "search",
+            "elapsedMs": 61
+          }
+        },
+        {
+          "point": {
+            "x": 4,
+            "y": 4
+          },
+          "player": 1,
+          "engine": "medium@phase10d-base",
+          "ply": 50,
+          "metrics": {
+            "depth": 4,
+            "nodes": 658,
+            "ttHits": 5,
+            "reason": "search",
+            "elapsedMs": 13
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 1
+          },
+          "player": 2,
+          "engine": "hard@phase10d-base",
+          "ply": 51,
+          "metrics": {
+            "depth": 6,
+            "nodes": 4469,
+            "ttHits": 58,
+            "reason": "search",
+            "elapsedMs": 65
+          }
+        },
+        {
+          "point": {
+            "x": 12,
+            "y": 6
+          },
+          "player": 1,
+          "engine": "medium@phase10d-base",
+          "ply": 52,
+          "metrics": {
+            "depth": 4,
+            "nodes": 481,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 13
+          }
+        },
+        {
+          "point": {
+            "x": 13,
+            "y": 7
+          },
+          "player": 2,
+          "engine": "hard@phase10d-base",
+          "ply": 53,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 12,
+            "y": 3
+          },
+          "player": 1,
+          "engine": "medium@phase10d-base",
+          "ply": 54,
+          "metrics": {
+            "depth": 0,
+            "nodes": 3,
+            "ttHits": 0,
+            "reason": "win",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 11,
+            "y": 4
+          },
+          "player": 2,
+          "engine": "hard@phase10d-base",
+          "ply": 55,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 12,
+            "y": 4
+          },
+          "player": 1,
+          "engine": "medium@phase10d-base",
+          "ply": 56,
+          "metrics": {
+            "depth": 0,
+            "nodes": 6,
+            "ttHits": 0,
+            "reason": "win",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 12,
+            "y": 7
+          },
+          "player": 2,
+          "engine": "hard@phase10d-base",
+          "ply": 57,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 12,
+            "y": 2
+          },
+          "player": 1,
+          "engine": "medium@phase10d-base",
+          "ply": 58,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "win",
+            "elapsedMs": 0
+          }
+        }
+      ],
+      "error": null,
+      "failAtMove": null,
+      "elapsedMs": 4063
+    },
+    {
+      "opening": "branch-b",
+      "black": "hard@phase10d-base",
+      "white": "medium@phase10d-base",
+      "outcome": "white-win",
+      "winner": 2,
+      "moves": [
+        {
+          "point": {
+            "x": 7,
+            "y": 6
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 4,
+          "metrics": {
+            "depth": 6,
+            "nodes": 12282,
+            "ttHits": 792,
+            "reason": "search",
+            "elapsedMs": 208
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 5
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 5,
+          "metrics": {
+            "depth": 4,
+            "nodes": 707,
+            "ttHits": 13,
+            "reason": "search",
+            "elapsedMs": 6
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 5
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 6,
+          "metrics": {
+            "depth": 6,
+            "nodes": 9441,
+            "ttHits": 593,
+            "reason": "search",
+            "elapsedMs": 105
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 8
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 7,
+          "metrics": {
+            "depth": 4,
+            "nodes": 719,
+            "ttHits": 3,
+            "reason": "search",
+            "elapsedMs": 5
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 7
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 8,
+          "metrics": {
+            "depth": 6,
+            "nodes": 11062,
+            "ttHits": 461,
+            "reason": "search",
+            "elapsedMs": 152
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 7
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 9,
+          "metrics": {
+            "depth": 4,
+            "nodes": 493,
+            "ttHits": 1,
+            "reason": "search",
+            "elapsedMs": 13
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 8
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 10,
+          "metrics": {
+            "depth": 6,
+            "nodes": 11219,
+            "ttHits": 365,
+            "reason": "search",
+            "elapsedMs": 175
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 9
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 11,
+          "metrics": {
+            "depth": 4,
+            "nodes": 825,
+            "ttHits": 7,
+            "reason": "search",
+            "elapsedMs": 9
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 9
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 12,
+          "metrics": {
+            "depth": 6,
+            "nodes": 6260,
+            "ttHits": 376,
+            "reason": "search",
+            "elapsedMs": 84
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 10
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 13,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 8
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 14,
+          "metrics": {
+            "depth": 6,
+            "nodes": 5040,
+            "ttHits": 95,
+            "reason": "search",
+            "elapsedMs": 109
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 10
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 15,
+          "metrics": {
+            "depth": 4,
+            "nodes": 690,
+            "ttHits": 4,
+            "reason": "search",
+            "elapsedMs": 11
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 6
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 16,
+          "metrics": {
+            "depth": 6,
+            "nodes": 11884,
+            "ttHits": 512,
+            "reason": "search",
+            "elapsedMs": 212
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 9
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 17,
+          "metrics": {
+            "depth": 4,
+            "nodes": 618,
+            "ttHits": 1,
+            "reason": "search",
+            "elapsedMs": 7
+          }
+        },
+        {
+          "point": {
+            "x": 4,
+            "y": 3
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 18,
+          "metrics": {
+            "depth": 6,
+            "nodes": 11087,
+            "ttHits": 418,
+            "reason": "search",
+            "elapsedMs": 184
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 4
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 19,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 4,
+            "y": 6
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 20,
+          "metrics": {
+            "depth": 6,
+            "nodes": 11648,
+            "ttHits": 330,
+            "reason": "search",
+            "elapsedMs": 222
+          }
+        },
+        {
+          "point": {
+            "x": 3,
+            "y": 5
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 21,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 4,
+            "y": 4
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 22,
+          "metrics": {
+            "depth": 6,
+            "nodes": 16946,
+            "ttHits": 417,
+            "reason": "search",
+            "elapsedMs": 242
+          }
+        },
+        {
+          "point": {
+            "x": 4,
+            "y": 5
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 23,
+          "metrics": {
+            "depth": 4,
+            "nodes": 788,
+            "ttHits": 1,
+            "reason": "search",
+            "elapsedMs": 8
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 5
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 24,
+          "metrics": {
+            "depth": 6,
+            "nodes": 14116,
+            "ttHits": 400,
+            "reason": "search",
+            "elapsedMs": 196
+          }
+        },
+        {
+          "point": {
+            "x": 10,
+            "y": 4
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 25,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 8
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 26,
+          "metrics": {
+            "depth": 6,
+            "nodes": 13243,
+            "ttHits": 328,
+            "reason": "search",
+            "elapsedMs": 194
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 9
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 27,
+          "metrics": {
+            "depth": 4,
+            "nodes": 1037,
+            "ttHits": 6,
+            "reason": "search",
+            "elapsedMs": 13
+          }
+        },
+        {
+          "point": {
+            "x": 10,
+            "y": 7
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 28,
+          "metrics": {
+            "depth": 6,
+            "nodes": 10810,
+            "ttHits": 356,
+            "reason": "search",
+            "elapsedMs": 164
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 11
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 29,
+          "metrics": {
+            "depth": 4,
+            "nodes": 1222,
+            "ttHits": 9,
+            "reason": "search",
+            "elapsedMs": 17
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 12
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 30,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 11
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 31,
+          "metrics": {
+            "depth": 4,
+            "nodes": 927,
+            "ttHits": 4,
+            "reason": "search",
+            "elapsedMs": 14
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 12
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 32,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 10
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 33,
+          "metrics": {
+            "depth": 4,
+            "nodes": 941,
+            "ttHits": 2,
+            "reason": "search",
+            "elapsedMs": 14
+          }
+        },
+        {
+          "point": {
+            "x": 4,
+            "y": 8
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 34,
+          "metrics": {
+            "depth": 6,
+            "nodes": 7253,
+            "ttHits": 408,
+            "reason": "search",
+            "elapsedMs": 138
+          }
+        },
+        {
+          "point": {
+            "x": 3,
+            "y": 8
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 35,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 11,
+            "y": 7
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 36,
+          "metrics": {
+            "depth": 6,
+            "nodes": 6733,
+            "ttHits": 69,
+            "reason": "search",
+            "elapsedMs": 118
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 7
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 37,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 10
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 38,
+          "metrics": {
+            "depth": 6,
+            "nodes": 4228,
+            "ttHits": 37,
+            "reason": "search",
+            "elapsedMs": 69
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 10
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 39,
+          "metrics": {
+            "depth": 0,
+            "nodes": 3,
+            "ttHits": 0,
+            "reason": "win",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 10,
+            "y": 10
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 40,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 9
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 41,
+          "metrics": {
+            "depth": 0,
+            "nodes": 6,
+            "ttHits": 0,
+            "reason": "win",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 11
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 42,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 6
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 43,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "win",
+            "elapsedMs": 0
+          }
+        }
+      ],
+      "error": null,
+      "failAtMove": null,
+      "elapsedMs": 2693
+    },
+    {
+      "opening": "three-each",
+      "black": "medium@phase10d-base",
+      "white": "hard@phase10d-base",
+      "outcome": "black-win",
+      "winner": 1,
+      "moves": [
+        {
+          "point": {
+            "x": 6,
+            "y": 8
+          },
+          "player": 1,
+          "engine": "medium@phase10d-base",
+          "ply": 6,
+          "metrics": {
+            "depth": 4,
+            "nodes": 574,
+            "ttHits": 24,
+            "reason": "search",
+            "elapsedMs": 5
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 6
+          },
+          "player": 2,
+          "engine": "hard@phase10d-base",
+          "ply": 7,
+          "metrics": {
+            "depth": 6,
+            "nodes": 9564,
+            "ttHits": 269,
+            "reason": "search",
+            "elapsedMs": 86
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 6
+          },
+          "player": 1,
+          "engine": "medium@phase10d-base",
+          "ply": 8,
+          "metrics": {
+            "depth": 4,
+            "nodes": 668,
+            "ttHits": 20,
+            "reason": "search",
+            "elapsedMs": 6
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 9
+          },
+          "player": 2,
+          "engine": "hard@phase10d-base",
+          "ply": 9,
+          "metrics": {
+            "depth": 6,
+            "nodes": 3486,
+            "ttHits": 95,
+            "reason": "search",
+            "elapsedMs": 30
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 7
+          },
+          "player": 1,
+          "engine": "medium@phase10d-base",
+          "ply": 10,
+          "metrics": {
+            "depth": 4,
+            "nodes": 486,
+            "ttHits": 11,
+            "reason": "search",
+            "elapsedMs": 6
+          }
+        },
+        {
+          "point": {
+            "x": 10,
+            "y": 7
+          },
+          "player": 2,
+          "engine": "hard@phase10d-base",
+          "ply": 11,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 5
+          },
+          "player": 1,
+          "engine": "medium@phase10d-base",
+          "ply": 12,
+          "metrics": {
+            "depth": 4,
+            "nodes": 632,
+            "ttHits": 9,
+            "reason": "search",
+            "elapsedMs": 8
+          }
+        },
+        {
+          "point": {
+            "x": 10,
+            "y": 8
+          },
+          "player": 2,
+          "engine": "hard@phase10d-base",
+          "ply": 13,
+          "metrics": {
+            "depth": 6,
+            "nodes": 3985,
+            "ttHits": 50,
+            "reason": "search",
+            "elapsedMs": 39
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 3
+          },
+          "player": 1,
+          "engine": "medium@phase10d-base",
+          "ply": 14,
+          "metrics": {
+            "depth": 4,
+            "nodes": 575,
+            "ttHits": 12,
+            "reason": "search",
+            "elapsedMs": 8
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 4
+          },
+          "player": 2,
+          "engine": "hard@phase10d-base",
+          "ply": 15,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 10,
+            "y": 4
+          },
+          "player": 1,
+          "engine": "medium@phase10d-base",
+          "ply": 16,
+          "metrics": {
+            "depth": 4,
+            "nodes": 796,
+            "ttHits": 19,
+            "reason": "search",
+            "elapsedMs": 11
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 5
+          },
+          "player": 2,
+          "engine": "hard@phase10d-base",
+          "ply": 17,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 6
+          },
+          "player": 1,
+          "engine": "medium@phase10d-base",
+          "ply": 18,
+          "metrics": {
+            "depth": 4,
+            "nodes": 758,
+            "ttHits": 15,
+            "reason": "search",
+            "elapsedMs": 10
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 8
+          },
+          "player": 2,
+          "engine": "hard@phase10d-base",
+          "ply": 19,
+          "metrics": {
+            "depth": 6,
+            "nodes": 10904,
+            "ttHits": 272,
+            "reason": "search",
+            "elapsedMs": 150
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 6
+          },
+          "player": 1,
+          "engine": "medium@phase10d-base",
+          "ply": 20,
+          "metrics": {
+            "depth": 4,
+            "nodes": 870,
+            "ttHits": 6,
+            "reason": "search",
+            "elapsedMs": 11
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 8
+          },
+          "player": 2,
+          "engine": "hard@phase10d-base",
+          "ply": 21,
+          "metrics": {
+            "depth": 6,
+            "nodes": 10136,
+            "ttHits": 269,
+            "reason": "search",
+            "elapsedMs": 144
+          }
+        },
+        {
+          "point": {
+            "x": 11,
+            "y": 8
+          },
+          "player": 1,
+          "engine": "medium@phase10d-base",
+          "ply": 22,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 10,
+            "y": 6
+          },
+          "player": 2,
+          "engine": "hard@phase10d-base",
+          "ply": 23,
+          "metrics": {
+            "depth": 6,
+            "nodes": 19519,
+            "ttHits": 535,
+            "reason": "search",
+            "elapsedMs": 271
+          }
+        },
+        {
+          "point": {
+            "x": 10,
+            "y": 9
+          },
+          "player": 1,
+          "engine": "medium@phase10d-base",
+          "ply": 24,
+          "metrics": {
+            "depth": 4,
+            "nodes": 638,
+            "ttHits": 25,
+            "reason": "search",
+            "elapsedMs": 9
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 4
+          },
+          "player": 2,
+          "engine": "hard@phase10d-base",
+          "ply": 25,
+          "metrics": {
+            "depth": 6,
+            "nodes": 8709,
+            "ttHits": 241,
+            "reason": "search",
+            "elapsedMs": 124
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 3
+          },
+          "player": 1,
+          "engine": "medium@phase10d-base",
+          "ply": 26,
+          "metrics": {
+            "depth": 4,
+            "nodes": 557,
+            "ttHits": 3,
+            "reason": "search",
+            "elapsedMs": 7
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 4
+          },
+          "player": 2,
+          "engine": "hard@phase10d-base",
+          "ply": 27,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 4
+          },
+          "player": 1,
+          "engine": "medium@phase10d-base",
+          "ply": 28,
+          "metrics": {
+            "depth": 4,
+            "nodes": 733,
+            "ttHits": 3,
+            "reason": "search",
+            "elapsedMs": 9
+          }
+        },
+        {
+          "point": {
+            "x": 11,
+            "y": 7
+          },
+          "player": 2,
+          "engine": "hard@phase10d-base",
+          "ply": 29,
+          "metrics": {
+            "depth": 6,
+            "nodes": 8556,
+            "ttHits": 170,
+            "reason": "search",
+            "elapsedMs": 116
+          }
+        },
+        {
+          "point": {
+            "x": 12,
+            "y": 8
+          },
+          "player": 1,
+          "engine": "medium@phase10d-base",
+          "ply": 30,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 10
+          },
+          "player": 2,
+          "engine": "hard@phase10d-base",
+          "ply": 31,
+          "metrics": {
+            "depth": 6,
+            "nodes": 8314,
+            "ttHits": 97,
+            "reason": "search",
+            "elapsedMs": 100
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 11
+          },
+          "player": 1,
+          "engine": "medium@phase10d-base",
+          "ply": 32,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 5
+          },
+          "player": 2,
+          "engine": "hard@phase10d-base",
+          "ply": 33,
+          "metrics": {
+            "depth": 6,
+            "nodes": 7349,
+            "ttHits": 68,
+            "reason": "search",
+            "elapsedMs": 90
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 2
+          },
+          "player": 1,
+          "engine": "medium@phase10d-base",
+          "ply": 34,
+          "metrics": {
+            "depth": 4,
+            "nodes": 874,
+            "ttHits": 12,
+            "reason": "search",
+            "elapsedMs": 12
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 5
+          },
+          "player": 2,
+          "engine": "hard@phase10d-base",
+          "ply": 35,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 3
+          },
+          "player": 1,
+          "engine": "medium@phase10d-base",
+          "ply": 36,
+          "metrics": {
+            "depth": 4,
+            "nodes": 736,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 9
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 3
+          },
+          "player": 2,
+          "engine": "hard@phase10d-base",
+          "ply": 37,
+          "metrics": {
+            "depth": 6,
+            "nodes": 8858,
+            "ttHits": 166,
+            "reason": "search",
+            "elapsedMs": 115
+          }
+        },
+        {
+          "point": {
+            "x": 4,
+            "y": 5
+          },
+          "player": 1,
+          "engine": "medium@phase10d-base",
+          "ply": 38,
+          "metrics": {
+            "depth": 4,
+            "nodes": 897,
+            "ttHits": 7,
+            "reason": "search",
+            "elapsedMs": 13
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 2
+          },
+          "player": 2,
+          "engine": "hard@phase10d-base",
+          "ply": 39,
+          "metrics": {
+            "depth": 6,
+            "nodes": 5095,
+            "ttHits": 33,
+            "reason": "search",
+            "elapsedMs": 57
+          }
+        },
+        {
+          "point": {
+            "x": 10,
+            "y": 1
+          },
+          "player": 1,
+          "engine": "medium@phase10d-base",
+          "ply": 40,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 2
+          },
+          "player": 2,
+          "engine": "hard@phase10d-base",
+          "ply": 41,
+          "metrics": {
+            "depth": 6,
+            "nodes": 3591,
+            "ttHits": 67,
+            "reason": "search",
+            "elapsedMs": 47
+          }
+        },
+        {
+          "point": {
+            "x": 4,
+            "y": 3
+          },
+          "player": 1,
+          "engine": "medium@phase10d-base",
+          "ply": 42,
+          "metrics": {
+            "depth": 4,
+            "nodes": 565,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 12
+          }
+        },
+        {
+          "point": {
+            "x": 3,
+            "y": 3
+          },
+          "player": 2,
+          "engine": "hard@phase10d-base",
+          "ply": 43,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 3,
+            "y": 4
+          },
+          "player": 1,
+          "engine": "medium@phase10d-base",
+          "ply": 44,
+          "metrics": {
+            "depth": 0,
+            "nodes": 15,
+            "ttHits": 0,
+            "reason": "win",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 2,
+            "y": 3
+          },
+          "player": 2,
+          "engine": "hard@phase10d-base",
+          "ply": 45,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 0
+          },
+          "player": 1,
+          "engine": "medium@phase10d-base",
+          "ply": 46,
+          "metrics": {
+            "depth": 0,
+            "nodes": 3,
+            "ttHits": 0,
+            "reason": "win",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 1
+          },
+          "player": 2,
+          "engine": "hard@phase10d-base",
+          "ply": 47,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 1
+          },
+          "player": 1,
+          "engine": "medium@phase10d-base",
+          "ply": 48,
+          "metrics": {
+            "depth": 0,
+            "nodes": 6,
+            "ttHits": 0,
+            "reason": "win",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 0
+          },
+          "player": 2,
+          "engine": "hard@phase10d-base",
+          "ply": 49,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 2,
+            "y": 5
+          },
+          "player": 1,
+          "engine": "medium@phase10d-base",
+          "ply": 50,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "win",
+            "elapsedMs": 0
+          }
+        }
+      ],
+      "error": null,
+      "failAtMove": null,
+      "elapsedMs": 1508
+    },
+    {
+      "opening": "three-each",
+      "black": "hard@phase10d-base",
+      "white": "medium@phase10d-base",
+      "outcome": "black-win",
+      "winner": 1,
+      "moves": [
+        {
+          "point": {
+            "x": 6,
+            "y": 8
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 6,
+          "metrics": {
+            "depth": 6,
+            "nodes": 8194,
+            "ttHits": 543,
+            "reason": "search",
+            "elapsedMs": 74
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 7
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 7,
+          "metrics": {
+            "depth": 4,
+            "nodes": 770,
+            "ttHits": 18,
+            "reason": "search",
+            "elapsedMs": 6
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 6
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 8,
+          "metrics": {
+            "depth": 6,
+            "nodes": 10093,
+            "ttHits": 649,
+            "reason": "search",
+            "elapsedMs": 107
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 9
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 9,
+          "metrics": {
+            "depth": 4,
+            "nodes": 832,
+            "ttHits": 3,
+            "reason": "search",
+            "elapsedMs": 6
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 6
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 10,
+          "metrics": {
+            "depth": 6,
+            "nodes": 11361,
+            "ttHits": 652,
+            "reason": "search",
+            "elapsedMs": 137
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 5
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 11,
+          "metrics": {
+            "depth": 4,
+            "nodes": 696,
+            "ttHits": 3,
+            "reason": "search",
+            "elapsedMs": 7
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 6
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 12,
+          "metrics": {
+            "depth": 6,
+            "nodes": 7086,
+            "ttHits": 424,
+            "reason": "search",
+            "elapsedMs": 98
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 6
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 13,
+          "metrics": {
+            "depth": 4,
+            "nodes": 800,
+            "ttHits": 2,
+            "reason": "search",
+            "elapsedMs": 7
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 5
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 14,
+          "metrics": {
+            "depth": 0,
+            "nodes": 42,
+            "ttHits": 0,
+            "reason": "win",
+            "elapsedMs": 2
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 4
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 15,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 4
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 16,
+          "metrics": {
+            "depth": 0,
+            "nodes": 60,
+            "ttHits": 0,
+            "reason": "win",
+            "elapsedMs": 2
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 8
+          },
+          "player": 2,
+          "engine": "medium@phase10d-base",
+          "ply": 17,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 4,
+            "y": 3
+          },
+          "player": 1,
+          "engine": "hard@phase10d-base",
+          "ply": 18,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "win",
+            "elapsedMs": 0
+          }
+        }
+      ],
+      "error": null,
+      "failAtMove": null,
+      "elapsedMs": 446
+    }
+  ]
+}

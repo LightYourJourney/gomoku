@@ -177,6 +177,18 @@ describe('开局集', () => {
     }
   })
 
+  it('没有开局在起始局面就是某一方的强制胜', () => {
+    // 一个「轮到黑、黑已必胜」的开局会让整组实验被先手写死：
+    // 换色只决定谁执黑，谁执黑谁白拿一分。Phase 10D 的验证集曾因此把
+    // 得分率压向 50%（three-each 的黑棋活三未被堵）。
+    for (const opening of OPENINGS) {
+      const state = openingState(opening)
+      const opponent = opponentOf(state.current)
+      expect(proveForcedWin(state.board, state.current), `${opening.id} 对轮到的一方是强制胜`).toBeNull()
+      expect(proveForcedWin(state.board, opponent), `${opening.id} 对等待的一方是强制胜`).toBeNull()
+    }
+  })
+
   it('覆盖多种白棋应手，而不是只有一个中心开局', () => {
     const twoPly = OPENINGS.filter((o) => o.moves.length === 2)
     expect(twoPly.length).toBeGreaterThanOrEqual(4)

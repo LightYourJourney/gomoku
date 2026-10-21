@@ -1,0 +1,3851 @@
+{
+  "meta": {
+    "commit": "8f3fbb8094c67b98059c8cccde68c7b4526aa344",
+    "dirty": true,
+    "engineVersion": "search-1",
+    "node": "v26.12.0",
+    "platform": "darwin",
+    "arch": "arm64",
+    "cpuCount": 8,
+    "startedAt": "2026-10-21T09:46:28.202Z",
+    "finishedAt": "2026-10-21T09:46:28.321Z",
+    "durationMs": 119,
+    "mode": "standard",
+    "command": "yarn strength STRENGTH_MODE=standard STRENGTH_A=beginner STRENGTH_A_MODULE=bench/strength/.engines/phase10d-base.mjs STRENGTH_A_ID=beginner@phase10d-base STRENGTH_B=easy STRENGTH_B_MODULE=bench/strength/.engines/phase10d-base.mjs STRENGTH_B_ID=easy@phase10d-base STRENGTH_REPEATS=1 STRENGTH_MAX_MOVES=120",
+    "openingsVersion": "07d09c5c1d5c0b41",
+    "statistics": {
+      "method": "配对 Bootstrap，以开局为簇重采样",
+      "bootstrapSamples": 2000,
+      "bootstrapSeed": 2654435769,
+      "clusterUnit": "opening"
+    },
+    "notes": [
+      "真实时钟 + 正式难度预算：结果依赖机器速度与当时负载。",
+      "负载均值（1 分钟）：4.26"
+    ],
+    "resultFile": "/Users/leo/leocode/vibe/games/gomoku/bench/strength/results/2026-10-21_09-46-28-202-beginner-phase10d-base_vs_easy-phase10d-base.json"
+  },
+  "a": {
+    "spec": {
+      "id": "beginner@phase10d-base",
+      "label": "beginner",
+      "difficulty": "beginner",
+      "clock": "real",
+      "module": "bench/strength/.engines/phase10d-base.mjs"
+    },
+    "resolved": {
+      "budgetMs": 250,
+      "maxDepth": 1,
+      "width": 6,
+      "threatPlies": 0,
+      "threatThrees": false,
+      "transposition": true
+    },
+    "digest": "fd66d1badd610cba0590e93b7e3b2a68444bee9d2121e47355f5e87a613df7c3",
+    "kind": "module"
+  },
+  "b": {
+    "spec": {
+      "id": "easy@phase10d-base",
+      "label": "easy",
+      "difficulty": "easy",
+      "clock": "real",
+      "module": "bench/strength/.engines/phase10d-base.mjs"
+    },
+    "resolved": {
+      "budgetMs": 500,
+      "maxDepth": 2,
+      "width": 10,
+      "threatPlies": 0,
+      "threatThrees": false,
+      "transposition": true
+    },
+    "digest": "fd66d1badd610cba0590e93b7e3b2a68444bee9d2121e47355f5e87a613df7c3",
+    "kind": "module"
+  },
+  "openings": [
+    {
+      "id": "center-far",
+      "moves": [
+        {
+          "x": 7,
+          "y": 7
+        },
+        {
+          "x": 5,
+          "y": 5
+        }
+      ]
+    },
+    {
+      "id": "branch-a",
+      "moves": [
+        {
+          "x": 7,
+          "y": 7
+        },
+        {
+          "x": 7,
+          "y": 8
+        },
+        {
+          "x": 8,
+          "y": 8
+        },
+        {
+          "x": 6,
+          "y": 6
+        }
+      ]
+    },
+    {
+      "id": "branch-b",
+      "moves": [
+        {
+          "x": 7,
+          "y": 7
+        },
+        {
+          "x": 8,
+          "y": 8
+        },
+        {
+          "x": 8,
+          "y": 7
+        },
+        {
+          "x": 6,
+          "y": 6
+        }
+      ]
+    },
+    {
+      "id": "three-each",
+      "moves": [
+        {
+          "x": 7,
+          "y": 7
+        },
+        {
+          "x": 7,
+          "y": 8
+        },
+        {
+          "x": 6,
+          "y": 7
+        },
+        {
+          "x": 8,
+          "y": 8
+        },
+        {
+          "x": 8,
+          "y": 7
+        },
+        {
+          "x": 6,
+          "y": 6
+        }
+      ]
+    }
+  ],
+  "maxMoves": 120,
+  "repeats": 1,
+  "summary": {
+    "aId": "beginner@phase10d-base",
+    "bId": "easy@phase10d-base",
+    "tally": {
+      "games": 8,
+      "scored": 8,
+      "aWins": 2,
+      "bWins": 6,
+      "draws": 0,
+      "moveLimit": 0,
+      "aborted": 0,
+      "illegalMove": 0,
+      "noMove": 0,
+      "engineError": 0,
+      "environmentError": 0
+    },
+    "scoreRate": 0.25,
+    "ci": {
+      "low": 0,
+      "high": 0.5,
+      "level": 0.95,
+      "samples": 2000
+    },
+    "elo": -190.84850188786498,
+    "asBlack": {
+      "games": 4,
+      "wins": 2,
+      "draws": 0,
+      "losses": 2,
+      "scoreRate": 0.5
+    },
+    "asWhite": {
+      "games": 4,
+      "wins": 0,
+      "draws": 0,
+      "losses": 4,
+      "scoreRate": 0
+    },
+    "bAsBlack": {
+      "games": 4,
+      "wins": 2,
+      "draws": 0,
+      "losses": 2,
+      "scoreRate": 0.5
+    },
+    "bAsWhite": {
+      "games": 4,
+      "wins": 4,
+      "draws": 0,
+      "losses": 0,
+      "scoreRate": 1
+    },
+    "perOpening": [
+      {
+        "opening": "center-far",
+        "repeats": 1,
+        "aScoreRate": 0.5,
+        "aBlackOutcomes": "black-win×1",
+        "bBlackOutcomes": "black-win×1"
+      },
+      {
+        "opening": "branch-a",
+        "repeats": 1,
+        "aScoreRate": 0,
+        "aBlackOutcomes": "white-win×1",
+        "bBlackOutcomes": "black-win×1"
+      },
+      {
+        "opening": "branch-b",
+        "repeats": 1,
+        "aScoreRate": 0,
+        "aBlackOutcomes": "white-win×1",
+        "bBlackOutcomes": "black-win×1"
+      },
+      {
+        "opening": "three-each",
+        "repeats": 1,
+        "aScoreRate": 0.5,
+        "aBlackOutcomes": "black-win×1",
+        "bBlackOutcomes": "black-win×1"
+      }
+    ]
+  },
+  "search": {
+    "a": {
+      "moves": 106,
+      "avgNodes": 8.830188679245284,
+      "medianNodes": 12,
+      "maxNodes": 12,
+      "avgDepth": 0.7358490566037735,
+      "avgElapsedMs": 0.12264150943396226,
+      "medianElapsedMs": 0,
+      "p90ElapsedMs": 1,
+      "p95ElapsedMs": 1,
+      "maxElapsedMs": 1,
+      "depthHistogram": {
+        "0": 28,
+        "1": 78
+      },
+      "timeoutRate": 0,
+      "budgetUtilization": 0.0005128205128205128,
+      "ttHits": 0,
+      "timeouts": 0,
+      "shortcuts": 28,
+      "searched": 78,
+      "phases": {
+        "opening": {
+          "moves": 50,
+          "avgNodes": 10.32,
+          "maxNodes": 12,
+          "avgDepth": 0.86,
+          "avgElapsedMs": 0.16
+        },
+        "middle": {
+          "moves": 48,
+          "avgNodes": 8,
+          "maxNodes": 12,
+          "avgDepth": 0.6666666666666666,
+          "avgElapsedMs": 0.08333333333333333
+        },
+        "end": {
+          "moves": 8,
+          "avgNodes": 4.5,
+          "maxNodes": 12,
+          "avgDepth": 0.375,
+          "avgElapsedMs": 0.125
+        }
+      }
+    },
+    "b": {
+      "moves": 108,
+      "avgNodes": 47.05555555555556,
+      "medianNodes": 59,
+      "maxNodes": 80,
+      "avgDepth": 1.462962962962963,
+      "avgElapsedMs": 0.7314814814814815,
+      "medianElapsedMs": 1,
+      "p90ElapsedMs": 1,
+      "p95ElapsedMs": 2,
+      "maxElapsedMs": 7,
+      "depthHistogram": {
+        "0": 29,
+        "2": 79
+      },
+      "timeoutRate": 0,
+      "budgetUtilization": 0.002,
+      "ttHits": 0,
+      "timeouts": 0,
+      "shortcuts": 29,
+      "searched": 79,
+      "phases": {
+        "opening": {
+          "moves": 51,
+          "avgNodes": 50.509803921568626,
+          "maxNodes": 78,
+          "avgDepth": 1.607843137254902,
+          "avgElapsedMs": 0.803921568627451
+        },
+        "middle": {
+          "moves": 49,
+          "avgNodes": 43.16326530612245,
+          "maxNodes": 80,
+          "avgDepth": 1.3061224489795917,
+          "avgElapsedMs": 0.6530612244897959
+        },
+        "end": {
+          "moves": 8,
+          "avgNodes": 48.875,
+          "maxNodes": 74,
+          "avgDepth": 1.5,
+          "avgElapsedMs": 0.75
+        }
+      }
+    }
+  },
+  "games": [
+    {
+      "opening": "center-far",
+      "black": "beginner@phase10d-base",
+      "white": "easy@phase10d-base",
+      "outcome": "black-win",
+      "winner": 1,
+      "moves": [
+        {
+          "point": {
+            "x": 4,
+            "y": 4
+          },
+          "player": 1,
+          "engine": "beginner@phase10d-base",
+          "ply": 2,
+          "metrics": {
+            "depth": 1,
+            "nodes": 12,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 4
+          },
+          "player": 2,
+          "engine": "easy@phase10d-base",
+          "ply": 3,
+          "metrics": {
+            "depth": 2,
+            "nodes": 59,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 2
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 3
+          },
+          "player": 1,
+          "engine": "beginner@phase10d-base",
+          "ply": 4,
+          "metrics": {
+            "depth": 1,
+            "nodes": 12,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 2
+          },
+          "player": 2,
+          "engine": "easy@phase10d-base",
+          "ply": 5,
+          "metrics": {
+            "depth": 2,
+            "nodes": 74,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 7
+          }
+        },
+        {
+          "point": {
+            "x": 3,
+            "y": 5
+          },
+          "player": 1,
+          "engine": "beginner@phase10d-base",
+          "ply": 6,
+          "metrics": {
+            "depth": 1,
+            "nodes": 12,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 2,
+            "y": 6
+          },
+          "player": 2,
+          "engine": "easy@phase10d-base",
+          "ply": 7,
+          "metrics": {
+            "depth": 2,
+            "nodes": 59,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 4,
+            "y": 3
+          },
+          "player": 1,
+          "engine": "beginner@phase10d-base",
+          "ply": 8,
+          "metrics": {
+            "depth": 1,
+            "nodes": 12,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 3
+          },
+          "player": 2,
+          "engine": "easy@phase10d-base",
+          "ply": 9,
+          "metrics": {
+            "depth": 2,
+            "nodes": 60,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 4,
+            "y": 5
+          },
+          "player": 1,
+          "engine": "beginner@phase10d-base",
+          "ply": 10,
+          "metrics": {
+            "depth": 1,
+            "nodes": 12,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 4,
+            "y": 6
+          },
+          "player": 2,
+          "engine": "easy@phase10d-base",
+          "ply": 11,
+          "metrics": {
+            "depth": 2,
+            "nodes": 68,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 4,
+            "y": 1
+          },
+          "player": 1,
+          "engine": "beginner@phase10d-base",
+          "ply": 12,
+          "metrics": {
+            "depth": 1,
+            "nodes": 12,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 4,
+            "y": 2
+          },
+          "player": 2,
+          "engine": "easy@phase10d-base",
+          "ply": 13,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 4
+          },
+          "player": 1,
+          "engine": "beginner@phase10d-base",
+          "ply": 14,
+          "metrics": {
+            "depth": 1,
+            "nodes": 12,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 2
+          },
+          "player": 2,
+          "engine": "easy@phase10d-base",
+          "ply": 15,
+          "metrics": {
+            "depth": 2,
+            "nodes": 59,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 3
+          }
+        },
+        {
+          "point": {
+            "x": 3,
+            "y": 2
+          },
+          "player": 1,
+          "engine": "beginner@phase10d-base",
+          "ply": 16,
+          "metrics": {
+            "depth": 1,
+            "nodes": 12,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 2
+          },
+          "player": 2,
+          "engine": "easy@phase10d-base",
+          "ply": 17,
+          "metrics": {
+            "depth": 2,
+            "nodes": 65,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 2
+          },
+          "player": 1,
+          "engine": "beginner@phase10d-base",
+          "ply": 18,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 3,
+            "y": 6
+          },
+          "player": 2,
+          "engine": "easy@phase10d-base",
+          "ply": 19,
+          "metrics": {
+            "depth": 2,
+            "nodes": 68,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 6
+          },
+          "player": 1,
+          "engine": "beginner@phase10d-base",
+          "ply": 20,
+          "metrics": {
+            "depth": 1,
+            "nodes": 12,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 1
+          },
+          "player": 2,
+          "engine": "easy@phase10d-base",
+          "ply": 21,
+          "metrics": {
+            "depth": 2,
+            "nodes": 59,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 0
+          },
+          "player": 1,
+          "engine": "beginner@phase10d-base",
+          "ply": 22,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 1,
+            "y": 6
+          },
+          "player": 2,
+          "engine": "easy@phase10d-base",
+          "ply": 23,
+          "metrics": {
+            "depth": 2,
+            "nodes": 59,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 0,
+            "y": 6
+          },
+          "player": 1,
+          "engine": "beginner@phase10d-base",
+          "ply": 24,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 3,
+            "y": 7
+          },
+          "player": 2,
+          "engine": "easy@phase10d-base",
+          "ply": 25,
+          "metrics": {
+            "depth": 2,
+            "nodes": 59,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 7
+          },
+          "player": 1,
+          "engine": "beginner@phase10d-base",
+          "ply": 26,
+          "metrics": {
+            "depth": 1,
+            "nodes": 12,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 3,
+            "y": 4
+          },
+          "player": 2,
+          "engine": "easy@phase10d-base",
+          "ply": 27,
+          "metrics": {
+            "depth": 2,
+            "nodes": 69,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 8
+          },
+          "player": 1,
+          "engine": "beginner@phase10d-base",
+          "ply": 28,
+          "metrics": {
+            "depth": 1,
+            "nodes": 12,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 9
+          },
+          "player": 2,
+          "engine": "easy@phase10d-base",
+          "ply": 29,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 6
+          },
+          "player": 1,
+          "engine": "beginner@phase10d-base",
+          "ply": 30,
+          "metrics": {
+            "depth": 1,
+            "nodes": 12,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 5
+          },
+          "player": 2,
+          "engine": "easy@phase10d-base",
+          "ply": 31,
+          "metrics": {
+            "depth": 2,
+            "nodes": 78,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 9
+          },
+          "player": 1,
+          "engine": "beginner@phase10d-base",
+          "ply": 32,
+          "metrics": {
+            "depth": 1,
+            "nodes": 12,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 10
+          },
+          "player": 2,
+          "engine": "easy@phase10d-base",
+          "ply": 33,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 7
+          },
+          "player": 1,
+          "engine": "beginner@phase10d-base",
+          "ply": 34,
+          "metrics": {
+            "depth": 1,
+            "nodes": 12,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 7
+          },
+          "player": 2,
+          "engine": "easy@phase10d-base",
+          "ply": 35,
+          "metrics": {
+            "depth": 2,
+            "nodes": 72,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 7
+          },
+          "player": 1,
+          "engine": "beginner@phase10d-base",
+          "ply": 36,
+          "metrics": {
+            "depth": 1,
+            "nodes": 12,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 10,
+            "y": 7
+          },
+          "player": 2,
+          "engine": "easy@phase10d-base",
+          "ply": 37,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 8
+          },
+          "player": 1,
+          "engine": "beginner@phase10d-base",
+          "ply": 38,
+          "metrics": {
+            "depth": 1,
+            "nodes": 12,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 10,
+            "y": 9
+          },
+          "player": 2,
+          "engine": "easy@phase10d-base",
+          "ply": 39,
+          "metrics": {
+            "depth": 2,
+            "nodes": 70,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 8
+          },
+          "player": 1,
+          "engine": "beginner@phase10d-base",
+          "ply": 40,
+          "metrics": {
+            "depth": 1,
+            "nodes": 12,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 2,
+            "y": 8
+          },
+          "player": 2,
+          "engine": "easy@phase10d-base",
+          "ply": 41,
+          "metrics": {
+            "depth": 2,
+            "nodes": 70,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 1,
+            "y": 9
+          },
+          "player": 1,
+          "engine": "beginner@phase10d-base",
+          "ply": 42,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 10,
+            "y": 8
+          },
+          "player": 2,
+          "engine": "easy@phase10d-base",
+          "ply": 43,
+          "metrics": {
+            "depth": 2,
+            "nodes": 60,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 10,
+            "y": 6
+          },
+          "player": 1,
+          "engine": "beginner@phase10d-base",
+          "ply": 44,
+          "metrics": {
+            "depth": 1,
+            "nodes": 12,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 10
+          },
+          "player": 2,
+          "engine": "easy@phase10d-base",
+          "ply": 45,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 11,
+            "y": 5
+          },
+          "player": 1,
+          "engine": "beginner@phase10d-base",
+          "ply": 46,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "win",
+            "elapsedMs": 0
+          }
+        }
+      ],
+      "error": null,
+      "failAtMove": null,
+      "elapsedMs": 35
+    },
+    {
+      "opening": "center-far",
+      "black": "easy@phase10d-base",
+      "white": "beginner@phase10d-base",
+      "outcome": "black-win",
+      "winner": 1,
+      "moves": [
+        {
+          "point": {
+            "x": 4,
+            "y": 4
+          },
+          "player": 1,
+          "engine": "easy@phase10d-base",
+          "ply": 2,
+          "metrics": {
+            "depth": 2,
+            "nodes": 59,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 4
+          },
+          "player": 2,
+          "engine": "beginner@phase10d-base",
+          "ply": 3,
+          "metrics": {
+            "depth": 1,
+            "nodes": 12,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 3
+          },
+          "player": 1,
+          "engine": "easy@phase10d-base",
+          "ply": 4,
+          "metrics": {
+            "depth": 2,
+            "nodes": 61,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 2
+          },
+          "player": 2,
+          "engine": "beginner@phase10d-base",
+          "ply": 5,
+          "metrics": {
+            "depth": 1,
+            "nodes": 12,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 3,
+            "y": 5
+          },
+          "player": 1,
+          "engine": "easy@phase10d-base",
+          "ply": 6,
+          "metrics": {
+            "depth": 2,
+            "nodes": 59,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 2,
+            "y": 6
+          },
+          "player": 2,
+          "engine": "beginner@phase10d-base",
+          "ply": 7,
+          "metrics": {
+            "depth": 1,
+            "nodes": 12,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 4,
+            "y": 3
+          },
+          "player": 1,
+          "engine": "easy@phase10d-base",
+          "ply": 8,
+          "metrics": {
+            "depth": 2,
+            "nodes": 59,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 3
+          },
+          "player": 2,
+          "engine": "beginner@phase10d-base",
+          "ply": 9,
+          "metrics": {
+            "depth": 1,
+            "nodes": 12,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 4,
+            "y": 5
+          },
+          "player": 1,
+          "engine": "easy@phase10d-base",
+          "ply": 10,
+          "metrics": {
+            "depth": 2,
+            "nodes": 59,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 4
+          },
+          "player": 2,
+          "engine": "beginner@phase10d-base",
+          "ply": 11,
+          "metrics": {
+            "depth": 1,
+            "nodes": 12,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 4,
+            "y": 6
+          },
+          "player": 1,
+          "engine": "easy@phase10d-base",
+          "ply": 12,
+          "metrics": {
+            "depth": 2,
+            "nodes": 59,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 4,
+            "y": 2
+          },
+          "player": 2,
+          "engine": "beginner@phase10d-base",
+          "ply": 13,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 4,
+            "y": 7
+          },
+          "player": 1,
+          "engine": "easy@phase10d-base",
+          "ply": 14,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "win",
+            "elapsedMs": 0
+          }
+        }
+      ],
+      "error": null,
+      "failAtMove": null,
+      "elapsedMs": 4
+    },
+    {
+      "opening": "branch-a",
+      "black": "beginner@phase10d-base",
+      "white": "easy@phase10d-base",
+      "outcome": "white-win",
+      "winner": 2,
+      "moves": [
+        {
+          "point": {
+            "x": 9,
+            "y": 9
+          },
+          "player": 1,
+          "engine": "beginner@phase10d-base",
+          "ply": 4,
+          "metrics": {
+            "depth": 1,
+            "nodes": 12,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 10,
+            "y": 10
+          },
+          "player": 2,
+          "engine": "easy@phase10d-base",
+          "ply": 5,
+          "metrics": {
+            "depth": 2,
+            "nodes": 59,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 7
+          },
+          "player": 1,
+          "engine": "beginner@phase10d-base",
+          "ply": 6,
+          "metrics": {
+            "depth": 1,
+            "nodes": 12,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 7
+          },
+          "player": 2,
+          "engine": "easy@phase10d-base",
+          "ply": 7,
+          "metrics": {
+            "depth": 2,
+            "nodes": 61,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 7
+          },
+          "player": 1,
+          "engine": "beginner@phase10d-base",
+          "ply": 8,
+          "metrics": {
+            "depth": 1,
+            "nodes": 12,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 4,
+            "y": 7
+          },
+          "player": 2,
+          "engine": "easy@phase10d-base",
+          "ply": 9,
+          "metrics": {
+            "depth": 2,
+            "nodes": 68,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 9
+          },
+          "player": 1,
+          "engine": "beginner@phase10d-base",
+          "ply": 10,
+          "metrics": {
+            "depth": 1,
+            "nodes": 12,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 6
+          },
+          "player": 2,
+          "engine": "easy@phase10d-base",
+          "ply": 11,
+          "metrics": {
+            "depth": 2,
+            "nodes": 59,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 11,
+            "y": 4
+          },
+          "player": 1,
+          "engine": "beginner@phase10d-base",
+          "ply": 12,
+          "metrics": {
+            "depth": 1,
+            "nodes": 12,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 8
+          },
+          "player": 2,
+          "engine": "easy@phase10d-base",
+          "ply": 13,
+          "metrics": {
+            "depth": 2,
+            "nodes": 59,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 8
+          },
+          "player": 1,
+          "engine": "beginner@phase10d-base",
+          "ply": 14,
+          "metrics": {
+            "depth": 1,
+            "nodes": 12,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 6
+          },
+          "player": 2,
+          "engine": "easy@phase10d-base",
+          "ply": 15,
+          "metrics": {
+            "depth": 2,
+            "nodes": 61,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 6
+          },
+          "player": 1,
+          "engine": "beginner@phase10d-base",
+          "ply": 16,
+          "metrics": {
+            "depth": 1,
+            "nodes": 12,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 5
+          },
+          "player": 2,
+          "engine": "easy@phase10d-base",
+          "ply": 17,
+          "metrics": {
+            "depth": 2,
+            "nodes": 68,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 4,
+            "y": 9
+          },
+          "player": 1,
+          "engine": "beginner@phase10d-base",
+          "ply": 18,
+          "metrics": {
+            "depth": 1,
+            "nodes": 12,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 3,
+            "y": 10
+          },
+          "player": 2,
+          "engine": "easy@phase10d-base",
+          "ply": 19,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 9
+          },
+          "player": 1,
+          "engine": "beginner@phase10d-base",
+          "ply": 20,
+          "metrics": {
+            "depth": 1,
+            "nodes": 12,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 3,
+            "y": 9
+          },
+          "player": 2,
+          "engine": "easy@phase10d-base",
+          "ply": 21,
+          "metrics": {
+            "depth": 2,
+            "nodes": 69,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 9
+          },
+          "player": 1,
+          "engine": "beginner@phase10d-base",
+          "ply": 22,
+          "metrics": {
+            "depth": 1,
+            "nodes": 12,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 9
+          },
+          "player": 2,
+          "engine": "easy@phase10d-base",
+          "ply": 23,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 10
+          },
+          "player": 1,
+          "engine": "beginner@phase10d-base",
+          "ply": 24,
+          "metrics": {
+            "depth": 1,
+            "nodes": 12,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 11
+          },
+          "player": 2,
+          "engine": "easy@phase10d-base",
+          "ply": 25,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 3,
+            "y": 8
+          },
+          "player": 1,
+          "engine": "beginner@phase10d-base",
+          "ply": 26,
+          "metrics": {
+            "depth": 1,
+            "nodes": 12,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 11
+          },
+          "player": 2,
+          "engine": "easy@phase10d-base",
+          "ply": 27,
+          "metrics": {
+            "depth": 2,
+            "nodes": 68,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 2,
+            "y": 7
+          },
+          "player": 1,
+          "engine": "beginner@phase10d-base",
+          "ply": 28,
+          "metrics": {
+            "depth": 1,
+            "nodes": 12,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 1,
+            "y": 6
+          },
+          "player": 2,
+          "engine": "easy@phase10d-base",
+          "ply": 29,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 7
+          },
+          "player": 1,
+          "engine": "beginner@phase10d-base",
+          "ply": 30,
+          "metrics": {
+            "depth": 1,
+            "nodes": 12,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 10,
+            "y": 6
+          },
+          "player": 2,
+          "engine": "easy@phase10d-base",
+          "ply": 31,
+          "metrics": {
+            "depth": 2,
+            "nodes": 59,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 4,
+            "y": 11
+          },
+          "player": 1,
+          "engine": "beginner@phase10d-base",
+          "ply": 32,
+          "metrics": {
+            "depth": 1,
+            "nodes": 12,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 4,
+            "y": 10
+          },
+          "player": 2,
+          "engine": "easy@phase10d-base",
+          "ply": 33,
+          "metrics": {
+            "depth": 2,
+            "nodes": 66,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 3,
+            "y": 12
+          },
+          "player": 1,
+          "engine": "beginner@phase10d-base",
+          "ply": 34,
+          "metrics": {
+            "depth": 1,
+            "nodes": 12,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 2,
+            "y": 13
+          },
+          "player": 2,
+          "engine": "easy@phase10d-base",
+          "ply": 35,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 2,
+            "y": 8
+          },
+          "player": 1,
+          "engine": "beginner@phase10d-base",
+          "ply": 36,
+          "metrics": {
+            "depth": 1,
+            "nodes": 12,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 12
+          },
+          "player": 2,
+          "engine": "easy@phase10d-base",
+          "ply": 37,
+          "metrics": {
+            "depth": 2,
+            "nodes": 63,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 13
+          },
+          "player": 1,
+          "engine": "beginner@phase10d-base",
+          "ply": 38,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 10
+          },
+          "player": 2,
+          "engine": "easy@phase10d-base",
+          "ply": 39,
+          "metrics": {
+            "depth": 2,
+            "nodes": 67,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 4,
+            "y": 8
+          },
+          "player": 1,
+          "engine": "beginner@phase10d-base",
+          "ply": 40,
+          "metrics": {
+            "depth": 1,
+            "nodes": 12,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 1,
+            "y": 8
+          },
+          "player": 2,
+          "engine": "easy@phase10d-base",
+          "ply": 41,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 8
+          },
+          "player": 1,
+          "engine": "beginner@phase10d-base",
+          "ply": 42,
+          "metrics": {
+            "depth": 1,
+            "nodes": 12,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 4,
+            "y": 13
+          },
+          "player": 2,
+          "engine": "easy@phase10d-base",
+          "ply": 43,
+          "metrics": {
+            "depth": 2,
+            "nodes": 61,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 12
+          },
+          "player": 1,
+          "engine": "beginner@phase10d-base",
+          "ply": 44,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 10,
+            "y": 7
+          },
+          "player": 2,
+          "engine": "easy@phase10d-base",
+          "ply": 45,
+          "metrics": {
+            "depth": 2,
+            "nodes": 80,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 10
+          },
+          "player": 1,
+          "engine": "beginner@phase10d-base",
+          "ply": 46,
+          "metrics": {
+            "depth": 1,
+            "nodes": 12,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 11
+          },
+          "player": 2,
+          "engine": "easy@phase10d-base",
+          "ply": 47,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 4
+          },
+          "player": 1,
+          "engine": "beginner@phase10d-base",
+          "ply": 48,
+          "metrics": {
+            "depth": 1,
+            "nodes": 12,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 10,
+            "y": 8
+          },
+          "player": 2,
+          "engine": "easy@phase10d-base",
+          "ply": 49,
+          "metrics": {
+            "depth": 2,
+            "nodes": 61,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 10,
+            "y": 9
+          },
+          "player": 1,
+          "engine": "beginner@phase10d-base",
+          "ply": 50,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 11
+          },
+          "player": 2,
+          "engine": "easy@phase10d-base",
+          "ply": 51,
+          "metrics": {
+            "depth": 2,
+            "nodes": 59,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 11
+          },
+          "player": 1,
+          "engine": "beginner@phase10d-base",
+          "ply": 52,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 10
+          },
+          "player": 2,
+          "engine": "easy@phase10d-base",
+          "ply": 53,
+          "metrics": {
+            "depth": 2,
+            "nodes": 71,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 5
+          },
+          "player": 1,
+          "engine": "beginner@phase10d-base",
+          "ply": 54,
+          "metrics": {
+            "depth": 1,
+            "nodes": 12,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 3
+          },
+          "player": 2,
+          "engine": "easy@phase10d-base",
+          "ply": 55,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 11,
+            "y": 8
+          },
+          "player": 1,
+          "engine": "beginner@phase10d-base",
+          "ply": 56,
+          "metrics": {
+            "depth": 1,
+            "nodes": 12,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 13
+          },
+          "player": 2,
+          "engine": "easy@phase10d-base",
+          "ply": 57,
+          "metrics": {
+            "depth": 2,
+            "nodes": 74,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 14
+          },
+          "player": 1,
+          "engine": "beginner@phase10d-base",
+          "ply": 58,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 3,
+            "y": 13
+          },
+          "player": 2,
+          "engine": "easy@phase10d-base",
+          "ply": 59,
+          "metrics": {
+            "depth": 2,
+            "nodes": 63,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 2
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 13
+          },
+          "player": 1,
+          "engine": "beginner@phase10d-base",
+          "ply": 60,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 4,
+            "y": 12
+          },
+          "player": 2,
+          "engine": "easy@phase10d-base",
+          "ply": 61,
+          "metrics": {
+            "depth": 2,
+            "nodes": 61,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 2
+          }
+        },
+        {
+          "point": {
+            "x": 2,
+            "y": 14
+          },
+          "player": 1,
+          "engine": "beginner@phase10d-base",
+          "ply": 62,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 10,
+            "y": 4
+          },
+          "player": 2,
+          "engine": "easy@phase10d-base",
+          "ply": 63,
+          "metrics": {
+            "depth": 2,
+            "nodes": 74,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 10,
+            "y": 5
+          },
+          "player": 1,
+          "engine": "beginner@phase10d-base",
+          "ply": 64,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 1,
+            "y": 13
+          },
+          "player": 2,
+          "engine": "easy@phase10d-base",
+          "ply": 65,
+          "metrics": {
+            "depth": 2,
+            "nodes": 70,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 0,
+            "y": 13
+          },
+          "player": 1,
+          "engine": "beginner@phase10d-base",
+          "ply": 66,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 11,
+            "y": 9
+          },
+          "player": 2,
+          "engine": "easy@phase10d-base",
+          "ply": 67,
+          "metrics": {
+            "depth": 2,
+            "nodes": 62,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 13,
+            "y": 6
+          },
+          "player": 1,
+          "engine": "beginner@phase10d-base",
+          "ply": 68,
+          "metrics": {
+            "depth": 1,
+            "nodes": 12,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 12,
+            "y": 7
+          },
+          "player": 2,
+          "engine": "easy@phase10d-base",
+          "ply": 69,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 12,
+            "y": 8
+          },
+          "player": 1,
+          "engine": "beginner@phase10d-base",
+          "ply": 70,
+          "metrics": {
+            "depth": 1,
+            "nodes": 12,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 1,
+            "y": 7
+          },
+          "player": 2,
+          "engine": "easy@phase10d-base",
+          "ply": 71,
+          "metrics": {
+            "depth": 2,
+            "nodes": 65,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 2,
+            "y": 6
+          },
+          "player": 1,
+          "engine": "beginner@phase10d-base",
+          "ply": 72,
+          "metrics": {
+            "depth": 1,
+            "nodes": 12,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 1,
+            "y": 5
+          },
+          "player": 2,
+          "engine": "easy@phase10d-base",
+          "ply": 73,
+          "metrics": {
+            "depth": 2,
+            "nodes": 59,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 1,
+            "y": 9
+          },
+          "player": 1,
+          "engine": "beginner@phase10d-base",
+          "ply": 74,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 1,
+            "y": 4
+          },
+          "player": 2,
+          "engine": "easy@phase10d-base",
+          "ply": 75,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "win",
+            "elapsedMs": 0
+          }
+        }
+      ],
+      "error": null,
+      "failAtMove": null,
+      "elapsedMs": 33
+    },
+    {
+      "opening": "branch-a",
+      "black": "easy@phase10d-base",
+      "white": "beginner@phase10d-base",
+      "outcome": "black-win",
+      "winner": 1,
+      "moves": [
+        {
+          "point": {
+            "x": 9,
+            "y": 9
+          },
+          "player": 1,
+          "engine": "easy@phase10d-base",
+          "ply": 4,
+          "metrics": {
+            "depth": 2,
+            "nodes": 59,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 10,
+            "y": 10
+          },
+          "player": 2,
+          "engine": "beginner@phase10d-base",
+          "ply": 5,
+          "metrics": {
+            "depth": 1,
+            "nodes": 12,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 7
+          },
+          "player": 1,
+          "engine": "easy@phase10d-base",
+          "ply": 6,
+          "metrics": {
+            "depth": 2,
+            "nodes": 59,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 7
+          },
+          "player": 2,
+          "engine": "beginner@phase10d-base",
+          "ply": 7,
+          "metrics": {
+            "depth": 1,
+            "nodes": 12,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 9
+          },
+          "player": 1,
+          "engine": "easy@phase10d-base",
+          "ply": 8,
+          "metrics": {
+            "depth": 2,
+            "nodes": 75,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 6
+          },
+          "player": 2,
+          "engine": "beginner@phase10d-base",
+          "ply": 9,
+          "metrics": {
+            "depth": 1,
+            "nodes": 12,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 8
+          },
+          "player": 1,
+          "engine": "easy@phase10d-base",
+          "ply": 10,
+          "metrics": {
+            "depth": 2,
+            "nodes": 60,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 6
+          },
+          "player": 2,
+          "engine": "beginner@phase10d-base",
+          "ply": 11,
+          "metrics": {
+            "depth": 1,
+            "nodes": 12,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 6
+          },
+          "player": 1,
+          "engine": "easy@phase10d-base",
+          "ply": 12,
+          "metrics": {
+            "depth": 2,
+            "nodes": 78,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 6
+          },
+          "player": 2,
+          "engine": "beginner@phase10d-base",
+          "ply": 13,
+          "metrics": {
+            "depth": 1,
+            "nodes": 12,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 4,
+            "y": 6
+          },
+          "player": 1,
+          "engine": "easy@phase10d-base",
+          "ply": 14,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 5
+          },
+          "player": 2,
+          "engine": "beginner@phase10d-base",
+          "ply": 15,
+          "metrics": {
+            "depth": 1,
+            "nodes": 12,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 8
+          },
+          "player": 1,
+          "engine": "easy@phase10d-base",
+          "ply": 16,
+          "metrics": {
+            "depth": 2,
+            "nodes": 69,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 4,
+            "y": 3
+          },
+          "player": 2,
+          "engine": "beginner@phase10d-base",
+          "ply": 17,
+          "metrics": {
+            "depth": 1,
+            "nodes": 12,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 4
+          },
+          "player": 1,
+          "engine": "easy@phase10d-base",
+          "ply": 18,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 10
+          },
+          "player": 2,
+          "engine": "beginner@phase10d-base",
+          "ply": 19,
+          "metrics": {
+            "depth": 1,
+            "nodes": 12,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 7
+          },
+          "player": 1,
+          "engine": "easy@phase10d-base",
+          "ply": 20,
+          "metrics": {
+            "depth": 2,
+            "nodes": 59,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 10
+          },
+          "player": 2,
+          "engine": "beginner@phase10d-base",
+          "ply": 21,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 5
+          },
+          "player": 1,
+          "engine": "easy@phase10d-base",
+          "ply": 22,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "win",
+            "elapsedMs": 0
+          }
+        }
+      ],
+      "error": null,
+      "failAtMove": null,
+      "elapsedMs": 5
+    },
+    {
+      "opening": "branch-b",
+      "black": "beginner@phase10d-base",
+      "white": "easy@phase10d-base",
+      "outcome": "white-win",
+      "winner": 2,
+      "moves": [
+        {
+          "point": {
+            "x": 6,
+            "y": 7
+          },
+          "player": 1,
+          "engine": "beginner@phase10d-base",
+          "ply": 4,
+          "metrics": {
+            "depth": 1,
+            "nodes": 12,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 7
+          },
+          "player": 2,
+          "engine": "easy@phase10d-base",
+          "ply": 5,
+          "metrics": {
+            "depth": 2,
+            "nodes": 59,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 7
+          },
+          "player": 1,
+          "engine": "beginner@phase10d-base",
+          "ply": 6,
+          "metrics": {
+            "depth": 1,
+            "nodes": 12,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 10,
+            "y": 7
+          },
+          "player": 2,
+          "engine": "easy@phase10d-base",
+          "ply": 7,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 5
+          },
+          "player": 1,
+          "engine": "beginner@phase10d-base",
+          "ply": 8,
+          "metrics": {
+            "depth": 1,
+            "nodes": 12,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 4,
+            "y": 8
+          },
+          "player": 2,
+          "engine": "easy@phase10d-base",
+          "ply": 9,
+          "metrics": {
+            "depth": 2,
+            "nodes": 59,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 6
+          },
+          "player": 1,
+          "engine": "beginner@phase10d-base",
+          "ply": 10,
+          "metrics": {
+            "depth": 1,
+            "nodes": 12,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 8
+          },
+          "player": 2,
+          "engine": "easy@phase10d-base",
+          "ply": 11,
+          "metrics": {
+            "depth": 2,
+            "nodes": 69,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 3
+          },
+          "player": 1,
+          "engine": "beginner@phase10d-base",
+          "ply": 12,
+          "metrics": {
+            "depth": 1,
+            "nodes": 12,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 4
+          },
+          "player": 2,
+          "engine": "easy@phase10d-base",
+          "ply": 13,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 8
+          },
+          "player": 1,
+          "engine": "beginner@phase10d-base",
+          "ply": 14,
+          "metrics": {
+            "depth": 1,
+            "nodes": 12,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 5
+          },
+          "player": 2,
+          "engine": "easy@phase10d-base",
+          "ply": 15,
+          "metrics": {
+            "depth": 2,
+            "nodes": 70,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 4,
+            "y": 9
+          },
+          "player": 1,
+          "engine": "beginner@phase10d-base",
+          "ply": 16,
+          "metrics": {
+            "depth": 1,
+            "nodes": 12,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 3,
+            "y": 10
+          },
+          "player": 2,
+          "engine": "easy@phase10d-base",
+          "ply": 17,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 8
+          },
+          "player": 1,
+          "engine": "beginner@phase10d-base",
+          "ply": 18,
+          "metrics": {
+            "depth": 1,
+            "nodes": 12,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 6
+          },
+          "player": 2,
+          "engine": "easy@phase10d-base",
+          "ply": 19,
+          "metrics": {
+            "depth": 2,
+            "nodes": 59,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 2
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 3
+          },
+          "player": 1,
+          "engine": "beginner@phase10d-base",
+          "ply": 20,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 11,
+            "y": 8
+          },
+          "player": 2,
+          "engine": "easy@phase10d-base",
+          "ply": 21,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "win",
+            "elapsedMs": 0
+          }
+        }
+      ],
+      "error": null,
+      "failAtMove": null,
+      "elapsedMs": 6
+    },
+    {
+      "opening": "branch-b",
+      "black": "easy@phase10d-base",
+      "white": "beginner@phase10d-base",
+      "outcome": "black-win",
+      "winner": 1,
+      "moves": [
+        {
+          "point": {
+            "x": 6,
+            "y": 7
+          },
+          "player": 1,
+          "engine": "easy@phase10d-base",
+          "ply": 4,
+          "metrics": {
+            "depth": 2,
+            "nodes": 59,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 7
+          },
+          "player": 2,
+          "engine": "beginner@phase10d-base",
+          "ply": 5,
+          "metrics": {
+            "depth": 1,
+            "nodes": 12,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 7
+          },
+          "player": 1,
+          "engine": "easy@phase10d-base",
+          "ply": 6,
+          "metrics": {
+            "depth": 2,
+            "nodes": 59,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 10,
+            "y": 7
+          },
+          "player": 2,
+          "engine": "beginner@phase10d-base",
+          "ply": 7,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 5
+          },
+          "player": 1,
+          "engine": "easy@phase10d-base",
+          "ply": 8,
+          "metrics": {
+            "depth": 2,
+            "nodes": 68,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 6
+          },
+          "player": 2,
+          "engine": "beginner@phase10d-base",
+          "ply": 9,
+          "metrics": {
+            "depth": 1,
+            "nodes": 12,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 6
+          },
+          "player": 1,
+          "engine": "easy@phase10d-base",
+          "ply": 10,
+          "metrics": {
+            "depth": 2,
+            "nodes": 59,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 10,
+            "y": 8
+          },
+          "player": 2,
+          "engine": "beginner@phase10d-base",
+          "ply": 11,
+          "metrics": {
+            "depth": 1,
+            "nodes": 12,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 8
+          },
+          "player": 1,
+          "engine": "easy@phase10d-base",
+          "ply": 12,
+          "metrics": {
+            "depth": 2,
+            "nodes": 75,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 5
+          },
+          "player": 2,
+          "engine": "beginner@phase10d-base",
+          "ply": 13,
+          "metrics": {
+            "depth": 1,
+            "nodes": 12,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 3
+          },
+          "player": 1,
+          "engine": "easy@phase10d-base",
+          "ply": 14,
+          "metrics": {
+            "depth": 2,
+            "nodes": 59,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 4
+          },
+          "player": 2,
+          "engine": "beginner@phase10d-base",
+          "ply": 15,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 9
+          },
+          "player": 1,
+          "engine": "easy@phase10d-base",
+          "ply": 16,
+          "metrics": {
+            "depth": 2,
+            "nodes": 59,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 4,
+            "y": 10
+          },
+          "player": 2,
+          "engine": "beginner@phase10d-base",
+          "ply": 17,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 9
+          },
+          "player": 1,
+          "engine": "easy@phase10d-base",
+          "ply": 18,
+          "metrics": {
+            "depth": 2,
+            "nodes": 60,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 8
+          },
+          "player": 2,
+          "engine": "beginner@phase10d-base",
+          "ply": 19,
+          "metrics": {
+            "depth": 1,
+            "nodes": 12,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 8
+          },
+          "player": 1,
+          "engine": "easy@phase10d-base",
+          "ply": 20,
+          "metrics": {
+            "depth": 2,
+            "nodes": 66,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 11,
+            "y": 8
+          },
+          "player": 2,
+          "engine": "beginner@phase10d-base",
+          "ply": 21,
+          "metrics": {
+            "depth": 1,
+            "nodes": 12,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 12,
+            "y": 8
+          },
+          "player": 1,
+          "engine": "easy@phase10d-base",
+          "ply": 22,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 6
+          },
+          "player": 2,
+          "engine": "beginner@phase10d-base",
+          "ply": 23,
+          "metrics": {
+            "depth": 1,
+            "nodes": 12,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 5
+          },
+          "player": 1,
+          "engine": "easy@phase10d-base",
+          "ply": 24,
+          "metrics": {
+            "depth": 2,
+            "nodes": 72,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 12,
+            "y": 9
+          },
+          "player": 2,
+          "engine": "beginner@phase10d-base",
+          "ply": 25,
+          "metrics": {
+            "depth": 1,
+            "nodes": 12,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 13,
+            "y": 10
+          },
+          "player": 1,
+          "engine": "easy@phase10d-base",
+          "ply": 26,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 9
+          },
+          "player": 2,
+          "engine": "beginner@phase10d-base",
+          "ply": 27,
+          "metrics": {
+            "depth": 1,
+            "nodes": 12,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 10
+          },
+          "player": 1,
+          "engine": "easy@phase10d-base",
+          "ply": 28,
+          "metrics": {
+            "depth": 2,
+            "nodes": 73,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 11,
+            "y": 6
+          },
+          "player": 2,
+          "engine": "beginner@phase10d-base",
+          "ply": 29,
+          "metrics": {
+            "depth": 1,
+            "nodes": 12,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 12,
+            "y": 5
+          },
+          "player": 1,
+          "engine": "easy@phase10d-base",
+          "ply": 30,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 4
+          },
+          "player": 2,
+          "engine": "beginner@phase10d-base",
+          "ply": 31,
+          "metrics": {
+            "depth": 1,
+            "nodes": 12,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 9
+          },
+          "player": 1,
+          "engine": "easy@phase10d-base",
+          "ply": 32,
+          "metrics": {
+            "depth": 2,
+            "nodes": 71,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 7,
+            "y": 11
+          },
+          "player": 2,
+          "engine": "beginner@phase10d-base",
+          "ply": 33,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 3,
+            "y": 9
+          },
+          "player": 1,
+          "engine": "easy@phase10d-base",
+          "ply": 34,
+          "metrics": {
+            "depth": 2,
+            "nodes": 71,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 4,
+            "y": 9
+          },
+          "player": 2,
+          "engine": "beginner@phase10d-base",
+          "ply": 35,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 4,
+            "y": 11
+          },
+          "player": 1,
+          "engine": "easy@phase10d-base",
+          "ply": 36,
+          "metrics": {
+            "depth": 2,
+            "nodes": 62,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 2
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 10
+          },
+          "player": 2,
+          "engine": "beginner@phase10d-base",
+          "ply": 37,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 11
+          },
+          "player": 1,
+          "engine": "easy@phase10d-base",
+          "ply": 38,
+          "metrics": {
+            "depth": 2,
+            "nodes": 62,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 6,
+            "y": 10
+          },
+          "player": 2,
+          "engine": "beginner@phase10d-base",
+          "ply": 39,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 5,
+            "y": 8
+          },
+          "player": 1,
+          "engine": "easy@phase10d-base",
+          "ply": 40,
+          "metrics": {
+            "depth": 2,
+            "nodes": 59,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 10,
+            "y": 6
+          },
+          "player": 2,
+          "engine": "beginner@phase10d-base",
+          "ply": 41,
+          "metrics": {
+            "depth": 1,
+            "nodes": 12,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 4,
+            "y": 7
+          },
+          "player": 1,
+          "engine": "easy@phase10d-base",
+          "ply": 42,
+          "metrics": {
+            "depth": 2,
+            "nodes": 63,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 8,
+            "y": 11
+          },
+          "player": 2,
+          "engine": "beginner@phase10d-base",
+          "ply": 43,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 3,
+            "y": 6
+          },
+          "player": 1,
+          "engine": "easy@phase10d-base",
+          "ply": 44,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "win",
+            "elapsedMs": 0
+          }
+        }
+      ],
+      "error": null,
+      "failAtMove": null,
+      "elapsedMs": 18
+    },
+    {
+      "opening": "three-each",
+      "black": "beginner@phase10d-base",
+      "white": "easy@phase10d-base",
+      "outcome": "black-win",
+      "winner": 1,
+      "moves": [
+        {
+          "point": {
+            "x": 5,
+            "y": 7
+          },
+          "player": 1,
+          "engine": "beginner@phase10d-base",
+          "ply": 6,
+          "metrics": {
+            "depth": 1,
+            "nodes": 12,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 7
+          },
+          "player": 2,
+          "engine": "easy@phase10d-base",
+          "ply": 7,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 4,
+            "y": 7
+          },
+          "player": 1,
+          "engine": "beginner@phase10d-base",
+          "ply": 8,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "win",
+            "elapsedMs": 0
+          }
+        }
+      ],
+      "error": null,
+      "failAtMove": null,
+      "elapsedMs": 0
+    },
+    {
+      "opening": "three-each",
+      "black": "easy@phase10d-base",
+      "white": "beginner@phase10d-base",
+      "outcome": "black-win",
+      "winner": 1,
+      "moves": [
+        {
+          "point": {
+            "x": 5,
+            "y": 7
+          },
+          "player": 1,
+          "engine": "easy@phase10d-base",
+          "ply": 6,
+          "metrics": {
+            "depth": 2,
+            "nodes": 59,
+            "ttHits": 0,
+            "reason": "search",
+            "elapsedMs": 1
+          }
+        },
+        {
+          "point": {
+            "x": 9,
+            "y": 7
+          },
+          "player": 2,
+          "engine": "beginner@phase10d-base",
+          "ply": 7,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "block",
+            "elapsedMs": 0
+          }
+        },
+        {
+          "point": {
+            "x": 4,
+            "y": 7
+          },
+          "player": 1,
+          "engine": "easy@phase10d-base",
+          "ply": 8,
+          "metrics": {
+            "depth": 0,
+            "nodes": 0,
+            "ttHits": 0,
+            "reason": "win",
+            "elapsedMs": 0
+          }
+        }
+      ],
+      "error": null,
+      "failAtMove": null,
+      "elapsedMs": 1
+    }
+  ]
+}

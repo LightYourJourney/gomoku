@@ -1,0 +1,1323 @@
+{
+  "generatedAt": "2026-10-21T09:21:48.629Z",
+  "loadAverage": 4.6181640625,
+  "tiers": [
+    {
+      "engineId": "tactics-beginner",
+      "difficulty": "beginner",
+      "label": "入门",
+      "budgetMs": 250,
+      "cases": [
+        {
+          "position": "empty",
+          "category": "empty",
+          "criterion": "safe",
+          "expected": "合法且不送立即成五",
+          "verdict": "pass",
+          "move": {
+            "x": 7,
+            "y": 7
+          },
+          "depth": 0,
+          "nodes": 0,
+          "reason": "opening",
+          "elapsedMs": 0
+        },
+        {
+          "position": "opening-adjacent",
+          "category": "opening",
+          "criterion": "safe",
+          "expected": "合法且不送立即成五",
+          "verdict": "pass",
+          "move": {
+            "x": 6,
+            "y": 7
+          },
+          "depth": 1,
+          "nodes": 12,
+          "reason": "search",
+          "elapsedMs": 2
+        },
+        {
+          "position": "opening-diagonal",
+          "category": "opening",
+          "criterion": "safe",
+          "expected": "合法且不送立即成五",
+          "verdict": "pass",
+          "move": {
+            "x": 8,
+            "y": 7
+          },
+          "depth": 1,
+          "nodes": 12,
+          "reason": "search",
+          "elapsedMs": 1
+        },
+        {
+          "position": "opening-knight",
+          "category": "opening",
+          "criterion": "safe",
+          "expected": "合法且不送立即成五",
+          "verdict": "pass",
+          "move": {
+            "x": 7,
+            "y": 6
+          },
+          "depth": 1,
+          "nodes": 12,
+          "reason": "search",
+          "elapsedMs": 2
+        },
+        {
+          "position": "quiet-midgame",
+          "category": "quiet",
+          "criterion": "safe",
+          "expected": "合法且不送立即成五",
+          "verdict": "pass",
+          "move": {
+            "x": 6,
+            "y": 5
+          },
+          "depth": 1,
+          "nodes": 12,
+          "reason": "search",
+          "elapsedMs": 1
+        },
+        {
+          "position": "direct-win-open",
+          "category": "direct-win",
+          "criterion": "win-now",
+          "expected": "立即成五",
+          "verdict": "pass",
+          "move": {
+            "x": 4,
+            "y": 7
+          },
+          "depth": 0,
+          "nodes": 0,
+          "reason": "win",
+          "elapsedMs": 0
+        },
+        {
+          "position": "rush-four",
+          "category": "rush-four",
+          "criterion": "win-now",
+          "expected": "立即成五",
+          "verdict": "pass",
+          "move": {
+            "x": 10,
+            "y": 7
+          },
+          "depth": 0,
+          "nodes": 0,
+          "reason": "win",
+          "elapsedMs": 0
+        },
+        {
+          "position": "must-block-single",
+          "category": "must-block",
+          "criterion": "exact",
+          "expected": "唯一不输：( 9 , 7 )",
+          "verdict": "pass",
+          "move": {
+            "x": 9,
+            "y": 7
+          },
+          "depth": 0,
+          "nodes": 0,
+          "reason": "block",
+          "elapsedMs": 0
+        },
+        {
+          "position": "must-block-double",
+          "category": "must-block",
+          "criterion": "diagnostic",
+          "expected": "必败局面（只记录）",
+          "verdict": "diagnostic",
+          "move": {
+            "x": 3,
+            "y": 7
+          },
+          "depth": 0,
+          "nodes": 0,
+          "reason": "block",
+          "elapsedMs": 1
+        },
+        {
+          "position": "multi-win",
+          "category": "multi-win",
+          "criterion": "win-now",
+          "expected": "立即成五",
+          "verdict": "pass",
+          "move": {
+            "x": 11,
+            "y": 2
+          },
+          "depth": 0,
+          "nodes": 0,
+          "reason": "win",
+          "elapsedMs": 0
+        },
+        {
+          "position": "open-three",
+          "category": "open-three",
+          "criterion": "forced-win",
+          "expected": "五手内强制胜",
+          "verdict": "pass",
+          "move": {
+            "x": 5,
+            "y": 7
+          },
+          "depth": 1,
+          "nodes": 12,
+          "reason": "search",
+          "elapsedMs": 1
+        },
+        {
+          "position": "double-threat",
+          "category": "double-threat",
+          "criterion": "forced-win",
+          "expected": "五手内强制胜",
+          "verdict": "pass",
+          "move": {
+            "x": 7,
+            "y": 4
+          },
+          "depth": 1,
+          "nodes": 12,
+          "reason": "search",
+          "elapsedMs": 1
+        },
+        {
+          "position": "forced-win-vcf",
+          "category": "forced-win",
+          "criterion": "forced-win",
+          "expected": "五手内强制胜",
+          "verdict": "pass",
+          "move": {
+            "x": 5,
+            "y": 7
+          },
+          "depth": 1,
+          "nodes": 12,
+          "reason": "search",
+          "elapsedMs": 1
+        },
+        {
+          "position": "threat-not-win",
+          "category": "threat-not-win",
+          "criterion": "exact",
+          "expected": "唯一不输：( 9 , 5 )",
+          "verdict": "pass",
+          "move": {
+            "x": 9,
+            "y": 5
+          },
+          "depth": 0,
+          "nodes": 0,
+          "reason": "block",
+          "elapsedMs": 0
+        },
+        {
+          "position": "transposed",
+          "category": "transposition",
+          "criterion": "safe",
+          "expected": "合法且不送立即成五",
+          "verdict": "pass",
+          "move": {
+            "x": 5,
+            "y": 5
+          },
+          "depth": 1,
+          "nodes": 12,
+          "reason": "search",
+          "elapsedMs": 0
+        },
+        {
+          "position": "endgame-eight-holes",
+          "category": "endgame",
+          "criterion": "safe",
+          "expected": "合法且不送立即成五",
+          "verdict": "pass",
+          "move": {
+            "x": 8,
+            "y": 7
+          },
+          "depth": 1,
+          "nodes": 12,
+          "reason": "search",
+          "elapsedMs": 0
+        }
+      ],
+      "passed": 15,
+      "failed": 0,
+      "diagnostic": 1
+    },
+    {
+      "engineId": "tactics-easy",
+      "difficulty": "easy",
+      "label": "初级",
+      "budgetMs": 500,
+      "cases": [
+        {
+          "position": "empty",
+          "category": "empty",
+          "criterion": "safe",
+          "expected": "合法且不送立即成五",
+          "verdict": "pass",
+          "move": {
+            "x": 7,
+            "y": 7
+          },
+          "depth": 0,
+          "nodes": 0,
+          "reason": "opening",
+          "elapsedMs": 0
+        },
+        {
+          "position": "opening-adjacent",
+          "category": "opening",
+          "criterion": "safe",
+          "expected": "合法且不送立即成五",
+          "verdict": "pass",
+          "move": {
+            "x": 6,
+            "y": 7
+          },
+          "depth": 2,
+          "nodes": 59,
+          "reason": "search",
+          "elapsedMs": 3
+        },
+        {
+          "position": "opening-diagonal",
+          "category": "opening",
+          "criterion": "safe",
+          "expected": "合法且不送立即成五",
+          "verdict": "pass",
+          "move": {
+            "x": 8,
+            "y": 7
+          },
+          "depth": 2,
+          "nodes": 59,
+          "reason": "search",
+          "elapsedMs": 3
+        },
+        {
+          "position": "opening-knight",
+          "category": "opening",
+          "criterion": "safe",
+          "expected": "合法且不送立即成五",
+          "verdict": "pass",
+          "move": {
+            "x": 7,
+            "y": 6
+          },
+          "depth": 2,
+          "nodes": 59,
+          "reason": "search",
+          "elapsedMs": 2
+        },
+        {
+          "position": "quiet-midgame",
+          "category": "quiet",
+          "criterion": "safe",
+          "expected": "合法且不送立即成五",
+          "verdict": "pass",
+          "move": {
+            "x": 6,
+            "y": 5
+          },
+          "depth": 2,
+          "nodes": 60,
+          "reason": "search",
+          "elapsedMs": 6
+        },
+        {
+          "position": "direct-win-open",
+          "category": "direct-win",
+          "criterion": "win-now",
+          "expected": "立即成五",
+          "verdict": "pass",
+          "move": {
+            "x": 4,
+            "y": 7
+          },
+          "depth": 0,
+          "nodes": 0,
+          "reason": "win",
+          "elapsedMs": 0
+        },
+        {
+          "position": "rush-four",
+          "category": "rush-four",
+          "criterion": "win-now",
+          "expected": "立即成五",
+          "verdict": "pass",
+          "move": {
+            "x": 10,
+            "y": 7
+          },
+          "depth": 0,
+          "nodes": 0,
+          "reason": "win",
+          "elapsedMs": 0
+        },
+        {
+          "position": "must-block-single",
+          "category": "must-block",
+          "criterion": "exact",
+          "expected": "唯一不输：( 9 , 7 )",
+          "verdict": "pass",
+          "move": {
+            "x": 9,
+            "y": 7
+          },
+          "depth": 0,
+          "nodes": 0,
+          "reason": "block",
+          "elapsedMs": 0
+        },
+        {
+          "position": "must-block-double",
+          "category": "must-block",
+          "criterion": "diagnostic",
+          "expected": "必败局面（只记录）",
+          "verdict": "diagnostic",
+          "move": {
+            "x": 3,
+            "y": 7
+          },
+          "depth": 0,
+          "nodes": 0,
+          "reason": "block",
+          "elapsedMs": 0
+        },
+        {
+          "position": "multi-win",
+          "category": "multi-win",
+          "criterion": "win-now",
+          "expected": "立即成五",
+          "verdict": "pass",
+          "move": {
+            "x": 11,
+            "y": 2
+          },
+          "depth": 0,
+          "nodes": 0,
+          "reason": "win",
+          "elapsedMs": 0
+        },
+        {
+          "position": "open-three",
+          "category": "open-three",
+          "criterion": "forced-win",
+          "expected": "五手内强制胜",
+          "verdict": "pass",
+          "move": {
+            "x": 5,
+            "y": 7
+          },
+          "depth": 2,
+          "nodes": 59,
+          "reason": "search",
+          "elapsedMs": 3
+        },
+        {
+          "position": "double-threat",
+          "category": "double-threat",
+          "criterion": "forced-win",
+          "expected": "五手内强制胜",
+          "verdict": "pass",
+          "move": {
+            "x": 7,
+            "y": 4
+          },
+          "depth": 2,
+          "nodes": 59,
+          "reason": "search",
+          "elapsedMs": 3
+        },
+        {
+          "position": "forced-win-vcf",
+          "category": "forced-win",
+          "criterion": "forced-win",
+          "expected": "五手内强制胜",
+          "verdict": "pass",
+          "move": {
+            "x": 5,
+            "y": 7
+          },
+          "depth": 2,
+          "nodes": 59,
+          "reason": "search",
+          "elapsedMs": 3
+        },
+        {
+          "position": "threat-not-win",
+          "category": "threat-not-win",
+          "criterion": "exact",
+          "expected": "唯一不输：( 9 , 5 )",
+          "verdict": "pass",
+          "move": {
+            "x": 9,
+            "y": 5
+          },
+          "depth": 0,
+          "nodes": 0,
+          "reason": "block",
+          "elapsedMs": 0
+        },
+        {
+          "position": "transposed",
+          "category": "transposition",
+          "criterion": "safe",
+          "expected": "合法且不送立即成五",
+          "verdict": "pass",
+          "move": {
+            "x": 5,
+            "y": 5
+          },
+          "depth": 2,
+          "nodes": 59,
+          "reason": "search",
+          "elapsedMs": 3
+        },
+        {
+          "position": "endgame-eight-holes",
+          "category": "endgame",
+          "criterion": "safe",
+          "expected": "合法且不送立即成五",
+          "verdict": "pass",
+          "move": {
+            "x": 8,
+            "y": 7
+          },
+          "depth": 2,
+          "nodes": 46,
+          "reason": "search",
+          "elapsedMs": 3
+        }
+      ],
+      "passed": 15,
+      "failed": 0,
+      "diagnostic": 1
+    },
+    {
+      "engineId": "tactics-medium",
+      "difficulty": "medium",
+      "label": "中级",
+      "budgetMs": 1000,
+      "cases": [
+        {
+          "position": "empty",
+          "category": "empty",
+          "criterion": "safe",
+          "expected": "合法且不送立即成五",
+          "verdict": "pass",
+          "move": {
+            "x": 7,
+            "y": 7
+          },
+          "depth": 0,
+          "nodes": 0,
+          "reason": "opening",
+          "elapsedMs": 0
+        },
+        {
+          "position": "opening-adjacent",
+          "category": "opening",
+          "criterion": "safe",
+          "expected": "合法且不送立即成五",
+          "verdict": "pass",
+          "move": {
+            "x": 6,
+            "y": 8
+          },
+          "depth": 4,
+          "nodes": 832,
+          "reason": "search",
+          "elapsedMs": 39
+        },
+        {
+          "position": "opening-diagonal",
+          "category": "opening",
+          "criterion": "safe",
+          "expected": "合法且不送立即成五",
+          "verdict": "pass",
+          "move": {
+            "x": 8,
+            "y": 6
+          },
+          "depth": 4,
+          "nodes": 849,
+          "reason": "search",
+          "elapsedMs": 39
+        },
+        {
+          "position": "opening-knight",
+          "category": "opening",
+          "criterion": "safe",
+          "expected": "合法且不送立即成五",
+          "verdict": "pass",
+          "move": {
+            "x": 6,
+            "y": 6
+          },
+          "depth": 4,
+          "nodes": 950,
+          "reason": "search",
+          "elapsedMs": 45
+        },
+        {
+          "position": "quiet-midgame",
+          "category": "quiet",
+          "criterion": "safe",
+          "expected": "合法且不送立即成五",
+          "verdict": "pass",
+          "move": {
+            "x": 5,
+            "y": 8
+          },
+          "depth": 4,
+          "nodes": 622,
+          "reason": "search",
+          "elapsedMs": 63
+        },
+        {
+          "position": "direct-win-open",
+          "category": "direct-win",
+          "criterion": "win-now",
+          "expected": "立即成五",
+          "verdict": "pass",
+          "move": {
+            "x": 4,
+            "y": 7
+          },
+          "depth": 0,
+          "nodes": 0,
+          "reason": "win",
+          "elapsedMs": 0
+        },
+        {
+          "position": "rush-four",
+          "category": "rush-four",
+          "criterion": "win-now",
+          "expected": "立即成五",
+          "verdict": "pass",
+          "move": {
+            "x": 10,
+            "y": 7
+          },
+          "depth": 0,
+          "nodes": 0,
+          "reason": "win",
+          "elapsedMs": 0
+        },
+        {
+          "position": "must-block-single",
+          "category": "must-block",
+          "criterion": "exact",
+          "expected": "唯一不输：( 9 , 7 )",
+          "verdict": "pass",
+          "move": {
+            "x": 9,
+            "y": 7
+          },
+          "depth": 0,
+          "nodes": 0,
+          "reason": "block",
+          "elapsedMs": 0
+        },
+        {
+          "position": "must-block-double",
+          "category": "must-block",
+          "criterion": "diagnostic",
+          "expected": "必败局面（只记录）",
+          "verdict": "diagnostic",
+          "move": {
+            "x": 3,
+            "y": 7
+          },
+          "depth": 0,
+          "nodes": 0,
+          "reason": "block",
+          "elapsedMs": 1
+        },
+        {
+          "position": "multi-win",
+          "category": "multi-win",
+          "criterion": "win-now",
+          "expected": "立即成五",
+          "verdict": "pass",
+          "move": {
+            "x": 11,
+            "y": 2
+          },
+          "depth": 0,
+          "nodes": 0,
+          "reason": "win",
+          "elapsedMs": 0
+        },
+        {
+          "position": "open-three",
+          "category": "open-three",
+          "criterion": "forced-win",
+          "expected": "五手内强制胜",
+          "verdict": "pass",
+          "move": {
+            "x": 5,
+            "y": 7
+          },
+          "depth": 0,
+          "nodes": 4,
+          "reason": "win",
+          "elapsedMs": 0
+        },
+        {
+          "position": "double-threat",
+          "category": "double-threat",
+          "criterion": "forced-win",
+          "expected": "五手内强制胜",
+          "verdict": "pass",
+          "move": {
+            "x": 7,
+            "y": 3
+          },
+          "depth": 0,
+          "nodes": 2,
+          "reason": "win",
+          "elapsedMs": 0
+        },
+        {
+          "position": "forced-win-vcf",
+          "category": "forced-win",
+          "criterion": "forced-win",
+          "expected": "五手内强制胜",
+          "verdict": "pass",
+          "move": {
+            "x": 5,
+            "y": 7
+          },
+          "depth": 0,
+          "nodes": 1,
+          "reason": "win",
+          "elapsedMs": 0
+        },
+        {
+          "position": "threat-not-win",
+          "category": "threat-not-win",
+          "criterion": "exact",
+          "expected": "唯一不输：( 9 , 5 )",
+          "verdict": "pass",
+          "move": {
+            "x": 9,
+            "y": 5
+          },
+          "depth": 0,
+          "nodes": 0,
+          "reason": "block",
+          "elapsedMs": 0
+        },
+        {
+          "position": "transposed",
+          "category": "transposition",
+          "criterion": "safe",
+          "expected": "合法且不送立即成五",
+          "verdict": "pass",
+          "move": {
+            "x": 7,
+            "y": 6
+          },
+          "depth": 4,
+          "nodes": 582,
+          "reason": "search",
+          "elapsedMs": 34
+        },
+        {
+          "position": "endgame-eight-holes",
+          "category": "endgame",
+          "criterion": "safe",
+          "expected": "合法且不送立即成五",
+          "verdict": "pass",
+          "move": {
+            "x": 8,
+            "y": 7
+          },
+          "depth": 4,
+          "nodes": 265,
+          "reason": "search",
+          "elapsedMs": 24
+        }
+      ],
+      "passed": 15,
+      "failed": 0,
+      "diagnostic": 1
+    },
+    {
+      "engineId": "tactics-hard",
+      "difficulty": "hard",
+      "label": "高级",
+      "budgetMs": 1600,
+      "cases": [
+        {
+          "position": "empty",
+          "category": "empty",
+          "criterion": "safe",
+          "expected": "合法且不送立即成五",
+          "verdict": "pass",
+          "move": {
+            "x": 7,
+            "y": 7
+          },
+          "depth": 0,
+          "nodes": 0,
+          "reason": "opening",
+          "elapsedMs": 0
+        },
+        {
+          "position": "opening-adjacent",
+          "category": "opening",
+          "criterion": "safe",
+          "expected": "合法且不送立即成五",
+          "verdict": "pass",
+          "move": {
+            "x": 6,
+            "y": 8
+          },
+          "depth": 6,
+          "nodes": 10177,
+          "reason": "search",
+          "elapsedMs": 575
+        },
+        {
+          "position": "opening-diagonal",
+          "category": "opening",
+          "criterion": "safe",
+          "expected": "合法且不送立即成五",
+          "verdict": "pass",
+          "move": {
+            "x": 9,
+            "y": 7
+          },
+          "depth": 6,
+          "nodes": 10966,
+          "reason": "search",
+          "elapsedMs": 585
+        },
+        {
+          "position": "opening-knight",
+          "category": "opening",
+          "criterion": "safe",
+          "expected": "合法且不送立即成五",
+          "verdict": "pass",
+          "move": {
+            "x": 7,
+            "y": 5
+          },
+          "depth": 6,
+          "nodes": 11104,
+          "reason": "search",
+          "elapsedMs": 622
+        },
+        {
+          "position": "quiet-midgame",
+          "category": "quiet",
+          "criterion": "safe",
+          "expected": "合法且不送立即成五",
+          "verdict": "pass",
+          "move": {
+            "x": 8,
+            "y": 5
+          },
+          "depth": 6,
+          "nodes": 12023,
+          "reason": "search",
+          "elapsedMs": 1101
+        },
+        {
+          "position": "direct-win-open",
+          "category": "direct-win",
+          "criterion": "win-now",
+          "expected": "立即成五",
+          "verdict": "pass",
+          "move": {
+            "x": 4,
+            "y": 7
+          },
+          "depth": 0,
+          "nodes": 0,
+          "reason": "win",
+          "elapsedMs": 0
+        },
+        {
+          "position": "rush-four",
+          "category": "rush-four",
+          "criterion": "win-now",
+          "expected": "立即成五",
+          "verdict": "pass",
+          "move": {
+            "x": 10,
+            "y": 7
+          },
+          "depth": 0,
+          "nodes": 0,
+          "reason": "win",
+          "elapsedMs": 0
+        },
+        {
+          "position": "must-block-single",
+          "category": "must-block",
+          "criterion": "exact",
+          "expected": "唯一不输：( 9 , 7 )",
+          "verdict": "pass",
+          "move": {
+            "x": 9,
+            "y": 7
+          },
+          "depth": 0,
+          "nodes": 0,
+          "reason": "block",
+          "elapsedMs": 0
+        },
+        {
+          "position": "must-block-double",
+          "category": "must-block",
+          "criterion": "diagnostic",
+          "expected": "必败局面（只记录）",
+          "verdict": "diagnostic",
+          "move": {
+            "x": 3,
+            "y": 7
+          },
+          "depth": 0,
+          "nodes": 0,
+          "reason": "block",
+          "elapsedMs": 1
+        },
+        {
+          "position": "multi-win",
+          "category": "multi-win",
+          "criterion": "win-now",
+          "expected": "立即成五",
+          "verdict": "pass",
+          "move": {
+            "x": 11,
+            "y": 2
+          },
+          "depth": 0,
+          "nodes": 0,
+          "reason": "win",
+          "elapsedMs": 0
+        },
+        {
+          "position": "open-three",
+          "category": "open-three",
+          "criterion": "forced-win",
+          "expected": "五手内强制胜",
+          "verdict": "pass",
+          "move": {
+            "x": 5,
+            "y": 7
+          },
+          "depth": 0,
+          "nodes": 4,
+          "reason": "win",
+          "elapsedMs": 1
+        },
+        {
+          "position": "double-threat",
+          "category": "double-threat",
+          "criterion": "forced-win",
+          "expected": "五手内强制胜",
+          "verdict": "pass",
+          "move": {
+            "x": 7,
+            "y": 3
+          },
+          "depth": 0,
+          "nodes": 2,
+          "reason": "win",
+          "elapsedMs": 1
+        },
+        {
+          "position": "forced-win-vcf",
+          "category": "forced-win",
+          "criterion": "forced-win",
+          "expected": "五手内强制胜",
+          "verdict": "pass",
+          "move": {
+            "x": 5,
+            "y": 7
+          },
+          "depth": 0,
+          "nodes": 1,
+          "reason": "win",
+          "elapsedMs": 0
+        },
+        {
+          "position": "threat-not-win",
+          "category": "threat-not-win",
+          "criterion": "exact",
+          "expected": "唯一不输：( 9 , 5 )",
+          "verdict": "pass",
+          "move": {
+            "x": 9,
+            "y": 5
+          },
+          "depth": 0,
+          "nodes": 0,
+          "reason": "block",
+          "elapsedMs": 1
+        },
+        {
+          "position": "transposed",
+          "category": "transposition",
+          "criterion": "safe",
+          "expected": "合法且不送立即成五",
+          "verdict": "pass",
+          "move": {
+            "x": 7,
+            "y": 6
+          },
+          "depth": 6,
+          "nodes": 8551,
+          "reason": "search",
+          "elapsedMs": 592
+        },
+        {
+          "position": "endgame-eight-holes",
+          "category": "endgame",
+          "criterion": "safe",
+          "expected": "合法且不送立即成五",
+          "verdict": "pass",
+          "move": {
+            "x": 8,
+            "y": 7
+          },
+          "depth": 6,
+          "nodes": 808,
+          "reason": "search",
+          "elapsedMs": 91
+        }
+      ],
+      "passed": 15,
+      "failed": 0,
+      "diagnostic": 1
+    },
+    {
+      "engineId": "tactics-expert",
+      "difficulty": "expert",
+      "label": "专家",
+      "budgetMs": 2600,
+      "cases": [
+        {
+          "position": "empty",
+          "category": "empty",
+          "criterion": "safe",
+          "expected": "合法且不送立即成五",
+          "verdict": "pass",
+          "move": {
+            "x": 7,
+            "y": 7
+          },
+          "depth": 0,
+          "nodes": 0,
+          "reason": "opening",
+          "elapsedMs": 0
+        },
+        {
+          "position": "opening-adjacent",
+          "category": "opening",
+          "criterion": "safe",
+          "expected": "合法且不送立即成五",
+          "verdict": "pass",
+          "move": {
+            "x": 6,
+            "y": 8
+          },
+          "depth": 6,
+          "nodes": 50490,
+          "reason": "timeout",
+          "elapsedMs": 2600
+        },
+        {
+          "position": "opening-diagonal",
+          "category": "opening",
+          "criterion": "safe",
+          "expected": "合法且不送立即成五",
+          "verdict": "pass",
+          "move": {
+            "x": 9,
+            "y": 7
+          },
+          "depth": 6,
+          "nodes": 50844,
+          "reason": "timeout",
+          "elapsedMs": 2600
+        },
+        {
+          "position": "opening-knight",
+          "category": "opening",
+          "criterion": "safe",
+          "expected": "合法且不送立即成五",
+          "verdict": "pass",
+          "move": {
+            "x": 7,
+            "y": 5
+          },
+          "depth": 6,
+          "nodes": 47275,
+          "reason": "timeout",
+          "elapsedMs": 2600
+        },
+        {
+          "position": "quiet-midgame",
+          "category": "quiet",
+          "criterion": "safe",
+          "expected": "合法且不送立即成五",
+          "verdict": "pass",
+          "move": {
+            "x": 8,
+            "y": 5
+          },
+          "depth": 6,
+          "nodes": 25385,
+          "reason": "timeout",
+          "elapsedMs": 2600
+        },
+        {
+          "position": "direct-win-open",
+          "category": "direct-win",
+          "criterion": "win-now",
+          "expected": "立即成五",
+          "verdict": "pass",
+          "move": {
+            "x": 4,
+            "y": 7
+          },
+          "depth": 0,
+          "nodes": 0,
+          "reason": "win",
+          "elapsedMs": 0
+        },
+        {
+          "position": "rush-four",
+          "category": "rush-four",
+          "criterion": "win-now",
+          "expected": "立即成五",
+          "verdict": "pass",
+          "move": {
+            "x": 10,
+            "y": 7
+          },
+          "depth": 0,
+          "nodes": 0,
+          "reason": "win",
+          "elapsedMs": 0
+        },
+        {
+          "position": "must-block-single",
+          "category": "must-block",
+          "criterion": "exact",
+          "expected": "唯一不输：( 9 , 7 )",
+          "verdict": "pass",
+          "move": {
+            "x": 9,
+            "y": 7
+          },
+          "depth": 0,
+          "nodes": 0,
+          "reason": "block",
+          "elapsedMs": 0
+        },
+        {
+          "position": "must-block-double",
+          "category": "must-block",
+          "criterion": "diagnostic",
+          "expected": "必败局面（只记录）",
+          "verdict": "diagnostic",
+          "move": {
+            "x": 3,
+            "y": 7
+          },
+          "depth": 0,
+          "nodes": 0,
+          "reason": "block",
+          "elapsedMs": 0
+        },
+        {
+          "position": "multi-win",
+          "category": "multi-win",
+          "criterion": "win-now",
+          "expected": "立即成五",
+          "verdict": "pass",
+          "move": {
+            "x": 11,
+            "y": 2
+          },
+          "depth": 0,
+          "nodes": 0,
+          "reason": "win",
+          "elapsedMs": 0
+        },
+        {
+          "position": "open-three",
+          "category": "open-three",
+          "criterion": "forced-win",
+          "expected": "五手内强制胜",
+          "verdict": "pass",
+          "move": {
+            "x": 5,
+            "y": 7
+          },
+          "depth": 0,
+          "nodes": 4,
+          "reason": "win",
+          "elapsedMs": 1
+        },
+        {
+          "position": "double-threat",
+          "category": "double-threat",
+          "criterion": "forced-win",
+          "expected": "五手内强制胜",
+          "verdict": "pass",
+          "move": {
+            "x": 7,
+            "y": 3
+          },
+          "depth": 0,
+          "nodes": 2,
+          "reason": "win",
+          "elapsedMs": 1
+        },
+        {
+          "position": "forced-win-vcf",
+          "category": "forced-win",
+          "criterion": "forced-win",
+          "expected": "五手内强制胜",
+          "verdict": "pass",
+          "move": {
+            "x": 5,
+            "y": 7
+          },
+          "depth": 0,
+          "nodes": 1,
+          "reason": "win",
+          "elapsedMs": 0
+        },
+        {
+          "position": "threat-not-win",
+          "category": "threat-not-win",
+          "criterion": "exact",
+          "expected": "唯一不输：( 9 , 5 )",
+          "verdict": "pass",
+          "move": {
+            "x": 9,
+            "y": 5
+          },
+          "depth": 0,
+          "nodes": 0,
+          "reason": "block",
+          "elapsedMs": 0
+        },
+        {
+          "position": "transposed",
+          "category": "transposition",
+          "criterion": "safe",
+          "expected": "合法且不送立即成五",
+          "verdict": "pass",
+          "move": {
+            "x": 7,
+            "y": 6
+          },
+          "depth": 6,
+          "nodes": 44945,
+          "reason": "timeout",
+          "elapsedMs": 2600
+        },
+        {
+          "position": "endgame-eight-holes",
+          "category": "endgame",
+          "criterion": "safe",
+          "expected": "合法且不送立即成五",
+          "verdict": "pass",
+          "move": {
+            "x": 8,
+            "y": 7
+          },
+          "depth": 8,
+          "nodes": 1738,
+          "reason": "search",
+          "elapsedMs": 196
+        }
+      ],
+      "passed": 15,
+      "failed": 0,
+      "diagnostic": 1
+    }
+  ],
+  "tightBudget": [
+    {
+      "engineId": "tight-beginner",
+      "difficulty": "beginner",
+      "position": "quiet-midgame",
+      "verdict": "pass",
+      "move": {
+        "x": 6,
+        "y": 5
+      },
+      "reason": "timeout",
+      "elapsedMs": 1
+    },
+    {
+      "engineId": "tight-easy",
+      "difficulty": "easy",
+      "position": "quiet-midgame",
+      "verdict": "pass",
+      "move": {
+        "x": 6,
+        "y": 5
+      },
+      "reason": "timeout",
+      "elapsedMs": 1
+    },
+    {
+      "engineId": "tight-medium",
+      "difficulty": "medium",
+      "position": "quiet-midgame",
+      "verdict": "pass",
+      "move": {
+        "x": 6,
+        "y": 5
+      },
+      "reason": "timeout",
+      "elapsedMs": 1
+    },
+    {
+      "engineId": "tight-hard",
+      "difficulty": "hard",
+      "position": "quiet-midgame",
+      "verdict": "pass",
+      "move": {
+        "x": 6,
+        "y": 5
+      },
+      "reason": "timeout",
+      "elapsedMs": 1
+    },
+    {
+      "engineId": "tight-expert",
+      "difficulty": "expert",
+      "position": "quiet-midgame",
+      "verdict": "pass",
+      "move": {
+        "x": 6,
+        "y": 5
+      },
+      "reason": "timeout",
+      "elapsedMs": 1
+    }
+  ]
+}
