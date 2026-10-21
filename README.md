@@ -200,6 +200,7 @@ bench/         引擎基准、渲染探针与棋力评测（测量脚本不进�
 - [docs/ai-research/BASELINE_STRENGTH.md](docs/ai-research/BASELINE_STRENGTH.md) —— 基线测量与它的局限
 - [docs/ai-research/PHASE_10A.md](docs/ai-research/PHASE_10A.md) —— 评测基础设施的阶段报告
 - [AGENTS.md](AGENTS.md) —— 参与开发前的约定
+- [docs/HISTORY_REWRITE.md](docs/HISTORY_REWRITE.md) —— 2026-10-21 的历史重写说明（旧提交哈希不再可解析）
 
 ## 移动端
 
