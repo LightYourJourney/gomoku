@@ -9,10 +9,10 @@
 - [ ] `git status` 干净，发布提交就是评审过的那个提交
 - [ ] `yarn lint` 通过
 - [ ] `yarn typecheck` 通过
-- [ ] `yarn test` 全过（Phase 09A 基线：1085）
+- [ ] `yarn test` 全过（Phase 10F 基线：1,220）
 - [ ] `yarn build` 通过
-- [ ] `yarn e2e` 全过（Phase 09A 基线：162）
-- [ ] `yarn e2e:prod` 全过（Phase 09A 基线：5）
+- [ ] `yarn e2e` 全过（Phase 10F 基线：162）
+- [ ] `yarn e2e:prod` 全过（Phase 10F 基线：6）
 - [ ] `yarn gates` 通过（循环 / 死码 / 重复 / 测试条数棘轮）
 - [ ] `yarn check:coverage` 通过
 - [ ] `yarn ui:probe --out <临时目录>` 七条判据全过（基线：38 状态 / 308 张）
@@ -27,7 +27,7 @@
 - [ ] `dist/index.html` 无内联 `<script>`；资源路径带正确的 base
 - [ ] Worker chunk 存在，且被 `index-*.js` 以同源相对路径引用
 - [ ] 子路径部署时：`VITE_BASE=/xxx/ yarn build` 后，HTML/JS/CSS/favicon/Worker 全部带前缀
-- [ ] 产物体积无异常增长（Phase 09A：总计 412 KB / gzip JS 104 KB）
+- [ ] 产物体积无异常增长（Phase 10F：总计 416 KB / gzip 主 JS 107 KB / Worker 5.4 KB）
 
 ## C. 安全与元数据
 
@@ -82,4 +82,10 @@
 > **Phase 09B 状态（2026-10-20）**：A–D **已在真实生产环境执行并通过**——
 > 线上 <https://gomoku-lab.pages.dev>，提交 `2ec65fa`，全量 e2e 162/162、
 > 业务流程烟雾 16/16。逐项读数见 [DEPLOYMENT_RECORD.md](DEPLOYMENT_RECORD.md) §3。
+> E 中「Safari / Firefox 冒烟」仍未做；自定义域名未绑定。
+>
+> **Phase 10F 状态（2026-10-21）**：A–D **已在真实生产环境执行并通过**——
+> 应用 `0.2.0`、提交 `b67ea93`、部署 `d3f5f6cc…`；预览与生产线上 e2e 均 162/162，
+> 定向验收（五档、专家超时、提示、复盘、Worker、CSP、旧库）全过。
+> `ui:probe` 与覆盖棘轮由 CI `probe` job 执行（本阶段未改界面）。
 > E 中「Safari / Firefox 冒烟」仍未做；自定义域名未绑定。

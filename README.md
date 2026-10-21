@@ -5,9 +5,9 @@
 页面加载时从**同源**取静态资源；之后的对局、教学与复盘全部在本机完成（不含 Service Worker，
 断网后刷新页面仍需能访问宿主）。
 
-**线上地址：<https://gomoku-lab.pages.dev>**（Cloudflare Pages，提交 `2ec65fa`）。
+**线上地址：<https://gomoku-lab.pages.dev>**（Cloudflare Pages；应用 `0.2.0`、引擎 `search-1`、提交 `b67ea93`）。
 
-**当前进度：Phase 1–5、UI/UX 改版 Phase 00–07、Phase 08 独立审计、Phase 09A 发布加固与 Phase 09B 正式部署全部完成。**
+**当前进度：Phase 1–5、UI/UX 改版 Phase 00–07、Phase 08 独立审计、Phase 09A/09B 发布与首次上线、Phase 10A–10F AI 评测 / 优化 / 标定 / 审计 / 正式发布全部完成。**
 键盘与读屏可用、平板与触屏专项验证过、生产构建有独立的冒烟通道、用法有[使用说明](docs/USAGE.md)；
 发布就绪评估与部署方案见 [RELEASE_READINESS.md](docs/release/RELEASE_READINESS.md)；
 最终审计与残留问题见 [FINAL_AUDIT.md](docs/ui-redesign/FINAL_AUDIT.md) 与 [KNOWN_ISSUES.md](docs/ui-redesign/KNOWN_ISSUES.md)。
@@ -72,7 +72,7 @@ yarn dev          # 开发服务器
 五档的差异来自**真实的参数差异**（候选宽度、深度上限、时间预算、算杀开关），不是给同一套搜索贴标签；档位差异由自对弈测试守住。
 
 **AI（`src/ai`）**
-跑在 Web Worker 里，不阻塞主线程。棋型识别（窗口枚举，**能看见隔子型**）、候选点生成、Negamax + Alpha-Beta + 迭代加深、Zobrist 置换表、杀手着法、算杀搜索（连续冲四）、时间预算与超时回退。每个请求绑定棋局版本，过期响应一律丢弃。
+跑在 Web Worker 里，不阻塞主线程。棋型识别（窗口枚举，**能看见隔子型**）、候选点生成、Negamax + Alpha-Beta + 迭代加深、Zobrist 置换表、杀手着法、算杀搜索（连续冲四）、时间预算与超时回退；叶子评估走**与全盘评估逐位一致的增量实现**。每个请求绑定棋局版本，过期响应一律丢弃。
 
 **AI 提示**
 用一段固定短预算单独算一遍，给出前三推荐着法与紧急程度（必胜 / 必须防守 / 危险 / 一般），棋盘上用 1/2/3 标出。提示走只分析请求：与 AI 正式走子共用引擎但互不挤占预算，**只写提示状态、绝不落子**。没搜完就如实标成「启发式」，不把猜测说成结论。
@@ -155,9 +155,9 @@ bench/         引擎基准、渲染探针与棋力评测（测量脚本不进�
 
 | 项 | 数量 |
 | --- | --- |
-| 单元 / 组件用例 | **1060**（62 个文件） |
+| 单元 / 组件用例 | **1220**（75 个文件） |
 | 端到端用例 | **162**（桌面 142 + 移动触屏 11 + 平板 9） |
-| 生产构建冒烟 | 5（`yarn e2e:prod`） |
+| 生产构建冒烟 | 6（`yarn e2e:prod`，含构建版本标识核对） |
 
 关键实现都有反向验证记录（改坏实现确认用例会红），详见 [docs/TEST_REPORT.md](docs/TEST_REPORT.md)。
 性能数字全部可复跑：`yarn bench`（引擎）与 `yarn bench:render`
@@ -189,13 +189,14 @@ bench/         引擎基准、渲染探针与棋力评测（测量脚本不进�
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) —— 分层、数据流与接口契约
 - [docs/RULES.md](docs/RULES.md) —— 规则定义与边界情形
 - [docs/AI_ENGINE.md](docs/AI_ENGINE.md) —— 引擎原理、难度参数与已知局限
-- [docs/ROADMAP.md](docs/ROADMAP.md) —— Phase 1–5、UI 改版 00–07、Phase 08/09A 的进度与长期待办
+- [docs/ROADMAP.md](docs/ROADMAP.md) —— Phase 1–5、UI 改版 00–07、Phase 08/09、Phase 10A–10F 的进度与长期待办
 - [docs/TEST_REPORT.md](docs/TEST_REPORT.md) —— 测试覆盖、浏览器验证与性能实测
 - [docs/release/RELEASE_READINESS.md](docs/release/RELEASE_READINESS.md) —— 发布就绪评估（分级结论、门禁读数、未验证项）
 - [docs/release/DEPLOYMENT_PLAN.md](docs/release/DEPLOYMENT_PLAN.md) —— 托管平台对比与部署步骤
 - [docs/release/ROLLBACK_PLAN.md](docs/release/ROLLBACK_PLAN.md) —— 回滚路径、数据影响与演练
 - [docs/release/RELEASE_CHECKLIST.md](docs/release/RELEASE_CHECKLIST.md) —— 发布前 / staging / 公开发布清单
-- [docs/release/DEPLOYMENT_RECORD.md](docs/release/DEPLOYMENT_RECORD.md) —— 已发生的那次部署：版本、地址、验收读数、回滚与更新流程
+- [docs/release/DEPLOYMENT_RECORD.md](docs/release/DEPLOYMENT_RECORD.md) —— 已发生的两次部署（Phase 09B / 10F）：版本、地址、验收读数、回滚与更新流程
+- [docs/release/RELEASE_NOTES_0.2.0.md](docs/release/RELEASE_NOTES_0.2.0.md) —— `0.2.0` 正式发布说明与测量边界
 - [docs/ai-research/BENCHMARK_PROTOCOL.md](docs/ai-research/BENCHMARK_PROTOCOL.md) —— 棋力评测协议：两种模式、局面库、赛制与统计
 - [docs/ai-research/BASELINE_STRENGTH.md](docs/ai-research/BASELINE_STRENGTH.md) —— 基线测量与它的局限
 - [docs/ai-research/PHASE_10A.md](docs/ai-research/PHASE_10A.md) —— 评测基础设施的阶段报告

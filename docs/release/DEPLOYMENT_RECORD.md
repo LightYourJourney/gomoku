@@ -1,10 +1,111 @@
-# 部署记录（Phase 09B）
+# 部署记录
 
-> 这份文件记录**已经发生过的一次真实部署**：谁、什么时候、把哪个提交、
-> 部署到了哪里，以及线上验收的原始读数。与方案/清单分开，避免「计划」和
-> 「事实」混写。
+> 这份文件记录**已经发生过的真实部署**：什么时候、把哪个提交、部署到了哪里，
+> 以及线上验收的原始读数。与方案/清单分开，避免「计划」和「事实」混写。
+> 最新一次在最上面。
 
-## 1. 本次发布
+## Phase 10F · AI 引擎 0.2.0（当前生产）
+
+| 项 | 值 |
+| --- | --- |
+| 应用版本 | `0.2.0` |
+| 引擎版本 | `search-1`（Phase 10C 只改执行速度，未改决策语义） |
+| 提交 | `b67ea930528375e2cff21bcb3c9332c82061a75e` |
+| Git 标签 | `v0.2.0`（指向 `b67ea93`） |
+| 生产项目 | `gomoku-lab` |
+| 生产地址 | **https://gomoku-lab.pages.dev** |
+| 生产部署 ID | `d3f5f6cc-673e-4391-a418-13b5830d633a` |
+| 部署时间 | 2026-10-21（UTC+8） |
+| 部署方式 | `npx wrangler@4.151.3 pages deploy dist --project-name gomoku-lab --branch main --commit-hash b67ea93…`（Git 自动部署仍未启用） |
+| 预览项目 / 部署 | `gomoku-lab-preview` / `b21394c5-5179-4053-b19f-455e06aaf213` |
+| 上一生产部署（回滚目标） | `e5a32d20-5523-4cdd-b6a8-88db36a35f1f`（`2ec65fa`） |
+| 产物 | 8 文件 / 416 KB；`index.html`、`assets/index-maCHdY9Y.js`、`assets/index-DcvwGzkf.css`、`assets/worker-B6Ge9L6W.js` |
+
+### 1. 资源指纹（生产实测，与本地 `dist/` 逐字节一致）
+
+| 资源 | 大小 | SHA-256 |
+| --- | --- | --- |
+| `index.html` | 832 B | `cb8d2c860ff15ca1359b2045877b339f254bb107fa4050a8f9ddbb3fe66b66bd` |
+| `assets/index-maCHdY9Y.js` | 343,278 B | `e2fce81d690cdd81d4fcc0c0dfdf41d2e84cd2cd0dbd05d351f0cd81bb44366e` |
+| `assets/worker-B6Ge9L6W.js` | 13,994 B | `696a075240aa0f825239004f3ba70d7e6f085bb9d22ebfeb3e32c238c59aa79b` |
+| `assets/index-DcvwGzkf.css` | 35,177 B | `2ed40fe89e4ab1a2e74fafea78f07be7257a87ff54cb3f342e62908cfba55a97` |
+
+`index.html` 的 meta 直接给出可核验的版本：
+
+```
+app-version    = 0.2.0
+engine-version = search-1
+build-commit   = b67ea930528375e2cff21bcb3c9332c82061a75e
+```
+
+### 2. 发布前门禁
+
+| 命令 | 结果 |
+| --- | --- |
+| `yarn lint` / `yarn typecheck` | ✅ |
+| `yarn test` | ✅ 1,220 / 1,220（75 文件） |
+| `yarn build` | ✅ 重复构建哈希一致 |
+| `yarn e2e` | ✅ 162 / 162 |
+| `yarn e2e:prod` | ✅ 6 / 6（新增构建版本标识用例） |
+| `yarn gates` | ✅ 循环 0 / knip 通过 / 0 重复 / 棘轮 1,220 · 162 |
+| `yarn bench:check` | ✅ 19/19 断言 + 29 不变量 |
+| CI `quality` @ `b67ea93` | ✅ run `39620082908`，fast / e2e / probe / bench 四 job 全绿 |
+
+### 3. 预览与生产验收
+
+| 项 | 预览 | 生产 |
+| --- | --- | --- |
+| `yarn e2e:remote` | **162 / 162** | **162 / 162** |
+| 五档 AI 应手 | ✅ 深度 1 / 2 / 4 / 6 / 6 | ✅ 同左 |
+| 专家 2600 ms 超时回退 | ✅ 显示启发式免责说明 | ✅ 实际观测到 |
+| 提示 | ✅ 3 个候选，手数不变 | ✅ 同左 |
+| 复盘分析 | ✅ 9 / 9，引擎 `search-1` | ✅ 同左 |
+| Worker | ✅ 每页 1 个 `worker-B6Ge9L6W.js` | ✅ 同左 |
+| CSP / 4xx / 第三方请求 | ✅ 0 / 0 / 0 | ✅ 0 / 0 / 0 |
+| 边缘配置 | — | ✅ `worker-src 'self'`、`/assets/*` immutable、入口 `must-revalidate`、自定义 404 |
+
+### 4. 回滚演练（预览环境真实执行）
+
+- `b21394c5`（0.2.0）→ `0954a194`（`2ec65fa`）：项目域入口变回 `index-BZwilo3W.js`。
+- `0954a194` → `b21394c5`：入口恢复 `index-maCHdY9Y.js`，`build-commit` 回到 `b67ea93`。
+
+两次均在数秒内完成，无需重建。**生产未执行回滚**；`e5a32d20…` 保留为可用的上一部署。
+
+### 5. 数据兼容
+
+学习进度 `schemaVersion = 1`、棋谱 `1`、对局存档 `2`，本次均未改动。
+真实浏览器中把 v1 旧库（只有 `progress`）升级到 v2（`progress` + `records`），
+旧学习进度原样读回；回滚不会触发丢弃路径。
+
+### 6. 已知限制
+
+| 项 | 说明 |
+| --- | --- |
+| 专家等待 | 仍约 2.6 s，约 43% 搜索超时后回退启发式；不承诺 8 层 |
+| 战术题集 | 一手题集五档全过，存在天花板效应，不能据此给档位排名 |
+| 浏览器 | 仅 Chrome / Chromium 实测；Safari / Firefox 未验 |
+| 设备 | 无低端真机数据；4× CPU 限速仅作参考 |
+| 部署方式 | 仍为手动 Wrangler；未开启 Git 自动部署 |
+| 域名 | 仍使用 `*.pages.dev`；未改 DNS / 自定义域名 |
+
+### 7. 更新流程（当前有效）
+
+```bash
+yarn lint && yarn typecheck && yarn test && yarn build && yarn e2e && yarn e2e:prod && yarn gates && yarn bench:check
+npx wrangler pages deploy dist --project-name gomoku-lab-preview --branch main \
+  --commit-hash "$(git rev-parse HEAD)" --commit-message "…"
+REMOTE_BASE=https://<preview-deployment-url> yarn e2e:remote   # 必须 162/162
+# 用户明确批准后：
+npx wrangler pages deploy dist --project-name gomoku-lab --branch main \
+  --commit-hash "$(git rev-parse HEAD)" --commit-message "…"
+REMOTE_BASE=https://gomoku-lab.pages.dev yarn e2e:remote
+```
+
+---
+
+## Phase 09B · 首次正式部署（历史）
+
+### 1. 本次发布
 
 | 项 | 值 |
 | --- | --- |
@@ -20,7 +121,7 @@
 | 公开范围 | 公开可访问（无账号、无后端、无用户数据上传） |
 | 预览环境 | `gomoku-lab-preview` 项目，同一提交 `2ec65fa`，用于正式发布前的验收 |
 
-## 2. 发布前门禁（本机，提交 `2ec65fa`）
+### 2. 发布前门禁（本机，提交 `2ec65fa`）
 
 | 命令 | 结果 |
 | --- | --- |
@@ -34,9 +135,9 @@
 | `yarn ui:probe` | ✅ 38 状态 / 308 张，七条判据全过 |
 | `yarn bench:check` | ✅ 19/19 + 29 项不变量 |
 
-## 3. 线上验收（生产地址，真实浏览器）
+### 3. 线上验收（生产地址，真实浏览器）
 
-### 3.1 边缘配置
+#### 3.1 边缘配置
 
 | 项 | 实测 |
 | --- | --- |
@@ -48,7 +149,7 @@
 | `_headers` | 不可下载（404） |
 | 产物一致性 | 首页、JS、CSS、Worker、favicon、robots、404 与本地 `dist/` **SHA-256 逐字节一致** |
 
-### 3.2 全量 e2e 对线上 URL
+#### 3.2 全量 e2e 对线上 URL
 
 `yarn e2e:remote`（`playwright.remote.config.ts`，`REMOTE_BASE` 可覆盖）：
 
@@ -58,7 +159,7 @@
 覆盖：对战、AI Worker 应手、悔棋、认输、终局入库、复盘分析、教学完成与刷新、
 残局多解、390 / 768 / 1080 / 1440 / 1920 布局、深浅主题、触屏命中。
 
-### 3.3 按业务流程走的烟雾（生产 URL）
+#### 3.3 按业务流程走的烟雾（生产 URL）
 
 | 步骤 | 结果 |
 | --- | --- |
@@ -78,12 +179,12 @@
 
 合计 **16 / 16**。
 
-### 3.4 截图
+#### 3.4 截图
 
 `docs/release/screenshots/`：`desktop-light.png`、`desktop-dark.png`、
 `mobile-light.png`、`mobile-dark.png`（1280×900 / 390×844，生产地址实拍）。
 
-## 3.5 发布过程中修复的一个门禁问题
+#### 3.5 发布过程中修复的一个门禁问题
 
 第一次推送被 `pre-push` 拒绝：`knip` 把 `playwright.remote.config.ts` 判成
 「无人使用的文件」——它只通过 CLI 参数被引用，不在 import 图里。
@@ -93,7 +194,7 @@
 另外两次推送失败是**网络层**（`HTTP2 framing layer` / 连接超时）而非门禁；
 改用 SSH 推送成功，`origin` 仍是 HTTPS，未改动仓库的远程配置。
 
-## 4. 自动部署与更新流程
+### 4. 自动部署与更新流程
 
 当前是**手动部署**（Git 集成未启用）：
 
@@ -108,17 +209,17 @@ REMOTE_BASE=https://gomoku-lab.pages.dev yarn e2e:remote   # 部署后复验
 Build & deployments → 连接 Git 仓库，Build command `yarn build`，输出目录 `dist`，
 环境变量 `NODE_VERSION=26`。**启用后每次推 `main` 都会自动上线**，需要先确认这一步。
 
-## 5. 回滚（已在真实环境验证路径可用）
+### 5. 回滚（已在真实环境验证路径可用）
 
 Cloudflare Dashboard → Pages → `gomoku-lab` → Deployments → 选中上一部署 → **Rollback**。
 
-本次只有一次生产部署，尚无「上一版」可回；下一次发布起该按钮才有意义。
-命令行等价操作留档：重新部署旧提交的 `dist/`（需先 checkout 旧提交并构建）。
+Phase 09B 发布时只有一次生产部署，尚无「上一版」可回；Phase 10F 起该按钮已有真实上一部署
+（`e5a32d20…`）可回。命令行等价操作留档：重新部署旧提交的 `dist/`（需先 checkout 旧提交并构建）。
 
 **数据兼容**：本次未改动任何 `schemaVersion`（进度 1 / 棋谱 1 / 存档 2），
 回滚不会触发数据丢弃。
 
-## 6. 已知限制
+### 6. 已知限制
 
 | 项 | 说明 |
 | --- | --- |

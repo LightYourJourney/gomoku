@@ -344,6 +344,10 @@ Negamax + Alpha-Beta，配合迭代加深：
 审计未发现 P0/P1；P2/P3 与发布条件见
 [`ai-research/PHASE_10E_AUDIT.md`](ai-research/PHASE_10E_AUDIT.md)。
 
+**Phase 10F 发布**（2026-10-21）：该版本随应用 `0.2.0` 上线生产，
+提交 `b67ea93`、部署 `d3f5f6cc…`；预览与生产线上 e2e 均 162/162。
+发布说明见 [`release/RELEASE_NOTES_0.2.0.md`](release/RELEASE_NOTES_0.2.0.md)。
+
 ### 算杀（VCF）
 
 | 局面 | 预期 | 实际 | 手数 | 节点 | 耗时 (ms) |
@@ -443,3 +447,29 @@ Negamax + Alpha-Beta，配合迭代加深：
 
 `selfplay.test.ts` 证明不了档位强弱这一点没有变；**五档之间的强弱由 `yarn strength` 负责测量**，
 且当前只有小样本（4–8 局/组），不构成排名。
+
+## 版本标识
+
+四个概念分开记，不能混用：
+
+| 概念 | 当前值 | 何时变化 |
+| --- | --- | --- |
+| 应用版本 | `0.2.0`（`package.json`） | 对外发布时 |
+| 引擎语义版本 | `search-1`（`src/ai/version.ts`） | **搜索决策语义**变化时（同一局面给出不同着法/评分）；纯性能优化不递增 |
+| Worker 请求协议 | v1：`requestId` + `gameVersion` 双闸门 | 消息字段或配对方语义变化时 |
+| 构建来源 | 提交 `b67ea93`；生产部署 `d3f5f6cc…` | 每次构建/部署 |
+
+为什么 Phase 10C 不递增 `ENGINE_VERSION`：它只改执行速度，固定深度快照、
+107 个配对手与 4 局棋谱的决策全部一致；递增会让复盘分析缓存无谓失效，
+也会把「更快」误读成「换了一个引擎」。实现变了、语义没变，用提交号区分。
+
+构建期把后三项注入 `index.html`：
+
+```html
+<meta name="app-version" content="0.2.0">
+<meta name="engine-version" content="search-1">
+<meta name="build-commit" content="b67ea930528375e2cff21bcb3c9332c82061a75e">
+```
+
+不注入构建时间：同一提交的两次构建必须得到相同哈希，才能用指纹判断线上产物
+是否就是候选产物。前端不在运行时访问 GitHub，也不从 URL 猜版本。
