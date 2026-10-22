@@ -357,3 +357,25 @@ test.describe('残局详情', () => {
     await expect(page.getByTestId('feedback')).toBeVisible()
   })
 })
+
+test('局面研究：平板横屏两栏不压盖，触摸可编辑', async ({ page }) => {
+  await page.goto('/')
+  await page.getByRole('button', { name: '复盘', exact: true }).click()
+  await page.getByRole('button', { name: '局面研究' }).click()
+  await expect(page.getByRole('heading', { name: '局面研究' })).toBeVisible()
+
+  const board = await page.getByTestId('board').boundingBox()
+  const panel = await page.locator('aside').boundingBox()
+  expect(board).not.toBeNull()
+  expect(panel).not.toBeNull()
+  if (board === null || panel === null) return
+  expect(Math.abs(board.width - board.height)).toBeLessThan(1)
+  // 1080 宽落在 wide-layout：面板在棋盘右侧，两栏不重叠。
+  expect(panel.x).toBeGreaterThanOrEqual(board.x + board.width - 1)
+
+  await page.getByTestId('intersection-7-7').tap()
+  await expect(page.getByTestId('stone-7-7')).toBeVisible()
+  await page.getByRole('button', { name: '工具：白棋' }).tap()
+  await page.getByTestId('intersection-8-8').tap()
+  await expect(page.getByTestId('stone-8-8')).toHaveAttribute('data-player', '2')
+})

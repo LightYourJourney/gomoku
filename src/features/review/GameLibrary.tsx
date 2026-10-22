@@ -16,6 +16,8 @@ export interface GameLibraryProps {
   readonly onStartBattle: () => void
   /** 生产环境注入；测试不传时不渲染数据面板与单盘导出。 */
   readonly services?: DataManagementServices
+  /** 打开局面编辑器；测试/未接线时不渲染入口。 */
+  readonly onOpenEditor?: () => void
 }
 
 /** 结果一栏的人话：谁赢了 / 认输 / 和棋。 */
@@ -90,7 +92,7 @@ function LibraryGlyph() {
  * `degraded`（存储不可用，数据来自内存兜底）与 `skipped`（读到了但没通过校验）。
  * 两个都**只说事实、不猜原因**。
  */
-export function GameLibrary({ storage, onOpen, onStartBattle, services }: GameLibraryProps) {
+export function GameLibrary({ storage, onOpen, onStartBattle, services, onOpenEditor }: GameLibraryProps) {
   const [result, setResult] = useState<GameRecordList | null>(null)
   const [reloadKey, setReloadKey] = useState(0)
   const [exportError, setExportError] = useState<string | null>(null)
@@ -121,6 +123,14 @@ export function GameLibrary({ storage, onOpen, onStartBattle, services }: GameLi
         title="复盘"
         description="保存下来的对局可以逐手回放，也可以让引擎帮你找亏损的手"
       />
+
+      {onOpenEditor !== undefined && (
+        <div className="mb-3 flex justify-end">
+          <Button size="sm" onClick={onOpenEditor}>
+            局面研究
+          </Button>
+        </div>
+      )}
 
       {services !== undefined && (
         <div className="mb-3">

@@ -3,6 +3,7 @@ import { opponentOf } from '../../core/board'
 import { applyMove, createGame, type GameState } from '../../core/game'
 import { BOARD_SIZE, type Player, type Point } from '../../core/types'
 import { isThemePreference } from '../../lib/theme'
+import { isFiniteInt, isObj, isPlayer, issue, type ImportErrorCode, type ImportIssue } from './guards'
 import type {
   BackupPreferences,
   BackupProgress,
@@ -26,32 +27,7 @@ const MAX_TOTAL_MOVES = 100_000
 const MAX_STRING_LENGTH = 200
 const MAX_PROGRESS_IDS = 1_000
 
-export type ImportErrorCode =
-  | 'too_large'
-  | 'too_deep'
-  | 'invalid_json'
-  | 'wrong_type'
-  | 'wrong_format'
-  | 'unsupported_version'
-  | 'invalid_field'
-  | 'bad_board'
-  | 'bad_rules'
-  | 'bad_coordinate'
-  | 'duplicate_move'
-  | 'move_after_end'
-  | 'bad_ending'
-  | 'ending_conflict'
-  | 'too_many_games'
-  | 'too_many_moves'
-  | 'bad_progress'
-  | 'bad_preferences'
-  | 'bad_session'
-
-export interface ImportIssue {
-  readonly code: ImportErrorCode
-  readonly path: string
-  readonly message: string
-}
+export type { ImportIssue } from './guards'
 
 export interface GameValidation {
   readonly ok: true
@@ -102,22 +78,6 @@ export type ImportResult = GameFileResult | BackupFileResult | GameFileFailure |
 
 type Obj = Record<string, unknown>
 
-function isObj(value: unknown): value is Obj {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
-}
-
-function isPlayer(value: unknown): value is Player {
-  return value === 1 || value === 2
-}
-
-function isFiniteInt(value: unknown): value is number {
-  return typeof value === 'number' && Number.isInteger(value) && Number.isFinite(value)
-}
-
-function issue(code: ImportErrorCode, path: string, message: string): ImportIssue {
-  return { code, path, message }
-}
-
 function objectAt(
   value: unknown,
   path: string,
@@ -131,7 +91,7 @@ function objectAt(
 }
 
 /** 未知字段只警告、不解释——绝不按猜测的含义使用。 */
-function warnUnknownFields(
+export function warnUnknownFields(
   value: Obj,
   allowed: readonly string[],
   path: string,

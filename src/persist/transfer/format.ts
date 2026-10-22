@@ -210,7 +210,10 @@ export function toBackupFile(input: BackupInput): BackupFile {
   }
 }
 
-export function exportFilename(kind: 'game' | 'games' | 'backup', now: () => number): string {
+export function exportFilename(
+  kind: 'game' | 'games' | 'backup' | 'position',
+  now: () => number,
+): string {
   // UTC + 固定宽度：同一时刻在任何时区得到同一个文件名，测试可注入。
   const stamp = new Date(now()).toISOString().replace(/\D/g, '').slice(0, 14)
   return `gomoku-lab-${kind}-${stamp}.json`

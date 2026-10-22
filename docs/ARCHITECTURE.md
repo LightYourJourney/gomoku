@@ -58,19 +58,21 @@ analysis   learn        ← 分析结论与教学内容（两条互不依赖的�
 `analyze.ts` 定义单手结论（`MoveVerdict`：分差 + 可靠度 + 引擎出处，含显式路径 `reason` / `SearchPath`）、结论文案与缓存键。**只做纯函数，不发请求**——请求编排在 store 层。结论里没有「最佳 / 失误」这类固定档位：把连续的分差压进几个标签等于替玩家下结论，而且阈值一拍脑袋就会把「稍有出入」说成「失误」。
 
 **`store/`** —— 状态编排。
-`gameStore.ts` 是对局与 AI 请求的状态机（工厂函数 `createGameStore(engine)`，可注入假引擎测试）；`useGameStore.ts` 组装真实引擎与存档，是应用唯一的单例入口；`learnStore.ts` 是学习进度与当前视图（工厂函数 `createLearnStore(storage)`，可注入假存储测试）；写入走串行 latest-wins 队列，`flush()` 只等队列排空，**不承诺已落盘**；`settingsStore.ts` 是主题、坐标、音效等偏好；`replayStore.ts` 是回放器（棋谱 + 游标 + 派生局面 + 自动播放 + 播放速度）——**回放位置只有这一个游标**，时间轴、步进按钮、跳到开局/终局、点分析结论跳转全都只经它走，界面上不存在第二份「当前第几手」；`analysisStore.ts` 是分析管线（逐局面排队、请求共享、会话内缓存）；`requestCounter.ts` 是**全局唯一**的请求号计数器——对局、提示、分析三类请求共用它。
+`gameStore.ts` 是对局与 AI 请求的状态机（工厂函数 `createGameStore(engine)`，可注入假引擎测试）；`useGameStore.ts` 组装真实引擎与存档，是应用唯一的单例入口；`learnStore.ts` 是学习进度与当前视图（工厂函数 `createLearnStore(storage)`，可注入假存储测试）；写入走串行 latest-wins 队列，`flush()` 只等队列排空，**不承诺已落盘**；`settingsStore.ts` 是主题、坐标、音效等偏好；`replayStore.ts` 是回放器（棋谱 + 游标 + 派生局面 + 自动播放 + 播放速度）——**回放位置只有这一个游标**，时间轴、步进按钮、跳到开局/终局、点分析结论跳转全都只经它走，界面上不存在第二份「当前第几手」；`analysisStore.ts` 是分析管线（逐局面排队、请求共享、会话内缓存）；`editorStore.ts` 是局面编辑器的局部快照历史、工具与只读分析状态（`version` 闸门；不碰 gameStore）；`requestCounter.ts` 是**全局唯一**的请求号计数器——对局、提示、分析、编辑器请求共用它。
 
 **`persist/`** —— 存档。
 `storage.ts` 负责对局存档的序列化与**结构校验**（localStorage）；`progress.ts` 负责学习进度、`gameRecords.ts` 负责多局棋谱（两者都在 IndexedDB）——它的 `list()` **从不上抛**（每一步失败都落内存兜底），所以把「读不出来」的两种情形**分开报**：`degraded`（底层不可用，数据来自兜底）与 `skipped`（读到了但没通过校验）。界面靠这两个信号如实说明，不会把两者一起说成「你还没下过棋」；`schema.ts` 是**库名、版本与建表的唯一出处**——两个模块共用一个库，各写一份版本号的话，先打开的那个只建自己的表，另一个同版本打开不触发升级、表不存在，事务失败后被内存兜底吞掉，症状是「界面说已保存、刷新就没了」。两处同一条口径：任何一处不符合预期都当作没有数据，宁可重来也不把半成品灌进状态机。
 
 **为什么分两种存储**：对局存档每次落子都要写、数据小、丢了就丢了；学习进度写得少但**丢了会让人白学一遍**，值得用更耐久的 IndexedDB。进度层在 IndexedDB 不可用时（隐私模式、open 抛错、被其他标签页占用）整体降级为内存态——进度丢了可以接受，白屏不行。
 
+`positions.ts` 是 Phase 11B 的自定义局面库：同一个 `gomoku-lab` 库的 `positions` 表（`DB_VERSION=3`），保存 `cells + nextPlayer + 可选 provenance`；读到与盘面不一致的已知手顺时降级为自由摆盘，不丢盘面。
+
 **`persist/transfer/`** —— 对外交换格式（Phase 11A）。`format.ts` 定义 `gomoku-lab.game` / `gomoku-lab.backup` 两个版本化文件形状，并用 `toGameFile` / `toBackupFile` 把内部记录转成**不含 `seq`** 的载荷；`validate.ts` 把导入文件当不可信输入，先查大小/深度，再逐手用 `applyMove` 严格校验（**不复用 `replay()` 的截断语义**），最后核对结束方式、认输方与胜负。`recordIdentity.ts` 定义规范化的内容身份——重复判断不看自增 `seq`，看先手、手顺、模式、执子、难度与认输方。批量写入 `GameRecordsStorage.importMany` 在**一个 IndexedDB 事务**内去重 + 插入；失败整笔回滚并如实报 `persisted=false`。外部格式版本与内部 `DB_VERSION` / `schemaVersion` **分开维护**，规范见 `docs/data/FILE_FORMAT.md`。
 
 **`lib/`** —— 跨 feature 共用的小工具与小组件级 hook：主题解析、WebAudio 音效合成、动效类名（`motion.ts`）、坐标格式化、类名拼接、媒体查询（`useMediaQuery.ts`）、换页时的焦点接管（`useFocusOnMount.ts`）。**这些模块都没有一个 import store**——要碰 store 的东西属于 `store/` 或 `features/`。（`contrast.test.tsx` 是例外，它为了渲染真实组件才引 store，那是测试的本分。原先这里写的是「无状态工具」，但 `useMediaQuery` 早就是个有状态的 hook 了。）
 
 **`components/`** —— 展示。
-`ui/` 是与业务无关的原子组件；`board/` 是棋盘（`Board` + `BoardStage` 容器）；`panels/` 是业务面板；`AppErrorBoundary` 是顶层错误边界。面板全部通过 props 接收数据与回调，不直接读 store。
+`ui/` 是与业务无关的原子组件；`board/` 是棋盘（`Board` + `BoardStage` 容器；`Board` 的 `editMode` 只改变编辑回调，ARIA/键盘/命中区与正式对局共用）；`panels/` 是业务面板；`AppErrorBoundary` 是顶层错误边界。面板全部通过 props 接收数据与回调，不直接读 store。
 
 **`features/`** —— 容器。`shell/` 是六个页面位置共用的外壳：`AppHeader`（品牌 + 导航 + 主题）与 `PageShell`（外壳、滚动策略、两种正文模式）；`battle/` 是对战页，并承载 `status.ts` 这类纯推导逻辑；`learn/` 是课程列表与课程运行器；`puzzles/` 是残局挑战；`review/` 是棋谱库、回放与引擎分析。
 

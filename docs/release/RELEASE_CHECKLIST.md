@@ -9,9 +9,9 @@
 - [ ] `git status` 干净，发布提交就是评审过的那个提交
 - [ ] `yarn lint` 通过
 - [ ] `yarn typecheck` 通过
-- [ ] `yarn test` 全过（Phase 11A 基线：1,280）
+- [ ] `yarn test` 全过（Phase 11B 基线：1,323）
 - [ ] `yarn build` 通过
-- [ ] `yarn e2e` 全过（Phase 11A 基线：166）
+- [ ] `yarn e2e` 全过（Phase 11B 基线：174）
 - [ ] `yarn e2e:prod` 全过（Phase 10F 基线：6）
 - [ ] `yarn gates` 通过（循环 / 死码 / 重复 / 测试条数棘轮）
 - [ ] `yarn check:coverage` 通过
@@ -96,3 +96,7 @@
 > 生产部署 `f02c38ca…`、标签 `v0.3.0`；预览与生产线上 e2e 均 166/166，
 > 单测 1,280 / UI 探针 308 张全过。回滚目标 `d3f5f6cc…`（0.2.0）；
 > 数据格式与恢复语义见 [docs/data/](../data/)。
+>
+> **Phase 11B 状态（2026-10-23，未发布）**：棋盘编辑器与局面研究完成；
+> 单测 1,323 / E2E 174 / UI 探针 308 张全过。`DB_VERSION 2→3` 新增 `positions` 表；
+> **未部署生产**，生产仍是 11A 的 `0.3.0`；回滚到 0.3.0 不能直接打开已升级的库。

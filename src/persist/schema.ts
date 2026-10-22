@@ -9,12 +9,14 @@
  * 抓得到（单元测试里两边各用各的假实现，永远碰不到面）。
  *
  * 以后新增对象表：在这里加名，并在 `ensureSchema` 里建上，然后把版本号 +1。
+ * Phase 11B：新增 `positions`（自定义局面），DB_VERSION 2 → 3；旧表不动。
  */
 export const DB_NAME = 'gomoku-lab'
-export const DB_VERSION = 2
+export const DB_VERSION = 3
 
 export const PROGRESS_STORE = 'progress'
 export const RECORDS_STORE = 'records'
+export const POSITIONS_STORE = 'positions'
 
 /**
  * 建表。每处 `onupgradeneeded` 都要调它——**不是只建自己那一个表**：
@@ -24,5 +26,8 @@ export function ensureSchema(db: IDBDatabase): void {
   if (!db.objectStoreNames.contains(PROGRESS_STORE)) db.createObjectStore(PROGRESS_STORE)
   if (!db.objectStoreNames.contains(RECORDS_STORE)) {
     db.createObjectStore(RECORDS_STORE, { keyPath: 'seq', autoIncrement: true })
+  }
+  if (!db.objectStoreNames.contains(POSITIONS_STORE)) {
+    db.createObjectStore(POSITIONS_STORE, { keyPath: 'id', autoIncrement: true })
   }
 }

@@ -16,7 +16,7 @@
 
 | 数据 | 形状 | 版本 | 备注 |
 | --- | --- | --- | --- |
-| IndexedDB | `gomoku-lab`，`progress` + `records` | `DB_VERSION = 2` | 两表共用库，`ensureSchema` 统一建表 |
+| IndexedDB | `gomoku-lab`，`progress` + `records` | `DB_VERSION = 2`（Phase 11B 起为 3） | 两表共用库，`ensureSchema` 统一建表 |
 | 学习进度 | `completedLessons` / `solvedPuzzles` / `lastVisited` / `lastView` | `1` | 版本不符退回空进度 |
 | 棋谱 | 自增 `seq` + 手顺 + 模式/执子/难度 + `resignedBy` + 推导 `winner` | `1` | **不存时间**；`seq` 只在本库有效 |
 | 对局会话 | `localStorage` JSON | `2` | v1 没有 `resignedBy` |

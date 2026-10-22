@@ -8,6 +8,7 @@ import { Board, type BoardProps } from './Board'
 
 function setup(overrides: Partial<BoardProps> = {}) {
   const onPlay = vi.fn()
+  const onEdit = vi.fn()
   const props: BoardProps = {
     board: createBoard(),
     lastMove: null,
@@ -16,10 +17,11 @@ function setup(overrides: Partial<BoardProps> = {}) {
     showCoords: false,
     interactive: true,
     onPlay,
+    onEdit,
     ...overrides,
   }
 
-  return { onPlay, ...render(<Board {...props} />) }
+  return { onPlay, onEdit, ...render(<Board {...props} />) }
 }
 
 describe('Board —— 渲染', () => {
@@ -53,6 +55,47 @@ describe('Board —— 渲染', () => {
     setup()
 
     expect(screen.queryAllByTestId(/^stone-/)).toHaveLength(0)
+  })
+})
+
+describe('Board —— 编辑器模式', () => {
+  it('点击已有棋子仍回调 onEdit（放置/覆盖/擦除由工具栏决定）', () => {
+    const board = boardFromLines([
+      '...............',
+      '...............',
+      '...............',
+      '...............',
+      '...............',
+      '...............',
+      '...............',
+      '.....B.........',
+    ])
+    const { onEdit, onPlay } = setup({ board, editMode: true })
+
+    fireEvent.click(screen.getByTestId('intersection-5-7'))
+
+    expect(onEdit).toHaveBeenCalledWith({ x: 5, y: 7 })
+    expect(onPlay).not.toHaveBeenCalled()
+  })
+
+  it('回车在已有棋子上也触发 onEdit', () => {
+    const board = boardFromLines([
+      '...............',
+      '...............',
+      '...............',
+      '...............',
+      '...............',
+      '...............',
+      '...............',
+      '.....B.........',
+    ])
+    const { onEdit } = setup({ board, editMode: true })
+
+    const cell = screen.getByTestId('intersection-5-7')
+    fireEvent.focus(cell)
+    fireEvent.keyDown(cell, { key: 'Enter' })
+
+    expect(onEdit).toHaveBeenCalledWith({ x: 5, y: 7 })
   })
 })
 

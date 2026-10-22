@@ -309,3 +309,26 @@ test('残局的棋盘：触摸点按命中正确，判定结果对得上', async
   await expect(page.getByTestId('feedback')).toHaveAttribute('data-ok', 'true')
   await expect(page.getByTestId(`board-mark-${x}-${y}`)).toHaveText('对')
 })
+
+test('局面研究：窄屏触摸放子/擦除，且不横向溢出', async ({ page }) => {
+  await page.goto('/')
+  await page.getByRole('button', { name: '复盘', exact: true }).click()
+  await page.getByRole('button', { name: '局面研究' }).click()
+  await expect(page.getByRole('heading', { name: '局面研究' })).toBeVisible()
+
+  await page.getByTestId('intersection-7-7').tap()
+  await expect(page.getByTestId('stone-7-7')).toHaveAttribute('data-player', '1')
+
+  await page.getByRole('button', { name: '工具：白棋' }).tap()
+  await page.getByTestId('intersection-8-8').tap()
+  await expect(page.getByTestId('stone-8-8')).toHaveAttribute('data-player', '2')
+
+  await page.getByRole('button', { name: '工具：擦除' }).tap()
+  await page.getByTestId('intersection-8-8').tap()
+  await expect(page.getByTestId('stone-8-8')).toHaveCount(0)
+
+  const overflow = await page.evaluate(
+    () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+  )
+  expect(overflow).toBe(0)
+})

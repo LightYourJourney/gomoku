@@ -4,6 +4,8 @@ import { join } from 'node:path'
 
 import { expect, test, type Page } from '@playwright/test'
 
+import { DB_VERSION } from '../src/persist/schema'
+
 /**
  * Phase 11A 的真实浏览器验收：文件真的被下载、真的从磁盘读回、真的穿过
  * IndexedDB 再刷新。校验器的单元测试不能证明这几件事。
@@ -84,9 +86,9 @@ test('完整备份 → 恢复棋谱、进度、偏好与会话；重复导入会
 
   // 造一条学习进度，并切到深色；完整备份必须把它们带上。
   await page.evaluate(
-    () =>
+    (version) =>
       new Promise<void>((resolve, reject) => {
-        const req = indexedDB.open('gomoku-lab', 2)
+        const req = indexedDB.open('gomoku-lab', version)
         req.onupgradeneeded = () => {
           if (!req.result.objectStoreNames.contains('progress')) req.result.createObjectStore('progress')
           if (!req.result.objectStoreNames.contains('records')) {
@@ -114,6 +116,7 @@ test('完整备份 → 恢复棋谱、进度、偏好与会话；重复导入会
           tx.onerror = () => reject(tx.error)
         }
       }),
+    DB_VERSION,
   )
   await page.evaluate(() => {
     localStorage.setItem(

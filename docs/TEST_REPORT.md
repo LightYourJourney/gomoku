@@ -8,7 +8,8 @@ Phase 07 的最终门禁、探针对照与基准在 `ui-redesign/FINAL_TEST_REPO
 **Phase 08 独立审计**（见「〇之十二」）、**Phase 09A 发布加固**（见「〇之十三」）、
 **Phase 10A 棋力评测基础设施**（见「〇之十四」）、**Phase 10E 独立审计**（见「〇之十五」）与
 **Phase 10F 正式发布**（见「〇之十六」）与
-**Phase 11A 数据备份/导入导出**（见「〇之十七」），
+**Phase 11A 数据备份/导入导出**（见「〇之十七」）与
+**Phase 11B 棋盘编辑器**（见「〇之十八」），
 以及阶段之间的两轴代码审查
 **结论**：类型检查、单元测试、生产构建、真实浏览器验证、端到端测试、生产构建冒烟全部通过；
 四个页面在两套主题下的 Lighthouse 无障碍审计均为 100。
@@ -23,8 +24,8 @@ Phase 07 的最终门禁、探针对照与基准在 `ui-redesign/FINAL_TEST_REPO
 
 | 项 | 数量 |
 | --- | --- |
-| 单元 / 组件用例 | **1280**（78 个文件） |
-| 端到端用例 | **166**（桌面 146 + 移动触屏 11 + 平板 9，共 10 个 spec 文件），另有生产构建冒烟 6 条（`yarn e2e:prod`，含构建版本标识核对） |
+| 单元 / 组件用例 | **1323**（83 个文件） |
+| 端到端用例 | **174**（桌面 152 + 移动触屏 12 + 平板 10，共 12 个 spec 文件），另有生产构建冒烟 6 条（`yarn e2e:prod`，含构建版本标识核对） |
 | 界面基线与量测 | `yarn ui:probe`：38 个受控状态 × 视口矩阵 = 308 张截图 + 308 条 DOM 量测，逐张可对照（Phase 05 是 34 / 276，Phase 04 是 29 / 236，Phase 03 是 27 / 220，Phase 02 是 21 / 172） |
 | 质量门禁 | 本地 pre-push 快档（5 条命令，热跑 30–45 秒，看机器负载）+ CI 全档（4 个 job）+ 四道防退化闸门 + 两把覆盖棘轮，见「〇之十一」 |
 | 基准脚本 | `yarn bench`（引擎，结果见 `docs/AI_ENGINE.md` 的「实测」一节）；`yarn bench:render`（首屏、落子，以及 Phase 06 之后新增的**回放拖动**——200 手棋谱下中位 1.60–2.90 ms，Phase 07 复跑 **2.20 ms**；前两者的历史结果见本文「〇之四、Phase 5 摘要 · 性能实测」与 `ui-redesign/FINAL_TEST_REPORT.md` §5） |
@@ -1959,3 +1960,42 @@ Worker / 提示 / 复盘预算的既有用例未改，全部通过。
 **已上线并完成验收**：应用 `0.3.0`、提交 `1cd2be0`、生产部署 `f02c38ca…`、
 标签 `v0.3.0`。预览与生产线上 e2e 均 166/166；回滚目标 `d3f5f6cc…`（0.2.0）。
 非阻塞限制见 [RELEASE_NOTES_0.3.0.md](release/RELEASE_NOTES_0.3.0.md)。
+
+## 〇之十八、Phase 11B 棋盘编辑器与自定义局面研究
+
+**定位**：Position 与 GameState 分离；复用棋盘；局部编辑历史；只读 AI 分析。
+
+### 新增用例（+43 单测 / +8 E2E）
+
+| 文件 | 条数 | 钉住什么 |
+| --- | --- | --- |
+| `src/core/position.test.ts` | 12 | 放/擦/覆盖、下一手、五连、双方五连、奇偶、满盘、已知手顺一致性 |
+| `src/store/editorStore.test.ts` | 9 | 撤销重做、分支失效、载入重置、分析不可用、旧响应失效、Worker 错误 |
+| `src/persist/positions.test.ts` | 7 | 保存/更新/删除、降级、坏 cells、坏 provenance 降级、v2→v3 |
+| `src/persist/transfer/position.test.ts` | 5 | 局面文件往返、已知手顺不一致、重复点、未来版本 |
+| `src/components/board/Board.test.tsx` | +2 | 编辑模式点击/回车作用在已有棋子 |
+| `src/features/positions/PositionEditor.test.tsx` | 8 | 工具/键盘/撤销重做/分析/保存打开/载入棋谱 |
+| `e2e/editor.spec.ts`（chrome） | 6 | 编辑、保存刷新、载入第 9 手、AI、导出导入、双方五连 |
+| `e2e/mobile.spec.ts` | +1 | 390 触摸编辑、无横向溢出 |
+| `e2e/tablet.spec.ts` | +1 | 1080 两栏、触摸编辑 |
+
+### 门禁
+
+| 命令 | 结果 |
+| --- | --- |
+| `yarn lint` / `yarn typecheck` | 通过 |
+| `yarn test` | **1,323 / 1,323**（83 文件） |
+| `yarn build` | 通过 |
+| `yarn e2e` | **174 / 174** |
+| `yarn e2e:prod` | **6 / 6** |
+| `yarn gates` | 0 环 / knip 通过 / 0 重复 / 棘轮 1,323 · 174 |
+| `yarn bench:check` | 19/19 + 29 不变量 |
+| `yarn ui:probe --out ci` | 38 状态 / 308 张，七条判据全过 |
+| 覆盖棘轮 | 3,084 条，未缩小（+136 新增覆盖） |
+
+### 已知限制
+
+- 自由摆盘只做静态检查，不证明合法历史；UI 明说。
+- AI 固定「中级 · 800ms」，不提供档位选择。
+- `DB_VERSION 2→3`；回滚到 0.3.0（DB 2）不能直接打开已升级的库。
+- 未做局面删除 UI；仅 Chrome 实测；尚未部署生产。

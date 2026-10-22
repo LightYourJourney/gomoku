@@ -17,8 +17,10 @@ import { useLearnStore } from '../../store/learnStore'
 import { useSettingsStore } from '../../store/settingsStore'
 import { loadProgress, mergeProgress } from '../../persist/progress'
 import { loadSession, saveSession, SCHEMA_VERSION, type PersistedSession } from '../../persist/storage'
+import { indexedDbPositions, type PositionStorage } from '../../persist/positions'
 import type { DataManagementServices } from './DataManagementPanel'
 import { GameLibrary } from './GameLibrary'
+import { PositionEditor } from '../positions/PositionEditor'
 import { ReplayBoard } from './ReplayBoard'
 
 export interface ReviewScreenProps {
@@ -37,6 +39,8 @@ export interface ReviewScreenProps {
    * 创建 Worker，不能为了一个回调把它拖进组件测试（jsdom 没有 Worker）。
    */
   readonly onRestoreSession?: (session: PersistedSession) => void
+  /** 测试可注入；生产默认用 IndexedDB 局面库。 */
+  readonly positions?: PositionStorage
 }
 
 /**
@@ -45,7 +49,7 @@ export interface ReviewScreenProps {
  * 两个 store 用 ref 持有：它们是本页面的会话状态，离开页面即丢弃
  * （回放游标不持久化是有意的——它是浏览行为，不是进度）。
  */
-export function ReviewScreen({ storage, engine, stores, onRestoreSession }: ReviewScreenProps) {
+export function ReviewScreen({ storage, engine, stores, onRestoreSession, positions }: ReviewScreenProps) {
   // 惰性单例：useState 的初始化函数只跑一次，且不会在渲染期读 ref。
   const [ownReplay] = useState(createReplayStore)
   const [ownAnalysis] = useState(createAnalysisStore)
@@ -69,6 +73,7 @@ export function ReviewScreen({ storage, engine, stores, onRestoreSession }: Revi
   }, [analysis, replay])
 
   const [open, setOpen] = useState(false)
+  const [editorOpen, setEditorOpen] = useState(false)
 
   /*
    * 数据管理的能力注入。`Date.now` 只传引用、不在这里调用——文件名的时间戳
@@ -121,6 +126,17 @@ export function ReviewScreen({ storage, engine, stores, onRestoreSession }: Revi
     setOpen(false)
   }
 
+  if (editorOpen) {
+    return (
+      <PositionEditor
+        engine={engine}
+        records={storage}
+        positions={positions ?? indexedDbPositions}
+        onExit={() => setEditorOpen(false)}
+      />
+    )
+  }
+
   if (open) {
     return (
       <PageShell
@@ -169,6 +185,7 @@ export function ReviewScreen({ storage, engine, stores, onRestoreSession }: Revi
         onOpen={openRecord}
         onStartBattle={() => setView('battle')}
         services={dataServices}
+        onOpenEditor={() => setEditorOpen(true)}
       />
     </PageShell>
   )

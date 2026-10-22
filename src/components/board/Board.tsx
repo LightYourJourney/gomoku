@@ -63,6 +63,13 @@ export interface BoardProps {
    * 那一刻清空，所以标记永远对应当前局面。
    */
   marks?: readonly BoardMark[]
+  /**
+   * 编辑器模式：点击/回车作用在**任意交叉点**（包括已有棋子），用于放置/覆盖/擦除。
+   * 与正式对战、教学、复盘的 `onPlay` 职责明确分开——那些模式仍然拒绝占用点。
+   */
+  editMode?: boolean
+  /** 编辑模式下的点击/回车回调；未传时 editMode 无实际动作。 */
+  onEdit?: (point: Point) => void
   onPlay: (point: Point) => void
 }
 
@@ -177,6 +184,8 @@ export function Board({
   showCoords,
   interactive,
   marks,
+  editMode = false,
+  onEdit,
   onPlay,
 }: BoardProps) {
   const uid = useId().replace(/[^a-zA-Z0-9]/g, '')
@@ -308,6 +317,10 @@ export function Board({
   const cellLabel = (point: Point): string => {
     const cell = board[idx(point.x, point.y)]
     const base = formatPoint(point)
+    if (editMode) {
+      const who = cell === 0 ? '空位' : cell === 1 ? '黑棋' : '白棋'
+      return `${base} ${who}，可编辑`
+    }
     if (cell === 0) return `${base} 空位`
     const who = cell === 1 ? '黑棋' : '白棋'
     const isLast = lastMove !== null && lastMove.x === point.x && lastMove.y === point.y
@@ -318,7 +331,7 @@ export function Board({
   const lastKey = lastMove === null ? null : pointKey(lastMove)
 
   const handleEnter = (point: Point): void => {
-    if (!interactive || board[idx(point.x, point.y)] !== 0) {
+    if (!interactive || editMode || board[idx(point.x, point.y)] !== 0) {
       setHovered(null)
       return
     }
@@ -327,6 +340,12 @@ export function Board({
 
   const handleClick = (point: Point): void => {
     if (!interactive) return
+    if (editMode) {
+      setHovered(null)
+      setFocused(point)
+      onEdit?.(point)
+      return
+    }
     if (board[idx(point.x, point.y)] !== 0) return
     setHovered(null)
     // 点过哪一格，Tab 停靠点就跟到哪一格——否则点完再按方向键会从旧格继续。
@@ -353,7 +372,9 @@ export function Board({
       role={interactive ? 'grid' : 'img'}
       aria-label={
         interactive
-          ? `五子棋棋盘，已落子 ${stones.length} 手。用方向键移动、回车落子。`
+          ? editMode
+            ? `五子棋棋盘，已落子 ${stones.length} 手。用方向键移动、回车编辑。`
+            : `五子棋棋盘，已落子 ${stones.length} 手。用方向键移动、回车落子。`
           : `五子棋棋盘，已落子 ${stones.length} 手${lastMove ? `，最后一手在 ${formatPoint(lastMove)}` : ''}`
       }
       onMouseLeave={() => setHovered(null)}
@@ -648,7 +669,7 @@ export function Board({
             {AXIS.map((x) => {
               const point = { x, y }
               const occupied = board[idx(x, y)] !== 0
-              const playable = interactive && !occupied
+              const playable = interactive && (editMode || !occupied)
               const isFocusStop = focused.x === x && focused.y === y
 
               return (

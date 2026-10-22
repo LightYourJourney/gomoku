@@ -117,3 +117,39 @@
 - 改变必填字段含义、结束语义或坐标含义：升 `formatVersion`，旧版本明确拒绝。
 - 新增格式（例如单盘以外的容器）：新的 `format` 标识，不复用旧标识。
 - 不为了「有迁移」而改内部字段；本阶段内部 schema 未变。
+
+## 6. 自定义局面：`gomoku-lab.position`（Phase 11B）
+
+自由摆盘没有合法手顺，**不能**保存成 `gomoku-lab.game` 或 `GameRecord`；它使用独立的
+局面格式。与棋谱/备份一样走严格校验（大小/深度/重复点/未知版本）。
+
+```json
+{
+  "format": "gomoku-lab.position",
+  "formatVersion": 1,
+  "board": { "size": 15 },
+  "rules": "freestyle",
+  "nextPlayer": 2,
+  "stones": [
+    { "x": 7, "y": 7, "color": 1 },
+    { "x": 8, "y": 8, "color": 2 }
+  ],
+  "title": "斜月研究",
+  "provenance": {
+    "kind": "replay",
+    "moves": [{ "x": 7, "y": 7 }],
+    "firstPlayer": 1,
+    "ply": 1
+  }
+}
+```
+
+- `stones`：最多 225 条，坐标有限整数 0–14，颜色 1/2，**同一交叉点只能出现一次**。
+- `nextPlayer`：下一手颜色，必填；它不保证与 stones 数量一致（自由摆盘允许不满足
+  轮流落子的必要条件），编辑器会显示静态检查结果。
+- `title`：可选，≤80 字符。
+- `provenance`：可选。只有「从合法棋谱载入某一手」才有。必须是完整合法前缀，
+  `ply === moves.length`，逐手通过 `applyMove`，重放出的盘面与下一手必须与
+  `stones`/`nextPlayer` 完全一致；否则整份文件拒绝。
+- 没有 provenance 的自由摆盘也可以保存/导入；UI 标「自由摆盘」，不声称来自合法对局。
+- 未知字段警告；未来版本拒绝；导入失败零写入。

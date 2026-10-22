@@ -7,7 +7,7 @@
 
 **线上地址：<https://gomoku-lab.pages.dev>**（Cloudflare Pages；应用 `0.3.0`、引擎 `search-1`、提交 `1cd2be0`）。
 
-**当前进度：Phase 1–5、UI/UX 改版 Phase 00–07、Phase 08 独立审计、Phase 09A/09B 发布与首次上线、Phase 10A–10F AI 评测 / 优化 / 标定 / 审计 / 正式发布、Phase 11A 数据备份与导入导出正式发布全部完成。**
+**当前进度：Phase 1–5、UI/UX 改版 Phase 00–07、Phase 08 独立审计、Phase 09A/09B 发布与首次上线、Phase 10A–10F AI 评测 / 优化 / 标定 / 审计 / 正式发布、Phase 11A 数据备份与导入导出正式发布、Phase 11B 棋盘编辑器与局面研究完成（尚未发布）。**
 键盘与读屏可用、平板与触屏专项验证过、生产构建有独立的冒烟通道、用法有[使用说明](docs/USAGE.md)；
 发布就绪评估与部署方案见 [RELEASE_READINESS.md](docs/release/RELEASE_READINESS.md)；
 最终审计与残留问题见 [FINAL_AUDIT.md](docs/ui-redesign/FINAL_AUDIT.md) 与 [KNOWN_ISSUES.md](docs/ui-redesign/KNOWN_ISSUES.md)。
@@ -89,6 +89,9 @@ yarn dev          # 开发服务器
 **复盘（`src/features/review`）**
 每局结束自动存入棋谱库（本机 IndexedDB），可逐手回放（编号徽标、自动播放）并让引擎逐手分析：分差、与引擎首选是否一致、几处最大亏损。结论区注明引擎版本、档位与预算。复盘页还提供**导出/导入**：单盘、全部棋谱或完整备份（棋谱 + 进度 + 偏好 + 可选会话），导入严格校验、只合并不删除。
 
+**局面研究**
+从复盘页进入：自由摆放黑白、擦除、设置下一手、撤销/重做、从合法棋谱载入某一手、保存/重开；自由摆盘与「来自棋谱的已知手顺」明确区分。AI 只对静态可搜索的局面做只读分析，显示候选、深度、节点、耗时与可靠度；编辑后旧结果自动失效。
+
 ![复盘分析](docs/screenshots/phase4-analysis.png)
 
 **键盘与无障碍**
@@ -155,8 +158,8 @@ bench/         引擎基准、渲染探针与棋力评测（测量脚本不进�
 
 | 项 | 数量 |
 | --- | --- |
-| 单元 / 组件用例 | **1280**（78 个文件） |
-| 端到端用例 | **166**（桌面 146 + 移动触屏 11 + 平板 9） |
+| 单元 / 组件用例 | **1323**（83 个文件） |
+| 端到端用例 | **174**（桌面 152 + 移动触屏 12 + 平板 10） |
 | 生产构建冒烟 | 6（`yarn e2e:prod`，含构建版本标识核对） |
 
 关键实现都有反向验证记录（改坏实现确认用例会红），详见 [docs/TEST_REPORT.md](docs/TEST_REPORT.md)。
@@ -192,7 +195,9 @@ bench/         引擎基准、渲染探针与棋力评测（测量脚本不进�
 - [docs/data/FILE_FORMAT.md](docs/data/FILE_FORMAT.md) —— 棋谱/备份文件格式与严格校验边界
 - [docs/data/BACKUP_RESTORE.md](docs/data/BACKUP_RESTORE.md) —— 导出、导入、合并与失败语义
 - [docs/data/SCHEMA_MIGRATION.md](docs/data/SCHEMA_MIGRATION.md) —— 内部版本与迁移规则
-- [docs/ROADMAP.md](docs/ROADMAP.md) —— Phase 1–5、UI 改版 00–07、Phase 08/09、Phase 10A–10F、Phase 11A 的进度与长期待办
+- [docs/positions/POSITION_MODEL.md](docs/positions/POSITION_MODEL.md) —— Position 与 Game 的边界、静态分级
+- [docs/positions/EDITOR_DESIGN.md](docs/positions/EDITOR_DESIGN.md) —— 编辑器工具、撤销重做、布局与无障碍
+- [docs/ROADMAP.md](docs/ROADMAP.md) —— Phase 1–5、UI 改版 00–07、Phase 08/09、Phase 10A–10F、Phase 11A/11B 的进度与长期待办
 - [docs/TEST_REPORT.md](docs/TEST_REPORT.md) —— 测试覆盖、浏览器验证与性能实测
 - [docs/release/RELEASE_READINESS.md](docs/release/RELEASE_READINESS.md) —— 发布就绪评估（分级结论、门禁读数、未验证项）
 - [docs/release/DEPLOYMENT_PLAN.md](docs/release/DEPLOYMENT_PLAN.md) —— 托管平台对比与部署步骤

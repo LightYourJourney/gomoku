@@ -1,16 +1,19 @@
 # 数据版本与迁移
 
-## 1. 当前版本（Phase 11A 未改内部结构）
+## 1. 当前版本（Phase 11B）
 
 | 数据 | 位置 | 版本常量 | 当前值 |
 | --- | --- | --- | --- |
-| IndexedDB 库 | `gomoku-lab` | `DB_VERSION` | `2` |
+| IndexedDB 库 | `gomoku-lab` | `DB_VERSION` | `3` |
 | 学习进度 | `progress` 表 | `PROGRESS_SCHEMA_VERSION` | `1` |
 | 棋谱 | `records` 表 | `GAME_RECORDS_SCHEMA_VERSION` | `1` |
 | 对局会话 | `localStorage: gomoku-lab:session` | `SCHEMA_VERSION` | `2` |
-| 外部棋谱/备份 | 文件 | `EXTERNAL_FORMAT_VERSION` | `1` |
+| 自定义局面 | `positions` 表 | `POSITION_SCHEMA_VERSION` | `1` |
+| 外部棋谱/备份/局面 | 文件 | `EXTERNAL_FORMAT_VERSION` / position v1 | `1` |
 
-**本阶段没有为了「有迁移」而递增任何内部版本。** 新增的导入导出只消费现有形状；
+Phase 11A **没有**为了「有迁移」而递增内部版本；Phase 11B 因新增 `positions`
+对象表，把 `DB_VERSION` 从 2 升到 3（结构性变更，必须升库版本）。`progress` /
+`records` 不动，旧记录原样可读；升级由 `ensureSchema` 统一补建 `positions` 表。
 外部格式版本与内部版本独立（见 [FILE_FORMAT.md](FILE_FORMAT.md)）。
 
 ## 2. 已有迁移：会话 v1 → v2
@@ -29,6 +32,16 @@ v1 里即使出现 `resignedBy` 也不采信——那一版没有这个语义。
 启动时 `loadSessionResult()` 会区分「没有存档」「JSON 损坏」「版本不支持」
 「字段不完整/类型错误」，把具体原因放进 `GameStore.sessionError`，对战页显示警告；
 `loadSession()` 保持返回 `null` 的旧接口。
+
+## 2.1 Phase 11B：v2 → v3（新增 positions）
+
+- 升级只做一件事：`ensureSchema` 在 `onupgradeneeded` 里补建 `positions`
+  `{ keyPath:'id', autoIncrement:true }`；不迁移、不改写 `progress`/`records`。
+- 旧 v2 库（含进度/棋谱）打开后三张表都在；已有数据逐条按原校验读取。
+- 回滚到 0.3.0（DB 2）时，旧代码不认识 positions 表；IndexedDB 允许打开低版本？
+  **不允许**——降级打开会触发 `VersionError`。因此回滚必须同时回滚数据库版本或
+  接受编辑器不可用；生产回滚到 0.3.0 前应先导出需要保留的局面。
+- 单条局面读不出时只跳过该条；坏 provenance 降级为自由摆盘，不丢盘面。
 
 ## 3. 旧库/旧记录的行为
 
@@ -55,7 +68,7 @@ v1 里即使出现 `resignedBy` 也不采信——那一版没有这个语义。
 
 ## 5. 明确不做
 
-- 不建通用迁移框架/版本注册表：目前只有一个真实迁移（会话 v1→v2），
-  为假想的几十个版本写框架是过度设计。
+- 不建通用迁移框架/版本注册表：真正的数据迁移只有会话 v1→v2，v2→v3 只是补建
+  `positions` 表；为假想的几十个版本写框架是过度设计。
 - 不做「自动猜测字段」的兼容：猜错比拒绝更危险。
-- 不在本阶段引入新的数据库表或压缩格式。
+- 不在本阶段引入新的压缩格式。
