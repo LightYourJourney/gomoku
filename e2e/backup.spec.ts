@@ -146,7 +146,7 @@ test('完整备份 → 恢复棋谱、进度、偏好与会话；重复导入会
   await expect(fresh.getByRole('heading', { name: '导入预览' })).toBeVisible()
 
   // 三个恢复开关都打开：进度、偏好、会话。
-  for (const name of ['合并学习与残局进度', '恢复显示偏好', '恢复进行中的对局']) {
+  for (const name of ['合并学习与残局进度', '恢复显示偏好', '恢复上次对局会话']) {
     const toggle = fresh.getByRole('switch', { name })
     if ((await toggle.getAttribute('aria-checked')) === 'false') await toggle.click()
   }

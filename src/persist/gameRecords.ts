@@ -83,6 +83,8 @@ export interface ImportRecordsResult {
   readonly imported: number
   readonly duplicates: number
   readonly persisted: boolean
+  /** 实际落点：IndexedDB / 仅本次会话的内存态 / 事务失败且没有写入。 */
+  readonly storage: 'indexeddb' | 'memory' | 'failed'
 }
 
 /** 存取接口。`review` 页面依赖这个形状而不是具体实现，测试可以注入假存储。 */
@@ -207,7 +209,7 @@ export function memoryGameRecords(degraded = false): GameRecordsStorage {
         bySeq.set(stored.seq, stored)
         imported += 1
       }
-      return { imported, duplicates, persisted: false }
+      return { imported, duplicates, persisted: false, storage: 'memory' }
     },
 
     async delete(seq) {
@@ -431,14 +433,20 @@ export const indexedDbGameRecords: GameRecordsStorage = {
           }
         }
 
-        tx.oncomplete = () => resolve({ imported, duplicates, persisted: true })
+        tx.oncomplete = () => resolve({ imported, duplicates, persisted: true, storage: 'indexeddb' })
         tx.onerror = () => reject(new Error('棋谱库批量写入失败'))
         tx.onabort = () => reject(new Error('棋谱库批量写入被中止'))
       })
       return result
     } catch {
-      // 整笔事务回滚后旧数据仍在；落到内存态时如实标 persisted=false。
-      return fallbackToMemory().importMany(records)
+      /*
+       * 打不开库 = IndexedDB 整体不可用：内存兜底与 list() 的读兜底一致。
+       * 打开成功但事务失败（典型是配额）时**不要**写内存：此时 list() 仍会读
+       * IndexedDB，写进内存只会让界面说「本次会话可用」却一条也看不到。
+       * 整笔事务已回滚，旧数据仍在；如实报失败。
+       */
+      if (db === null) return fallbackToMemory().importMany(records)
+      return { imported: 0, duplicates: 0, persisted: false, storage: 'failed' }
     } finally {
       db?.close()
     }

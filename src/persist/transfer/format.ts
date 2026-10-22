@@ -147,6 +147,10 @@ export function toGameFile(record: RecordIdentity): GameFile {
 }
 
 /** 内容身份：只取这局棋本身，来源元数据与文件外壳不参与重复判断。 */
+export function resignedByOfEnding(ending: GameEnding): Player | null {
+  return ending.type === 'resign' ? ending.resignedBy : null
+}
+
 export function gameContentKey(game: GamePayload): string {
   return recordContentKey({
     firstPlayer: game.firstPlayer,
@@ -154,7 +158,7 @@ export function gameContentKey(game: GamePayload): string {
     mode: game.mode,
     humanColor: game.humanColor,
     difficulty: game.difficulty,
-    resignedBy: game.ending.type === 'resign' ? game.ending.resignedBy : null,
+    resignedBy: resignedByOfEnding(game.ending),
   })
 }
 

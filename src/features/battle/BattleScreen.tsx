@@ -82,6 +82,7 @@ export function BattleScreen({ sound: injectedSound }: BattleScreenProps = {}) {
   const difficulty = useGameStore((state) => state.difficulty)
   const aiThinking = useGameStore((state) => state.aiThinking)
   const aiError = useGameStore((state) => state.aiError)
+  const sessionError = useGameStore((state) => state.sessionError)
   const aiInfo = useGameStore((state) => state.aiInfo)
   const recordSaveState = useGameStore((state) => state.recordSaveState)
   const newGame = useGameStore((state) => state.newGame)
@@ -316,6 +317,15 @@ export function BattleScreen({ sound: injectedSound }: BattleScreenProps = {}) {
           data-testid="battle-center-column"
           className="flex min-h-0 flex-col gap-1 px-3 py-1 wide-layout:px-4"
         >
+          {sessionError !== null && (
+            <p
+              role="alert"
+              data-testid="session-restore-error"
+              className="rounded-lg bg-warn-soft px-2 py-1 text-xs text-warn"
+            >
+              上次对局没能恢复：{sessionError}
+            </p>
+          )}
           <MatchBar
             game={game}
             mode={mode}

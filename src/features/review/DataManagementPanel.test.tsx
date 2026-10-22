@@ -182,6 +182,31 @@ describe('数据管理面板 · 导入', () => {
     expect((await storage.list()).records).toHaveLength(0)
   })
 
+  it('事务失败时明说没有写入，不冒充本次会话可用', async () => {
+    const base = memoryGameRecords()
+    const storage = {
+      ...base,
+      importMany: async () => ({
+        imported: 0,
+        duplicates: 0,
+        persisted: false,
+        storage: 'failed' as const,
+      }),
+    }
+    render(
+      <DataManagementPanel storage={storage} services={services()} onImported={vi.fn()} degraded={false} />,
+    )
+
+    fireEvent.change(screen.getByTestId('import-file'), {
+      target: { files: [fileOf(toGameFile(record()))] },
+    })
+    await screen.findByRole('heading', { name: '导入预览' })
+    fireEvent.click(screen.getByRole('button', { name: '确认导入' }))
+
+    expect(await screen.findByTestId('import-result')).toHaveTextContent('没有写入任何棋谱')
+    expect((await base.list()).records).toHaveLength(0)
+  })
+
   it('坏 JSON 精确报错，零写入', async () => {
     const storage = memoryGameRecords()
     render(

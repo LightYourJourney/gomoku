@@ -594,7 +594,7 @@ describe('GameLibrary —— 读不出棋谱时如实说明', () => {
     get: () => Promise.resolve(null),
     put: () => Promise.reject(new Error('测试里用不到')),
     delete: () => Promise.resolve(),
-    importMany: () => Promise.resolve({ imported: 0, duplicates: 0, persisted: true }),
+    importMany: () => Promise.resolve({ imported: 0, duplicates: 0, persisted: true, storage: 'indexeddb' as const }),
   }
 
   it('存储降级时明说，而不是假装用户没下过棋', async () => {
@@ -629,7 +629,7 @@ describe('GameLibrary —— 读不出棋谱时如实说明', () => {
       get: () => Promise.resolve(null),
       put: () => Promise.reject(new Error('测试里用不到')),
       delete: () => Promise.resolve(),
-      importMany: () => Promise.resolve({ imported: 0, duplicates: 0, persisted: true }),
+      importMany: () => Promise.resolve({ imported: 0, duplicates: 0, persisted: true, storage: 'indexeddb' as const }),
     }
 
     render(<GameLibrary storage={pending} onOpen={vi.fn()} onStartBattle={vi.fn()} />)

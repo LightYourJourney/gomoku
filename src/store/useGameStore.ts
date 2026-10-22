@@ -3,7 +3,7 @@ import { resignerOf, type GameState } from '../core/game'
 import type { Difficulty } from '../ai/types'
 import type { Player } from '../core/types'
 import { saveGameReplacing } from '../persist/gameRecords'
-import { loadSession, saveSession } from '../persist/storage'
+import { loadSessionResult, saveSession } from '../persist/storage'
 import { createGameStore, type GameMode } from './gameStore'
 
 /**
@@ -81,7 +81,9 @@ function persistSession(state: {
  * 搜索，界面一挂载就能显示「AI 思考中」，而不是先闪一下空盘再补上。
  */
 export function bootstrapStore(): void {
-  useGameStore.getState().restore(loadSession())
+  const loaded = loadSessionResult()
+  useGameStore.getState().restore(loaded.session)
+  if (loaded.error !== null) useGameStore.getState().setSessionError(loaded.error)
 
   useGameStore.subscribe(persistSession)
 }

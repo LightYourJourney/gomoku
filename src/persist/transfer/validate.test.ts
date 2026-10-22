@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { BLACK, WHITE, type Point } from '../../core/types'
 import type { GameRecordInput } from '../gameRecords'
 import { toGameFile, toBackupFile } from './format'
-import { jsonDepth, MAX_JSON_DEPTH, parseImportText } from './validate'
+import { jsonDepth, MAX_IMPORT_BYTES, MAX_JSON_DEPTH, parseImportText } from './validate'
 
 const NINE_MOVES: readonly Point[] = [
   { x: 3, y: 7 }, { x: 3, y: 9 },
@@ -65,11 +65,21 @@ describe('严格导入 · 文件级', () => {
     expect(result.errors[0]!.code).toBe('wrong_format')
   })
 
+  it('合法单盘不会把 format/board/rules 误报成未知字段', () => {
+    const result = parse(validGame())
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+    const paths = result.warnings.map((warning) => warning.path)
+    expect(paths.some((path) => /\.(format|formatVersion|board|rules)$/.test(path))).toBe(false)
+  })
+
   it('未知字段只警告，不参与解释', () => {
     const result = parse({ ...validGame(), futureField: 'ignored' })
     expect(result.ok).toBe(true)
     if (!result.ok) return
-    expect(result.warnings.some((warning) => warning.path.endsWith('futureField'))).toBe(true)
+    expect(
+      result.warnings.filter((warning) => warning.path.endsWith('futureField')),
+    ).toHaveLength(1)
   })
 })
 
@@ -239,6 +249,31 @@ describe('严格导入 · 备份', () => {
     if (!result.ok || result.kind !== 'backup') return
     expect(result.session).toBeNull()
     expect(result.warnings.some((warning) => warning.path.includes('session'))).toBe(true)
+  })
+
+  it('2000 局备份仍可解析，且 JSON 不超过导入上限', () => {
+    const backup = toBackupFile({
+      games: Array.from({ length: 2_000 }, () => winRecord()),
+    })
+    const text = JSON.stringify(backup)
+    expect(new TextEncoder().encode(text).length).toBeLessThan(MAX_IMPORT_BYTES)
+
+    const result = parseImportText(text)
+    expect(result.ok).toBe(true)
+    if (!result.ok || result.kind !== 'backup') return
+    expect(result.games).toHaveLength(2_000)
+  })
+
+  it('超过 2000 局被拒绝', () => {
+    const good = JSON.parse(JSON.stringify(toGameFile(winRecord())))
+    const backup = {
+      ...JSON.parse(JSON.stringify(toBackupFile({ games: [] }))),
+      games: Array.from({ length: 2_001 }, () => good),
+    }
+    const result = parse(backup)
+    expect(result.ok).toBe(false)
+    if (result.ok) return
+    expect(result.errors[0]!.code).toBe('too_many_games')
   })
 
   it('未来备份版本被拒绝', () => {

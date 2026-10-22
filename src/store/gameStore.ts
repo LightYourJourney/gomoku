@@ -59,6 +59,8 @@ export interface GameStore {
   readonly difficulty: Difficulty
   readonly aiThinking: boolean
   readonly aiError: string | null
+  /** 启动时旧存档迁移失败的具体原因；null 表示没有失败。 */
+  readonly sessionError: string | null
   readonly aiInfo: AiInfo | null
   /** 当前在飞的 AI 请求；null 表示没有。用于作废过期响应。 */
   readonly pendingRequestId: number | null
@@ -95,6 +97,7 @@ export interface GameStore {
   newGame(options?: { mode?: GameMode; humanColor?: Player; difficulty?: Difficulty }): void
   /** 从本地存档恢复。传 null 表示没有存档，保持当前状态。 */
   restore(session: PersistedSession | null): void
+  setSessionError(message: string | null): void
   /** AI 失败后重试。不在 AI 回合时是空操作。 */
   retryAiMove(): void
   setMode(mode: GameMode): void
@@ -374,6 +377,7 @@ export function createGameStore(
       difficulty: 'easy',
       aiThinking: false,
       aiError: null,
+      sessionError: null,
       aiInfo: null,
       pendingRequestId: null,
       recordSaveState: 'idle',
@@ -390,6 +394,7 @@ export function createGameStore(
           difficulty: options.difficulty ?? current.difficulty,
           aiThinking: false,
           aiError: null,
+          sessionError: null,
           aiInfo: null,
           pendingRequestId: null,
           recordSaveState: 'idle',
@@ -421,6 +426,7 @@ export function createGameStore(
           difficulty: session.difficulty,
           aiThinking: false,
           aiError: null,
+          sessionError: null,
           aiInfo: null,
           pendingRequestId: null,
           ...HINT_CLEARED,
@@ -517,6 +523,10 @@ export function createGameStore(
               })
             },
           )
+      },
+
+      setSessionError(message) {
+        set({ sessionError: message })
       },
 
       retryAiMove() {

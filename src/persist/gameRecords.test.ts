@@ -282,6 +282,18 @@ function abortingFactory(): IDBFactory {
     onerror: null as (() => void) | null,
     onabort: null as (() => void) | null,
     objectStore: () => ({
+      // 批量导入会先 getAll；给它一个空结果，好让失败发生在 add/提交阶段，
+      // 而不是因为假对象缺方法——否则「配额/提交失败」这条路径根本没被走到。
+      getAll: () => {
+        const all = {
+          result: [],
+          error: null,
+          onsuccess: null as (() => void) | null,
+          onerror: null as (() => void) | null,
+        }
+        setTimeout(() => all.onsuccess?.(), 0)
+        return all
+      },
       add: () => {
         setTimeout(() => {
           request.onsuccess?.() // 先：请求成功
@@ -344,7 +356,7 @@ describe('棋谱库 —— 事务提交阶段失败', () => {
 describe('棋谱库 —— 批量导入', () => {
   it('一次写入多局，按内容去重，persisted 为真', async () => {
     const result = await indexedDbGameRecords.importMany([winRecord(), resignRecord()])
-    expect(result).toEqual({ imported: 2, duplicates: 0, persisted: true })
+    expect(result).toEqual({ imported: 2, duplicates: 0, persisted: true, storage: 'indexeddb' })
 
     const { records } = await indexedDbGameRecords.list()
     expect(records).toHaveLength(2)
@@ -353,7 +365,7 @@ describe('棋谱库 —— 批量导入', () => {
   it('重复导入同一批不会无限增条', async () => {
     await indexedDbGameRecords.importMany([winRecord()])
     const again = await indexedDbGameRecords.importMany([winRecord(), winRecord()])
-    expect(again).toEqual({ imported: 0, duplicates: 2, persisted: true })
+    expect(again).toEqual({ imported: 0, duplicates: 2, persisted: true, storage: 'indexeddb' })
 
     const { records } = await indexedDbGameRecords.list()
     expect(records).toHaveLength(1)
@@ -361,14 +373,14 @@ describe('棋谱库 —— 批量导入', () => {
 
   it('同批次内部重复也只落一条', async () => {
     const result = await indexedDbGameRecords.importMany([winRecord(), winRecord()])
-    expect(result).toEqual({ imported: 1, duplicates: 1, persisted: true })
+    expect(result).toEqual({ imported: 1, duplicates: 1, persisted: true, storage: 'indexeddb' })
   })
 
   it('批量事务失败：整笔不假装成功，退回内存并标 persisted=false', async () => {
     __setGameRecordsIndexedDbFactory(abortingFactory())
     try {
       const result = await indexedDbGameRecords.importMany([winRecord(), resignRecord()])
-      expect(result).toEqual({ imported: 2, duplicates: 0, persisted: false })
+      expect(result).toEqual({ imported: 0, duplicates: 0, persisted: false, storage: 'failed' })
     } finally {
       __setGameRecordsIndexedDbFactory(null)
     }
@@ -380,7 +392,7 @@ describe('棋谱库 —— 批量导入', () => {
     __setGameRecordsIndexedDbFactory(null)
     try {
       const result = await indexedDbGameRecords.importMany([winRecord()])
-      expect(result).toEqual({ imported: 1, duplicates: 0, persisted: false })
+      expect(result).toEqual({ imported: 1, duplicates: 0, persisted: false, storage: 'memory' })
       expect((await indexedDbGameRecords.list()).records).toHaveLength(1)
     } finally {
       if (saved !== undefined) Object.defineProperty(globalThis, 'indexedDB', saved)

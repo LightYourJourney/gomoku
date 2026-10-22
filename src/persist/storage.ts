@@ -38,6 +38,17 @@ function parsePoint(value: unknown): Point | null {
   return { x, y }
 }
 
+/**
+ * 把 v1 的 `resignedBy` 迁移到 v2 语义。v1 没有这个字段，认输局无法恢复；
+ * 迁移只发生在读取时，不写回旧值——真正落 v2 要等下一次状态变化。
+ * 返回 `undefined` 表示字段非法，整条存档拒绝。
+ */
+function migratedResignedBy(value: unknown, version: number): Player | null | undefined {
+  if (version === 1) return null
+  if (value === null) return null
+  return isPlayer(value) ? value : undefined
+}
+
 export function encodeSession(input: Omit<PersistedSession, 'schemaVersion'>): string {
   return JSON.stringify({ schemaVersion: SCHEMA_VERSION, ...input } satisfies PersistedSession)
 }
@@ -75,11 +86,8 @@ export function decodeSession(raw: string | null): PersistedSession | null {
   if (!isDifficulty(value.difficulty)) return null
   if (!Array.isArray(value.moves)) return null
 
-  let resignedBy: Player | null = null
-  if (version === SCHEMA_VERSION && value.resignedBy !== null) {
-    if (!isPlayer(value.resignedBy)) return null
-    resignedBy = value.resignedBy
-  }
+  const resignedBy = migratedResignedBy(value.resignedBy, version)
+  if (resignedBy === undefined) return null
 
   const moves: Point[] = []
   for (const entry of value.moves) {
@@ -107,6 +115,44 @@ export function saveSession(input: Omit<PersistedSession, 'schemaVersion'>): boo
   } catch {
     return false
   }
+}
+
+export interface SessionLoadResult {
+  readonly session: PersistedSession | null
+  /** 有存档但读不回来时的具体原因；没有存档/读成功时为 null。 */
+  readonly error: string | null
+}
+
+function describeSessionError(raw: string): string {
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(raw)
+  } catch {
+    return '不是合法 JSON'
+  }
+  if (typeof parsed !== 'object' || parsed === null) return '顶层不是对象'
+
+  const version = (parsed as Record<string, unknown>).schemaVersion
+  if (version !== 1 && version !== SCHEMA_VERSION) {
+    return `存档版本 ${String(version)} 不受支持（当前 ${SCHEMA_VERSION}）`
+  }
+  return `v${String(version)} 存档字段不完整或类型错误`
+}
+
+/** 带原因版本：供启动时把「旧存档没能迁移」如实告诉用户。 */
+export function loadSessionResult(): SessionLoadResult {
+  let raw: string | null
+  try {
+    raw = localStorage.getItem(STORAGE_KEY)
+  } catch {
+    return { session: null, error: '读取 localStorage 失败' }
+  }
+  if (raw === null || raw === '') return { session: null, error: null }
+
+  const session = decodeSession(raw)
+  return session === null
+    ? { session: null, error: describeSessionError(raw) }
+    : { session, error: null }
 }
 
 export function loadSession(): PersistedSession | null {

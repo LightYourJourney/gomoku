@@ -285,6 +285,20 @@ describe('mergeProgress：导入备份时的保守合并', () => {
     expect(merged.lastView).toBe('learn')
   })
 
+  it('只停在复盘页、没有任何完成项时仍算空进度，采用备份位置', () => {
+    const merged = mergeProgress(
+      { ...EMPTY_PROGRESS, lastView: 'review' },
+      {
+        completedLessons: ['rules'],
+        solvedPuzzles: [],
+        lastVisited: { kind: 'lesson', id: 'rules' },
+        lastView: 'learn',
+      },
+    )
+    expect(merged.lastVisited).toEqual({ kind: 'lesson', id: 'rules' })
+    expect(merged.lastView).toBe('learn')
+  })
+
   it('本地完全没进度时采用备份的位置——空浏览器恢复才有意义', () => {
     const merged = mergeProgress(EMPTY_PROGRESS, {
       completedLessons: ['rules'],

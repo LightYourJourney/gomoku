@@ -77,6 +77,18 @@ function setGame(game: GameState): void {
 
 beforeEach(() => {
   vi.clearAllMocks()
+  useGameStore.setState({ sessionError: null })
+})
+
+describe('BattleScreen —— 旧存档提示', () => {
+  it('迁移失败时把具体原因说在页面上，而不是静默重开', () => {
+    useGameStore.setState({ sessionError: 'v1 存档字段不完整或类型错误' })
+    setup()
+
+    expect(screen.getByTestId('session-restore-error')).toHaveTextContent(
+      'v1 存档字段不完整或类型错误',
+    )
+  })
 })
 
 describe('BattleScreen —— 终局音效', () => {

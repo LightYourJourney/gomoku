@@ -374,7 +374,11 @@ function validateSource(
 }
 
 /** 校验一局的内容部分（不含 format/board/rules 外壳）。 */
-function validateGamePayload(value: unknown, path = 'game'): GameValidationResult {
+function validateGamePayload(
+  value: unknown,
+  path = 'game',
+  envelopeKeys: readonly string[] = [],
+): GameValidationResult {
   const errors: ImportIssue[] = []
   const warnings: ImportIssue[] = []
 
@@ -383,7 +387,7 @@ function validateGamePayload(value: unknown, path = 'game'): GameValidationResul
 
   warnUnknownFields(
     game,
-    ['firstPlayer', 'moves', 'mode', 'humanColor', 'difficulty', 'ending', 'source'],
+    ['firstPlayer', 'moves', 'mode', 'humanColor', 'difficulty', 'ending', 'source', ...envelopeKeys],
     path,
     warnings,
   )
@@ -452,25 +456,25 @@ function validationContext(
   value: unknown,
   path: string,
   allowed: readonly string[],
+  warnUnknown = true,
 ): ValidationContext {
   const errors: ImportIssue[] = []
   const warnings: ImportIssue[] = []
   const top = objectAt(value, path, errors)
-  if (top !== null) warnUnknownFields(top, allowed, path, warnings)
+  if (top !== null && warnUnknown) warnUnknownFields(top, allowed, path, warnings)
   return { top, errors, warnings }
 }
 
 function validateGameFile(value: unknown, path: string): GameFileResult | GameFileFailure {
-  const { top, errors, warnings } = validationContext(value, path, [
-    'format', 'formatVersion', 'board', 'rules', 'firstPlayer', 'moves', 'mode',
-    'humanColor', 'difficulty', 'ending', 'source',
-  ])
+  // 未知字段留给 `validateGamePayload` 统一检查（它知道 payload + 外壳两套键），
+  // 这里再查一遍会对同一个未知字段报两次。
+  const { top, errors, warnings } = validationContext(value, path, [], false)
   if (top === null) return { ok: false, errors, warnings }
   if (parseEnvelope(top, GAME_FORMAT, path, errors, warnings) === null) {
     return { ok: false, errors, warnings }
   }
 
-  const payload = validateGamePayload(top, path)
+  const payload = validateGamePayload(top, path, ['format', 'formatVersion', 'board', 'rules'])
   if (!payload.ok) return { ok: false, errors: payload.errors, warnings: payload.warnings }
   return { ok: true, kind: 'game', game: payload.game, warnings: payload.warnings }
 }
@@ -500,9 +504,12 @@ function progressArray(
   return out
 }
 
-function validateProgress(value: unknown, path: string): BackupProgress | null {
+function validateProgress(
+  value: unknown,
+  path: string,
+  warnings: ImportIssue[],
+): BackupProgress | null {
   const errors: ImportIssue[] = []
-  const warnings: ImportIssue[] = []
   const raw = objectAt(value, path, errors)
   if (raw === null) return null
   warnUnknownFields(raw, ['completedLessons', 'solvedPuzzles', 'lastVisited', 'lastView'], path, warnings)
@@ -535,9 +542,12 @@ function validateProgress(value: unknown, path: string): BackupProgress | null {
   return { completedLessons, solvedPuzzles, lastVisited, lastView }
 }
 
-function validatePreferences(value: unknown, path: string): BackupPreferences | null {
+function validatePreferences(
+  value: unknown,
+  path: string,
+  warnings: ImportIssue[],
+): BackupPreferences | null {
   const errors: ImportIssue[] = []
-  const warnings: ImportIssue[] = []
   const raw = objectAt(value, path, errors)
   if (raw === null) return null
   warnUnknownFields(raw, ['theme', 'showCoords', 'soundEnabled'], path, warnings)
@@ -553,9 +563,12 @@ function validatePreferences(value: unknown, path: string): BackupPreferences | 
   return { theme: raw.theme, showCoords: raw.showCoords, soundEnabled: raw.soundEnabled }
 }
 
-function validateSession(value: unknown, path: string): BackupSession | null {
+function validateSession(
+  value: unknown,
+  path: string,
+  warnings: ImportIssue[],
+): BackupSession | null {
   const errors: ImportIssue[] = []
-  const warnings: ImportIssue[] = []
   const raw = objectAt(value, path, errors)
   if (raw === null) return null
   warnUnknownFields(
@@ -622,13 +635,13 @@ function validateSession(value: unknown, path: string): BackupSession | null {
 function optionalSection<T>(
   value: unknown,
   path: string,
-  parse: (value: unknown, path: string) => T | null,
+  parse: (value: unknown, path: string, warnings: ImportIssue[]) => T | null,
   code: ImportErrorCode,
   label: string,
   warnings: ImportIssue[],
 ): T | null {
   if (value === undefined || value === null) return null
-  const parsed = parse(value, path)
+  const parsed = parse(value, path, warnings)
   if (parsed === null) warnings.push(issue(code, path, `${label}段无效，已跳过`))
   return parsed
 }

@@ -1,7 +1,11 @@
 import { useRef, useState } from 'react'
 import type { PersistedSession } from '../../persist/storage'
 import type { LearningProgress } from '../../persist/progress'
-import type { GameRecordInput, GameRecordsStorage } from '../../persist/gameRecords'
+import type {
+  GameRecordInput,
+  GameRecordsStorage,
+  ImportRecordsResult,
+} from '../../persist/gameRecords'
 import { recordContentKey } from '../../persist/recordIdentity'
 import {
   MAX_IMPORT_BYTES,
@@ -13,6 +17,7 @@ import {
   EXTERNAL_FORMAT_VERSION,
   exportFilename,
   gameContentKey,
+  resignedByOfEnding,
   toBackupFile,
   type BackupPreferences,
   type BackupProgress,
@@ -76,6 +81,7 @@ interface Outcome {
   readonly duplicates: number
   readonly invalid: number
   readonly persisted: boolean
+  readonly storage: ImportRecordsResult['storage']
   readonly progress: SectionOutcome
   readonly preferences: SectionOutcome
   readonly session: SectionOutcome
@@ -88,7 +94,7 @@ function toRecordInput(game: GamePayload): GameRecordInput {
     mode: game.mode,
     humanColor: game.humanColor,
     difficulty: game.difficulty,
-    resignedBy: game.ending.type === 'resign' ? game.ending.resignedBy : null,
+    resignedBy: resignedByOfEnding(game.ending),
   }
 }
 
@@ -206,10 +212,11 @@ export function DataManagementPanel({
     setBusy(true)
     setError(null)
 
-    let recordsResult: { imported: number; duplicates: number; persisted: boolean }
+    let recordsResult: ImportRecordsResult
     try {
       recordsResult = await storage.importMany(games.map(toRecordInput))
     } catch (err) {
+      setPending(null)
       fail(err instanceof Error ? err.message : String(err))
       setBusy(false)
       return
@@ -262,6 +269,7 @@ export function DataManagementPanel({
       duplicates: recordsResult.duplicates,
       invalid,
       persisted: recordsResult.persisted,
+      storage: recordsResult.storage,
       progress,
       preferences,
       session,
@@ -308,6 +316,8 @@ export function DataManagementPanel({
     }
   }
 
+  const invalidSection = (code: 'bad_progress' | 'bad_preferences' | 'bad_session'): boolean =>
+    pending?.kind === 'backup' && pending.warnings.some((warning) => warning.code === code)
   const previewImportable =
     pending === null
       ? 0
@@ -387,9 +397,14 @@ export function DataManagementPanel({
           {outcome.session !== 'absent' && (
             <p>当前对局会话：{outcome.session === 'restored' ? '已恢复' : sectionLabel(outcome.session, '恢复')}</p>
           )}
-          {!outcome.persisted && (
+          {outcome.storage === 'memory' && (
             <p className="mt-1 text-warn">
               这次只写进了内存兜底：本次会话可用，刷新后可能丢失。
+            </p>
+          )}
+          {outcome.storage === 'failed' && (
+            <p className="mt-1 text-danger">
+              没有写入任何棋谱：浏览器存储不可用或事务失败；旧数据未变。
             </p>
           )}
         </div>
@@ -425,6 +440,9 @@ export function DataManagementPanel({
 
             {pending.kind === 'game' ? (
               <div data-testid="import-preview">
+                <p className="text-xs text-faint">
+                  格式：gomoku-lab.game v{EXTERNAL_FORMAT_VERSION}
+                </p>
                 <p>
                   单盘棋谱 · {pending.game.moves.length} 手 ·{' '}
                   {pending.game.mode === 'pve' ? '人机' : '双人'} ·{' '}
@@ -452,6 +470,9 @@ export function DataManagementPanel({
 
             {pending.kind === 'backup' && (
               <div className="space-y-2 border-t border-border pt-2">
+                <p className="text-xs text-muted">
+                  将写入：棋谱库；进度 / 偏好 / 会话按下列选择处理。
+                </p>
                 <p className="text-xs font-medium text-muted">可选的恢复内容</p>
                 {pending.progress !== null ? (
                   <Switch
@@ -460,6 +481,8 @@ export function DataManagementPanel({
                     label="合并学习与残局进度"
                     description="只添加完成项，不删除本地记录"
                   />
+                ) : invalidSection('bad_progress') ? (
+                  <p className="text-xs text-danger">学习进度段无效，已跳过。</p>
                 ) : (
                   <p className="text-xs text-faint">文件中没有学习进度。</p>
                 )}
@@ -470,6 +493,8 @@ export function DataManagementPanel({
                     label="恢复显示偏好"
                     description="主题、坐标与音效；默认不改本地设置"
                   />
+                ) : invalidSection('bad_preferences') ? (
+                  <p className="text-xs text-danger">显示偏好段无效，已跳过。</p>
                 ) : (
                   <p className="text-xs text-faint">文件中没有显示偏好。</p>
                 )}
@@ -477,18 +502,20 @@ export function DataManagementPanel({
                   <Switch
                     checked={withSession}
                     onChange={setWithSession}
-                    label="恢复进行中的对局"
-                    description="会替换当前正在进行的棋局；默认关闭"
+                    label="恢复上次对局会话"
+                    description="会替换当前保存的对局（可能已结束）；默认关闭"
                   />
+                ) : invalidSection('bad_session') ? (
+                  <p className="text-xs text-danger">对局会话段无效，已跳过。</p>
                 ) : (
-                  <p className="text-xs text-faint">文件中没有进行中的对局。</p>
+                  <p className="text-xs text-faint">文件中没有对局会话。</p>
                 )}
               </div>
             )}
 
             {pending.warnings.length > 0 && (
               <p className="text-xs text-faint">
-                有 {pending.warnings.length} 个未知字段，已忽略；不会按猜测解释。
+                有 {pending.warnings.length} 条警告（未知字段或无效可选段），已忽略；不会按猜测解释。
               </p>
             )}
           </div>

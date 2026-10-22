@@ -4,6 +4,7 @@ import {
   decodeSession,
   encodeSession,
   loadSession,
+  loadSessionResult,
   saveSession,
   SCHEMA_VERSION,
   STORAGE_KEY,
@@ -165,4 +166,42 @@ describe('saveSession / loadSession', () => {
     expect(loadSession()).toBeNull()
   })
 
+})
+
+
+describe('loadSessionResult：旧存档无法迁移时给出具体原因', () => {
+  beforeEach(() => {
+    localStorage.clear()
+  })
+
+  it('没有存档时既没有会话也没有错误', () => {
+    expect(loadSessionResult()).toEqual({ session: null, error: null })
+  })
+
+  it('合法存档没有错误', () => {
+    saveSession(sample)
+    expect(loadSessionResult().error).toBeNull()
+    expect(loadSessionResult().session).toEqual({ schemaVersion: SCHEMA_VERSION, ...sample })
+  })
+
+  it('未来版本明确说出不支持的版本号', () => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ schemaVersion: 9, ...sample }))
+    expect(loadSessionResult().error).toContain('9')
+    expect(loadSessionResult().error).toContain('不受支持')
+  })
+
+  it('v1 字段损坏时指出是哪一版、哪类问题', () => {
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({ schemaVersion: 1, ...sample, moves: [{ x: 99, y: 0 }] }),
+    )
+    expect(loadSessionResult().session).toBeNull()
+    expect(loadSessionResult().error).toContain('v1')
+    expect(loadSessionResult().error).toContain('字段不完整或类型错误')
+  })
+
+  it('坏 JSON 指出不是合法 JSON', () => {
+    localStorage.setItem(STORAGE_KEY, '{{{')
+    expect(loadSessionResult().error).toBe('不是合法 JSON')
+  })
 })

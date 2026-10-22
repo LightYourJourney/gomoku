@@ -26,6 +26,10 @@
 v1 里即使出现 `resignedBy` 也不采信——那一版没有这个语义。无法解析的 v1 存档
 仍然整条拒绝，不会把半截数据灌进状态机。
 
+启动时 `loadSessionResult()` 会区分「没有存档」「JSON 损坏」「版本不支持」
+「字段不完整/类型错误」，把具体原因放进 `GameStore.sessionError`，对战页显示警告；
+`loadSession()` 保持返回 `null` 的旧接口。
+
 ## 3. 旧库/旧记录的行为
 
 - IndexedDB 老库（v1、只有 `progress` 表）打开时由 `ensureSchema` 补建 `records`；

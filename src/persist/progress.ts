@@ -44,8 +44,7 @@ export function mergeProgress(
   const hasLocalProgress =
     current.completedLessons.length > 0 ||
     current.solvedPuzzles.length > 0 ||
-    current.lastVisited !== null ||
-    current.lastView !== 'battle'
+    current.lastVisited !== null
 
   return {
     schemaVersion: current.schemaVersion,

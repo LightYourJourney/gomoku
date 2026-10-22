@@ -15,7 +15,7 @@ import { PageShell } from '../shell/PageShell'
 import type { AiEngine } from '../../ai/engine'
 import { useLearnStore } from '../../store/learnStore'
 import { useSettingsStore } from '../../store/settingsStore'
-import { loadProgress, mergeProgress, saveProgress } from '../../persist/progress'
+import { loadProgress, mergeProgress } from '../../persist/progress'
 import { loadSession, saveSession, SCHEMA_VERSION, type PersistedSession } from '../../persist/storage'
 import type { DataManagementServices } from './DataManagementPanel'
 import { GameLibrary } from './GameLibrary'
@@ -92,7 +92,8 @@ export function ReviewScreen({ storage, engine, stores, onRestoreSession }: Revi
       const live = useLearnStore.getState()
       const current = live.loaded ? live.progress : await loadProgress()
       const merged = mergeProgress(current, incoming)
-      await saveProgress(merged)
+      // `adoptProgress` 自己会走学习进度的串行写队列；这里不再额外 save，
+      // 否则同一份进度会被写两次。
       adoptProgress(merged)
     },
     onRestorePreferences: (preferences) => {

@@ -21,7 +21,7 @@ Phase 07 的最终门禁、探针对照与基准在 `ui-redesign/FINAL_TEST_REPO
 
 | 项 | 数量 |
 | --- | --- |
-| 单元 / 组件用例 | **1269**（78 个文件） |
+| 单元 / 组件用例 | **1280**（78 个文件） |
 | 端到端用例 | **166**（桌面 146 + 移动触屏 11 + 平板 9，共 10 个 spec 文件），另有生产构建冒烟 6 条（`yarn e2e:prod`，含构建版本标识核对） |
 | 界面基线与量测 | `yarn ui:probe`：38 个受控状态 × 视口矩阵 = 308 张截图 + 308 条 DOM 量测，逐张可对照（Phase 05 是 34 / 276，Phase 04 是 29 / 236，Phase 03 是 27 / 220，Phase 02 是 21 / 172） |
 | 质量门禁 | 本地 pre-push 快档（5 条命令，热跑 30–45 秒，看机器负载）+ CI 全档（4 个 job）+ 四道防退化闸门 + 两把覆盖棘轮，见「〇之十一」 |
@@ -1895,16 +1895,17 @@ Worker / 提示 / 复盘预算的既有用例未改，全部通过。
 
 **定位**：外部交换格式 + 严格导入 + 批量事务 + 会话 v1→v2；不引入后端/账号/云同步。
 
-### 新增用例（+49 单测 / +4 E2E）
+### 新增用例（+60 单测 / +4 E2E）
 
 | 文件 | 条数 | 钉住什么 |
 | --- | --- | --- |
 | `src/persist/transfer/format.test.ts` | 9 | 单盘/备份往返、认输、未结束拒绝、内容身份、文件名、部分坏棋谱 |
-| `src/persist/transfer/validate.test.ts` | 21 | 坏 JSON、深嵌套、版本、坐标、重复、终局后、胜负、认输、满盘 225 手和棋、进度/会话段 |
+| `src/persist/transfer/validate.test.ts` | 24 | 坏 JSON、深嵌套、版本、坐标、重复、终局后、胜负、认输、满盘 225 手和棋、进度/会话段 |
 | `src/persist/gameRecords.test.ts` | +5 | 批量导入去重、同批重复、事务失败/不可用降级 |
-| `src/persist/progress.test.ts` | +3 | 并集、保留本地位置、空浏览器采用备份位置 |
-| `src/persist/storage.test.ts` | +2 | v1 会话只读迁移到 v2 |
-| `src/features/review/DataManagementPanel.test.tsx` | 9 | 导出、预览、确认、取消、重复、坏文件、备份开关、部分无效 |
+| `src/persist/progress.test.ts` | +4 | 并集、保留本地位置、空浏览器/仅复盘页采用备份位置 |
+| `src/persist/storage.test.ts` | +7 | v1 会话只读迁移、失败原因（版本/字段/JSON） |
+| `src/features/review/DataManagementPanel.test.tsx` | 10 | 导出、预览、确认、取消、重复、坏文件、失败落库、备份开关、部分无效 |
+| `src/features/battle/BattleScreen.test.tsx` | +1 | 旧会话迁移失败的具体原因显示在页面上 |
 | `e2e/backup.spec.ts` | 4 | 真实下载/上传、干净上下文恢复、刷新、v1 会话 |
 
 ### 真实浏览器最终验收
@@ -1928,11 +1929,11 @@ Worker / 提示 / 复盘预算的既有用例未改，全部通过。
 | 命令 | 结果 |
 | --- | --- |
 | `yarn lint` / `yarn typecheck` | 通过 |
-| `yarn test` | **1,269 / 1,269**（78 文件） |
+| `yarn test` | **1,280 / 1,280**（78 文件） |
 | `yarn build` | 通过 |
 | `yarn e2e` | **166 / 166**（完整运行；高负载复跑见下） |
 | `yarn e2e:prod` | **6 / 6** |
-| `yarn gates` | 0 环 / knip 通过 / 0 重复 / 棘轮 1,269 · 166 |
+| `yarn gates` | 0 环 / knip 通过 / 0 重复 / 棘轮 1,280 · 166 |
 | `yarn bench:check` | 19/19 断言 + 29 不变量 |
 | `yarn ui:probe --out ci` | 38 状态 / 308 张，七条判据全过 |
 | CI @ `3e0518b` | 成功（run `39727977371`；四个 job 全绿） |
