@@ -5,12 +5,17 @@ import type { GameRecord, GameRecordList, GameRecordsStorage } from '../../persi
 import { PageHeader } from '../../components/ui/PageHeader'
 import { Panel } from '../../components/ui/Panel'
 import { Button } from '../../components/ui/Button'
+import { DataManagementPanel, type DataManagementServices } from './DataManagementPanel'
+import { exportFilename, toGameFile } from '../../persist/transfer/format'
+import { downloadJson } from './download'
 
 export interface GameLibraryProps {
   readonly storage: GameRecordsStorage
   readonly onOpen: (record: GameRecord) => void
   /** 空状态那颗主操作。**必须真的切到对战页**——不渲染只会摆样子的按钮。 */
   readonly onStartBattle: () => void
+  /** 生产环境注入；测试不传时不渲染数据面板与单盘导出。 */
+  readonly services?: DataManagementServices
 }
 
 /** 结果一栏的人话：谁赢了 / 认输 / 和棋。 */
@@ -85,8 +90,10 @@ function LibraryGlyph() {
  * `degraded`（存储不可用，数据来自内存兜底）与 `skipped`（读到了但没通过校验）。
  * 两个都**只说事实、不猜原因**。
  */
-export function GameLibrary({ storage, onOpen, onStartBattle }: GameLibraryProps) {
+export function GameLibrary({ storage, onOpen, onStartBattle, services }: GameLibraryProps) {
   const [result, setResult] = useState<GameRecordList | null>(null)
+  const [reloadKey, setReloadKey] = useState(0)
+  const [exportError, setExportError] = useState<string | null>(null)
 
   useEffect(() => {
     let alive = true
@@ -96,7 +103,17 @@ export function GameLibrary({ storage, onOpen, onStartBattle }: GameLibraryProps
     return () => {
       alive = false
     }
-  }, [storage])
+  }, [storage, reloadKey])
+
+  function exportRecord(record: GameRecord): void {
+    if (services === undefined) return
+    try {
+      downloadJson(exportFilename('game', services.now), toGameFile(record))
+      setExportError(null)
+    } catch (err) {
+      setExportError(err instanceof Error ? err.message : String(err))
+    }
+  }
 
   return (
     <>
@@ -104,6 +121,23 @@ export function GameLibrary({ storage, onOpen, onStartBattle }: GameLibraryProps
         title="复盘"
         description="保存下来的对局可以逐手回放，也可以让引擎帮你找亏损的手"
       />
+
+      {services !== undefined && (
+        <div className="mb-3">
+          <DataManagementPanel
+            storage={storage}
+            services={services}
+            degraded={result?.degraded ?? false}
+            onImported={() => setReloadKey((key) => key + 1)}
+          />
+        </div>
+      )}
+
+      {exportError !== null && (
+        <p role="alert" data-testid="export-error" className="mb-3 text-xs text-danger">
+          导出失败：{exportError}
+        </p>
+      )}
 
       {result === null ? (
         <p className="py-8 text-center text-sm text-faint">正在读取棋谱…</p>
@@ -153,18 +187,27 @@ export function GameLibrary({ storage, onOpen, onStartBattle }: GameLibraryProps
           )}
           <ul className="space-y-2">
             {result.records.map((record) => (
-              <li key={record.seq}>
+              <li key={record.seq} className="flex items-stretch gap-2">
                 <button
                   type="button"
                   data-testid={`record-${record.seq}`}
                   onClick={() => onOpen(record)}
-                  className="w-full rounded-xl border border-border bg-surface px-4 py-3 text-left transition hover:border-border-strong"
+                  className="min-w-0 flex-1 rounded-xl border border-border bg-surface px-4 py-3 text-left transition hover:border-border-strong"
                 >
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between gap-2">
                     <span className="text-sm font-medium text-fg">{resultLabel(record)}</span>
-                    <span className="text-xs text-faint">{metaLabel(record)}</span>
+                    <span className="shrink-0 text-xs text-faint">{metaLabel(record)}</span>
                   </div>
                 </button>
+                {services !== undefined && (
+                  <Button
+                    size="sm"
+                    aria-label={`导出棋谱 ${record.seq}`}
+                    onClick={() => exportRecord(record)}
+                  >
+                    导出
+                  </Button>
+                )}
               </li>
             ))}
           </ul>

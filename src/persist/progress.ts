@@ -24,6 +24,38 @@ export interface LearningProgress {
   readonly lastView: 'battle' | 'learn' | 'puzzles' | 'review'
 }
 
+/** 可合并的进度段：外部备份只带这四个字段，不带内部 schemaVersion。 */
+export type MergeableProgress = Pick<
+  LearningProgress,
+  'completedLessons' | 'solvedPuzzles' | 'lastVisited' | 'lastView'
+>
+
+/**
+ * 保守合并：完成项取并集，**不删除**任何本地记录。
+ *
+ * 位置（`lastVisited` / `lastView`）只在本地完全没有进度时才采用导入值。
+ * 否则恢复一份旧备份会把用户当前的页面/课程顶掉——「恢复数据」不该顺带
+ * 改变他现在的位置。
+ */
+export function mergeProgress(
+  current: LearningProgress,
+  incoming: MergeableProgress,
+): LearningProgress {
+  const hasLocalProgress =
+    current.completedLessons.length > 0 ||
+    current.solvedPuzzles.length > 0 ||
+    current.lastVisited !== null ||
+    current.lastView !== 'battle'
+
+  return {
+    schemaVersion: current.schemaVersion,
+    completedLessons: [...new Set([...current.completedLessons, ...incoming.completedLessons])],
+    solvedPuzzles: [...new Set([...current.solvedPuzzles, ...incoming.solvedPuzzles])],
+    lastVisited: hasLocalProgress ? current.lastVisited : incoming.lastVisited,
+    lastView: hasLocalProgress ? current.lastView : incoming.lastView,
+  }
+}
+
 export const EMPTY_PROGRESS: LearningProgress = {
   schemaVersion: PROGRESS_SCHEMA_VERSION,
   completedLessons: [],

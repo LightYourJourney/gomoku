@@ -14,6 +14,10 @@ import { Panel } from '../../components/ui/Panel'
 import { PageShell } from '../shell/PageShell'
 import type { AiEngine } from '../../ai/engine'
 import { useLearnStore } from '../../store/learnStore'
+import { useSettingsStore } from '../../store/settingsStore'
+import { loadProgress, mergeProgress, saveProgress } from '../../persist/progress'
+import { loadSession, saveSession, SCHEMA_VERSION, type PersistedSession } from '../../persist/storage'
+import type { DataManagementServices } from './DataManagementPanel'
 import { GameLibrary } from './GameLibrary'
 import { ReplayBoard } from './ReplayBoard'
 
@@ -28,6 +32,11 @@ export interface ReviewScreenProps {
     readonly replay: ReturnType<typeof createReplayStore>
     readonly analysis: ReturnType<typeof createAnalysisStore>
   }
+  /**
+   * 恢复备份里的进行中对局。**由 App 注入**：`useGameStore` 在模块加载时就
+   * 创建 Worker，不能为了一个回调把它拖进组件测试（jsdom 没有 Worker）。
+   */
+  readonly onRestoreSession?: (session: PersistedSession) => void
 }
 
 /**
@@ -36,7 +45,7 @@ export interface ReviewScreenProps {
  * 两个 store 用 ref 持有：它们是本页面的会话状态，离开页面即丢弃
  * （回放游标不持久化是有意的——它是浏览行为，不是进度）。
  */
-export function ReviewScreen({ storage, engine, stores }: ReviewScreenProps) {
+export function ReviewScreen({ storage, engine, stores, onRestoreSession }: ReviewScreenProps) {
   // 惰性单例：useState 的初始化函数只跑一次，且不会在渲染期读 ref。
   const [ownReplay] = useState(createReplayStore)
   const [ownAnalysis] = useState(createAnalysisStore)
@@ -46,6 +55,7 @@ export function ReviewScreen({ storage, engine, stores }: ReviewScreenProps) {
   // 空状态那颗「开始一局对战」要真的切页面，所以得够得着导航。
   // 与 `PuzzleScreen` 同法：页面自己连 store，不让展示组件去连。
   const setView = useLearnStore((state) => state.setView)
+  const adoptProgress = useLearnStore((state) => state.adoptProgress)
 
   // 离开复盘页就停掉分析：结果不再有人看，继续跑没有意义。
   // 注意 `stop()` 只能**丢弃结果**——引擎没有取消接口，已经发出去的那一次
@@ -59,6 +69,44 @@ export function ReviewScreen({ storage, engine, stores }: ReviewScreenProps) {
   }, [analysis, replay])
 
   const [open, setOpen] = useState(false)
+
+  /*
+   * 数据管理的能力注入。`Date.now` 只传引用、不在这里调用——文件名的时间戳
+   * 由导出器在真正需要时取；测试可以换成固定时钟。
+   */
+  const dataServices: DataManagementServices = {
+    now: Date.now,
+    loadProgress,
+    loadSession,
+    preferences: () => {
+      const settings = useSettingsStore.getState()
+      return {
+        theme: settings.theme,
+        showCoords: settings.showCoords,
+        soundEnabled: settings.soundEnabled,
+      }
+    },
+    onMergeProgress: async (incoming) => {
+      // 用**内存里的当前进度**合并：用户可能刚完成一节课，写入队列还没落盘；
+      // 这时先 loadProgress() 会读到旧值，合并完反而把刚完成的那一项盖掉。
+      const live = useLearnStore.getState()
+      const current = live.loaded ? live.progress : await loadProgress()
+      const merged = mergeProgress(current, incoming)
+      await saveProgress(merged)
+      adoptProgress(merged)
+    },
+    onRestorePreferences: (preferences) => {
+      const settings = useSettingsStore.getState()
+      settings.setTheme(preferences.theme)
+      settings.setShowCoords(preferences.showCoords)
+      settings.setSoundEnabled(preferences.soundEnabled)
+    },
+    onRestoreSession: (session) => {
+      const persisted = { ...session, schemaVersion: SCHEMA_VERSION }
+      if (!saveSession(persisted)) throw new Error('会话写入失败')
+      onRestoreSession?.(persisted)
+    },
+  }
 
   function openRecord(record: GameRecord) {
     analysis.getState().stop()
@@ -119,6 +167,7 @@ export function ReviewScreen({ storage, engine, stores }: ReviewScreenProps) {
         storage={storage}
         onOpen={openRecord}
         onStartBattle={() => setView('battle')}
+        services={dataServices}
       />
     </PageShell>
   )

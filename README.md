@@ -7,7 +7,7 @@
 
 **线上地址：<https://gomoku-lab.pages.dev>**（Cloudflare Pages；应用 `0.2.0`、引擎 `search-1`、提交 `b67ea93`）。
 
-**当前进度：Phase 1–5、UI/UX 改版 Phase 00–07、Phase 08 独立审计、Phase 09A/09B 发布与首次上线、Phase 10A–10F AI 评测 / 优化 / 标定 / 审计 / 正式发布全部完成。**
+**当前进度：Phase 1–5、UI/UX 改版 Phase 00–07、Phase 08 独立审计、Phase 09A/09B 发布与首次上线、Phase 10A–10F AI 评测 / 优化 / 标定 / 审计 / 正式发布全部完成；Phase 11A 数据备份与导入导出完成（尚未发布到生产）。**
 键盘与读屏可用、平板与触屏专项验证过、生产构建有独立的冒烟通道、用法有[使用说明](docs/USAGE.md)；
 发布就绪评估与部署方案见 [RELEASE_READINESS.md](docs/release/RELEASE_READINESS.md)；
 最终审计与残留问题见 [FINAL_AUDIT.md](docs/ui-redesign/FINAL_AUDIT.md) 与 [KNOWN_ISSUES.md](docs/ui-redesign/KNOWN_ISSUES.md)。
@@ -87,7 +87,7 @@ yarn dev          # 开发服务器
 ![练习反馈](docs/screenshots/phase3-practice-bad.png)
 
 **复盘（`src/features/review`）**
-每局结束自动存入棋谱库（本机 IndexedDB），可逐手回放（编号徽标、自动播放）并让引擎逐手分析：分差、与引擎首选是否一致、几处最大亏损。结论区注明引擎版本、档位与预算。
+每局结束自动存入棋谱库（本机 IndexedDB），可逐手回放（编号徽标、自动播放）并让引擎逐手分析：分差、与引擎首选是否一致、几处最大亏损。结论区注明引擎版本、档位与预算。复盘页还提供**导出/导入**：单盘、全部棋谱或完整备份（棋谱 + 进度 + 偏好 + 可选会话），导入严格校验、只合并不删除。
 
 ![复盘分析](docs/screenshots/phase4-analysis.png)
 
@@ -155,8 +155,8 @@ bench/         引擎基准、渲染探针与棋力评测（测量脚本不进�
 
 | 项 | 数量 |
 | --- | --- |
-| 单元 / 组件用例 | **1220**（75 个文件） |
-| 端到端用例 | **162**（桌面 142 + 移动触屏 11 + 平板 9） |
+| 单元 / 组件用例 | **1269**（78 个文件） |
+| 端到端用例 | **166**（桌面 146 + 移动触屏 11 + 平板 9） |
 | 生产构建冒烟 | 6（`yarn e2e:prod`，含构建版本标识核对） |
 
 关键实现都有反向验证记录（改坏实现确认用例会红），详见 [docs/TEST_REPORT.md](docs/TEST_REPORT.md)。
@@ -189,7 +189,10 @@ bench/         引擎基准、渲染探针与棋力评测（测量脚本不进�
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) —— 分层、数据流与接口契约
 - [docs/RULES.md](docs/RULES.md) —— 规则定义与边界情形
 - [docs/AI_ENGINE.md](docs/AI_ENGINE.md) —— 引擎原理、难度参数与已知局限
-- [docs/ROADMAP.md](docs/ROADMAP.md) —— Phase 1–5、UI 改版 00–07、Phase 08/09、Phase 10A–10F 的进度与长期待办
+- [docs/data/FILE_FORMAT.md](docs/data/FILE_FORMAT.md) —— 棋谱/备份文件格式与严格校验边界
+- [docs/data/BACKUP_RESTORE.md](docs/data/BACKUP_RESTORE.md) —— 导出、导入、合并与失败语义
+- [docs/data/SCHEMA_MIGRATION.md](docs/data/SCHEMA_MIGRATION.md) —— 内部版本与迁移规则
+- [docs/ROADMAP.md](docs/ROADMAP.md) —— Phase 1–5、UI 改版 00–07、Phase 08/09、Phase 10A–10F、Phase 11A 的进度与长期待办
 - [docs/TEST_REPORT.md](docs/TEST_REPORT.md) —— 测试覆盖、浏览器验证与性能实测
 - [docs/release/RELEASE_READINESS.md](docs/release/RELEASE_READINESS.md) —— 发布就绪评估（分级结论、门禁读数、未验证项）
 - [docs/release/DEPLOYMENT_PLAN.md](docs/release/DEPLOYMENT_PLAN.md) —— 托管平台对比与部署步骤

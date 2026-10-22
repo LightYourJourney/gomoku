@@ -62,15 +62,24 @@ export function decodeSession(raw: string | null): PersistedSession | null {
   if (typeof parsed !== 'object' || parsed === null) return null
   const value = parsed as Record<string, unknown>
 
-  if (value.schemaVersion !== SCHEMA_VERSION) return null
+  /*
+   * v1 → v2 迁移：v1 没有 `resignedBy`，认输局无法恢复（当时就没存）。
+   * 这是**只读迁移**——解析成功后在内存里补 `null`，下次写入自然升到 v2；
+   * 解析失败仍然整条拒绝，不会把半截 v1 存档灌进状态机。
+   */
+  const version = value.schemaVersion
+  if (version !== 1 && version !== SCHEMA_VERSION) return null
   if (!isPlayer(value.firstPlayer)) return null
   if (!isPlayer(value.humanColor)) return null
   if (value.mode !== 'pve' && value.mode !== 'pvp') return null
   if (!isDifficulty(value.difficulty)) return null
   if (!Array.isArray(value.moves)) return null
 
-  const resignedBy = value.resignedBy
-  if (resignedBy !== null && !isPlayer(resignedBy)) return null
+  let resignedBy: Player | null = null
+  if (version === SCHEMA_VERSION && value.resignedBy !== null) {
+    if (!isPlayer(value.resignedBy)) return null
+    resignedBy = value.resignedBy
+  }
 
   const moves: Point[] = []
   for (const entry of value.moves) {
@@ -90,12 +99,13 @@ export function decodeSession(raw: string | null): PersistedSession | null {
   }
 }
 
-/** 存档失败（隐私模式、配额已满）不应打断对局，因此静默忽略。 */
-export function saveSession(input: Omit<PersistedSession, 'schemaVersion'>): void {
+/** 存档失败（隐私模式、配额已满）不应打断对局；返回是否真的写进 localStorage。 */
+export function saveSession(input: Omit<PersistedSession, 'schemaVersion'>): boolean {
   try {
     localStorage.setItem(STORAGE_KEY, encodeSession(input))
+    return true
   } catch {
-    // 忽略
+    return false
   }
 }
 

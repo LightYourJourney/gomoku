@@ -340,3 +340,51 @@ describe('棋谱库 —— 事务提交阶段失败', () => {
     }
   })
 })
+
+describe('棋谱库 —— 批量导入', () => {
+  it('一次写入多局，按内容去重，persisted 为真', async () => {
+    const result = await indexedDbGameRecords.importMany([winRecord(), resignRecord()])
+    expect(result).toEqual({ imported: 2, duplicates: 0, persisted: true })
+
+    const { records } = await indexedDbGameRecords.list()
+    expect(records).toHaveLength(2)
+  })
+
+  it('重复导入同一批不会无限增条', async () => {
+    await indexedDbGameRecords.importMany([winRecord()])
+    const again = await indexedDbGameRecords.importMany([winRecord(), winRecord()])
+    expect(again).toEqual({ imported: 0, duplicates: 2, persisted: true })
+
+    const { records } = await indexedDbGameRecords.list()
+    expect(records).toHaveLength(1)
+  })
+
+  it('同批次内部重复也只落一条', async () => {
+    const result = await indexedDbGameRecords.importMany([winRecord(), winRecord()])
+    expect(result).toEqual({ imported: 1, duplicates: 1, persisted: true })
+  })
+
+  it('批量事务失败：整笔不假装成功，退回内存并标 persisted=false', async () => {
+    __setGameRecordsIndexedDbFactory(abortingFactory())
+    try {
+      const result = await indexedDbGameRecords.importMany([winRecord(), resignRecord()])
+      expect(result).toEqual({ imported: 2, duplicates: 0, persisted: false })
+    } finally {
+      __setGameRecordsIndexedDbFactory(null)
+    }
+  })
+
+  it('IndexedDB 不可用时退到内存并如实说没落库', async () => {
+    const saved = Object.getOwnPropertyDescriptor(globalThis, 'indexedDB')
+    Reflect.deleteProperty(globalThis, 'indexedDB')
+    __setGameRecordsIndexedDbFactory(null)
+    try {
+      const result = await indexedDbGameRecords.importMany([winRecord()])
+      expect(result).toEqual({ imported: 1, duplicates: 0, persisted: false })
+      expect((await indexedDbGameRecords.list()).records).toHaveLength(1)
+    } finally {
+      if (saved !== undefined) Object.defineProperty(globalThis, 'indexedDB', saved)
+      __setGameRecordsIndexedDbFactory(null)
+    }
+  })
+})

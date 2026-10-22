@@ -3,6 +3,7 @@ import { inBounds, opponentOf } from '../core/board'
 import type { Player, Point } from '../core/types'
 import { isDifficulty } from '../ai/difficulty'
 import { DB_NAME, DB_VERSION, ensureSchema, RECORDS_STORE } from './schema'
+import { recordContentKey } from './recordIdentity'
 import type { Difficulty } from '../ai/types'
 
 /**
@@ -71,12 +72,26 @@ export interface GameRecordList {
   readonly skipped: number
 }
 
+/**
+ * 批量导入结果。
+ *
+ * `imported` / `duplicates` 只统计**真正提交后**的结果；`persisted` 是
+ * 「这批新记录是否进了 IndexedDB」——退到内存兜底时必须为 false，界面要
+ * 如实提示「本次会话可用，刷新可能丢失」。
+ */
+export interface ImportRecordsResult {
+  readonly imported: number
+  readonly duplicates: number
+  readonly persisted: boolean
+}
+
 /** 存取接口。`review` 页面依赖这个形状而不是具体实现，测试可以注入假存储。 */
 export interface GameRecordsStorage {
   list(): Promise<GameRecordList>
   get(seq: number): Promise<GameRecord | null>
   put(record: GameRecordInput): Promise<PutResult>
   delete(seq: number): Promise<void>
+  importMany(records: readonly GameRecordInput[]): Promise<ImportRecordsResult>
 }
 
 function isPlayer(value: unknown): value is Player {
@@ -173,6 +188,28 @@ export function memoryGameRecords(degraded = false): GameRecordsStorage {
       bySeq.set(stored.seq, stored)
       return { record: stored, persisted: false } // 内存态：刷新不留
     },
+    async importMany(records) {
+      const keys = new Set([...bySeq.values()].map((record) => recordContentKey(record)))
+      let imported = 0
+      let duplicates = 0
+      for (const input of records) {
+        const key = recordContentKey(input)
+        if (keys.has(key)) {
+          duplicates += 1
+          continue
+        }
+        keys.add(key)
+        const stored: GameRecord = {
+          ...createGameRecord(input),
+          seq: nextSeq++,
+          schemaVersion: GAME_RECORDS_SCHEMA_VERSION,
+        }
+        bySeq.set(stored.seq, stored)
+        imported += 1
+      }
+      return { imported, duplicates, persisted: false }
+    },
+
     async delete(seq) {
       bySeq.delete(seq)
     },
@@ -355,6 +392,55 @@ export const indexedDbGameRecords: GameRecordsStorage = {
     } catch {
       // 落到了内存兜底：本次会话照常可用，但**如实标成没落库**
       return fallbackToMemory().put(record)
+    }
+  },
+
+  async importMany(records) {
+    const payloads = records.map((record) => ({
+      ...createGameRecord(record),
+      schemaVersion: GAME_RECORDS_SCHEMA_VERSION,
+    }))
+
+    let db: IDBDatabase | null = null
+    try {
+      db = await openDatabase()
+      const result = await new Promise<ImportRecordsResult>((resolve, reject) => {
+        const tx = db!.transaction(STORE, 'readwrite')
+        const store = tx.objectStore(STORE)
+        const all = store.getAll()
+        let imported = 0
+        let duplicates = 0
+
+        all.onsuccess = () => {
+          const keys = new Set(
+            all.result
+              .map((entry) => parseRecord(entry))
+              .filter((record): record is GameRecord => record !== null)
+              .map((record) => recordContentKey(record)),
+          )
+
+          for (const payload of payloads) {
+            const key = recordContentKey(payload)
+            if (keys.has(key)) {
+              duplicates += 1
+              continue
+            }
+            keys.add(key)
+            store.add(payload)
+            imported += 1
+          }
+        }
+
+        tx.oncomplete = () => resolve({ imported, duplicates, persisted: true })
+        tx.onerror = () => reject(new Error('棋谱库批量写入失败'))
+        tx.onabort = () => reject(new Error('棋谱库批量写入被中止'))
+      })
+      return result
+    } catch {
+      // 整笔事务回滚后旧数据仍在；落到内存态时如实标 persisted=false。
+      return fallbackToMemory().importMany(records)
+    } finally {
+      db?.close()
     }
   },
 

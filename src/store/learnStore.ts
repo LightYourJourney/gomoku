@@ -11,6 +11,8 @@ export interface LearnStore {
   readonly view: View
 
   bootstrap(): void
+  /** 导入备份后用合并结果替换内存态；写入走同一条串行队列。 */
+  adoptProgress(progress: LearningProgress): void
   /**
    * 等所有已排队的写入结束。
    *
@@ -168,6 +170,11 @@ export function createLearnStore(storage: ProgressStorage): UseBoundStore<StoreA
       setView(view) {
         set({ view })
         update({ lastView: view })
+      },
+
+      adoptProgress(progress) {
+        set({ progress, loaded: true })
+        persist(progress)
       },
 
       flush,

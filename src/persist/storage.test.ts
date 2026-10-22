@@ -52,6 +52,19 @@ describe('encodeSession / decodeSession', () => {
     expect(decodeSession(raw)).toBeNull()
   })
 
+  it('v1 存档只读迁移到 v2：补 resignedBy: null', () => {
+    const { resignedBy: _omitted, ...v1 } = sample
+    const raw = JSON.stringify({ schemaVersion: 1, ...v1 })
+
+    expect(decodeSession(raw)).toEqual({ schemaVersion: SCHEMA_VERSION, ...v1, resignedBy: null })
+  })
+
+  it('v1 存档里即使出现 resignedBy 也不采信——那一版没有这个语义', () => {
+    const raw = JSON.stringify({ schemaVersion: 1, ...sample, resignedBy: BLACK })
+
+    expect(decodeSession(raw)?.resignedBy).toBeNull()
+  })
+
   it('缺少 schemaVersion 时返回 null', () => {
     expect(decodeSession(JSON.stringify(sample))).toBeNull()
   })

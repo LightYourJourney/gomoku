@@ -9,6 +9,7 @@ import {
   loadProgress,
   PROGRESS_SCHEMA_VERSION,
   saveProgress,
+  mergeProgress,
   type LearningProgress,
 } from './progress'
 
@@ -261,5 +262,37 @@ describe('老库兼容（Phase 09A §七）', () => {
     // 但不能动 progress 表里的旧记录。
     __setIndexedDbFactory(null) // 同时清掉内存兜底，确保读的是 IndexedDB
     expect(await loadProgress()).toEqual(SAMPLE)
+  })
+})
+
+
+describe('mergeProgress：导入备份时的保守合并', () => {
+  it('完成项取并集，不删除本地任何一项', () => {
+    const merged = mergeProgress(
+      { ...EMPTY_PROGRESS, completedLessons: ['rules'], solvedPuzzles: ['win-h'] },
+      { completedLessons: ['two'], solvedPuzzles: ['win-v'], lastVisited: null, lastView: 'learn' },
+    )
+    expect([...merged.completedLessons].sort()).toEqual(['rules', 'two'])
+    expect([...merged.solvedPuzzles].sort()).toEqual(['win-h', 'win-v'])
+  })
+
+  it('本地有进度时保留当前位置，不被旧备份顶走', () => {
+    const merged = mergeProgress(
+      { ...EMPTY_PROGRESS, completedLessons: ['rules'], lastVisited: { kind: 'lesson', id: 'rules' }, lastView: 'learn' },
+      { completedLessons: [], solvedPuzzles: [], lastVisited: { kind: 'puzzle', id: 'win-h' }, lastView: 'puzzles' },
+    )
+    expect(merged.lastVisited).toEqual({ kind: 'lesson', id: 'rules' })
+    expect(merged.lastView).toBe('learn')
+  })
+
+  it('本地完全没进度时采用备份的位置——空浏览器恢复才有意义', () => {
+    const merged = mergeProgress(EMPTY_PROGRESS, {
+      completedLessons: ['rules'],
+      solvedPuzzles: [],
+      lastVisited: { kind: 'lesson', id: 'rules' },
+      lastView: 'learn',
+    })
+    expect(merged.lastVisited).toEqual({ kind: 'lesson', id: 'rules' })
+    expect(merged.lastView).toBe('learn')
   })
 })

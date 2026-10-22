@@ -1,0 +1,37 @@
+{
+  "date": "2026-10-22",
+  "environment": {
+    "url": "http://127.0.0.1:5193",
+    "build": "local production build (vite preview)",
+    "browser": "Chrome (Playwright channel=chrome)",
+    "os": "macOS arm64",
+    "node": "26.12.0"
+  },
+  "seededFromCurrentProductionShape": {
+    "indexedDbVersion": 2,
+    "progressSchemaVersion": 1,
+    "recordSchemaVersion": 1,
+    "sessionSchemaVersion": 2,
+    "records": 1,
+    "progressCompletedLessons": ["rules"],
+    "preferencesTheme": "dark",
+    "sessionMoves": 3
+  },
+  "exportedBackup": {
+    "format": "gomoku-lab.backup",
+    "formatVersion": 1,
+    "games": 1,
+    "progressCompletedLessons": ["rules"],
+    "preferencesTheme": "dark",
+    "sessionMoves": 3
+  },
+  "importedIntoCleanContext": {
+    "records": 1,
+    "replayStonesAtEnd": 9,
+    "progressVisible": "已完成 1 / 8 节",
+    "darkTheme": true,
+    "sessionStones": 3,
+    "recordsAfterReload": 1
+  },
+  "result": "pass"
+}

@@ -9,9 +9,9 @@
 - [ ] `git status` 干净，发布提交就是评审过的那个提交
 - [ ] `yarn lint` 通过
 - [ ] `yarn typecheck` 通过
-- [ ] `yarn test` 全过（Phase 10F 基线：1,220）
+- [ ] `yarn test` 全过（Phase 11A 基线：1,269）
 - [ ] `yarn build` 通过
-- [ ] `yarn e2e` 全过（Phase 10F 基线：162）
+- [ ] `yarn e2e` 全过（Phase 11A 基线：166）
 - [ ] `yarn e2e:prod` 全过（Phase 10F 基线：6）
 - [ ] `yarn gates` 通过（循环 / 死码 / 重复 / 测试条数棘轮）
 - [ ] `yarn check:coverage` 通过
@@ -91,3 +91,7 @@
 > 定向验收（五档、专家超时、提示、复盘、Worker、CSP、旧库）全过。
 > `ui:probe` 与覆盖棘轮由 CI `probe` job 执行（本阶段未改界面）。
 > E 中「Safari / Firefox 冒烟」仍未做；自定义域名未绑定。
+>
+> **Phase 11A 状态（2026-10-22，未发布）**：新增数据备份/导入导出与严格校验；
+> 单测 1,269 / E2E 166 / UI 探针 308 张全过。**未部署生产**，生产仍是 10F 的 `0.2.0`；
+> 数据格式与恢复语义见 [docs/data/](../data/)。
