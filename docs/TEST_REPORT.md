@@ -1992,6 +1992,7 @@ Worker / 提示 / 复盘预算的既有用例未改，全部通过。
 | `yarn bench:check` | 19/19 + 29 不变量 |
 | `yarn ui:probe --out ci` | 38 状态 / 308 张，七条判据全过 |
 | 覆盖棘轮 | 3,084 条，未缩小（+136 新增覆盖） |
+| GitHub Actions `quality` | run `39830442402`（提交 `3444c57`）fast / probe / bench / e2e 全绿 |
 
 ### 已知限制
 

@@ -20,7 +20,7 @@
 | Phase 10E | AI 引擎独立审计与发布候选验收 | ✅ 完成；**无 P0/P1**；2.28× 与逐手等价独立复现；**有条件可以发布**（见 [PHASE_10E](ai-research/PHASE_10E_AUDIT.md)） |
 | Phase 10F | AI 引擎新版生产发布与版本收口 | ✅ **已上线**：应用 `0.2.0` / 引擎 `search-1` / 提交 `b67ea93` / 部署 `d3f5f6cc…`；预览与生产线上 e2e 均 162/162（见 [发布记录](release/DEPLOYMENT_RECORD.md)） |
 | Phase 11A | 数据备份、棋谱导入导出与版本迁移 | ✅ **已上线**：应用 `0.3.0` / 引擎 `search-1` / 提交 `1cd2be0` / 部署 `f02c38ca…`；预览与生产线上 e2e 均 166/166（见 [发布说明](release/RELEASE_NOTES_0.3.0.md)） |
-| Phase 11B | 棋盘编辑器与自定义局面研究 | ✅ 完成（**未发布**）；Position 与 Game 分离、静态分级、局部撤销重做、`positions` 表（DB 3）、只读 AI 分析；1,323 单测 / 174 E2E（见 [PHASE_11B](positions/PHASE_11B.md)） |
+| Phase 11B | 棋盘编辑器与自定义局面研究 | ✅ 完成（**未发布**）；Position 与 Game 分离、静态分级、局部撤销重做、`positions` 表（DB 3）、只读 AI 分析；提交 `3444c57`、CI 全绿；1,323 单测 / 174 E2E（见 [PHASE_11B](positions/PHASE_11B.md)） |
 
 一次只推进一个阶段，每个阶段跑完「类型检查 → 单元测试 → 生产构建 → 真实浏览器验证」再进入下一个。
 
