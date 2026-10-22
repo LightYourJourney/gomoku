@@ -4,7 +4,69 @@
 > 以及线上验收的原始读数。与方案/清单分开，避免「计划」和「事实」混写。
 > 最新一次在最上面。
 
-## Phase 10F · AI 引擎 0.2.0（当前生产）
+## Phase 11A · 数据备份与导入导出 0.3.0（当前生产）
+
+| 项 | 值 |
+| --- | --- |
+| 应用版本 | `0.3.0` |
+| 引擎版本 | `search-1`（本阶段未改搜索/评估语义） |
+| 提交 | `1cd2be0d7c7bf3ee6ae0b24ae09d72e822f79fb8` |
+| Git 标签 | `v0.3.0`（指向 `1cd2be0`） |
+| 生产项目 | `gomoku-lab` |
+| 生产地址 | **https://gomoku-lab.pages.dev** |
+| 生产部署 ID | `f02c38ca-372b-47d9-8c34-9374dbcd77d1` |
+| 部署时间 | 2026-10-23（UTC+8） |
+| 部署方式 | `npx wrangler@4.151.3 pages deploy dist --project-name gomoku-lab --branch main --commit-hash 1cd2be0…`（Git 自动部署仍未启用） |
+| 预览项目 / 部署 | `gomoku-lab-preview` / `f2b3eca8-68f7-4440-88d1-56318b5f03c9` |
+| 上一生产部署（回滚目标） | `d3f5f6cc-673e-4391-a418-13b5830d633a`（`0.2.0` / `b67ea93`） |
+| 产物 | 8 文件 / 418 KB；`index.html`、`assets/index-7a8i5tmm.js`、`assets/index-kfu74e6U.css`、`assets/worker-B6Ge9L6W.js` |
+
+### 发布授权与前置状态
+
+- **授权**：用户于 2026-10-23 明确要求「发布 Phase 11A 到生产」；授权覆盖提交
+  `1cd2be0` 与 `v0.3.0`，不包含域名、环境变量、数据策略或权限变更。
+- **未启用 Git 自动部署**：Cloudflare Pages `Git Provider: No`；本次仍为手动覆盖。
+- **发布前**：`main` 干净 @ `1cd2be0`；CI run `39818140559` 四个 job 全绿；
+  生产仍为 `d3f5f6cc…`（0.2.0），预览仍为 `b21394c5…`（0.2.0）。
+
+### 1. 资源指纹（生产实测，与本地 `dist/` 逐字节一致）
+
+| 资源 | 大小 | SHA-256 |
+| --- | --- | --- |
+| `index.html` | 832 B | `079928672f4aba275089191b326638df645b104cea889c6959dd8292d5823c4a` |
+| `assets/index-7a8i5tmm.js` | 367,596 B | `560e34d26ba16262ba7ef997ae3d1df2ec237586aacb541b50caecddf643eb03` |
+| `assets/worker-B6Ge9L6W.js` | 13,994 B | `696a075240aa0f825239004f3ba70d7e6f085bb9d22ebfeb3e32c238c59aa79b` |
+| `assets/index-kfu74e6U.css` | 35,212 B | `8633c91095658fe2abf7da652bd4799888d7336d85e7c1bddeb9b2349bcaae5f` |
+
+### 2. 预览与生产验收
+
+| 项 | 预览 | 生产 |
+| --- | --- | --- |
+| `yarn e2e:remote` | **166 / 166** | **166 / 166** |
+| 数据管理面板 / 导入导出 | ✅ | ✅ |
+| 备份恢复（棋谱/进度/偏好/会话） | ✅ | ✅ |
+| 严格导入零写入 / 取消零写入 | ✅ | ✅ |
+| Worker / CSP / 4xx / 第三方 | ✅ 0 / 0 / 0 | ✅ 0 / 0 / 0 |
+
+生产首次全量有一次落子坐标用例超时，单跑复过；复跑全量 166/166。
+
+### 3. 数据兼容
+
+DB `2`、进度 `1`、棋谱 `1`、会话 `2` 均未改。旧进度/旧棋谱可读，v1 会话
+只读迁移；导入只合并，不删除现有记录。回滚不会清空 IndexedDB。
+
+### 4. 回滚
+
+目标 `d3f5f6cc…`（0.2.0）。Dashboard → Pages → `gomoku-lab` → Deployments →
+Rollback；或重新构建 `b67ea93` 的 `dist/` 手动部署。
+
+### 5. 已知限制
+
+只合并不替换；10 MiB / 2,000 局上限；偏好/会话与 IndexedDB 不同事务；
+仅 Chrome/Chromium 实测；仍为手动部署、`*.pages.dev`。
+
+
+## Phase 10F · AI 引擎 0.2.0（历史）
 
 | 项 | 值 |
 | --- | --- |
