@@ -96,6 +96,7 @@
 | `yarn gates` | 循环 0 / knip 通过 / 0 重复 / 棘轮 1,269 · 166 |
 | `yarn bench:check` | 19/19 断言 + 29 不变量 |
 | `yarn ui:probe --out ci` | 38 状态 / 308 张，七条判据全过 |
+| CI @ `3e0518b` | 成功（run `39727977371`；fast / e2e / probe / bench 四个 job 全绿） |
 | 覆盖棘轮 | 3,084 条，未缩小（+136 新增覆盖） |
 
 **环境说明**：本机在系统 load average 52–103 时，全量 e2e 有若干时序用例
