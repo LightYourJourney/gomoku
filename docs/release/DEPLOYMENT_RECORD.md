@@ -4,7 +4,78 @@
 > 以及线上验收的原始读数。与方案/清单分开，避免「计划」和「事实」混写。
 > 最新一次在最上面。
 
-## Phase 11A · 数据备份与导入导出 0.3.0（当前生产）
+## Phase 11B · 棋盘编辑器与局面研究 0.4.0（当前生产）
+
+| 项 | 值 |
+| --- | --- |
+| 应用版本 | `0.4.0` |
+| 引擎版本 | `search-1`（本阶段未改搜索/评估语义） |
+| 提交 | `d20eca9d1090dfb7e2c19efe947c97931d10e3d7` |
+| Git 标签 | `v0.4.0`（指向 `d20eca9`） |
+| 生产项目 | `gomoku-lab` |
+| 生产地址 | **https://gomoku-lab.pages.dev** |
+| 生产部署 ID | `07a264f2-baa4-4bec-b746-d27867e361af` |
+| 部署时间 | 2026-10-24 23:00（UTC+8） |
+| 部署方式 | `npx wrangler@4.151.3 pages deploy dist --project-name gomoku-lab --branch main --commit-hash d20eca9…`（Git 自动部署仍未启用） |
+| 预览项目 / 部署 | `gomoku-lab-preview` / `3c2b66a2-a936-49f2-b697-4dc308a90da5` |
+| 上一生产部署（回滚目标） | `f02c38ca-372b-47d9-8c34-9374dbcd77d1`（`0.3.0` / `1cd2be0`） |
+| 产物 | 8 文件 / 464 KB；`index.html`、`assets/index-DMiHvN23.js`、`assets/index-Dr4TU3Zd.css`、`assets/worker-B6Ge9L6W.js` |
+
+### 发布授权与前置状态
+
+- **授权**：用户于 2026-10-24 明确要求「发布并部署」；授权覆盖提交 `d20eca9`
+  与 `v0.4.0`，不包含域名、环境变量、数据策略或权限变更。
+- **发布前**：`main` 干净 @ `d20eca9`；CI run `40099529506` 五个 job 全绿；
+  生产仍为 `f02c38ca…`（0.3.0），预览仍为 `f2b3eca8…`（0.3.0）。
+- **门禁**：单测 1,331；本地 E2E 174；`e2e:prod` 6；Firefox/WebKit 12；
+  UI 探针 38 状态 / 308 张；覆盖棘轮 3,084；基准 19/19 + 29 不变量。
+
+### 1. 资源指纹（生产实测，与本地 `dist/` 逐字节一致）
+
+| 资源 | 大小 | SHA-256 |
+| --- | --- | --- |
+| `index.html` | 832 B | `e9def5b8999b10410a29706928e466ab432e6e9b5163f26a47fca5ffe137bade` |
+| `assets/index-DMiHvN23.js` | 392,458 B | `13acde0ac5cb79a02505dfcd75931b8bac0c31d9596b6fbdd2c808593a7b688f` |
+| `assets/worker-B6Ge9L6W.js` | 13,994 B | `696a075240aa0f825239004f3ba70d7e6f085bb9d22ebfeb3e32c238c59aa79b` |
+| `assets/index-Dr4TU3Zd.css` | 35,250 B | `829e4089a3fa701d13dd441f3e459638d4689a3d5979b731e5806cbc3fc87e6b` |
+
+### 2. 预览与生产验收
+
+| 项 | 预览 | 生产 |
+| --- | --- | --- |
+| `yarn e2e:remote` | **174 / 174** | **174 / 174** |
+| 编辑器：编辑/撤销/重做/键盘 | ✅ | ✅ |
+| 保存 → 刷新 → 打开 → 删除 | ✅ | ✅ |
+| 从合法棋谱载入第 9 手 | ✅ | ✅ |
+| AI 五档与「技术细节」预算 | ✅ | ✅ |
+| 导入/导出局面文件 | ✅ | ✅ |
+| 移动端/平板触摸编辑与两栏 | ✅ | ✅ |
+| CSP / HSTS / X-Frame-Options / 缓存 | ✅ | ✅ |
+| 404 / robots.txt | ✅ | ✅ |
+
+预览首次全量受网络抖动影响只完成 68 条；拆分 Chrome 152、移动 12、平板 10
+全部通过后，全量复跑 174/174。生产首次全量 174/174（7.6 分钟）。
+
+### 3. 数据兼容
+
+- `DB_VERSION` 2 → 3，新增 `positions` 表；`progress` / `records` 不动。
+- 局面记录 schema v2；旧 v1 记录只读迁移，时间显示「时间未知」。
+- **回滚注意**：0.3.0（DB 2）无法直接打开 DB 3。回滚前先导出需保留的局面；
+  回滚不会删除 IndexedDB 数据，但编辑器在该版本不可用。
+
+### 4. 回滚
+
+目标 `f02c38ca…`（0.3.0）。Dashboard → Pages → `gomoku-lab` → Deployments →
+Rollback；或重新部署 `1cd2be0` 的 `dist/`。执行前按上节评估 DB 3 影响。
+
+### 5. 已知限制
+
+静态合法性不证明合法历史；AI 专家档更慢；跨浏览器只覆盖编辑器主路径；
+无局面重命名；仅 Chrome/Firefox/WebKit 自动化，无 Safari/iOS 真机；
+手动部署、`*.pages.dev`。
+
+
+## Phase 11A · 数据备份与导入导出 0.3.0（历史）
 
 | 项 | 值 |
 | --- | --- |
