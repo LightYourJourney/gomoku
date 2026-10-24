@@ -10,6 +10,8 @@ import {
 const POSITION_SCHEMA_VERSION = 2
 const LEGACY_POSITION_SCHEMA_VERSION = 1
 const MAX_POSITION_TITLE = 80
+/** `Date` 能表示的最大毫秒数；超过它 `new Date(x).getTime()` 是 NaN。 */
+const MAX_DATE_MS = 8_640_000_000_000_000
 
 export interface SavedPosition {
   readonly id: number
@@ -116,26 +118,43 @@ function parseProvenance(value: unknown): PositionProvenance | null {
 }
 
 function isTimestamp(value: unknown): value is number {
-  return typeof value === 'number' && Number.isSafeInteger(value) && value >= 0
+  return (
+    typeof value === 'number' &&
+    Number.isSafeInteger(value) &&
+    value >= 0 &&
+    value <= MAX_DATE_MS
+  )
+}
+
+interface PositionTimestamps {
+  readonly createdAt: number | null
+  readonly updatedAt: number | null
+}
+
+/**
+ * 局面记录的时间字段迁移。
+ *
+ * v1 没有时间，只读补 `null`（不写回；下次保存才落 v2）。v2 的时间必须合法；
+ * 版本不认识或时间损坏都返回 null，由解析层整条拒绝。迁移逻辑放在解析之前，
+ * 与 `docs/data/SCHEMA_MIGRATION.md` §4 一致。
+ */
+function migratePositionTimestamps(
+  value: Record<string, unknown>,
+  version: unknown,
+): PositionTimestamps | null {
+  if (version === LEGACY_POSITION_SCHEMA_VERSION) {
+    return { createdAt: null, updatedAt: null }
+  }
+  if (version !== POSITION_SCHEMA_VERSION) return null
+  if (!isTimestamp(value.createdAt) || !isTimestamp(value.updatedAt)) return null
+  return { createdAt: value.createdAt, updatedAt: value.updatedAt }
 }
 
 export function parseSavedPosition(value: unknown): SavedPosition | null {
   if (typeof value !== 'object' || value === null) return null
   const raw = value as Record<string, unknown>
-  if (
-    raw.schemaVersion !== POSITION_SCHEMA_VERSION &&
-    raw.schemaVersion !== LEGACY_POSITION_SCHEMA_VERSION
-  ) {
-    return null
-  }
-  const legacy = raw.schemaVersion === LEGACY_POSITION_SCHEMA_VERSION
-  let createdAt: number | null = null
-  let updatedAt: number | null = null
-  if (!legacy) {
-    if (!isTimestamp(raw.createdAt) || !isTimestamp(raw.updatedAt)) return null
-    createdAt = raw.createdAt
-    updatedAt = raw.updatedAt
-  }
+  const timestamps = migratePositionTimestamps(raw, raw.schemaVersion)
+  if (timestamps === null) return null
   if (typeof raw.id !== 'number' || !Number.isInteger(raw.id)) return null
   if (typeof raw.title !== 'string' || raw.title.length > MAX_POSITION_TITLE) return null
   if (!isPlayer(raw.nextPlayer)) return null
@@ -157,8 +176,8 @@ export function parseSavedPosition(value: unknown): SavedPosition | null {
     cells,
     nextPlayer: raw.nextPlayer,
     provenance,
-    createdAt,
-    updatedAt,
+    createdAt: timestamps.createdAt,
+    updatedAt: timestamps.updatedAt,
   }
 }
 

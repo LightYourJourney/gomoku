@@ -126,7 +126,7 @@ describe('PositionEditor —— 分析', () => {
     expect(screen.getByRole('button', { name: '分析当前局面' })).toBeDisabled()
   })
 
-  it('所选档位随请求发出，结果显示实际档位与预算', async () => {
+  it('所选档位随请求发出，结果显示实际档位，预算在技术细节里', async () => {
     const search = vi.fn(idle.search)
     const engine: AiEngine = { ...idle, search }
     setup({ engine })
@@ -139,7 +139,8 @@ describe('PositionEditor —— 分析', () => {
     const panel = await screen.findByTestId('position-analysis')
     expect(search.mock.calls[0]![0].difficulty).toBe('hard')
     expect(search.mock.calls[0]![0].budgetMs).toBeUndefined()
-    expect(panel).toHaveTextContent('高级 · 1600ms')
+    expect(panel).toHaveTextContent('高级')
+    expect(screen.getByTestId('position-analysis-budget')).toHaveTextContent('1600ms')
   })
 })
 
@@ -204,5 +205,28 @@ describe('PositionEditor —— 保存与载入', () => {
     expect(screen.queryByTestId('position-saved-at')).not.toBeInTheDocument()
     expect(screen.getByTestId('stone-7-7')).toBeInTheDocument()
     expect((await positions.list()).records).toHaveLength(0)
+  })
+
+  it('删除失败时保留当前选择并显式报错', async () => {
+    const base = memoryPositions()
+    const positions = {
+      ...base,
+      delete: vi.fn(async () => ({ deleted: false, persisted: false })),
+    }
+    setup({ positions })
+    fireEvent.click(screen.getByTestId('intersection-7-7'))
+    fireEvent.click(screen.getByRole('button', { name: '保存局面' }))
+    await screen.findByText(/只写进了内存兜底/)
+    const savedId = (await positions.list()).records[0]!.id
+
+    fireEvent.click(screen.getByRole('button', { name: '删除已保存局面' }))
+    fireEvent.click(screen.getByRole('button', { name: '确认删除' }))
+
+    await waitFor(() =>
+      expect(screen.getByTestId('position-error')).toHaveTextContent('删除'),
+    )
+    expect(screen.getByTestId('position-saved-at')).toBeInTheDocument()
+    expect(screen.getByLabelText('打开已保存局面')).toHaveValue(String(savedId))
+    expect((await positions.list()).records).toHaveLength(1)
   })
 })

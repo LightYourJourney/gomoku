@@ -9,7 +9,7 @@
 - [ ] `git status` 干净，发布提交就是评审过的那个提交
 - [ ] `yarn lint` 通过
 - [ ] `yarn typecheck` 通过
-- [ ] `yarn test` 全过（Phase 11B 基线：1,330）
+- [ ] `yarn test` 全过（Phase 11B 基线：1,331）
 - [ ] `yarn build` 通过
 - [ ] `yarn e2e` 全过（Phase 11B 基线：174）
 - [ ] `yarn e2e:prod` 全过（Phase 10F 基线：6）
@@ -99,6 +99,6 @@
 > 数据格式与恢复语义见 [docs/data/](../data/)。
 >
 > **Phase 11B 状态（2026-10-24，未发布）**：棋盘编辑器与局面研究完成，并补齐保存时间/排序、
-> 二次确认删除、五档 AI 分析与 Firefox/WebKit 专项；单测 1,330 / E2E 174 /
+> 二次确认删除、五档 AI 分析与 Firefox/WebKit 专项；单测 1,331 / E2E 174 /
 > Firefox+WebKit 12 / UI 探针 308 张全过。`DB_VERSION 2→3` 新增 `positions` 表；
 > **未部署生产**，生产仍是 11A 的 `0.3.0`；回滚到 0.3.0 不能直接打开已升级的库。

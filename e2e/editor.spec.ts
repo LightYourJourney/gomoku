@@ -47,7 +47,7 @@ test('编辑器：放黑/放白/擦除/撤销/重做/键盘', async ({ page }) =
   await expect(page.getByTestId('stone-9-9')).toBeVisible()
 })
 
-test('编辑器：保存局面 → 刷新后重新打开', async ({ page }) => {
+test('编辑器：保存局面 → 刷新后显示时间并删除', async ({ page }) => {
   await openEditor(page)
   await page.getByTestId('intersection-7-7').click()
   await page.getByLabel('局面名称').fill('斜月研究')
@@ -94,7 +94,12 @@ test('编辑器：AI 只读分析显示候选与搜索指标', async ({ page }) 
   await page.getByRole('button', { name: '分析当前局面' }).click()
   const panel = page.getByTestId('position-analysis')
   await expect(panel).toBeVisible({ timeout: 20_000 })
-  await expect(panel).toContainText('高级 · 1600ms')
+  await expect(panel).toContainText('高级')
+  const budget = page.getByTestId('position-analysis-budget')
+  await expect(budget).toBeHidden()
+  await page.getByText('技术细节').click()
+  await expect(budget).toBeVisible()
+  await expect(budget).toContainText('1600ms')
   await expect(panel).toContainText('深度')
   await expect(panel).toContainText('节点')
   await expect(panel).toContainText('结论')

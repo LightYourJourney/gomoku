@@ -222,7 +222,7 @@ describe('局面库 —— 校验与迁移', () => {
         nextPlayer: 1,
         provenance: null,
         createdAt: 1_000,
-        updatedAt: 1e20,
+        updatedAt: 8_640_000_000_000_001,
       }),
     ).toBeNull()
   })

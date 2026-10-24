@@ -42,6 +42,7 @@ function recordLabel(record: GameRecord): string {
 function savedAtLabel(record: SavedPosition): string {
   if (record.updatedAt === null) return '时间未知（旧记录）'
   const date = new Date(record.updatedAt)
+  if (Number.isNaN(date.getTime())) return '时间未知（无效时间）'
   const pad = (value: number) => String(value).padStart(2, '0')
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`
 }
@@ -88,6 +89,7 @@ export function PositionEditor({
   const report = analyzePosition(state.position)
   const selectedSaved = saved.find((entry) => entry.id === savedId) ?? null
   const analysis = state.analysis
+  const shownDifficulty = analysis.difficulty ?? state.difficulty
   const candidates = analysis.status === 'done' ? (analysis.response?.candidates ?? []) : []
   const marks = candidates.map((candidate, index) => ({
     point: candidate.move,
@@ -158,14 +160,18 @@ export function PositionEditor({
     }
     const target = selectedSaved
     const result = await positions.delete(savedId)
+    const name = target?.title ?? '局面'
+    if (!result.deleted) {
+      // 不能把当前选择清掉：记录可能仍在库里，刷新列表会把它藏起来。
+      setConfirmDelete(false)
+      fail(`删除「${name}」失败：局面库不可用，记录可能仍在`)
+      return
+    }
     const list = await positions.list()
     setSaved(list.records)
     setSavedId(null)
     setConfirmDelete(false)
-    const name = target?.title ?? '局面'
-    if (!result.deleted) {
-      fail(`没找到可删除的「${name}」`)
-    } else if (result.persisted) {
+    if (result.persisted) {
       flash(`已删除「${name}」`)
     } else {
       flash(`只删了本次会话的「${name}」：刷新后可能仍在`)
@@ -285,7 +291,8 @@ export function PositionEditor({
             >
               重做
             </Button>
-            <Button size="sm" variant="danger" onClick={() => editor.getState().clear()}>
+            {/* 清空可撤销；danger 留给不可撤销的“删除已保存局面”。 */}
+            <Button size="sm" variant="secondary" onClick={() => editor.getState().clear()}>
               清空
             </Button>
           </div>
@@ -335,11 +342,11 @@ export function PositionEditor({
                   editor.getState().setDifficulty(event.target.value)
                 }
               }}
-              className="mt-1 w-full rounded-lg border border-border bg-surface-2 px-2 py-1 text-xs text-fg disabled:opacity-50"
+              className="mt-1 w-full rounded-lg border border-border bg-surface-2 px-2 py-1 text-xs text-fg disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {AVAILABLE_DIFFICULTIES.map((difficulty) => (
                 <option key={difficulty} value={difficulty}>
-                  {DIFFICULTY_LABELS[difficulty]} · {DIFFICULTY_PARAMS[difficulty].budgetMs}ms
+                  {DIFFICULTY_LABELS[difficulty]}
                 </option>
               ))}
             </select>
@@ -358,12 +365,16 @@ export function PositionEditor({
           {analysis.status === 'done' && analysis.response !== null && (
             <div data-testid="position-analysis" className="space-y-1 text-xs">
               <p className="text-faint">
-                引擎：{DIFFICULTY_LABELS[analysis.difficulty ?? 'medium']} ·{' '}
-                {DIFFICULTY_PARAMS[analysis.difficulty ?? 'medium'].budgetMs}ms · 深度{' '}
-                {analysis.response.depth} 层 · 节点 {analysis.response.nodes} ·{' '}
-                {analysis.response.elapsedMs} ms · 结论{' '}
+                引擎：{DIFFICULTY_LABELS[shownDifficulty]} · 深度 {analysis.response.depth} 层 ·
+                节点 {analysis.response.nodes} · {analysis.response.elapsedMs} ms · 结论{' '}
                 {analysis.response.confidence === 'exact' ? '精确' : '启发式'}
               </p>
+              <details className="text-faint">
+                <summary className="cursor-pointer">技术细节</summary>
+                <p data-testid="position-analysis-budget" className="mt-1">
+                  时间预算：{DIFFICULTY_PARAMS[shownDifficulty].budgetMs}ms
+                </p>
+              </details>
               <ul className="space-y-1">
                 {candidates.map((candidate, index) => (
                   <li key={`${candidate.move.x}-${candidate.move.y}`}>

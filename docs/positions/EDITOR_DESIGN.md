@@ -48,7 +48,8 @@
 - 档位可选五档（入门/初级/中级/高级/专家）；请求使用该档真实难度参数，
   时间预算取 `DIFFICULTY_PARAMS[difficulty].budgetMs`（250–2600ms）。
 - 请求：`purpose='hint'`，带 `gameVersion = editor.version`。
-- 展示：候选点（棋盘 1/2/3 标记 + 列表）、实际档位与预算、深度、节点、耗时、精确/启发式。
+- 展示：候选点（棋盘 1/2/3 标记 + 列表）、实际档位、深度、节点、耗时、精确/启发式；
+  预算毫秒数按渐进披露规范收在「技术细节」折叠区。
 - 任何编辑或档位切换都会递增 version 并清空分析；旧响应按 `requestId + gameVersion` 丢弃。
 - 分析只写 `editorStore`，不写正式对战 store，不落子、不改棋谱。
 
