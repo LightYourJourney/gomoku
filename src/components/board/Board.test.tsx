@@ -72,6 +72,7 @@ describe('Board —— 编辑器模式', () => {
     ])
     const { onEdit, onPlay } = setup({ board, editMode: true })
 
+    expect(screen.getByRole('gridcell', { name: 'F8 黑棋，可编辑' })).toBeInTheDocument()
     fireEvent.click(screen.getByTestId('intersection-5-7'))
 
     expect(onEdit).toHaveBeenCalledWith({ x: 5, y: 7 })

@@ -229,4 +229,21 @@ describe('PositionEditor —— 保存与载入', () => {
     expect(screen.getByLabelText('打开已保存局面')).toHaveValue(String(savedId))
     expect((await positions.list()).records).toHaveLength(1)
   })
+
+  it('取消删除不会移除记录或清空当前选择', async () => {
+    const positions = memoryPositions()
+    setup({ positions })
+    fireEvent.click(screen.getByTestId('intersection-7-7'))
+    fireEvent.click(screen.getByRole('button', { name: '保存局面' }))
+    await screen.findByText(/只写进了内存兜底/)
+    const savedId = (await positions.list()).records[0]!.id
+
+    fireEvent.click(screen.getByRole('button', { name: '删除已保存局面' }))
+    fireEvent.click(screen.getByRole('button', { name: '取消' }))
+
+    expect(screen.queryByRole('button', { name: '确认删除' })).not.toBeInTheDocument()
+    expect(screen.getByTestId('position-saved-at')).toBeInTheDocument()
+    expect(screen.getByLabelText('打开已保存局面')).toHaveValue(String(savedId))
+    expect((await positions.list()).records).toHaveLength(1)
+  })
 })

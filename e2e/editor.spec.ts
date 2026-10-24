@@ -125,6 +125,134 @@ test('编辑器：导出局面文件 → 清空 → 导入恢复', async ({ page
   await expect(page.getByTestId('stone-7-7')).toBeVisible()
 })
 
+test('编辑器：v2 库升级到 v3 后旧进度与棋谱仍在', async ({ page }) => {
+  await page.goto('/robots.txt')
+  await page.evaluate(async () => {
+    await new Promise<void>((resolve) => {
+      const del = indexedDB.deleteDatabase('gomoku-lab')
+      del.onsuccess = del.onerror = del.onblocked = () => resolve()
+    })
+    await new Promise<void>((resolve, reject) => {
+      const req = indexedDB.open('gomoku-lab', 2)
+      req.onupgradeneeded = () => {
+        req.result.createObjectStore('progress')
+        req.result.createObjectStore('records', { keyPath: 'seq', autoIncrement: true })
+      }
+      req.onerror = () => reject(req.error)
+      req.onsuccess = () => {
+        const db = req.result
+        const tx = db.transaction(['progress', 'records'], 'readwrite')
+        tx.objectStore('progress').put(
+          {
+            schemaVersion: 1,
+            completedLessons: ['battle-basics'],
+            solvedPuzzles: [],
+            lastVisited: null,
+            lastView: 'review',
+          },
+          'learning',
+        )
+        tx.objectStore('records').add({
+          seq: 1,
+          schemaVersion: 1,
+          moves: [
+            { x: 7, y: 7 },
+            { x: 7, y: 8 },
+          ],
+          firstPlayer: 1,
+          mode: 'pvp',
+          humanColor: 1,
+          difficulty: 'easy',
+          resignedBy: null,
+        })
+        tx.oncomplete = () => {
+          db.close()
+          resolve()
+        }
+        tx.onerror = () => reject(tx.error)
+      }
+    })
+  })
+
+  await page.goto('/')
+  await page.getByRole('button', { name: '复盘', exact: true }).click()
+  await expect(page.getByText(/双人 · 2 手/)).toBeVisible()
+  await page.getByRole('button', { name: '局面研究' }).click()
+  await page.getByTestId('intersection-7-7').click()
+  await page.getByRole('button', { name: '保存局面' }).click()
+  await expect(page.getByTestId('position-notice')).toContainText('已保存')
+
+  const state = await page.evaluate(async () => {
+    const db = await new Promise<IDBDatabase>((resolve, reject) => {
+      const req = indexedDB.open('gomoku-lab')
+      req.onsuccess = () => resolve(req.result)
+      req.onerror = () => reject(req.error)
+    })
+    const read = <T>(store: string, run: (s: IDBObjectStore) => IDBRequest<T>) =>
+      new Promise<T>((resolve, reject) => {
+        const tx = db.transaction(store, 'readonly')
+        const req = run(tx.objectStore(store))
+        req.onsuccess = () => resolve(req.result)
+        req.onerror = () => reject(req.error)
+      })
+    const version = db.version
+    const stores = [...db.objectStoreNames].sort()
+    const records = await read('records', (s) => s.count())
+    const progress = await read<unknown>('progress', (s) => s.get('learning'))
+    db.close()
+    return { version, stores, records, progress }
+  })
+
+  expect(state.version).toBe(3)
+  expect(state.stores).toEqual(['positions', 'progress', 'records'])
+  expect(state.records).toBe(1)
+  expect(state.progress).toMatchObject({ completedLessons: ['battle-basics'] })
+})
+
+test('编辑器：768/1024/1440 三档布局与深色主题', async ({ page }) => {
+  await openEditor(page)
+
+  for (const [width, height] of [
+    [768, 900],
+    [1024, 900],
+    [1440, 900],
+  ] as const) {
+    await page.setViewportSize({ width, height })
+    await expect(page.getByTestId('board')).toBeVisible()
+    const overflow = await page.evaluate(
+      () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    )
+    expect(overflow, `${width}px 不应横向溢出`).toBe(0)
+
+    const board = await page.getByTestId('board').boundingBox()
+    const panel = await page.locator('aside').boundingBox()
+    expect(board).not.toBeNull()
+    expect(panel).not.toBeNull()
+    if (board === null || panel === null) continue
+    // 父容器有 1px 边框；WebKit 的 SVG 盒模型会把这两像素算进高度，允许 2px 舍入。
+    expect(Math.abs(board.width - board.height), `${width}px 棋盘应为正方形`).toBeLessThanOrEqual(2)
+    if (width >= 1024) {
+      expect(panel.x, `${width}px 应为右侧两栏`).toBeGreaterThanOrEqual(
+        board.x + board.width - 1,
+      )
+    } else {
+      expect(panel.y, `${width}px 应为纵向堆叠`).toBeGreaterThanOrEqual(
+        board.y + board.height - 1,
+      )
+    }
+  }
+
+  const theme = page.getByRole('button', { name: /主题：/ })
+  await theme.click()
+  await theme.click()
+  await expect(page.locator('html')).toHaveClass(/dark/)
+  await expect(page.getByTestId('board')).toBeVisible()
+  const darkOverflow = await page.evaluate(
+    () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+  )
+  expect(darkOverflow).toBe(0)
+})
+
 test('编辑器：双方五连的异常快照被明确指出', async ({ page }) => {
   await openEditor(page)
   for (const x of [0, 1, 2, 3, 4]) await page.getByTestId(`intersection-${x}-0`).click()

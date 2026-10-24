@@ -14,6 +14,8 @@ export default defineConfig({
   testDir: './e2e',
   fullyParallel: true,
   forbidOnly: Boolean(process.env.CI),
+  // Firefox/WebKit 在慢机器上走「下完一局 → 打开编辑器」会超过默认 30s。
+  timeout: 60_000,
   reporter: [['list']],
   use: {
     baseURL: BASE_URL,

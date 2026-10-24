@@ -3,6 +3,7 @@ import type { AiEngine } from '../ai/engine'
 import type { SearchResponse } from '../ai/types'
 import { BLACK, WHITE } from '../core/types'
 import { createEditorStore } from './editorStore'
+import { createGameStore } from './gameStore'
 
 function idleEngine(): AiEngine {
   return {
@@ -117,6 +118,21 @@ describe('editorStore —— 设置与清空', () => {
     expect(store.getState().position.board.some((cell) => cell !== 0)).toBe(false)
     store.getState().undo()
     expect(store.getState().position.board[7 * 15 + 7]).toBe(BLACK)
+  })
+
+  it('编辑、清空与分析都不触碰正式对战 store', () => {
+    const gameStore = createGameStore(idleEngine())
+    const before = gameStore.getState().game
+    const editor = createEditorStore(idleEngine())
+
+    editor.getState().edit({ x: 7, y: 7 })
+    editor.getState().setNextPlayer(WHITE)
+    editor.getState().clear()
+    editor.getState().undo()
+
+    expect(gameStore.getState().game).toBe(before)
+    expect(gameStore.getState().game.version).toBe(0)
+    expect(gameStore.getState().pendingRequestId).toBeNull()
   })
 })
 

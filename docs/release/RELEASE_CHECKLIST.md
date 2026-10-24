@@ -9,11 +9,11 @@
 - [ ] `git status` 干净，发布提交就是评审过的那个提交
 - [ ] `yarn lint` 通过
 - [ ] `yarn typecheck` 通过
-- [ ] `yarn test` 全过（Phase 11B 基线：1,331）
+- [ ] `yarn test` 全过（Phase 11B 基线：1,333）
 - [ ] `yarn build` 通过
-- [ ] `yarn e2e` 全过（Phase 11B 基线：174）
+- [ ] `yarn e2e` 全过（Phase 11B 基线：176）
 - [ ] `yarn e2e:prod` 全过（Phase 10F 基线：6）
-- [ ] `yarn e2e:browsers` 全过（Firefox / WebKit 各 6 条，基线：12）
+- [ ] `yarn e2e:browsers` 全过（Firefox / WebKit 各 6 条，基线：16）
 - [ ] `yarn gates` 通过（循环 / 死码 / 重复 / 测试条数棘轮）
 - [ ] `yarn check:coverage` 通过
 - [ ] `yarn ui:probe --out <临时目录>` 七条判据全过（基线：38 状态 / 308 张）
@@ -99,6 +99,7 @@
 > 数据格式与恢复语义见 [docs/data/](../data/)。
 >
 > **Phase 11B 状态（2026-10-24，已发布）**：应用 `0.4.0`、提交 `d20eca9`、
-> 生产部署 `07a264f2…`、标签 `v0.4.0`；预览与生产线上 e2e 均 174/174，
-> 单测 1,331 / Firefox+WebKit 12 / UI 探针 308 张全过。`DB_VERSION 2→3` 新增
+> 生产部署 `07a264f2…`、标签 `v0.4.0`；预览与生产线上 e2e 均 174/174。
+> 发布时单测 1,331 / Firefox+WebKit 12 / UI 探针 308 张全过；阶段验收补充测试后
+> 当前基线 1,333 / 176 / 16。`DB_VERSION 2→3` 新增
 > `positions` 表；回滚到 0.3.0 不能直接打开已升级的库，回滚前先导出需要保留的局面。
