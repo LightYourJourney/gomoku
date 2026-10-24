@@ -1978,7 +1978,7 @@ Worker / 提示 / 复盘预算的既有用例未改，全部通过。
 | `src/components/board/Board.test.tsx` | +2 | 编辑模式点击/回车作用在已有棋子 |
 | `src/features/positions/PositionEditor.test.tsx` | 12 | 工具/键盘/撤销重做/分析档位/保存时间/删除/删除失败/取消删除/载入棋谱 |
 | `src/lib/sound.test.ts` | +1 | 页面卸载时 resume/close 拒绝被接管 |
-| `e2e/editor.spec.ts`（chrome） | 8 | 编辑、保存时间/删除、载入第 9 手、AI、导出导入、双方五连、响应式+深色主题、v2→v3 旧库兼容 |
+| `e2e/editor.spec.ts`（chrome） | 8 | 编辑、保存时间/删除、载入第 9 手、AI、导出导入、双方五连、390/768/1024/1440+深色主题、v2→v3 旧库兼容 |
 | `e2e/mobile.spec.ts` | +1 | 390 触摸编辑、无横向溢出 |
 | `e2e/tablet.spec.ts` | +1 | 1080 两栏、触摸编辑 |
 
@@ -2014,7 +2014,7 @@ Worker / 提示 / 复盘预算的既有用例未改，全部通过。
 - **AI 档位**：五档可选，预算取 `DIFFICULTY_PARAMS[difficulty].budgetMs`；切换档位递增
   `version` 并作废在飞响应，结果展示请求时的档位；预算收在「技术细节」折叠区。
 - **跨浏览器**：新增 `playwright.browsers.config.ts` 与 `yarn e2e:browsers`，用 Playwright
-  自带 Firefox/WebKit 各跑 6 条编辑器主路径；CI 新增 `browsers` job。
+  自带 Firefox/WebKit 各跑 8 条编辑器主路径；CI 新增 `browsers` job。
 - **音效卸载**：WebKit 在页面卸载时 `AudioContext.resume()/close()` 会拒绝；现在接管拒绝，
   不再产生 Vite 的未处理 rejection。
 - **反证**：音效用例在撤掉 `.catch` 后确实变红；时间/删除/档位用例在旧实现上均失败。

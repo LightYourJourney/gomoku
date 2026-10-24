@@ -120,18 +120,34 @@ describe('editorStore —— 设置与清空', () => {
     expect(store.getState().position.board[7 * 15 + 7]).toBe(BLACK)
   })
 
-  it('编辑、清空与分析都不触碰正式对战 store', () => {
+  it('编辑、清空与分析都不触碰正式对战 store', async () => {
+    const { engine, resolve } = deferredEngine()
     const gameStore = createGameStore(idleEngine())
     const before = gameStore.getState().game
-    const editor = createEditorStore(idleEngine())
+    const editor = createEditorStore(engine)
 
     editor.getState().edit({ x: 7, y: 7 })
     editor.getState().setNextPlayer(WHITE)
     editor.getState().clear()
     editor.getState().undo()
+    editor.getState().analyze()
 
+    expect(editor.getState().analysis.status).toBe('running')
     expect(gameStore.getState().game).toBe(before)
     expect(gameStore.getState().game.version).toBe(0)
+    expect(gameStore.getState().pendingRequestId).toBeNull()
+
+    resolve(
+      response({
+        requestId: editor.getState().analysis.requestId!,
+        gameVersion: editor.getState().analysis.version!,
+      }),
+    )
+    await Promise.resolve()
+    await Promise.resolve()
+
+    expect(editor.getState().analysis.status).toBe('done')
+    expect(gameStore.getState().game).toBe(before)
     expect(gameStore.getState().pendingRequestId).toBeNull()
   })
 })

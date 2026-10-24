@@ -48,6 +48,7 @@ test('编辑器：放黑/放白/擦除/撤销/重做/键盘', async ({ page }) =
 })
 
 test('编辑器：保存局面 → 刷新后显示时间并删除', async ({ page }) => {
+  test.setTimeout(60_000)
   await openEditor(page)
   await page.getByTestId('intersection-7-7').click()
   await page.getByLabel('局面名称').fill('斜月研究')
@@ -71,6 +72,7 @@ test('编辑器：保存局面 → 刷新后显示时间并删除', async ({ pag
 })
 
 test('编辑器：从合法棋谱载入第 9 手', async ({ page }) => {
+  test.setTimeout(60_000)
   await playNineMoveWin(page)
   await page.getByRole('button', { name: '复盘', exact: true }).click()
   await page.getByRole('button', { name: '局面研究' }).click()
@@ -209,10 +211,11 @@ test('编辑器：v2 库升级到 v3 后旧进度与棋谱仍在', async ({ page
   expect(state.progress).toMatchObject({ completedLessons: ['battle-basics'] })
 })
 
-test('编辑器：768/1024/1440 三档布局与深色主题', async ({ page }) => {
+test('编辑器：390/768/1024/1440 布局与深色主题', async ({ page }) => {
   await openEditor(page)
 
   for (const [width, height] of [
+    [390, 844],
     [768, 900],
     [1024, 900],
     [1440, 900],

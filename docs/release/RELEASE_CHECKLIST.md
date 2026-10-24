@@ -13,7 +13,7 @@
 - [ ] `yarn build` 通过
 - [ ] `yarn e2e` 全过（Phase 11B 基线：176）
 - [ ] `yarn e2e:prod` 全过（Phase 10F 基线：6）
-- [ ] `yarn e2e:browsers` 全过（Firefox / WebKit 各 6 条，基线：16）
+- [ ] `yarn e2e:browsers` 全过（Firefox / WebKit 各 8 条，基线：16）
 - [ ] `yarn gates` 通过（循环 / 死码 / 重复 / 测试条数棘轮）
 - [ ] `yarn check:coverage` 通过
 - [ ] `yarn ui:probe --out <临时目录>` 七条判据全过（基线：38 状态 / 308 张）
