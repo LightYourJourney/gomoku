@@ -4,7 +4,7 @@
 **定位**：独立的局面研究工具；不是第二套五子棋引擎，不引入后端/账号/云同步。
 **状态**：功能完成并通过单元、组件、桌面/移动/平板真实浏览器验收，编辑器主路径另过
 Firefox/WebKit；**尚未发布到生产**。
-提交 `8dfb845`；GitHub Actions `quality` run `40062730244` 五个 job
+提交 `6f71b6b`；GitHub Actions `quality` run `40079286119` 五个 job
 （fast / e2e / browsers / probe / bench）全绿。
 
 ## 1. 数据模型审计
