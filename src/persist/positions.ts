@@ -7,7 +7,8 @@ import {
   POSITIONS_STORE,
 } from './schema'
 
-const POSITION_SCHEMA_VERSION = 1
+const POSITION_SCHEMA_VERSION = 2
+const LEGACY_POSITION_SCHEMA_VERSION = 1
 const MAX_POSITION_TITLE = 80
 
 export interface SavedPosition {
@@ -18,6 +19,9 @@ export interface SavedPosition {
   readonly cells: readonly number[]
   readonly nextPlayer: Player
   readonly provenance: PositionProvenance | null
+  /** 旧 v1 记录没有时间，迁移后为 null；UI 必须如实显示「时间未知」。 */
+  readonly createdAt: number | null
+  readonly updatedAt: number | null
 }
 
 export interface PositionInput {
@@ -37,11 +41,45 @@ export interface SavePositionResult {
   readonly persisted: boolean
 }
 
+export interface DeletePositionResult {
+  readonly deleted: boolean
+  /** 是否真正从 IndexedDB 删除；false 表示只删了本次会话的内存兜底。 */
+  readonly persisted: boolean
+}
+
 export interface PositionStorage {
   list(): Promise<PositionList>
   get(id: number): Promise<SavedPosition | null>
-  save(input: PositionInput, id?: number | null): Promise<SavePositionResult>
-  delete(id: number): Promise<void>
+  /** `now` 由调用方注入；存储层不直接读时钟。 */
+  save(
+    input: PositionInput,
+    id: number | null,
+    now: () => number,
+  ): Promise<SavePositionResult>
+  delete(id: number): Promise<DeletePositionResult>
+}
+
+function sortPositions(a: SavedPosition, b: SavedPosition): number {
+  const at = a.updatedAt ?? -Infinity
+  const bt = b.updatedAt ?? -Infinity
+  if (at !== bt) return bt > at ? 1 : -1
+  return b.id - a.id
+}
+
+function positionPayload(
+  input: PositionInput,
+  createdAt: number,
+  updatedAt: number,
+): Omit<SavedPosition, 'id'> {
+  return {
+    schemaVersion: POSITION_SCHEMA_VERSION,
+    title: input.title.slice(0, MAX_POSITION_TITLE),
+    cells: [...input.cells],
+    nextPlayer: input.nextPlayer,
+    provenance: input.provenance,
+    createdAt,
+    updatedAt,
+  }
 }
 
 function isPlayer(value: unknown): value is Player {
@@ -77,10 +115,27 @@ function parseProvenance(value: unknown): PositionProvenance | null {
   return { kind: 'replay', moves, firstPlayer: raw.firstPlayer, ply: raw.ply }
 }
 
+function isTimestamp(value: unknown): value is number {
+  return typeof value === 'number' && Number.isSafeInteger(value) && value >= 0
+}
+
 export function parseSavedPosition(value: unknown): SavedPosition | null {
   if (typeof value !== 'object' || value === null) return null
   const raw = value as Record<string, unknown>
-  if (raw.schemaVersion !== POSITION_SCHEMA_VERSION) return null
+  if (
+    raw.schemaVersion !== POSITION_SCHEMA_VERSION &&
+    raw.schemaVersion !== LEGACY_POSITION_SCHEMA_VERSION
+  ) {
+    return null
+  }
+  const legacy = raw.schemaVersion === LEGACY_POSITION_SCHEMA_VERSION
+  let createdAt: number | null = null
+  let updatedAt: number | null = null
+  if (!legacy) {
+    if (!isTimestamp(raw.createdAt) || !isTimestamp(raw.updatedAt)) return null
+    createdAt = raw.createdAt
+    updatedAt = raw.updatedAt
+  }
   if (typeof raw.id !== 'number' || !Number.isInteger(raw.id)) return null
   if (typeof raw.title !== 'string' || raw.title.length > MAX_POSITION_TITLE) return null
   if (!isPlayer(raw.nextPlayer)) return null
@@ -96,11 +151,14 @@ export function parseSavedPosition(value: unknown): SavedPosition | null {
 
   return {
     id: raw.id,
+    // v1 记录在内存里规范成 v2；下次保存才会真正写成 v2。
     schemaVersion: POSITION_SCHEMA_VERSION,
     title: raw.title,
     cells,
     nextPlayer: raw.nextPlayer,
     provenance,
+    createdAt,
+    updatedAt,
   }
 }
 
@@ -133,28 +191,26 @@ export function memoryPositions(degraded = false): PositionStorage {
   return {
     async list() {
       return {
-        records: [...byId.values()].sort((a, b) => b.id - a.id),
+        records: [...byId.values()].sort(sortPositions),
         degraded,
       }
     },
     async get(id) {
       return byId.get(id) ?? null
     },
-    async save(input, id = null) {
+    async save(input, id, now) {
+      const stamp = now()
       const target = id === null ? nextId++ : id
+      const existing = byId.get(target)
       const record: SavedPosition = {
+        ...positionPayload(input, existing?.createdAt ?? stamp, stamp),
         id: target,
-        schemaVersion: POSITION_SCHEMA_VERSION,
-        title: input.title.slice(0, MAX_POSITION_TITLE),
-        cells: [...input.cells],
-        nextPlayer: input.nextPlayer,
-        provenance: input.provenance,
       }
       byId.set(target, record)
       return { record, persisted: false }
     },
     async delete(id) {
-      byId.delete(id)
+      return { deleted: byId.delete(id), persisted: false }
     },
   }
 }
@@ -240,7 +296,7 @@ export const indexedDbPositions: PositionStorage = {
       const records = raw
         .map(parseSavedPosition)
         .filter((record): record is SavedPosition => record !== null)
-        .sort((a, b) => b.id - a.id)
+        .sort(sortPositions)
       return { records, degraded: false }
     } catch {
       return fallbackToMemory().list()
@@ -256,14 +312,10 @@ export const indexedDbPositions: PositionStorage = {
     }
   },
 
-  async save(input, id = null) {
-    const payload = {
-      schemaVersion: POSITION_SCHEMA_VERSION,
-      title: input.title.slice(0, MAX_POSITION_TITLE),
-      cells: [...input.cells],
-      nextPlayer: input.nextPlayer,
-      provenance: input.provenance,
-    }
+  async save(input, id, now) {
+    const stamp = now()
+    const existing = id === null ? null : await indexedDbPositions.get(id)
+    const payload = positionPayload(input, existing?.createdAt ?? stamp, stamp)
     try {
       if (id === null) {
         const newId = await withStore<IDBValidKey>('readwrite', (store) => store.add(payload))
@@ -275,15 +327,16 @@ export const indexedDbPositions: PositionStorage = {
       await withStore<IDBValidKey>('readwrite', (store) => store.put({ ...payload, id }))
       return { record: { ...payload, id }, persisted: true }
     } catch {
-      return fallbackToMemory().save(input, id)
+      return fallbackToMemory().save(input, id, () => stamp)
     }
   },
 
   async delete(id) {
     try {
       await withStore<undefined>('readwrite', (store) => store.delete(id))
+      return { deleted: true, persisted: true }
     } catch {
-      await fallbackToMemory().delete(id)
+      return fallbackToMemory().delete(id)
     }
   },
 }

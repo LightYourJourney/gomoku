@@ -42,6 +42,27 @@ describe('createStoneSound', () => {
     expect(() => sound.play(BLACK)).not.toThrow()
   })
 
+  it('上下文在页面卸载时关闭，resume/close 的拒绝会被接管', async () => {
+    const fake = createFakeContext('suspended')
+    const resumeRejection = Promise.reject(new Error('closed'))
+    const closeRejection = Promise.reject(new Error('closed'))
+    const resumeCatch = vi.spyOn(resumeRejection, 'catch')
+    const closeCatch = vi.spyOn(closeRejection, 'catch')
+    fake.resume.mockReturnValue(resumeRejection)
+    fake.close.mockReturnValue(closeRejection)
+    const sound = createStoneSound(() => fake.context)
+    const target = new EventTarget()
+
+    sound.arm(target)
+    target.dispatchEvent(new Event('pointerdown'))
+    sound.play(BLACK)
+    sound.dispose()
+
+    expect(resumeCatch).toHaveBeenCalled()
+    expect(closeCatch).toHaveBeenCalled()
+    await new Promise((resolve) => setTimeout(resolve, 0))
+  })
+
   it('播放时创建一个振荡器并接到增益节点，最后送到输出', () => {
     const { context, nodes } = createFakeContext()
     const sound = createStoneSound(() => context)

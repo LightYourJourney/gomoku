@@ -11,6 +11,8 @@ import {
 } from './positions'
 import { applyEdit, createPosition } from '../core/position'
 
+const at = (value: number) => () => value
+
 beforeEach(async () => {
   const { records } = await indexedDbPositions.list()
   for (const record of records) await indexedDbPositions.delete(record.id)
@@ -19,9 +21,15 @@ beforeEach(async () => {
 describe('局面库 —— IndexedDB', () => {
   it('保存、列出、按 id 更新', async () => {
     const position = applyEdit(createPosition(), { x: 7, y: 7 }, 'black')
-    const first = await indexedDbPositions.save(inputFromPosition(position, '天元研究', null))
+    const first = await indexedDbPositions.save(
+      inputFromPosition(position, '天元研究', null),
+      null,
+      at(1_000),
+    )
     expect(first.persisted).toBe(true)
     expect(first.record.id).toBeGreaterThan(0)
+    expect(first.record.createdAt).toBe(1_000)
+    expect(first.record.updatedAt).toBe(1_000)
 
     const list = await indexedDbPositions.list()
     expect(list.records).toHaveLength(1)
@@ -31,9 +39,12 @@ describe('局面库 —— IndexedDB', () => {
     const updated = await indexedDbPositions.save(
       inputFromPosition(changed, '天元研究（改）', null),
       first.record.id,
+      at(2_000),
     )
     expect(updated.record.id).toBe(first.record.id)
     expect(updated.record.title).toBe('天元研究（改）')
+    expect(updated.record.createdAt).toBe(1_000)
+    expect(updated.record.updatedAt).toBe(2_000)
     expect((await indexedDbPositions.list()).records).toHaveLength(1)
     expect(await indexedDbPositions.get(first.record.id)).toMatchObject({
       title: '天元研究（改）',
@@ -41,11 +52,43 @@ describe('局面库 —— IndexedDB', () => {
     })
   })
 
-  it('删除', async () => {
+  it('按最近保存排序；旧记录没有时间时排在后面', async () => {
+    const first = await indexedDbPositions.save(
+      inputFromPosition(createPosition(), '旧', null),
+      null,
+      at(1_000),
+    )
+    await indexedDbPositions.save(
+      inputFromPosition(createPosition(WHITE), '新', null),
+      null,
+      at(2_000),
+    )
+    expect((await indexedDbPositions.list()).records.map((record) => record.title)).toEqual([
+      '新',
+      '旧',
+    ])
+
+    await indexedDbPositions.save(
+      inputFromPosition(createPosition(), '旧（更新）', null),
+      first.record.id,
+      at(3_000),
+    )
+    expect((await indexedDbPositions.list()).records.map((record) => record.title)).toEqual([
+      '旧（更新）',
+      '新',
+    ])
+  })
+
+  it('删除返回是否真正从 IndexedDB 删除', async () => {
     const saved = await indexedDbPositions.save(
       inputFromPosition(createPosition(WHITE), '空盘', null),
+      null,
+      at(1_000),
     )
-    await indexedDbPositions.delete(saved.record.id)
+    expect(await indexedDbPositions.delete(saved.record.id)).toEqual({
+      deleted: true,
+      persisted: true,
+    })
     expect((await indexedDbPositions.list()).records).toHaveLength(0)
   })
 
@@ -56,9 +99,16 @@ describe('局面库 —— IndexedDB', () => {
     try {
       const result = await indexedDbPositions.save(
         inputFromPosition(createPosition(), '内存', null),
+        null,
+        at(1_000),
       )
       expect(result.persisted).toBe(false)
+      expect(result.record.updatedAt).toBe(1_000)
       expect((await indexedDbPositions.list()).degraded).toBe(true)
+      expect(await indexedDbPositions.delete(result.record.id)).toEqual({
+        deleted: true,
+        persisted: false,
+      })
     } finally {
       if (saved !== undefined) Object.defineProperty(globalThis, 'indexedDB', saved)
       __setPositionsIndexedDbFactory(null)
@@ -120,11 +170,78 @@ describe('局面库 —— 校验与迁移', () => {
     db.close()
   })
 
-  it('内存实现也能保存并更新', async () => {
+  it('v1 记录只读迁移到 v2：保留盘面，时间标记为未知', () => {
+    const cells = Array.from({ length: 225 }, () => 0)
+    cells[7 * 15 + 7] = 1
+    const parsed = parseSavedPosition({
+      schemaVersion: 1,
+      id: 1,
+      title: '旧局面',
+      cells,
+      nextPlayer: 2,
+      provenance: null,
+    })
+    expect(parsed).toMatchObject({
+      schemaVersion: 2,
+      title: '旧局面',
+      createdAt: null,
+      updatedAt: null,
+    })
+  })
+
+  it('v2 记录缺少时间或时间非法时拒绝', () => {
+    const cells = Array.from({ length: 225 }, () => 0)
+    expect(
+      parseSavedPosition({
+        schemaVersion: 2,
+        id: 1,
+        title: '坏时间',
+        cells,
+        nextPlayer: 1,
+        provenance: null,
+      }),
+    ).toBeNull()
+    expect(
+      parseSavedPosition({
+        schemaVersion: 2,
+        id: 1,
+        title: '坏时间',
+        cells,
+        nextPlayer: 1,
+        provenance: null,
+        createdAt: 1_000,
+        updatedAt: -1,
+      }),
+    ).toBeNull()
+    expect(
+      parseSavedPosition({
+        schemaVersion: 2,
+        id: 1,
+        title: '坏时间',
+        cells,
+        nextPlayer: 1,
+        provenance: null,
+        createdAt: 1_000,
+        updatedAt: 1e20,
+      }),
+    ).toBeNull()
+  })
+
+  it('内存实现也能保存、更新并保留创建时间', async () => {
     const storage = memoryPositions()
-    const saved = await storage.save(inputFromPosition(createPosition(), 'a', null))
+    const saved = await storage.save(
+      inputFromPosition(createPosition(), 'a', null),
+      null,
+      at(1_000),
+    )
     expect((await storage.list()).records).toHaveLength(1)
-    await storage.save(inputFromPosition(createPosition(WHITE), 'b', null), saved.record.id)
+    const updated = await storage.save(
+      inputFromPosition(createPosition(WHITE), 'b', null),
+      saved.record.id,
+      at(2_000),
+    )
     expect((await storage.list()).records[0]!.title).toBe('b')
+    expect(updated.record.createdAt).toBe(1_000)
+    expect(updated.record.updatedAt).toBe(2_000)
   })
 })

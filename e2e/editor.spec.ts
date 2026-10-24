@@ -59,6 +59,15 @@ test('编辑器：保存局面 → 刷新后重新打开', async ({ page }) => {
   await page.getByRole('button', { name: '局面研究' }).click()
   await page.getByLabel('打开已保存局面').selectOption({ label: '斜月研究' })
   await expect(page.getByTestId('stone-7-7')).toBeVisible()
+  await expect(page.getByTestId('position-saved-at')).toContainText(
+    /最近保存：\d{4}-\d{2}-\d{2} \d{2}:\d{2}/,
+  )
+
+  await page.getByRole('button', { name: '删除已保存局面' }).click()
+  await page.getByRole('button', { name: '确认删除' }).click()
+  await expect(page.getByTestId('position-notice')).toContainText('已删除')
+  await expect(page.getByTestId('position-saved-at')).toHaveCount(0)
+  await expect(page.getByTestId('stone-7-7')).toBeVisible()
 })
 
 test('编辑器：从合法棋谱载入第 9 手', async ({ page }) => {
@@ -81,9 +90,11 @@ test('编辑器：AI 只读分析显示候选与搜索指标', async ({ page }) 
   await page.getByRole('button', { name: '工具：白棋' }).click()
   await page.getByTestId('intersection-8-8').click()
 
+  await page.getByLabel('分析档位').selectOption('hard')
   await page.getByRole('button', { name: '分析当前局面' }).click()
   const panel = page.getByTestId('position-analysis')
   await expect(panel).toBeVisible({ timeout: 20_000 })
+  await expect(panel).toContainText('高级 · 1600ms')
   await expect(panel).toContainText('深度')
   await expect(panel).toContainText('节点')
   await expect(panel).toContainText('结论')

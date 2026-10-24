@@ -63,13 +63,18 @@ export function createStoneSound(
     return context
   }
 
+  /** 浏览器可能在页面卸载时关掉上下文；resume/close 的拒绝只意味着静默降级。 */
+  function resumeSafely(ctx: AudioContext): void {
+    void ctx.resume().catch(() => {})
+  }
+
   /** 拿到一个能发声的上下文；拿不到就返回 null（静默降级）。 */
   function ready(): AudioContext | null {
     const ctx = ensureContext()
     if (ctx === null) return null
 
     if (ctx.state === 'suspended') {
-      void ctx.resume()
+      resumeSafely(ctx)
     }
     return ctx
   }
@@ -101,7 +106,7 @@ export function createStoneSound(
       const warm = (): void => {
         // 对已经在跑的上下文 resume() 是空操作，所以这里不判 state
         const ctx = ensureContext()
-        if (ctx !== null) void ctx.resume()
+        if (ctx !== null) resumeSafely(ctx)
       }
 
       target.addEventListener('pointerdown', warm, { once: true })
@@ -110,7 +115,7 @@ export function createStoneSound(
 
     dispose() {
       if (context !== undefined && context !== null) {
-        void context.close()
+        void context.close().catch(() => {})
       }
       context = undefined
     },

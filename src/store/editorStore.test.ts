@@ -171,4 +171,28 @@ describe('editorStore —— AI 分析', () => {
     expect(store.getState().analysis.status).toBe('error')
     expect(store.getState().analysis.error).toContain('worker')
   })
+
+  it('分析按所选难度发请求；切档位后旧响应失效', async () => {
+    const { engine, resolve } = deferredEngine()
+    const store = createEditorStore(engine)
+    store.getState().setNextPlayer(WHITE)
+    store.getState().edit({ x: 7, y: 7 })
+    store.getState().setNextPlayer(WHITE)
+
+    expect(store.getState().difficulty).toBe('medium')
+    store.getState().setDifficulty('hard')
+    store.getState().analyze()
+    const request = vi.mocked(engine.search).mock.calls[0]![0]
+    expect(request.difficulty).toBe('hard')
+    expect(request.budgetMs).toBeUndefined()
+    expect(store.getState().analysis.difficulty).toBe('hard')
+
+    store.getState().setDifficulty('easy')
+    resolve(response({ requestId: request.requestId, gameVersion: request.gameVersion }))
+    await Promise.resolve()
+    await Promise.resolve()
+
+    expect(store.getState().analysis.status).toBe('idle')
+    expect(store.getState().analysis.response).toBeNull()
+  })
 })

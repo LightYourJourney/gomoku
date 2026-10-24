@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useStore } from 'zustand'
 import type { AiEngine } from '../../ai/engine'
+import { AVAILABLE_DIFFICULTIES, DIFFICULTY_LABELS, DIFFICULTY_PARAMS, isDifficulty } from '../../ai/difficulty'
 import type { GameRecord, GameRecordsStorage } from '../../persist/gameRecords'
 import type { PositionStorage, SavedPosition } from '../../persist/positions'
 import { inputFromPosition, positionFromSaved } from '../../persist/positions'
@@ -37,6 +38,14 @@ function recordLabel(record: GameRecord): string {
   return `#${record.seq} · ${mode} · ${record.moves.length} 手`
 }
 
+/** 旧 v1 局面没有时间；不要用 1970 年假装知道。 */
+function savedAtLabel(record: SavedPosition): string {
+  if (record.updatedAt === null) return '时间未知（旧记录）'
+  const date = new Date(record.updatedAt)
+  const pad = (value: number) => String(value).padStart(2, '0')
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`
+}
+
 export function PositionEditor({
   engine,
   records,
@@ -52,6 +61,7 @@ export function PositionEditor({
   const [saved, setSaved] = useState<readonly SavedPosition[]>([])
   const [positionsDegraded, setPositionsDegraded] = useState(false)
   const [savedId, setSavedId] = useState<number | null>(null)
+  const [confirmDelete, setConfirmDelete] = useState(false)
   const [title, setTitle] = useState('未命名局面')
   const [recordSeq, setRecordSeq] = useState('')
   const [ply, setPly] = useState('0')
@@ -76,6 +86,7 @@ export function PositionEditor({
   }, [records, positions])
 
   const report = analyzePosition(state.position)
+  const selectedSaved = saved.find((entry) => entry.id === savedId) ?? null
   const analysis = state.analysis
   const candidates = analysis.status === 'done' ? (analysis.response?.candidates ?? []) : []
   const marks = candidates.map((candidate, index) => ({
@@ -97,6 +108,7 @@ export function PositionEditor({
     editor.getState().load(positionFromSaved(record), record.provenance)
     setSavedId(record.id)
     setTitle(record.title)
+    setConfirmDelete(false)
     flash(`已打开「${record.title}」`)
   }
 
@@ -114,6 +126,7 @@ export function PositionEditor({
     const loaded = positionFromReplay(record.moves, record.firstPlayer, n)
     editor.getState().load(loaded.position, loaded.provenance)
     setSavedId(null)
+    setConfirmDelete(false)
     setTitle(`棋谱 #${record.seq} 第 ${n} 手`)
     flash(`已载入棋谱 #${record.seq} 第 ${n} 手`)
   }
@@ -123,8 +136,10 @@ export function PositionEditor({
     const result = await positions.save(
       inputFromPosition(state.position, clean, state.provenance),
       savedId,
+      now,
     )
     setSavedId(result.record.id)
+    setConfirmDelete(false)
     setTitle(result.record.title)
     const list = await positions.list()
     setSaved(list.records)
@@ -133,6 +148,28 @@ export function PositionEditor({
         ? `已保存「${result.record.title}」`
         : '只写进了内存兜底：本次会话可用，刷新后可能丢失',
     )
+  }
+
+  async function deleteSaved(): Promise<void> {
+    if (savedId === null) return
+    if (!confirmDelete) {
+      setConfirmDelete(true)
+      return
+    }
+    const target = selectedSaved
+    const result = await positions.delete(savedId)
+    const list = await positions.list()
+    setSaved(list.records)
+    setSavedId(null)
+    setConfirmDelete(false)
+    const name = target?.title ?? '局面'
+    if (!result.deleted) {
+      fail(`没找到可删除的「${name}」`)
+    } else if (result.persisted) {
+      flash(`已删除「${name}」`)
+    } else {
+      flash(`只删了本次会话的「${name}」：刷新后可能仍在`)
+    }
   }
 
   function exportPosition(): void {
@@ -156,6 +193,7 @@ export function PositionEditor({
       }
       editor.getState().load(parsed.position, parsed.provenance)
       setSavedId(null)
+      setConfirmDelete(false)
       setTitle(parsed.title ?? '导入的局面')
       flash('局面文件已导入')
     } catch (err) {
@@ -286,6 +324,26 @@ export function PositionEditor({
         </Panel>
 
         <Panel title="AI 分析" bodyClassName="space-y-2">
+          <label className="block text-xs text-faint">
+            分析档位
+            <select
+              aria-label="分析档位"
+              value={state.difficulty}
+              disabled={analysis.status === 'running'}
+              onChange={(event) => {
+                if (isDifficulty(event.target.value)) {
+                  editor.getState().setDifficulty(event.target.value)
+                }
+              }}
+              className="mt-1 w-full rounded-lg border border-border bg-surface-2 px-2 py-1 text-xs text-fg disabled:opacity-50"
+            >
+              {AVAILABLE_DIFFICULTIES.map((difficulty) => (
+                <option key={difficulty} value={difficulty}>
+                  {DIFFICULTY_LABELS[difficulty]} · {DIFFICULTY_PARAMS[difficulty].budgetMs}ms
+                </option>
+              ))}
+            </select>
+          </label>
           <Button
             block
             variant="primary"
@@ -300,8 +358,10 @@ export function PositionEditor({
           {analysis.status === 'done' && analysis.response !== null && (
             <div data-testid="position-analysis" className="space-y-1 text-xs">
               <p className="text-faint">
-                引擎：中级 · 800ms · 深度 {analysis.response.depth} 层 · 节点{' '}
-                {analysis.response.nodes} · {analysis.response.elapsedMs} ms · 结论{' '}
+                引擎：{DIFFICULTY_LABELS[analysis.difficulty ?? 'medium']} ·{' '}
+                {DIFFICULTY_PARAMS[analysis.difficulty ?? 'medium'].budgetMs}ms · 深度{' '}
+                {analysis.response.depth} 层 · 节点 {analysis.response.nodes} ·{' '}
+                {analysis.response.elapsedMs} ms · 结论{' '}
                 {analysis.response.confidence === 'exact' ? '精确' : '启发式'}
               </p>
               <ul className="space-y-1">
@@ -375,6 +435,33 @@ export function PositionEditor({
               ))}
             </select>
           </label>
+
+          {selectedSaved !== null && (
+            <div className="space-y-2">
+              <p data-testid="position-saved-at" className="text-xs text-faint">
+                最近保存：{savedAtLabel(selectedSaved)}
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  size="sm"
+                  variant={confirmDelete ? 'danger' : 'secondary'}
+                  onClick={() => void deleteSaved()}
+                >
+                  {confirmDelete ? '确认删除' : '删除已保存局面'}
+                </Button>
+                {confirmDelete && (
+                  <Button size="sm" onClick={() => setConfirmDelete(false)}>
+                    取消
+                  </Button>
+                )}
+              </div>
+              {confirmDelete && (
+                <p className="text-xs text-warn">
+                  删除的是已保存记录；当前棋盘仍保留，可重新保存。
+                </p>
+              )}
+            </div>
+          )}
 
           <div className="border-t border-border pt-2">
             <p className="text-xs font-medium text-muted">从合法棋谱载入某一手</p>

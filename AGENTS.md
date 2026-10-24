@@ -65,7 +65,7 @@ yarn lint && yarn typecheck && yarn test && yarn build && yarn e2e
 | | 跑什么 | 什么时候跑 | 挡不住什么 |
 | --- | --- | --- | --- |
 | **快档** | `lint` / `typecheck` / `test` / `build` / `yarn gates`（四道防退化闸门） | **本地 `git push` 自动拦**（`.githooks/pre-push`，热跑 30–45 秒，看机器负载）+ CI 的 `fast` job | e2e、探针、基准 |
-| **全档** | 上面 + `e2e` + `e2e:prod` + 探针 + 覆盖棘轮 + `bench:check` | 只有 CI（`.github/workflows/quality.yml`） | — |
+| **全档** | 上面 + `e2e` + `e2e:prod` + `e2e:browsers` + 探针 + 覆盖棘轮 + `bench:check` | 只有 CI（`.github/workflows/quality.yml`） | — |
 
 **「本地绿了、推得出去」不等于「安全网没缩水」**：快档不含 e2e 与探针，
 而「某颗控件从所有扫描里消失」这类退化（Phase 02 真发生过一次）**只有探针 + 覆盖棘轮抓得到**。
@@ -87,6 +87,16 @@ yarn e2e:prod
 它自带一次 `yarn build`，跑在 `dist` 产物上（独立端口与配置，见
 `playwright.prod.config.ts`）——Worker 的 module 路径、CSS 打包、代码分割
 在构建之后与 dev 下并不一样，只有这条通道能发现差异。
+
+改了编辑器交互、音频或 Worker 相关行为时，再跑：
+
+```bash
+yarn playwright install firefox webkit   # 首次
+yarn e2e:browsers
+```
+
+它用 Playwright 自带 Firefox/WebKit 跑编辑器主路径（配置见
+`playwright.browsers.config.ts`），CI 的 `browsers` job 会守这条线。
 
 ## 文档同步
 

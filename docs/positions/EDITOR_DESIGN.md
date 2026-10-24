@@ -31,9 +31,13 @@
 ## 4. 保存、打开与文件
 
 - 保存到 IndexedDB `positions` 表（DB_VERSION 3）；标题可编辑。
+- 每条记录写入 `createdAt` / `updatedAt`（调用方注入时钟），列表按最近保存排序；
+  打开记录时显示「最近保存」时间。v1 旧记录时间未知，显示「时间未知（旧记录）」。
 - 保存失败：内存兜底时明确说「本次会话可用，刷新后可能丢失」；列表降级也会提示。
 - 再次保存同一 id 更新原记录，不复制。
-- 「打开已保存局面」下拉按 id 降序。
+- 「打开已保存局面」下拉按最近保存排序。
+- 已保存记录可删除：第一次点按进入确认态，第二次「确认删除」才执行；删除后
+  当前棋盘保留、记录从列表移除。内存兜底时明说「刷新后可能仍在」。
 - 导出/导入 `gomoku-lab.position` v1；导入走 Phase 11A 的严格 JSON 检查
   （大小/深度/重复交叉点/未知版本/已知手顺一致性），失败零写入。
 - 载入棋谱某一手：选择棋谱 + 手数，用 `positionFromReplay` 生成快照与 provenance。
@@ -41,9 +45,11 @@
 ## 5. AI 分析
 
 - 按钮只在 `analyzePosition(...).searchable` 时可用；否则显示具体原因。
-- 请求：`purpose='hint'`、中级、800ms，带 `gameVersion = editor.version`。
-- 展示：候选点（棋盘 1/2/3 标记 + 列表）、深度、节点、耗时、精确/启发式。
-- 任何编辑递增 version 并清空分析；旧响应按 `requestId + gameVersion` 丢弃。
+- 档位可选五档（入门/初级/中级/高级/专家）；请求使用该档真实难度参数，
+  时间预算取 `DIFFICULTY_PARAMS[difficulty].budgetMs`（250–2600ms）。
+- 请求：`purpose='hint'`，带 `gameVersion = editor.version`。
+- 展示：候选点（棋盘 1/2/3 标记 + 列表）、实际档位与预算、深度、节点、耗时、精确/启发式。
+- 任何编辑或档位切换都会递增 version 并清空分析；旧响应按 `requestId + gameVersion` 丢弃。
 - 分析只写 `editorStore`，不写正式对战 store，不落子、不改棋谱。
 
 ## 6. 响应式
@@ -61,7 +67,14 @@
 - 错误 `role=alert`，保存/载入结果 `role=status`。
 - 颜色不是唯一信息：当前工具/下一手同时有文字说明。
 
-## 8. 不做什么
+## 8. 跨浏览器
+
+- 主套件（Chrome）之外，`playwright.browsers.config.ts` 用 Playwright 自带
+  Firefox / WebKit 各跑 6 条编辑器主路径（`e2e/editor.spec.ts`），共 12 条。
+- CI 的 `browsers` job 先安装 Firefox/WebKit 再跑；不是只在开发者机器上手工看一眼。
+- WebKit 页面卸载时 `AudioContext.resume()/close()` 会拒绝，音效层已接管为静默降级。
+
+## 9. 不做什么
 
 - 不新建第二套棋盘渲染/路由框架；
 - 不把编辑器 Undo 接进 `gameStore`；

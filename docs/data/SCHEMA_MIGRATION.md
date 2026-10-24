@@ -8,7 +8,7 @@
 | 学习进度 | `progress` 表 | `PROGRESS_SCHEMA_VERSION` | `1` |
 | 棋谱 | `records` 表 | `GAME_RECORDS_SCHEMA_VERSION` | `1` |
 | 对局会话 | `localStorage: gomoku-lab:session` | `SCHEMA_VERSION` | `2` |
-| 自定义局面 | `positions` 表 | `POSITION_SCHEMA_VERSION` | `1` |
+| 自定义局面 | `positions` 表 | `POSITION_SCHEMA_VERSION` | `2` |
 | 外部棋谱/备份/局面 | 文件 | `EXTERNAL_FORMAT_VERSION` / position v1 | `1` |
 
 Phase 11A **没有**为了「有迁移」而递增内部版本；Phase 11B 因新增 `positions`
@@ -42,6 +42,14 @@ v1 里即使出现 `resignedBy` 也不采信——那一版没有这个语义。
   **不允许**——降级打开会触发 `VersionError`。因此回滚必须同时回滚数据库版本或
   接受编辑器不可用；生产回滚到 0.3.0 前应先导出需要保留的局面。
 - 单条局面读不出时只跳过该条；坏 provenance 降级为自由摆盘，不丢盘面。
+
+## 2.2 Phase 11B 限制补齐：局面记录 v1 → v2（只读迁移）
+
+- v2 新增 `createdAt` / `updatedAt`，由调用方注入时钟后随保存写入；列表按最近保存排序。
+- v1 记录读取时在内存里补 `createdAt: null`、`updatedAt: null` 并规范为 v2；
+  不立即改写数据库，下次保存该条时才写成 v2。
+- 时间未知的旧记录 UI 显示「时间未知（旧记录）」，不伪造 1970 年。
+- `DB_VERSION` 不变（3）：这是对象字段形状变化，不是新表/新索引。
 
 ## 3. 旧库/旧记录的行为
 

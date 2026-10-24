@@ -125,6 +125,22 @@ describe('PositionEditor —— 分析', () => {
     expect(screen.getByTestId('position-issues')).toHaveTextContent('已结束')
     expect(screen.getByRole('button', { name: '分析当前局面' })).toBeDisabled()
   })
+
+  it('所选档位随请求发出，结果显示实际档位与预算', async () => {
+    const search = vi.fn(idle.search)
+    const engine: AiEngine = { ...idle, search }
+    setup({ engine })
+    fireEvent.click(screen.getByTestId('intersection-7-7'))
+    fireEvent.click(screen.getByRole('button', { name: '工具：白棋' }))
+    fireEvent.click(screen.getByTestId('intersection-8-8'))
+
+    fireEvent.change(screen.getByLabelText('分析档位'), { target: { value: 'hard' } })
+    fireEvent.click(screen.getByRole('button', { name: '分析当前局面' }))
+    const panel = await screen.findByTestId('position-analysis')
+    expect(search.mock.calls[0]![0].difficulty).toBe('hard')
+    expect(search.mock.calls[0]![0].budgetMs).toBeUndefined()
+    expect(panel).toHaveTextContent('高级 · 1600ms')
+  })
 })
 
 describe('PositionEditor —— 保存与载入', () => {
@@ -165,5 +181,28 @@ describe('PositionEditor —— 保存与载入', () => {
     expect(screen.getByTestId('position-kind')).toHaveTextContent('第 2 手')
     expect(screen.getByTestId('stone-7-7')).toBeInTheDocument()
     expect(screen.getByTestId('stone-7-8')).toBeInTheDocument()
+  })
+
+  it('保存后显示最近保存时间；删除需二次确认且不丢当前棋盘', async () => {
+    const positions = memoryPositions()
+    setup({ positions })
+    fireEvent.click(screen.getByTestId('intersection-7-7'))
+    fireEvent.click(screen.getByRole('button', { name: '保存局面' }))
+    await screen.findByText(/只写进了内存兜底/)
+
+    expect(screen.getByTestId('position-saved-at')).toHaveTextContent(
+      /最近保存：\d{4}-\d{2}-\d{2} \d{2}:\d{2}/,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: '删除已保存局面' }))
+    expect(screen.getByRole('button', { name: '确认删除' })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: '确认删除' }))
+
+    await waitFor(() =>
+      expect(screen.getByTestId('position-notice')).toHaveTextContent('只删了本次会话'),
+    )
+    expect(screen.queryByTestId('position-saved-at')).not.toBeInTheDocument()
+    expect(screen.getByTestId('stone-7-7')).toBeInTheDocument()
+    expect((await positions.list()).records).toHaveLength(0)
   })
 })

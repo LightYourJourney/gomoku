@@ -12,6 +12,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "e2e": "playwright test",
+    "e2e:browsers": "playwright test --config playwright.browsers.config.ts",
     "e2e:prod": "playwright test --config playwright.prod.config.ts",
     "e2e:remote": "playwright test --config playwright.remote.config.ts",
     "lint": "oxlint",

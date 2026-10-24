@@ -72,13 +72,16 @@ interface PositionProvenance {
 - 未满盘；
 - 黑白数量与 `nextPlayer` 一致（`parity='ok'`）。
 
-不满足时编辑器不调用 Worker，直接显示原因；满足时使用固定「中级 · 800ms ·
-purpose='hint'」的只读请求，响应带 `gameVersion = 编辑器 version`。任何编辑递增
-version，旧响应被丢弃。分析结果只写 `editorStore`，永不写 `gameStore`。
+不满足时编辑器不调用 Worker，直接显示原因；满足时按所选档位使用对应的难度参数与
+预算（`purpose='hint'`），响应带 `gameVersion = 编辑器 version`。任何编辑或切档位
+递增 version，旧响应被丢弃。分析结果只写 `editorStore`，永不写 `gameStore`。
 
 ## 6. 持久化边界
 
 - IndexedDB `DB_VERSION` 从 2 升到 3，新增 `positions` 表；`progress`/`records`
   不动，旧数据原样可读（见 `docs/data/SCHEMA_MIGRATION.md`）。
+- 局面记录内部 schema 为 v2：`createdAt` / `updatedAt` 由调用方注入时钟、随保存写入；
+  列表按 `updatedAt` 降序。v1 记录只读迁移，时间字段为 `null`，UI 显示「时间未知」，
+  不伪造 1970 年。
 - 外部文件格式：`gomoku-lab.position`（见 `docs/data/FILE_FORMAT.md`）。
 - 自由摆盘保存为 Position，不塞进 `GameRecord`；只有已知手顺才带 provenance。

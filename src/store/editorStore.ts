@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import type { AiEngine } from '../ai/engine'
-import type { SearchResponse } from '../ai/types'
+import type { Difficulty, SearchResponse } from '../ai/types'
 import {
   analyzePosition,
   applyEdit,
@@ -24,6 +24,8 @@ export interface EditorAnalysis {
   readonly status: 'idle' | 'running' | 'done' | 'error'
   readonly requestId: number | null
   readonly version: number | null
+  /** 发起这次分析时选中的档位；结果展示必须用它，不能用当前下拉值。 */
+  readonly difficulty: Difficulty | null
   readonly response: SearchResponse | null
   readonly error: string | null
 }
@@ -32,6 +34,7 @@ const IDLE_ANALYSIS: EditorAnalysis = {
   status: 'idle',
   requestId: null,
   version: null,
+  difficulty: null,
   response: null,
   error: null,
 }
@@ -44,11 +47,14 @@ export interface EditorStore {
   readonly provenance: PositionProvenance | null
   readonly history: readonly EditorSnapshot[]
   readonly future: readonly EditorSnapshot[]
-  /** 每次编辑递增；AI 响应必须与发起时的值一致才允许写入。 */
+  /** 分析档位；与盘面编辑分开，但切换档位也会让在飞响应失效。 */
+  readonly difficulty: Difficulty
+  /** 每次编辑或档位变化递增；AI 响应必须与发起时的值一致才允许写入。 */
   readonly version: number
   readonly analysis: EditorAnalysis
 
   setTool(tool: EditTool): void
+  setDifficulty(difficulty: Difficulty): void
   edit(point: Point): void
   setNextPlayer(player: 1 | 2): void
   clear(): void
@@ -63,7 +69,7 @@ export interface EditorStore {
  *
  * **与 gameStore 完全分离**：这里没有正式棋局、没有 `applyMove`、没有入库回调；
  * 编辑历史是编辑器自己的快照栈，不是棋谱手顺。分析响应只写本 store，
- * 任何编辑都会递增 `version` 并清空分析，旧响应因此不可能落到新局面上。
+ * 任何编辑或档位变化都会递增 `version` 并清空分析，旧响应因此不可能落到新局面上。
  */
 export function createEditorStore(engine: AiEngine) {
   return create<EditorStore>()((set, get) => {
@@ -98,11 +104,23 @@ export function createEditorStore(engine: AiEngine) {
       provenance: null,
       history: [],
       future: [],
+      difficulty: 'medium',
       version: 0,
       analysis: IDLE_ANALYSIS,
 
       setTool(tool) {
         set({ tool })
+      },
+
+      setDifficulty(difficulty) {
+        const current = get()
+        if (current.difficulty === difficulty) return
+        // 档位变了，旧结果与在飞响应都不再对应当前选择。
+        set({
+          difficulty,
+          version: current.version + 1,
+          analysis: IDLE_ANALYSIS,
+        })
       },
 
       edit(point) {
@@ -182,6 +200,7 @@ export function createEditorStore(engine: AiEngine) {
             analysis: {
               ...IDLE_ANALYSIS,
               status: 'error',
+              difficulty: current.difficulty,
               error: `当前局面不能分析：${report.issues.join('；')}`,
             },
           })
@@ -190,8 +209,15 @@ export function createEditorStore(engine: AiEngine) {
 
         const requestId = nextRequestId()
         const version = current.version
+        const difficulty = current.difficulty
         set({
-          analysis: { ...IDLE_ANALYSIS, status: 'running', requestId, version },
+          analysis: {
+            ...IDLE_ANALYSIS,
+            status: 'running',
+            requestId,
+            version,
+            difficulty,
+          },
         })
 
         void engine
@@ -200,8 +226,7 @@ export function createEditorStore(engine: AiEngine) {
             gameVersion: version,
             board: new Uint8Array(current.position.board),
             player: current.position.nextPlayer,
-            difficulty: 'medium',
-            budgetMs: 800,
+            difficulty,
             purpose: 'hint',
           })
           .then(
@@ -219,6 +244,7 @@ export function createEditorStore(engine: AiEngine) {
                   status: 'done',
                   requestId,
                   version,
+                  difficulty,
                   response,
                   error: null,
                 },
@@ -237,6 +263,7 @@ export function createEditorStore(engine: AiEngine) {
                   status: 'error',
                   requestId,
                   version,
+                  difficulty,
                   response: null,
                   error: error instanceof Error ? error.message : String(error),
                 },

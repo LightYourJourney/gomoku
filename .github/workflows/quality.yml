@@ -62,6 +62,22 @@ jobs:
       - run: yarn e2e
       - run: yarn e2e:prod
 
+  browsers:
+    runs-on: ubuntu-latest
+    # 编辑器主路径在 Firefox / WebKit 各跑一遍；安装浏览器本体需要额外时间。
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '26'
+          cache: yarn
+      - run: yarn install --frozen-lockfile
+      - uses: ./.github/actions/install-cjk-font
+      # 这里刻意不用 channel: chrome：跑的就是 Playwright 自带引擎。
+      - run: yarn playwright install --with-deps firefox webkit
+      - run: yarn e2e:browsers
+
   probe:
     runs-on: ubuntu-latest
     # 本地全量 172 张约 4.7 分钟；runner 上更慢，给足。
