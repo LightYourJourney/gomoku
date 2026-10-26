@@ -214,6 +214,41 @@ describe('ReviewScreen 三段流转', () => {
     expect(screen.getByRole('button', { name: /回到棋谱列表/ })).toBeInTheDocument()
   })
 
+  it('从当前回放手创建分支并把配置交给 store 回调', async () => {
+    const storage = memoryGameRecords()
+    await storage.put(threeMoveRecord())
+    const onStartBranch = vi.fn(() => ({ ok: true } as const))
+    const analysis = createAnalysisStore()
+    const stopAnalysis = vi.spyOn(analysis.getState(), 'stop')
+    render(
+      <ReviewScreen
+        storage={storage}
+        engine={idleEngine()}
+        stores={{ replay: createReplayStore(), analysis }}
+        onStartBranch={onStartBranch}
+      />,
+    )
+    fireEvent.click((await screen.findAllByTestId(/^record-/))[0]!)
+
+    fireEvent.change(screen.getByLabelText('回放手数'), { target: { value: '2' } })
+    fireEvent.click(screen.getByRole('button', { name: '从这里继续对弈' }))
+    expect(await screen.findByTestId('branch-dialog')).toHaveTextContent('2 / 3 手')
+
+    fireEvent.change(screen.getByLabelText('分支对弈模式'), { target: { value: 'pvp' } })
+    const start = screen.getByRole('button', { name: '开始探索' })
+    fireEvent.click(start)
+    fireEvent.click(start)
+
+    expect(onStartBranch).toHaveBeenCalledTimes(1)
+    expect(onStartBranch).toHaveBeenCalledWith(
+      expect.objectContaining({ cursor: 2, mode: 'pvp' }),
+    )
+    expect(stopAnalysis).toHaveBeenCalled()
+    await waitFor(() =>
+      expect(screen.queryByTestId('branch-dialog')).not.toBeInTheDocument(),
+    )
+  })
+
   it('分析面板标注引擎档位、预算与版本（结论的出处）', async () => {
     const storage = memoryGameRecords()
     await storage.put(nineMoveRecord())

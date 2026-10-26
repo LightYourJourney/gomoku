@@ -1,5 +1,6 @@
 import { create, type StoreApi, type UseBoundStore } from 'zustand'
 import { opponentOf } from '../core/board'
+import { buildBranchGame } from '../core/branch'
 import {
   applyMove,
   createGame,
@@ -19,6 +20,8 @@ import type {
   SearchResponse,
   Urgency,
 } from '../ai/types'
+import type { GameRecord } from '../persist/gameRecords'
+import { recordContentKey } from '../persist/recordIdentity'
 import type { PersistedSession } from '../persist/storage'
 import { nextRequestId } from './requestCounter'
 
@@ -51,6 +54,29 @@ export interface AiInfo {
   readonly move: Point
 }
 
+/** 一次探索分支的来源。只保存回指所需的最小元数据，不复制原棋谱。 */
+export interface BranchOrigin {
+  readonly sourceSeq: number
+  /** 来源棋谱的规范化内容身份；原棋谱被删除后仍可用于说明来源。 */
+  readonly sourceContentKey: string
+  /** 分支起点：原棋谱已显示的落子数。 */
+  readonly cursor: number
+  readonly sourceMoves: number
+  readonly sourceFirstPlayer: Player
+}
+
+export interface BranchStartInput {
+  readonly source: GameRecord
+  readonly cursor: number
+  readonly mode: GameMode
+  readonly humanColor: Player
+  readonly difficulty: Difficulty
+}
+
+export type BranchStartResult =
+  | { readonly ok: true }
+  | { readonly ok: false; readonly error: string }
+
 export interface GameStore {
   readonly game: GameState
   readonly mode: GameMode
@@ -62,6 +88,8 @@ export interface GameStore {
   /** 启动时旧存档迁移失败的具体原因；null 表示没有失败。 */
   readonly sessionError: string | null
   readonly aiInfo: AiInfo | null
+  /** 当前对局是否来自棋谱探索分支；null = 普通对局。 */
+  readonly branch: BranchOrigin | null
   /** 当前在飞的 AI 请求；null 表示没有。用于作废过期响应。 */
   readonly pendingRequestId: number | null
 
@@ -95,6 +123,8 @@ export interface GameStore {
   readonly recordedSeq: number | null
 
   newGame(options?: { mode?: GameMode; humanColor?: Player; difficulty?: Difficulty }): void
+  /** 从棋谱前缀接管一局探索。校验失败时不修改当前对局。 */
+  startBranch(input: BranchStartInput): BranchStartResult
   /** 从本地存档恢复。传 null 表示没有存档，保持当前状态。 */
   restore(session: PersistedSession | null): void
   setSessionError(message: string | null): void
@@ -379,6 +409,7 @@ export function createGameStore(
       aiError: null,
       sessionError: null,
       aiInfo: null,
+      branch: null,
       pendingRequestId: null,
       recordSaveState: 'idle',
       recordedSeq: null,
@@ -396,6 +427,7 @@ export function createGameStore(
           aiError: null,
           sessionError: null,
           aiInfo: null,
+          branch: null,
           pendingRequestId: null,
           recordSaveState: 'idle',
           recordedSeq: null,
@@ -403,6 +435,49 @@ export function createGameStore(
         })
 
         get().requestAiMove()
+      },
+
+      startBranch(input) {
+        const built = buildBranchGame(
+          { moves: input.source.moves, firstPlayer: input.source.firstPlayer },
+          input.cursor,
+        )
+        if (!built.ok) return built
+
+        const { source } = input
+        notifier.reset()
+        set({
+          game: built.game,
+          mode: input.mode,
+          humanColor: input.humanColor,
+          difficulty: input.difficulty,
+          branch: {
+            sourceSeq: source.seq,
+            sourceContentKey: recordContentKey({
+              firstPlayer: source.firstPlayer,
+              moves: source.moves,
+              mode: source.mode,
+              humanColor: source.humanColor,
+              difficulty: source.difficulty,
+              resignedBy: source.resignedBy,
+            }),
+            cursor: input.cursor,
+            sourceMoves: source.moves.length,
+            sourceFirstPlayer: source.firstPlayer,
+          },
+          aiThinking: false,
+          aiError: null,
+          sessionError: null,
+          aiInfo: null,
+          pendingRequestId: null,
+          recordSaveState: 'idle',
+          recordedSeq: null,
+          ...HINT_CLEARED,
+        })
+
+        // 若玩家执白且分支起点轮到黑棋，进入对战后 AI 必须立刻接上。
+        get().requestAiMove()
+        return { ok: true }
       },
 
       restore(session) {
@@ -428,6 +503,7 @@ export function createGameStore(
           aiError: null,
           sessionError: null,
           aiInfo: null,
+          branch: null,
           pendingRequestId: null,
           ...HINT_CLEARED,
         })

@@ -19,7 +19,7 @@ analysis   learn        ← 分析结论与教学内容（两条互不依赖的�
 ## 各层职责
 
 **`core/`** —— 纯逻辑。
-`types.ts` 常量与类型；`board.ts` 索引换算、边界、读格；`rules.ts` 胜负判定与落子合法性；`game.ts` 对局状态机。全部是不可变纯函数。
+`types.ts` 常量与类型；`board.ts` 索引换算、边界、读格；`rules.ts` 胜负判定与落子合法性；`game.ts` 对局状态机；`branch.ts` 从合法前缀校验并重建探索分支局面。全部是不可变纯函数。
 
 **`ai/`** —— 引擎。
 `patterns.ts` 单点棋型分析（窗口枚举，含隔子型）；`evaluate.ts` 整盘线段评估；`incrementalEvaluate.ts` 与棋盘同步的增量评估（搜索叶子取分用）；`candidates.ts` 候选点生成；`difficulty.ts` 五档参数表；`transposition.ts` Zobrist 置换表；`threat.ts` 算杀搜索（VCF / VCT）；`search.ts` 搜索主体。`worker.ts` 是 Worker 外壳，`engine.ts` 是主线程侧的请求分发，`browserEngine.ts` 负责把两者接起来。
@@ -58,12 +58,13 @@ analysis   learn        ← 分析结论与教学内容（两条互不依赖的�
 `analyze.ts` 定义单手结论（`MoveVerdict`：分差 + 可靠度 + 引擎出处，含显式路径 `reason` / `SearchPath`）、结论文案与缓存键。**只做纯函数，不发请求**——请求编排在 store 层。结论里没有「最佳 / 失误」这类固定档位：把连续的分差压进几个标签等于替玩家下结论，而且阈值一拍脑袋就会把「稍有出入」说成「失误」。
 
 **`store/`** —— 状态编排。
-`gameStore.ts` 是对局与 AI 请求的状态机（工厂函数 `createGameStore(engine)`，可注入假引擎测试）；`useGameStore.ts` 组装真实引擎与存档，是应用唯一的单例入口；`learnStore.ts` 是学习进度与当前视图（工厂函数 `createLearnStore(storage)`，可注入假存储测试）；写入走串行 latest-wins 队列，`flush()` 只等队列排空，**不承诺已落盘**；`settingsStore.ts` 是主题、坐标、音效等偏好；`replayStore.ts` 是回放器（棋谱 + 游标 + 派生局面 + 自动播放 + 播放速度）——**回放位置只有这一个游标**，时间轴、步进按钮、跳到开局/终局、点分析结论跳转全都只经它走，界面上不存在第二份「当前第几手」；`analysisStore.ts` 是分析管线（逐局面排队、请求共享、会话内缓存）；`editorStore.ts` 是局面编辑器的局部快照历史、工具与只读分析状态（`version` 闸门；不碰 gameStore）；`requestCounter.ts` 是**全局唯一**的请求号计数器——对局、提示、分析、编辑器请求共用它。
+`gameStore.ts` 是对局与 AI 请求的状态机（工厂函数 `createGameStore(engine)`，可注入假引擎测试）；`useGameStore.ts` 组装真实引擎与存档，是应用唯一的单例入口；`learnStore.ts` 是学习进度与当前视图（工厂函数 `createLearnStore(storage)`，可注入假存储测试）；写入走串行 latest-wins 队列，`flush()` 只等队列排空，**不承诺已落盘**；`settingsStore.ts` 是主题、坐标、音效等偏好；`replayStore.ts` 是回放器（棋谱 + 游标 + 派生局面 + 自动播放 + 播放速度）——**回放位置只有这一个游标**，时间轴、步进按钮、跳到开局/终局、点分析结论跳转全都只经它走，界面上不存在第二份「当前第几手」；`analysisStore.ts` 是分析管线（逐局面排队、请求共享、会话内缓存）；`editorStore.ts` 是局面编辑器的局部快照历史、工具与只读分析状态（`version` 闸门；不碰 gameStore）；`gameStore.ts` 的 `startBranch` 是棋谱探索分支的唯一接管入口——只用合法前缀经 `replay()` 构建，清空旧 AI/提示/保存状态，并在 AI 回合立即续走；`requestCounter.ts` 是**全局唯一**的请求号计数器——对局、提示、分析、编辑器请求共用它。
 
 **`persist/`** —— 存档。
 `storage.ts` 负责对局存档的序列化与**结构校验**（localStorage）；`progress.ts` 负责学习进度、`gameRecords.ts` 负责多局棋谱（两者都在 IndexedDB）——它的 `list()` **从不上抛**（每一步失败都落内存兜底），所以把「读不出来」的两种情形**分开报**：`degraded`（底层不可用，数据来自兜底）与 `skipped`（读到了但没通过校验）。界面靠这两个信号如实说明，不会把两者一起说成「你还没下过棋」；`schema.ts` 是**库名、版本与建表的唯一出处**——两个模块共用一个库，各写一份版本号的话，先打开的那个只建自己的表，另一个同版本打开不触发升级、表不存在，事务失败后被内存兜底吞掉，症状是「界面说已保存、刷新就没了」。两处同一条口径：任何一处不符合预期都当作没有数据，宁可重来也不把半成品灌进状态机。
 
 **为什么分两种存储**：对局存档每次落子都要写、数据小、丢了就丢了；学习进度写得少但**丢了会让人白学一遍**，值得用更耐久的 IndexedDB。进度层在 IndexedDB 不可用时（隐私模式、open 抛错、被其他标签页占用）整体降级为内存态——进度丢了可以接受，白屏不行。
+
 
 `positions.ts` 是 Phase 11B 的自定义局面库：同一个 `gomoku-lab` 库的 `positions` 表（`DB_VERSION=3`），保存 `cells + nextPlayer + 可选 provenance + 创建/更新时间`；列表按最近保存排序，删除返回是否真正持久化；读到与盘面不一致的已知手顺时降级为自由摆盘，不丢盘面。内部记录 v1→v2 为只读迁移，旧记录时间显示「时间未知」。
 

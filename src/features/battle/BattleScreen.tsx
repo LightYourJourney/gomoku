@@ -85,6 +85,7 @@ export function BattleScreen({ sound: injectedSound }: BattleScreenProps = {}) {
   const sessionError = useGameStore((state) => state.sessionError)
   const aiInfo = useGameStore((state) => state.aiInfo)
   const recordSaveState = useGameStore((state) => state.recordSaveState)
+  const branch = useGameStore((state) => state.branch)
   const newGame = useGameStore((state) => state.newGame)
   const playHuman = useGameStore((state) => state.playHuman)
   const undoMove = useGameStore((state) => state.undoMove)
@@ -326,6 +327,19 @@ export function BattleScreen({ sound: injectedSound }: BattleScreenProps = {}) {
               上次对局没能恢复：{sessionError}
             </p>
           )}
+          {branch !== null && (
+            <div
+              data-testid="branch-banner"
+              role="status"
+              className="flex flex-wrap items-center justify-between gap-1 rounded-lg bg-accent-soft px-2 py-1 text-xs text-accent"
+            >
+              <span className="font-medium">棋谱探索 · 从第 {branch.cursor} 手继续</span>
+              <span className="text-muted">
+                来源 #{branch.sourceSeq} · 原局 {branch.sourceMoves} 手 · 原棋谱不会被修改
+              </span>
+            </div>
+          )}
+
           <MatchBar
             game={game}
             mode={mode}

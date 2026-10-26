@@ -3,6 +3,8 @@ import type { AiEngine } from '../ai/engine'
 import type { MoveSuggestion, SearchRequest, SearchResponse } from '../ai/types'
 import { idx } from '../core/board'
 import { BLACK, WHITE, type Point } from '../core/types'
+import { memoryGameRecords, type GameRecord } from '../persist/gameRecords'
+import { recordContentKey } from '../persist/recordIdentity'
 import { SCHEMA_VERSION, type PersistedSession } from '../persist/storage'
 import { createGame, resign } from '../core/game'
 import {
@@ -1363,5 +1365,217 @@ describe('AI 返回非法着法', () => {
 
     expect(state().game.moves).toHaveLength(2)
     expect(state().aiError).toBeNull()
+  })
+})
+
+describe('棋谱探索分支', () => {
+  const sourceMoves: readonly Point[] = [
+    { x: 3, y: 7 },
+    { x: 3, y: 9 },
+    { x: 4, y: 7 },
+    { x: 4, y: 9 },
+    { x: 5, y: 7 },
+  ]
+
+  function sourceRecord(overrides: Partial<GameRecord> = {}): GameRecord {
+    return {
+      seq: 4,
+      schemaVersion: 1,
+      moves: sourceMoves,
+      firstPlayer: BLACK,
+      mode: 'pve',
+      humanColor: WHITE,
+      difficulty: 'easy',
+      resignedBy: null,
+      winner: null,
+      ...overrides,
+    }
+  }
+
+  it('从第 N 手接管，只使用前缀，原棋谱不变，并自动轮到 AI', () => {
+    const record = sourceRecord()
+    const before = structuredClone(record)
+    const result = state().startBranch({
+      source: record,
+      cursor: 2,
+      mode: 'pve',
+      humanColor: WHITE,
+      difficulty: 'hard',
+    })
+
+    expect(result).toEqual({ ok: true })
+    expect(state().game.moves).toEqual(sourceMoves.slice(0, 2))
+    expect(state().game.current).toBe(BLACK)
+    expect(state().mode).toBe('pve')
+    expect(state().humanColor).toBe(WHITE)
+    expect(state().difficulty).toBe('hard')
+    expect(state().branch).toEqual({
+      sourceSeq: 4,
+      sourceContentKey: recordContentKey({
+        firstPlayer: record.firstPlayer,
+        moves: record.moves,
+        mode: record.mode,
+        humanColor: record.humanColor,
+        difficulty: record.difficulty,
+        resignedBy: record.resignedBy,
+      }),
+      cursor: 2,
+      sourceMoves: 5,
+      sourceFirstPlayer: BLACK,
+    })
+    expect(record).toEqual(before)
+
+    // 玩家执白、分支起点轮黑：进入后必须立刻发起 AI 请求，而不是等玩家点一步。
+    expect(engine.requests).toHaveLength(1)
+    expect(engine.lastRequest.player).toBe(BLACK)
+    expect(engine.lastRequest.gameVersion).toBe(2)
+  })
+
+  it('取消/无效分支不修改当前对局', () => {
+    const record = sourceRecord()
+    const before = state().game
+    const result = state().startBranch({
+      source: record,
+      cursor: 99,
+      mode: 'pve',
+      humanColor: BLACK,
+      difficulty: 'easy',
+    })
+
+    expect(result.ok).toBe(false)
+    expect(state().game).toBe(before)
+    expect(state().branch).toBeNull()
+  })
+
+  it('分支接管会作废旧 AI 响应与旧提示', async () => {
+    // 旧落子请求：玩家执白 → AI 执黑，newGame 会立刻发请求。
+    state().newGame({ mode: 'pve', humanColor: WHITE })
+    const oldAi = engine.lastRequest
+    state().startBranch({
+      source: sourceRecord(),
+      cursor: 1,
+      mode: 'pvp',
+      humanColor: BLACK,
+      difficulty: 'easy',
+    })
+    expect(state().pendingRequestId).toBeNull()
+    engine.respondTo(
+      oldAi.requestId,
+      makeResponse(oldAi.requestId, oldAi.gameVersion, { x: 9, y: 9 }),
+    )
+    await flush()
+    expect(state().game.moves).toEqual(sourceMoves.slice(0, 1))
+    expect(state().aiInfo).toBeNull()
+
+    // 旧提示：玩家执黑轮到玩家，允许求提示；再接管分支。
+    state().newGame({ mode: 'pve', humanColor: BLACK })
+    state().requestHint()
+    const oldHint = engine.lastRequest
+    expect(state().pendingHintRequestId).not.toBeNull()
+    state().startBranch({
+      source: sourceRecord(),
+      cursor: 1,
+      mode: 'pvp',
+      humanColor: BLACK,
+      difficulty: 'easy',
+    })
+    expect(state().pendingHintRequestId).toBeNull()
+    engine.respondTo(oldHint.requestId, {
+      ...makeResponse(oldHint.requestId, oldHint.gameVersion, null),
+      candidates: [{ move: { x: 9, y: 9 }, score: 1, attack: 'three', defense: 'none' }],
+      urgency: 'normal',
+    })
+    await flush()
+    expect(state().hint).toBeNull()
+    expect(state().game.moves).toEqual(sourceMoves.slice(0, 1))
+  })
+
+  it('认输局的最后一手盘面可以继续，且不继承认输', () => {
+    const result = state().startBranch({
+      source: sourceRecord({ resignedBy: BLACK }),
+      cursor: 5,
+      mode: 'pvp',
+      humanColor: BLACK,
+      difficulty: 'easy',
+    })
+    expect(result).toEqual({ ok: true })
+    expect(state().game.status).toBe('playing')
+    expect(state().game.moves).toHaveLength(5)
+    expect(state().branch).not.toBeNull()
+  })
+
+  it('分支完成后保存为独立棋谱；原棋谱删除后分支仍可重放', async () => {
+    const records = memoryGameRecords()
+    const sourceMoves: readonly Point[] = [
+      { x: 3, y: 7 },
+      { x: 3, y: 9 },
+      { x: 4, y: 7 },
+      { x: 4, y: 9 },
+      { x: 5, y: 7 },
+      { x: 5, y: 9 },
+      { x: 6, y: 7 },
+      { x: 6, y: 9 },
+      { x: 10, y: 10 },
+    ]
+    const source = (
+      await records.put({
+        moves: sourceMoves,
+        firstPlayer: BLACK,
+        mode: 'pvp',
+        humanColor: BLACK,
+        difficulty: 'easy',
+        resignedBy: null,
+      })
+    ).record
+    const sourceBefore = structuredClone(source)
+
+    const branchStore = createGameStore(engine, {
+      onGameEnd: async (input) => {
+        const { record } = await records.put({
+          moves: input.moves,
+          firstPlayer: input.firstPlayer,
+          mode: input.mode,
+          humanColor: input.humanColor,
+          difficulty: input.difficulty,
+          resignedBy: input.resignedBy,
+        })
+        return record.seq
+      },
+    })
+    branchStore.getState().startBranch({
+      source,
+      cursor: 8,
+      mode: 'pvp',
+      humanColor: BLACK,
+      difficulty: 'easy',
+    })
+    branchStore.getState().playHuman({ x: 7, y: 7 })
+    await flush()
+
+    const afterBranch = await records.list()
+    expect(afterBranch.records).toHaveLength(2)
+    expect(source).toEqual(sourceBefore)
+
+    const branch = afterBranch.records.find((entry) => entry.seq !== source.seq)!
+    expect(branch.moves).toHaveLength(9)
+    expect(branch.winner).toBe(BLACK)
+
+    await records.delete(source.seq)
+    const afterDelete = await records.list()
+    expect(afterDelete.records).toHaveLength(1)
+    expect(afterDelete.records[0]!.moves).toEqual(branch.moves)
+  })
+
+  it('开始普通新局会清除分支身份', () => {
+    state().startBranch({
+      source: sourceRecord(),
+      cursor: 1,
+      mode: 'pvp',
+      humanColor: BLACK,
+      difficulty: 'easy',
+    })
+    expect(state().branch).not.toBeNull()
+    state().newGame()
+    expect(state().branch).toBeNull()
   })
 })

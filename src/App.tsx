@@ -56,6 +56,7 @@ export default function App() {
           storage={indexedDbGameRecords}
           engine={appEngine}
           onRestoreSession={(session) => useGameStore.getState().restore(session)}
+          onStartBranch={(input) => useGameStore.getState().startBranch(input)}
         />
       )}
     </div>

@@ -15,6 +15,8 @@ export interface ReplayBoardProps {
   readonly onExit: () => void
   /** 右侧栏追加内容（分析面板）。 */
   readonly extraPanel?: ReactNode
+  /** 从当前游标创建探索分支；未接线时不渲染入口。 */
+  readonly onContinue?: (cursor: number) => void
 }
 
 /**
@@ -53,7 +55,7 @@ const STEP_FONT_SIZE = 0.51
  * `startTimer`），本组件只负责：卸载时如果还在播就停掉，
  * 以及把「手动定位」的意图转给 store。
  */
-export function ReplayBoard({ store, onExit, extraPanel }: ReplayBoardProps) {
+export function ReplayBoard({ store, onExit, extraPanel, onContinue }: ReplayBoardProps) {
   const {
     record, cursor, playing, speed, position,
     hasPrev, hasNext, stepPrev, stepNext, goTo, play, pause, setSpeed,
@@ -124,6 +126,12 @@ export function ReplayBoard({ store, onExit, extraPanel }: ReplayBoardProps) {
           </div>
 
           <ReplayTimeline cursor={cursor} total={total} onSeek={goTo} />
+
+          {onContinue !== undefined && (
+            <Button block onClick={() => onContinue(cursor)}>
+              从这里继续对弈
+            </Button>
+          )}
 
           <div className="flex gap-2">
             <Button block disabled={!hasPrev} onClick={() => goTo(0)}>

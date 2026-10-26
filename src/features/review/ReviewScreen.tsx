@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useStore } from 'zustand'
 import { createReplayStore } from '../../store/replayStore'
 import { ANALYSIS_BUDGET_MS, createAnalysisStore } from '../../store/analysisStore'
@@ -13,6 +13,7 @@ import { Button } from '../../components/ui/Button'
 import { Panel } from '../../components/ui/Panel'
 import { PageShell } from '../shell/PageShell'
 import type { AiEngine } from '../../ai/engine'
+import type { BranchStartInput, BranchStartResult } from '../../store/gameStore'
 import { useLearnStore } from '../../store/learnStore'
 import { useSettingsStore } from '../../store/settingsStore'
 import { loadProgress, mergeProgress } from '../../persist/progress'
@@ -22,6 +23,7 @@ import type { DataManagementServices } from './DataManagementPanel'
 import { GameLibrary } from './GameLibrary'
 import { PositionEditor } from '../positions/PositionEditor'
 import { ReplayBoard } from './ReplayBoard'
+import { BranchDialog, type BranchConfig } from './BranchDialog'
 
 export interface ReviewScreenProps {
   readonly storage: GameRecordsStorage
@@ -41,6 +43,8 @@ export interface ReviewScreenProps {
   readonly onRestoreSession?: (session: PersistedSession) => void
   /** 测试可注入；生产默认用 IndexedDB 局面库。 */
   readonly positions?: PositionStorage
+  /** 生产由 App 注入 gameStore.startBranch；测试/未接线时不渲染分支入口。 */
+  readonly onStartBranch?: (input: BranchStartInput) => BranchStartResult
 }
 
 /**
@@ -49,7 +53,7 @@ export interface ReviewScreenProps {
  * 两个 store 用 ref 持有：它们是本页面的会话状态，离开页面即丢弃
  * （回放游标不持久化是有意的——它是浏览行为，不是进度）。
  */
-export function ReviewScreen({ storage, engine, stores, onRestoreSession, positions }: ReviewScreenProps) {
+export function ReviewScreen({ storage, engine, stores, onRestoreSession, positions, onStartBranch }: ReviewScreenProps) {
   // 惰性单例：useState 的初始化函数只跑一次，且不会在渲染期读 ref。
   const [ownReplay] = useState(createReplayStore)
   const [ownAnalysis] = useState(createAnalysisStore)
@@ -74,6 +78,10 @@ export function ReviewScreen({ storage, engine, stores, onRestoreSession, positi
 
   const [open, setOpen] = useState(false)
   const [editorOpen, setEditorOpen] = useState(false)
+  const [branchCursor, setBranchCursor] = useState<number | null>(null)
+  const [branchError, setBranchError] = useState<string | null>(null)
+  const branchSubmitting = useRef(false)
+  const replayRecord = useStore(replay, (state) => state.record)
 
   /*
    * 数据管理的能力注入。`Date.now` 只传引用、不在这里调用——文件名的时间戳
@@ -117,13 +125,44 @@ export function ReviewScreen({ storage, engine, stores, onRestoreSession, positi
   function openRecord(record: GameRecord) {
     analysis.getState().stop()
     replay.getState().open(record)
+    setBranchCursor(null)
+    setBranchError(null)
     setOpen(true)
   }
 
   function closeRecord() {
     analysis.getState().stop()
     replay.getState().close()
+    setBranchCursor(null)
+    setBranchError(null)
     setOpen(false)
+  }
+
+  function confirmBranch(config: BranchConfig): void {
+    if (onStartBranch === undefined || replayRecord === null || branchCursor === null) return
+    if (branchSubmitting.current) return
+    branchSubmitting.current = true
+    try {
+      const result = onStartBranch({
+        source: replayRecord,
+        cursor: branchCursor,
+        ...config,
+      })
+      if (!result.ok) {
+        setBranchError(result.error)
+        branchSubmitting.current = false
+        return
+      }
+      analysis.getState().stop()
+      replay.getState().pause()
+      setBranchCursor(null)
+      setBranchError(null)
+      setView('battle')
+      // 成功后保持锁直到本页卸载；连点不能再次接管同一个分支。
+    } catch (error) {
+      branchSubmitting.current = false
+      setBranchError(error instanceof Error ? error.message : String(error))
+    }
   }
 
   if (editorOpen) {
@@ -169,11 +208,34 @@ export function ReviewScreen({ storage, engine, stores, onRestoreSession, positi
           </div>
         }
       >
-        <ReplayBoard
-          store={replay}
-          onExit={closeRecord}
-          extraPanel={<AnalysisPanel store={analysis} engine={engine} replay={replay} />}
-        />
+        <>
+          <ReplayBoard
+            store={replay}
+            onExit={closeRecord}
+            onContinue={
+              onStartBranch === undefined
+                ? undefined
+                : (cursor) => {
+                    setBranchError(null)
+                    setBranchCursor(cursor)
+                  }
+            }
+            extraPanel={<AnalysisPanel store={analysis} engine={engine} replay={replay} />}
+          />
+          {branchCursor !== null && replayRecord !== null && (
+            <BranchDialog
+              key={`${replayRecord.seq}:${branchCursor}`}
+              record={replayRecord}
+              cursor={branchCursor}
+              error={branchError}
+              onCancel={() => {
+                setBranchCursor(null)
+                setBranchError(null)
+              }}
+              onConfirm={confirmBranch}
+            />
+          )}
+        </>
       </PageShell>
     )
   }

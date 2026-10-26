@@ -1,5 +1,7 @@
 import { LESSONS } from '../src/learn/lessons'
 import { expect, test } from '@playwright/test'
+import { BLACK } from '../src/core/types'
+import { seedGameRecords } from './helpers/seed'
 
 /**
  * 触屏相关的验收。
@@ -331,4 +333,47 @@ test('局面研究：窄屏触摸放子/擦除，且不横向溢出', async ({ p
     () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
   )
   expect(overflow).toBe(0)
+})
+
+
+test('棋谱分支：移动端确认框不溢出，能进入探索对战', async ({ page }) => {
+  await seedGameRecords(page, [
+    {
+      schemaVersion: 1,
+      moves: [
+        { x: 3, y: 7 },
+        { x: 3, y: 9 },
+        { x: 4, y: 7 },
+      ],
+      firstPlayer: BLACK,
+      mode: 'pvp',
+      humanColor: BLACK,
+      difficulty: 'easy',
+      resignedBy: null,
+    },
+  ])
+  await page.goto('/')
+  await page.getByRole('button', { name: '复盘', exact: true }).click()
+  await page.getByTestId(/^record-/).first().click()
+
+  const slider = page.getByLabel('回放手数')
+  await slider.focus()
+  await slider.press('Home')
+  await slider.press('ArrowRight')
+  await page.getByRole('button', { name: '从这里继续对弈' }).tap()
+  await expect(page.getByTestId('branch-dialog')).toBeVisible()
+
+  const overflow = await page.evaluate(
+    () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+  )
+  expect(overflow).toBe(0)
+
+  await page.getByRole('button', { name: '开始探索' }).tap()
+  await expect(page.getByTestId('branch-banner')).toContainText('从第 1 手继续')
+  await expect(page.getByTestId('board')).toBeVisible()
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    ),
+  ).toBe(0)
 })
