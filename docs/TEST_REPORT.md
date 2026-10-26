@@ -1996,6 +1996,7 @@ Worker / 提示 / 复盘预算的既有用例未改，全部通过。
 | `yarn e2e:browsers` | Firefox 9 / WebKit 9，**18 / 18** |
 | `yarn gates` | 0 环 / knip 通过 / 0 重复 / 棘轮 1,333 · 177 |
 | `yarn bench:check` | 19/19 + 29 不变量 |
+| GitHub Actions `quality` | run `40367343061`（提交 `5c48612`）五个 job 全绿 |
 | `yarn ui:probe --out ci` | 38 状态 / 308 张，七条判据全过 |
 | 覆盖棘轮 | 3,084 条，未缩小（+136 新增覆盖） |
 | GitHub Actions `quality`（0.4.0 发布） | run `40099529506`（提交 `d20eca9`）五个 job 全绿；发布时读数 1,331 / 174 / 12 |
