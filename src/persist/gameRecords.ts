@@ -232,12 +232,13 @@ export function memoryGameRecords(degraded = false): GameRecordsStorage {
 export async function saveGameReplacing(
   input: GameRecordInput,
   replacesSeq: number | null,
+  options: { readonly allowContentMatch?: boolean } = {},
 ): Promise<PutResult> {
   const saved = await indexedDbGameRecords.put(input)
   if (!saved.persisted) return saved // 没落库就不动旧的
 
   let target = replacesSeq
-  if (target === null) {
+  if (target === null && options.allowContentMatch !== false) {
     // 这里只关心记录本身，降级与跳过两个信号在这条路径上没有意义
     const { records: existing } = await indexedDbGameRecords.list()
     const sameGame = existing.find(

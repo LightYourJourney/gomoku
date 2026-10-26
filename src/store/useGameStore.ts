@@ -20,7 +20,9 @@ export const useGameStore = createGameStore(appEngine, {
   // 终局自动入库。返回 promise 让 store 能把「存上了 / 没存上」如实反映到界面。
   // 替换语义（同一局只留一条）与「先写后删」的顺序都在 saveGameReplacing 里。
   onGameEnd: async (input) => {
-    const { record, persisted } = await saveGameReplacing(input, input.replacesSeq)
+    const { record, persisted } = await saveGameReplacing(input, input.replacesSeq, {
+      allowContentMatch: input.branchSourceSeq === null,
+    })
     // 没真正落库（隐私模式退了内存兜底）→ 抛错，让界面如实说「没能保存这局」，
     // 而不是显示「已存入」然后刷新就没了。
     if (!persisted) throw new Error('没能写入棋谱库')

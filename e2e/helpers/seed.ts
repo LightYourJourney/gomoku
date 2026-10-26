@@ -2,8 +2,10 @@ import type { Page } from '@playwright/test'
 import {
   DB_NAME,
   DB_VERSION,
+  POSITIONS_KEY_PATH,
   POSITIONS_STORE,
   PROGRESS_STORE,
+  RECORDS_KEY_PATH,
   RECORDS_STORE,
 } from '../../src/persist/schema'
 
@@ -19,7 +21,7 @@ export async function seedGameRecords(
 ): Promise<void> {
   await page.goto('/robots.txt')
   await page.evaluate(
-    async ({ dbName, version, progressStore, recordsStore, positionsStore, rows }) => {
+    async ({ dbName, version, progressStore, recordsStore, positionsStore, recordsKeyPath, positionsKeyPath, rows }) => {
       await new Promise<void>((resolve) => {
         const del = indexedDB.deleteDatabase(dbName)
         del.onsuccess = del.onerror = del.onblocked = () => resolve()
@@ -29,8 +31,8 @@ export async function seedGameRecords(
         req.onupgradeneeded = () => {
           const db = req.result
           db.createObjectStore(progressStore)
-          db.createObjectStore(recordsStore, { keyPath: 'seq', autoIncrement: true })
-          db.createObjectStore(positionsStore, { keyPath: 'id', autoIncrement: true })
+          db.createObjectStore(recordsStore, { keyPath: recordsKeyPath, autoIncrement: true })
+          db.createObjectStore(positionsStore, { keyPath: positionsKeyPath, autoIncrement: true })
         }
         req.onerror = () => reject(req.error)
         req.onsuccess = () => {
@@ -51,6 +53,8 @@ export async function seedGameRecords(
       progressStore: PROGRESS_STORE,
       recordsStore: RECORDS_STORE,
       positionsStore: POSITIONS_STORE,
+      recordsKeyPath: RECORDS_KEY_PATH,
+      positionsKeyPath: POSITIONS_KEY_PATH,
       rows: records,
     },
   )

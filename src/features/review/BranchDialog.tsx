@@ -4,15 +4,12 @@ import type { Difficulty } from '../../ai/types'
 import { buildBranchGame } from '../../core/branch'
 import type { Player } from '../../core/types'
 import type { GameRecord } from '../../persist/gameRecords'
-import type { GameMode } from '../../store/gameStore'
+import type { BranchConfig, GameMode } from '../../store/gameStore'
 import { Button } from '../../components/ui/Button'
 import { Modal } from '../../components/ui/Modal'
 
-export interface BranchConfig {
-  readonly mode: GameMode
-  readonly humanColor: Player
-  readonly difficulty: Difficulty
-}
+const SELECT_CLASS =
+  'mt-1 w-full rounded-lg border border-border bg-surface-2 px-3 py-2 text-sm text-fg'
 
 export interface BranchDialogProps {
   readonly record: GameRecord
@@ -45,6 +42,7 @@ export function BranchDialog({
   )
   const blocked = built.ok ? null : built.error
   const nextPlayer = built.ok ? built.game.current : null
+  const pve = mode === 'pve'
 
   return (
     <Modal
@@ -98,14 +96,14 @@ export function BranchDialog({
             aria-label="分支对弈模式"
             value={mode}
             onChange={(event) => setMode(event.target.value === 'pvp' ? 'pvp' : 'pve')}
-            className="mt-1 w-full rounded-lg border border-border bg-surface-2 px-3 py-2 text-sm text-fg"
+            className={SELECT_CLASS}
           >
             <option value="pve">人机对战</option>
             <option value="pvp">本地双人</option>
           </select>
         </label>
 
-        {mode === 'pve' && (
+        {pve && (
           <label className="block text-xs text-faint">
             玩家执子
             <select
@@ -114,7 +112,7 @@ export function BranchDialog({
               onChange={(event) =>
                 setHumanColor(event.target.value === '2' ? 2 : 1)
               }
-              className="mt-1 w-full rounded-lg border border-border bg-surface-2 px-3 py-2 text-sm text-fg"
+              className={SELECT_CLASS}
             >
               <option value="1">黑棋</option>
               <option value="2">白棋</option>
@@ -122,7 +120,7 @@ export function BranchDialog({
           </label>
         )}
 
-        {mode === 'pve' && (
+        {pve && (
           <label className="block text-xs text-faint">
             AI 难度
             <select
@@ -131,7 +129,7 @@ export function BranchDialog({
               onChange={(event) => {
                 if (isDifficulty(event.target.value)) setDifficulty(event.target.value)
               }}
-              className="mt-1 w-full rounded-lg border border-border bg-surface-2 px-3 py-2 text-sm text-fg"
+              className={SELECT_CLASS}
             >
               {AVAILABLE_DIFFICULTIES.map((entry) => (
                 <option key={entry} value={entry}>

@@ -1421,7 +1421,6 @@ describe('棋谱探索分支', () => {
       }),
       cursor: 2,
       sourceMoves: 5,
-      sourceFirstPlayer: BLACK,
     })
     expect(record).toEqual(before)
 
@@ -1429,6 +1428,19 @@ describe('棋谱探索分支', () => {
     expect(engine.requests).toHaveLength(1)
     expect(engine.lastRequest.player).toBe(BLACK)
     expect(engine.lastRequest.gameVersion).toBe(2)
+  })
+
+  it('玩家执黑且轮到玩家时不自动请求 AI', () => {
+    const result = state().startBranch({
+      source: sourceRecord(),
+      cursor: 2,
+      mode: 'pve',
+      humanColor: BLACK,
+      difficulty: 'easy',
+    })
+    expect(result).toEqual({ ok: true })
+    expect(state().game.current).toBe(BLACK)
+    expect(engine.requests).toHaveLength(0)
   })
 
   it('取消/无效分支不修改当前对局', () => {
@@ -1531,6 +1543,7 @@ describe('棋谱探索分支', () => {
 
     const branchStore = createGameStore(engine, {
       onGameEnd: async (input) => {
+        expect(input.branchSourceSeq).toBe(source.seq)
         const { record } = await records.put({
           moves: input.moves,
           firstPlayer: input.firstPlayer,

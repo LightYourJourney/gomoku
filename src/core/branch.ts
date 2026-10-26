@@ -39,6 +39,12 @@ export function buildBranchGame(source: BranchSource, cursor: number): BranchBui
     return { ok: false, error: '分支手数必须位于 0 到棋谱总手数之间' }
   }
 
+  // 先验证**整条**来源手顺：损坏的尾段即使不在前缀内，也说明这不是一条可信棋谱。
+  const full = replay(source.moves, source.firstPlayer)
+  if (full.moves.length !== source.moves.length) {
+    return { ok: false, error: '棋谱手顺无法完整重放，不能创建分支' }
+  }
+
   const prefix = source.moves.slice(0, cursor)
   const game = replay(prefix, source.firstPlayer)
   if (game.moves.length !== prefix.length) {

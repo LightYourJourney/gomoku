@@ -59,6 +59,15 @@ test('分支：47 手棋谱第 26 手继续，AI 接管并保存独立棋谱', a
     .poll(async () => page.getByTestId(/^stone-/).count(), { timeout: 20_000 })
     .toBeGreaterThan(26)
 
+  await page.setViewportSize({ width: 1440, height: 900 })
+  const board = await page.getByTestId('board').boundingBox()
+  expect(board).not.toBeNull()
+  if (board !== null) {
+    expect(board.width).toBeGreaterThanOrEqual(620)
+    expect(board.width / 1440).toBeGreaterThanOrEqual(0.35)
+  }
+  await expect(page.getByTestId('branch-banner')).toBeVisible()
+
   await page.getByRole('button', { name: '认输' }).click()
   await page.getByRole('button', { name: '确认认输' }).click()
   await expect(page.getByRole('dialog')).toContainText('这局已存入棋谱库')

@@ -27,7 +27,7 @@ Phase 07 的最终门禁、探针对照与基准在 `ui-redesign/FINAL_TEST_REPO
 
 | 项 | 数量 |
 | --- | --- |
-| 单元 / 组件用例 | **1353**（85 个文件） |
+| 单元 / 组件用例 | **1356**（85 个文件） |
 | 端到端用例 | **179**（桌面 156 + 移动触屏 13 + 平板 10，共 13 个 spec 文件），另有生产构建冒烟 6 条（`yarn e2e:prod`）与 Firefox/WebKit 编辑器专项 18 条（`yarn e2e:browsers`） |
 | 界面基线与量测 | `yarn ui:probe`：38 个受控状态 × 视口矩阵 = 308 张截图 + 308 条 DOM 量测，逐张可对照（Phase 05 是 34 / 276，Phase 04 是 29 / 236，Phase 03 是 27 / 220，Phase 02 是 21 / 172） |
 | 质量门禁 | 本地 pre-push 快档（5 条命令，热跑 30–45 秒，看机器负载）+ CI 全档（5 个 job）+ 四道防退化闸门 + 两把覆盖棘轮，见「〇之十一」 |
@@ -2027,12 +2027,13 @@ Worker / 提示 / 复盘预算的既有用例未改，全部通过。
 
 **定位**：从回放游标创建单层探索对局；原棋谱不变，完成后独立入库。
 
-### 新增用例（+20 单测 / +2 E2E）
+### 新增用例（+23 单测 / +2 E2E）
 
 | 文件 | 条数 | 钉住什么 |
 | --- | --- | --- |
-| `src/core/branch.test.ts` | 8 | 0/1/中盘/最后一手前、五连、和棋、非法前缀、越界 |
-| `src/store/gameStore.test.ts` | +6 | 前缀接管、原棋谱不变、AI 自动续走、旧响应/旧提示作废、认输局、独立保存/源删除 |
+| `src/core/branch.test.ts` | 9 | 0/1/中盘/最后一手前、五连、和棋、非法前缀/损坏尾段、越界 |
+| `src/store/gameStore.test.ts` | +7 | 前缀接管、原棋谱不变、AI 自动续走、旧响应/旧提示作废、认输局、独立保存/源删除、玩家执黑不自动请求 |
+| `src/persist/gameRecords.test.ts` | +1 | 分支同名局关闭内容匹配，不删除源棋谱 |
 | `src/features/review/BranchDialog.test.tsx` | 5 | 分支点/下一手、模式/执子/难度、终局禁用、取消、错误 |
 | `src/features/review/review.test.tsx` | +1 | 回放页创建分支、配置回传、连点只接管一次 |
 | `e2e/variations.spec.ts` | 1 | 47 手 → 第 26 手 → 分支 → AI → 保存 → 刷新后两条棋谱 |
@@ -2043,15 +2044,28 @@ Worker / 提示 / 复盘预算的既有用例未改，全部通过。
 | 命令 | 结果 |
 | --- | --- |
 | `yarn lint` / `yarn typecheck` | 通过 |
-| `yarn test` | **1,353 / 1,353**（85 文件） |
+| `yarn test` | **1,356 / 1,356**（85 文件） |
 | `yarn build` | 通过 |
 | `yarn e2e` | **179 / 179** |
 | `yarn e2e:prod` | **6 / 6** |
 | `yarn e2e:browsers` | **18 / 18** |
-| `yarn gates` | 0 环 / knip / 0 重复 / 棘轮 1,353 · 179 |
+| `yarn gates` | 0 环 / knip / 0 重复 / 棘轮 1,356 · 179 |
 | `yarn bench:check` | 19/19 + 29 不变量 |
 | `yarn ui:probe --out ci` | 308 张，七条判据全过 |
 | GitHub Actions `quality` | run `40289429891`（提交 `4ad2d8e`）五个 job 全绿 |
+
+### 两轴评审整改（2026-10-26）
+
+- **P1 原棋谱保护**：分支若复现原手顺（认输局从最后一手继续后立即认输），
+  `saveGameReplacing` 的内容匹配会删掉原记录。已增加
+  `allowContentMatch:false`（`GameEndInput.branchSourceSeq` 驱动），分支首次完成
+  永不按内容删除源棋谱；分支自身终局后悔棋再终局仍用 `replacesSeq` 替换自己。
+- **来源完整性**：`buildBranchGame` 先整条重放来源手顺，再重建前缀；损坏尾段
+  即使不在前缀内也拒绝。
+- **布局**：分支横幅移入对战右栏，不再占用中列棋盘高度；47→26 E2E 在 1440×900
+  实测棋盘 ≥620px 且 ≥35%。
+- **反证**：移除五连判断 → 分支核心用例变红；移除 `allowContentMatch` 开关 →
+  同名局保护用例变红；损坏尾段用例在修复前确实失败。
 
 ### 实测流程
 

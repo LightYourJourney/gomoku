@@ -30,7 +30,6 @@ interface BranchOrigin {
   sourceContentKey: string // recordContentKey，不是 seq
   cursor: number           // 0 = 空盘，N = 第 N 手之后
   sourceMoves: number
-  sourceFirstPlayer: Player
 }
 ```
 

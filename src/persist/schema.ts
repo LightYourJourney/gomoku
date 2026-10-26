@@ -17,6 +17,8 @@ export const DB_VERSION = 3
 export const PROGRESS_STORE = 'progress'
 export const RECORDS_STORE = 'records'
 export const POSITIONS_STORE = 'positions'
+export const RECORDS_KEY_PATH = 'seq'
+export const POSITIONS_KEY_PATH = 'id'
 
 /**
  * 建表。每处 `onupgradeneeded` 都要调它——**不是只建自己那一个表**：
@@ -25,9 +27,9 @@ export const POSITIONS_STORE = 'positions'
 export function ensureSchema(db: IDBDatabase): void {
   if (!db.objectStoreNames.contains(PROGRESS_STORE)) db.createObjectStore(PROGRESS_STORE)
   if (!db.objectStoreNames.contains(RECORDS_STORE)) {
-    db.createObjectStore(RECORDS_STORE, { keyPath: 'seq', autoIncrement: true })
+    db.createObjectStore(RECORDS_STORE, { keyPath: RECORDS_KEY_PATH, autoIncrement: true })
   }
   if (!db.objectStoreNames.contains(POSITIONS_STORE)) {
-    db.createObjectStore(POSITIONS_STORE, { keyPath: 'id', autoIncrement: true })
+    db.createObjectStore(POSITIONS_STORE, { keyPath: POSITIONS_KEY_PATH, autoIncrement: true })
   }
 }

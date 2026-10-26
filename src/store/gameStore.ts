@@ -62,15 +62,17 @@ export interface BranchOrigin {
   /** 分支起点：原棋谱已显示的落子数。 */
   readonly cursor: number
   readonly sourceMoves: number
-  readonly sourceFirstPlayer: Player
 }
 
-export interface BranchStartInput {
-  readonly source: GameRecord
-  readonly cursor: number
+export interface BranchConfig {
   readonly mode: GameMode
   readonly humanColor: Player
   readonly difficulty: Difficulty
+}
+
+export interface BranchStartInput extends BranchConfig {
+  readonly source: GameRecord
+  readonly cursor: number
 }
 
 export type BranchStartResult =
@@ -163,6 +165,16 @@ const HINT_CLEARED = {
   hintThinking: false,
   hintError: null,
   pendingHintRequestId: null,
+} as const
+
+/** 开新局、分支接管、恢复存档都要清掉的临时状态。 */
+const TRANSIENT_RESET = {
+  aiThinking: false,
+  aiError: null,
+  sessionError: null,
+  aiInfo: null,
+  pendingRequestId: null,
+  ...HINT_CLEARED,
 } as const
 
 /** 第 index 手（0-based）由谁落子。 */
@@ -258,6 +270,8 @@ export interface GameEndInput {
   readonly humanColor: Player
   readonly difficulty: Difficulty
   readonly resignedBy: Player | null
+  /** 若这是探索分支，来源棋谱 seq；普通对局为 null。 */
+  readonly branchSourceSeq: number | null
   /**
    * 这一条要替换掉的棋谱 seq，`null` 表示新的一条。
    *
@@ -357,6 +371,7 @@ export function createGameStore(
           humanColor: before.humanColor,
           difficulty: before.difficulty,
           resignedBy: resignerOf(after),
+          branchSourceSeq: before.branch?.sourceSeq ?? null,
         }
 
         // 存储是异步的，界面需要知道最终成没成
@@ -423,15 +438,10 @@ export function createGameStore(
           mode: options.mode ?? current.mode,
           humanColor: options.humanColor ?? current.humanColor,
           difficulty: options.difficulty ?? current.difficulty,
-          aiThinking: false,
-          aiError: null,
-          sessionError: null,
-          aiInfo: null,
           branch: null,
-          pendingRequestId: null,
           recordSaveState: 'idle',
           recordedSeq: null,
-          ...HINT_CLEARED,
+          ...TRANSIENT_RESET,
         })
 
         get().requestAiMove()
@@ -453,26 +463,13 @@ export function createGameStore(
           difficulty: input.difficulty,
           branch: {
             sourceSeq: source.seq,
-            sourceContentKey: recordContentKey({
-              firstPlayer: source.firstPlayer,
-              moves: source.moves,
-              mode: source.mode,
-              humanColor: source.humanColor,
-              difficulty: source.difficulty,
-              resignedBy: source.resignedBy,
-            }),
+            sourceContentKey: recordContentKey(source),
             cursor: input.cursor,
             sourceMoves: source.moves.length,
-            sourceFirstPlayer: source.firstPlayer,
           },
-          aiThinking: false,
-          aiError: null,
-          sessionError: null,
-          aiInfo: null,
-          pendingRequestId: null,
           recordSaveState: 'idle',
           recordedSeq: null,
-          ...HINT_CLEARED,
+          ...TRANSIENT_RESET,
         })
 
         // 若玩家执白且分支起点轮到黑棋，进入对战后 AI 必须立刻接上。
@@ -499,13 +496,8 @@ export function createGameStore(
           mode: session.mode,
           humanColor: session.humanColor,
           difficulty: session.difficulty,
-          aiThinking: false,
-          aiError: null,
-          sessionError: null,
-          aiInfo: null,
           branch: null,
-          pendingRequestId: null,
-          ...HINT_CLEARED,
+          ...TRANSIENT_RESET,
         })
 
         // 存档时若正轮到 AI（刷新页面时它还在思考），恢复后要接着把这局走完。

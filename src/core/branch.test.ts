@@ -86,6 +86,23 @@ describe('buildBranchGame —— 从棋谱前缀接管局面', () => {
     expect(built.error).toContain('和棋')
   })
 
+  it('前缀之外的损坏手顺也不能被忽略', () => {
+    const built = buildBranchGame(
+      {
+        moves: [
+          { x: 7, y: 7 },
+          { x: 7, y: 7 },
+          { x: 8, y: 8 },
+        ],
+        firstPlayer: BLACK,
+      },
+      1,
+    )
+    expect(built.ok).toBe(false)
+    if (built.ok) return
+    expect(built.error).toContain('无法完整重放')
+  })
+
   it('非法/截断手顺拒绝', () => {
     const built = buildBranchGame(
       {

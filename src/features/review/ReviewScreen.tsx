@@ -13,7 +13,7 @@ import { Button } from '../../components/ui/Button'
 import { Panel } from '../../components/ui/Panel'
 import { PageShell } from '../shell/PageShell'
 import type { AiEngine } from '../../ai/engine'
-import type { BranchStartInput, BranchStartResult } from '../../store/gameStore'
+import type { BranchConfig, BranchStartInput, BranchStartResult } from '../../store/gameStore'
 import { useLearnStore } from '../../store/learnStore'
 import { useSettingsStore } from '../../store/settingsStore'
 import { loadProgress, mergeProgress } from '../../persist/progress'
@@ -23,7 +23,7 @@ import type { DataManagementServices } from './DataManagementPanel'
 import { GameLibrary } from './GameLibrary'
 import { PositionEditor } from '../positions/PositionEditor'
 import { ReplayBoard } from './ReplayBoard'
-import { BranchDialog, type BranchConfig } from './BranchDialog'
+import { BranchDialog } from './BranchDialog'
 
 export interface ReviewScreenProps {
   readonly storage: GameRecordsStorage

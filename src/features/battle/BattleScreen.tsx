@@ -327,19 +327,6 @@ export function BattleScreen({ sound: injectedSound }: BattleScreenProps = {}) {
               上次对局没能恢复：{sessionError}
             </p>
           )}
-          {branch !== null && (
-            <div
-              data-testid="branch-banner"
-              role="status"
-              className="flex flex-wrap items-center justify-between gap-1 rounded-lg bg-accent-soft px-2 py-1 text-xs text-accent"
-            >
-              <span className="font-medium">棋谱探索 · 从第 {branch.cursor} 手继续</span>
-              <span className="text-muted">
-                来源 #{branch.sourceSeq} · 原局 {branch.sourceMoves} 手 · 原棋谱不会被修改
-              </span>
-            </div>
-          )}
-
           <MatchBar
             game={game}
             mode={mode}
@@ -387,6 +374,19 @@ export function BattleScreen({ sound: injectedSound }: BattleScreenProps = {}) {
           探针的「棋盘 ≥320px」判据立刻红。类型检查抓不到这一类错误。
         */}
         <aside className="order-2 space-y-2 px-3 pb-4 wide-layout:order-3 wide-layout:overflow-y-auto wide-layout:border-l wide-layout:border-border wide-layout:px-4 wide-layout:py-4">
+          {branch !== null && (
+            <div
+              data-testid="branch-banner"
+              role="status"
+              className="rounded-lg bg-accent-soft px-3 py-2 text-xs text-accent"
+            >
+              <p className="font-medium">棋谱探索 · 从第 {branch.cursor} 手继续</p>
+              <p className="mt-1 text-muted">
+                来源 #{branch.sourceSeq} · 原局 {branch.sourceMoves} 手 · 原棋谱不会被修改
+              </p>
+            </div>
+          )}
+
           <Panel title="对局概要" bodyClassName="space-y-1">
             <InfoRow label="模式">{mode === 'pve' ? '人机对战' : '本地双人'}</InfoRow>
             <InfoRow label="手数">{moveCount}</InfoRow>

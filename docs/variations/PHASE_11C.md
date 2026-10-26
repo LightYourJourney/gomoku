@@ -23,17 +23,25 @@
 
 | 文件 | 内容 |
 | --- | --- |
-| `src/core/branch.test.ts` | 0/1/中盘/最后一手前、五连、和棋、非法手顺、越界 |
-| `src/store/gameStore.test.ts` | 接管、原棋谱不变、AI 自动续走、旧响应/旧提示作废、认输局、独立保存、源删除、清空分支 |
+| `src/core/branch.test.ts` | 0/1/中盘/最后一手前、五连、和棋、非法前缀与损坏尾段、越界 |
+| `src/store/gameStore.test.ts` | 接管、原棋谱不变、AI 自动续走、旧响应/旧提示作废、认输局、独立保存、源删除、清空分支、玩家执黑不自动请求 |
+| `src/persist/gameRecords.test.ts` | +1 | 分支复现原手顺时关闭内容匹配，不删除源棋谱 |
 | `src/features/review/BranchDialog.test.tsx` | 分支点/下一手、模式/执子/难度、终局禁用、取消、错误 |
 | `src/features/review/review.test.tsx` | 回放页创建分支、配置回传、连点只接管一次 |
+
+### 评审整改
+
+- 分支若复现原手顺，首次完成保存必须关闭内容匹配，避免 `saveGameReplacing`
+  删除源棋谱；已补 `GameEndInput.branchSourceSeq` 与同名局保护用例。
+- `buildBranchGame` 校验整条来源手顺，损坏尾段同样拒绝。
+- 分支横幅移入对战右栏，1440×900 分支态棋盘 ≥620px 且占比 ≥35%。
 
 ### 浏览器
 
 - `e2e/variations.spec.ts`：**47 手原棋谱 → 第 26 手 → 创建分支 → AI 继续
   → 认输入库 → 原 47 手仍存在 → 刷新后两条记录仍在**。
 - `e2e/mobile.spec.ts`：390 移动端确认框不横向溢出，可进入探索对战。
-- 主套件：1353 单测 / 179 E2E；Firefox/WebKit 编辑器专项 18 条。
+- 主套件：1356 单测 / 179 E2E；Firefox/WebKit 编辑器专项 18 条。
 - UI 探针、覆盖棘轮、生产构建冒烟在收尾门禁中执行。
 
 截图：[分支确认](screenshots/branch-dialog.png)、[探索对战横幅](screenshots/branch-battle.png)。
