@@ -71,7 +71,7 @@
 ## 8. 跨浏览器
 
 - 主套件（Chrome）之外，`playwright.browsers.config.ts` 用 Playwright 自带
-  Firefox / WebKit 各跑 6 条编辑器主路径（`e2e/editor.spec.ts`），共 12 条。
+  Firefox / WebKit 各跑 9 条编辑器主路径（`e2e/editor.spec.ts`），共 18 条。
 - CI 的 `browsers` job 先安装 Firefox/WebKit 再跑；不是只在开发者机器上手工看一眼。
 - WebKit 页面卸载时 `AudioContext.resume()/close()` 会拒绝，音效层已接管为静默降级。
 

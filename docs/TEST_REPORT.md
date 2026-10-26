@@ -27,7 +27,7 @@ Phase 07 的最终门禁、探针对照与基准在 `ui-redesign/FINAL_TEST_REPO
 | 项 | 数量 |
 | --- | --- |
 | 单元 / 组件用例 | **1333**（83 个文件） |
-| 端到端用例 | **176**（桌面 154 + 移动触屏 12 + 平板 10，共 12 个 spec 文件），另有生产构建冒烟 6 条（`yarn e2e:prod`）与 Firefox/WebKit 编辑器专项 16 条（`yarn e2e:browsers`） |
+| 端到端用例 | **177**（桌面 155 + 移动触屏 12 + 平板 10，共 12 个 spec 文件），另有生产构建冒烟 6 条（`yarn e2e:prod`）与 Firefox/WebKit 编辑器专项 18 条（`yarn e2e:browsers`） |
 | 界面基线与量测 | `yarn ui:probe`：38 个受控状态 × 视口矩阵 = 308 张截图 + 308 条 DOM 量测，逐张可对照（Phase 05 是 34 / 276，Phase 04 是 29 / 236，Phase 03 是 27 / 220，Phase 02 是 21 / 172） |
 | 质量门禁 | 本地 pre-push 快档（5 条命令，热跑 30–45 秒，看机器负载）+ CI 全档（5 个 job）+ 四道防退化闸门 + 两把覆盖棘轮，见「〇之十一」 |
 | 基准脚本 | `yarn bench`（引擎，结果见 `docs/AI_ENGINE.md` 的「实测」一节）；`yarn bench:render`（首屏、落子，以及 Phase 06 之后新增的**回放拖动**——200 手棋谱下中位 1.60–2.90 ms，Phase 07 复跑 **2.20 ms**；前两者的历史结果见本文「〇之四、Phase 5 摘要 · 性能实测」与 `ui-redesign/FINAL_TEST_REPORT.md` §5） |
@@ -1967,7 +1967,7 @@ Worker / 提示 / 复盘预算的既有用例未改，全部通过。
 
 **定位**：Position 与 GameState 分离；复用棋盘；局部编辑历史；只读 AI 分析。
 
-### 新增用例（+53 单测 / +10 E2E）
+### 新增用例（+53 单测 / +11 E2E）
 
 | 文件 | 条数 | 钉住什么 |
 | --- | --- | --- |
@@ -1978,7 +1978,7 @@ Worker / 提示 / 复盘预算的既有用例未改，全部通过。
 | `src/components/board/Board.test.tsx` | +2 | 编辑模式点击/回车作用在已有棋子 |
 | `src/features/positions/PositionEditor.test.tsx` | 12 | 工具/键盘/撤销重做/分析档位/保存时间/删除/删除失败/取消删除/载入棋谱 |
 | `src/lib/sound.test.ts` | +1 | 页面卸载时 resume/close 拒绝被接管 |
-| `e2e/editor.spec.ts`（chrome） | 8 | 编辑、保存时间/删除、载入第 9 手、AI、导出导入、双方五连、390/768/1024/1440+深色主题、v2→v3 旧库兼容 |
+| `e2e/editor.spec.ts`（chrome） | 9 | 编辑、保存时间/删除、载入第 9 手、AI、导出导入、双方五连、390/768/1024/1440+深色主题、v2→v3 旧库兼容、真实单例对战隔离 |
 | `e2e/mobile.spec.ts` | +1 | 390 触摸编辑、无横向溢出 |
 | `e2e/tablet.spec.ts` | +1 | 1080 两栏、触摸编辑 |
 
@@ -1989,24 +1989,26 @@ Worker / 提示 / 复盘预算的既有用例未改，全部通过。
 | `yarn lint` / `yarn typecheck` | 通过 |
 | `yarn test` | **1,333 / 1,333**（83 文件） |
 | `yarn build` | 通过 |
-| `yarn e2e` | **176 / 176** |
+| `yarn e2e` | **177 / 177** |
 | `yarn e2e:prod` | **6 / 6** |
-| `yarn e2e:browsers` | Firefox 8 / WebKit 8，**16 / 16** |
-| `yarn gates` | 0 环 / knip 通过 / 0 重复 / 棘轮 1,333 · 176 |
+| `yarn e2e:browsers` | Firefox 9 / WebKit 9，**18 / 18** |
+| `yarn gates` | 0 环 / knip 通过 / 0 重复 / 棘轮 1,333 · 177 |
 | `yarn bench:check` | 19/19 + 29 不变量 |
 | `yarn ui:probe --out ci` | 38 状态 / 308 张，七条判据全过 |
 | 覆盖棘轮 | 3,084 条，未缩小（+136 新增覆盖） |
-| GitHub Actions `quality` | run `40099529506`（提交 `d20eca9`）fast / e2e / browsers / probe / bench 五个 job 全绿 |
+| GitHub Actions `quality`（0.4.0 发布） | run `40099529506`（提交 `d20eca9`）fast / e2e / browsers / probe / bench 五个 job 全绿；当时读数 1,331 / 174 / 12 |
+
+> 上表当前计数 1,333 / 177 / 18 含阶段验收补测；它与发布 CI 的 1,331 / 174 / 12 不是同一次读数。验收补测的 CI 结果由本次整改提交单独核对。
 
 ### 已知限制
 
 - 自由摆盘只做静态检查，不证明合法历史；UI 明说。
 - AI 档位差异来自真实难度参数；专家档更慢，不提供自定义预算。
 - `DB_VERSION 2→3`；回滚到 0.3.0（DB 2）不能直接打开已升级的库。
-- 编辑器主路径过 Chrome/Firefox/WebKit；未跑 Safari/iOS 真机与三引擎全量 176 条。
+- 编辑器主路径过 Chrome/Firefox/WebKit；未跑 Safari/iOS 真机与三引擎全量 177 条。
 - 已发布 `0.4.0`；回滚前需评估 DB 3 的兼容性。
 
-### 2026-10-24 已知限制补齐（+10 单测 / Firefox+WebKit 16 条）
+### 2026-10-24 已知限制补齐（+10 单测 / Firefox+WebKit 18 条）
 
 - **局面管理**：保存记录新增 `createdAt` / `updatedAt`（调用方注入时钟），列表按最近保存排序；
   已保存记录二次确认删除，删除后当前棋盘保留。内部 schema v1→v2 只读迁移，旧记录显示
@@ -2014,7 +2016,8 @@ Worker / 提示 / 复盘预算的既有用例未改，全部通过。
 - **AI 档位**：五档可选，预算取 `DIFFICULTY_PARAMS[difficulty].budgetMs`；切换档位递增
   `version` 并作废在飞响应，结果展示请求时的档位；预算收在「技术细节」折叠区。
 - **跨浏览器**：新增 `playwright.browsers.config.ts` 与 `yarn e2e:browsers`，用 Playwright
-  自带 Firefox/WebKit 各跑 8 条编辑器主路径；CI 新增 `browsers` job。
+  自带 Firefox/WebKit 各跑 9 条编辑器主路径；CI 新增 `browsers` job。
 - **音效卸载**：WebKit 在页面卸载时 `AudioContext.resume()/close()` 会拒绝；现在接管拒绝，
   不再产生 Vite 的未处理 rejection。
 - **反证**：音效用例在撤掉 `.catch` 后确实变红；时间/删除/档位用例在旧实现上均失败。
+- **验收补充反证**：删掉 `ensureSchema` 的 positions 建表，v2→v3 用例变红；移除「取消」按钮，取消删除用例变红；真实单例对战隔离由 E2E 直接验证（对战落子 → 编辑器编辑/分析 → 返回棋盘不变）。
