@@ -377,3 +377,44 @@ test('棋谱分支：移动端确认框不溢出，能进入探索对战', async
     ),
   ).toBe(0)
 })
+
+
+test('分享：移动端生成链接并打开只读预览，无横向溢出', async ({ page }) => {
+  await seedGameRecords(page, [
+    {
+      schemaVersion: 1,
+      moves: [
+        { x: 3, y: 7 }, { x: 3, y: 9 },
+        { x: 4, y: 7 }, { x: 4, y: 9 },
+        { x: 5, y: 7 }, { x: 5, y: 9 },
+        { x: 6, y: 7 }, { x: 6, y: 9 },
+        { x: 7, y: 7 },
+      ],
+      firstPlayer: BLACK,
+      mode: 'pvp',
+      humanColor: BLACK,
+      difficulty: 'easy',
+      resignedBy: null,
+    },
+  ])
+  await page.goto('/')
+  await page.getByRole('button', { name: '复盘', exact: true }).click()
+  await page.getByTestId(/^record-/).first().click()
+  await page.getByRole('button', { name: '分享棋谱' }).tap()
+  await page.getByRole('button', { name: '分享整盘' }).tap()
+  const link = await page.getByTestId('share-link').inputValue()
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    ),
+  ).toBe(0)
+  await page.getByRole('button', { name: '关闭' }).tap()
+
+  await page.goto(link)
+  await expect(page.getByTestId('share-kind')).toContainText('单盘棋谱')
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    ),
+  ).toBe(0)
+})

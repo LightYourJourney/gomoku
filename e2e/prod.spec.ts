@@ -2,6 +2,9 @@ import { execFileSync } from 'node:child_process'
 
 import { expect, test } from '@playwright/test'
 
+import { BLACK } from '../src/core/types'
+import { seedGameRecords } from './helpers/seed'
+
 /**
  * 生产构建的冒烟验收（`yarn e2e:prod`，见 playwright.prod.config.ts）。
  *
@@ -95,4 +98,36 @@ test('复盘页进得去——代码分割后的 chunk 在生产环境要能取�
 
   await expect(page.getByRole('heading', { name: '复盘' })).toBeVisible()
   await expect(page.getByText('还没有保存的对局')).toBeVisible()
+})
+
+
+test('分享链接预览在生产构建与根路径下可解析', async ({ page }) => {
+  await seedGameRecords(page, [
+    {
+      schemaVersion: 1,
+      moves: [
+        { x: 3, y: 7 }, { x: 3, y: 9 },
+        { x: 4, y: 7 }, { x: 4, y: 9 },
+        { x: 5, y: 7 }, { x: 5, y: 9 },
+        { x: 6, y: 7 }, { x: 6, y: 9 },
+        { x: 7, y: 7 },
+      ],
+      firstPlayer: BLACK,
+      mode: 'pvp',
+      humanColor: BLACK,
+      difficulty: 'easy',
+      resignedBy: null,
+    },
+  ])
+  await page.goto('/')
+  await page.getByRole('button', { name: '复盘', exact: true }).click()
+  await page.getByTestId(/^record-/).first().click()
+  await page.getByRole('button', { name: '分享棋谱' }).click()
+  await page.getByRole('button', { name: '分享整盘' }).click()
+  const link = await page.getByTestId('share-link').inputValue()
+  await page.getByRole('button', { name: '关闭' }).click()
+
+  await page.goto(link)
+  await expect(page.getByTestId('share-kind')).toContainText('单盘棋谱')
+  await expect(page.getByTestId('share-save')).toBeVisible()
 })

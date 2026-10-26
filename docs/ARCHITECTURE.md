@@ -60,6 +60,8 @@ analysis   learn        ← 分析结论与教学内容（两条互不依赖的�
 **`store/`** —— 状态编排。
 `gameStore.ts` 是对局与 AI 请求的状态机（工厂函数 `createGameStore(engine)`，可注入假引擎测试）；`useGameStore.ts` 组装真实引擎与存档，是应用唯一的单例入口；`learnStore.ts` 是学习进度与当前视图（工厂函数 `createLearnStore(storage)`，可注入假存储测试）；写入走串行 latest-wins 队列，`flush()` 只等队列排空，**不承诺已落盘**；`settingsStore.ts` 是主题、坐标、音效等偏好；`replayStore.ts` 是回放器（棋谱 + 游标 + 派生局面 + 自动播放 + 播放速度）——**回放位置只有这一个游标**，时间轴、步进按钮、跳到开局/终局、点分析结论跳转全都只经它走，界面上不存在第二份「当前第几手」；`analysisStore.ts` 是分析管线（逐局面排队、请求共享、会话内缓存）；`editorStore.ts` 是局面编辑器的局部快照历史、工具与只读分析状态（`version` 闸门；不碰 gameStore）；`gameStore.ts` 的 `startBranch` 是棋谱探索分支的唯一接管入口——只用合法前缀经 `replay()` 构建，清空旧 AI/提示/保存状态，并在 AI 回合立即续走；`requestCounter.ts` 是**全局唯一**的请求号计数器——对局、提示、分析、编辑器请求共用它。
 
+**`sharing/`** —— 分享协议。`link.ts` 只做版本化外壳、base64url、FNV-1a 完整性校验与严格解码；内容复用 Phase 11A/11B 的文件格式与校验器。`features/sharing/SharePreview.tsx` 负责只读预览与显式导入，`App.tsx` 只识别 `#share=` Fragment，不引入路由框架。
+
 **`persist/`** —— 存档。
 `storage.ts` 负责对局存档的序列化与**结构校验**（localStorage）；`progress.ts` 负责学习进度、`gameRecords.ts` 负责多局棋谱（两者都在 IndexedDB）——它的 `list()` **从不上抛**（每一步失败都落内存兜底），所以把「读不出来」的两种情形**分开报**：`degraded`（底层不可用，数据来自兜底）与 `skipped`（读到了但没通过校验）。界面靠这两个信号如实说明，不会把两者一起说成「你还没下过棋」；`schema.ts` 是**库名、版本与建表的唯一出处**——两个模块共用一个库，各写一份版本号的话，先打开的那个只建自己的表，另一个同版本打开不触发升级、表不存在，事务失败后被内存兜底吞掉，症状是「界面说已保存、刷新就没了」。两处同一条口径：任何一处不符合预期都当作没有数据，宁可重来也不把半成品灌进状态机。
 

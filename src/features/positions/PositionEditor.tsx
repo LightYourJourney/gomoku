@@ -18,6 +18,8 @@ import { PageShell, SIDE_PANEL_CLASS } from '../shell/PageShell'
 import { downloadJson } from '../review/download'
 import { exportFilename } from '../../persist/transfer/format'
 import { parsePositionText, toPositionFile } from '../../persist/transfer/position'
+import { ShareLinkDialog, type ShareLinkResult } from '../review/ShareLinkDialog'
+import { createPositionShare, shareLink } from '../../sharing/link'
 
 export interface PositionEditorProps {
   readonly engine: AiEngine
@@ -63,6 +65,7 @@ export function PositionEditor({
   const [positionsDegraded, setPositionsDegraded] = useState(false)
   const [savedId, setSavedId] = useState<number | null>(null)
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const [shareOpen, setShareOpen] = useState(false)
   const [title, setTitle] = useState('未命名局面')
   const [recordSeq, setRecordSeq] = useState('')
   const [ply, setPly] = useState('0')
@@ -176,6 +179,17 @@ export function PositionEditor({
     } else {
       flash(`只删了本次会话的「${name}」：刷新后可能仍在`)
     }
+  }
+
+  function sharePosition(): ShareLinkResult {
+    return shareLink(
+      createPositionShare(
+        state.position,
+        title.trim() || '未命名局面',
+        state.provenance,
+      ),
+      { origin: window.location.origin, pathname: window.location.pathname },
+    )
   }
 
   function exportPosition(): void {
@@ -414,6 +428,9 @@ export function PositionEditor({
             <Button size="sm" onClick={() => fileRef.current?.click()}>
               导入局面文件
             </Button>
+            <Button size="sm" onClick={() => setShareOpen(true)}>
+              分享局面
+            </Button>
             <input
               ref={fileRef}
               type="file"
@@ -528,6 +545,23 @@ export function PositionEditor({
           )}
         </Panel>
       </aside>
+
+      <ShareLinkDialog
+        open={shareOpen}
+        title="分享局面"
+        onClose={() => setShareOpen(false)}
+        options={[
+          {
+            id: 'position',
+            label: '分享当前局面',
+            description:
+              state.provenance === null
+                ? '自由摆盘；接收者可保存为自定义局面'
+                : `来自棋谱第 ${state.provenance.ply} 手；接收者可保存为自定义局面`,
+            generate: sharePosition,
+          },
+        ]}
+      />
     </PageShell>
   )
 }

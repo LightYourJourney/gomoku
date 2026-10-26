@@ -24,6 +24,8 @@ import { GameLibrary } from './GameLibrary'
 import { PositionEditor } from '../positions/PositionEditor'
 import { ReplayBoard } from './ReplayBoard'
 import { BranchDialog } from './BranchDialog'
+import type { ShareLinkResult } from './ShareLinkDialog'
+import { createGameShare, createReplayPositionShare, shareLink } from '../../sharing/link'
 
 export interface ReviewScreenProps {
   readonly storage: GameRecordsStorage
@@ -138,6 +140,15 @@ export function ReviewScreen({ storage, engine, stores, onRestoreSession, positi
     setOpen(false)
   }
 
+  function share(scope: 'game' | 'current', cursor: number): ShareLinkResult {
+    const record = replay.getState().record
+    if (record === null) return { ok: false, message: '当前没有可分享的棋谱。' }
+    return shareLink(
+      scope === 'game' ? createGameShare(record) : createReplayPositionShare(record, cursor),
+      { origin: window.location.origin, pathname: window.location.pathname },
+    )
+  }
+
   function confirmBranch(config: BranchConfig): void {
     if (onStartBranch === undefined || replayRecord === null || branchCursor === null) return
     if (branchSubmitting.current) return
@@ -220,6 +231,7 @@ export function ReviewScreen({ storage, engine, stores, onRestoreSession, positi
                     setBranchCursor(cursor)
                   }
             }
+            onShare={share}
             extraPanel={<AnalysisPanel store={analysis} engine={engine} replay={replay} />}
           />
           {branchCursor !== null && replayRecord !== null && (

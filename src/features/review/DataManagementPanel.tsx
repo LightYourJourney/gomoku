@@ -2,7 +2,6 @@ import { useRef, useState } from 'react'
 import type { PersistedSession } from '../../persist/storage'
 import type { LearningProgress } from '../../persist/progress'
 import type {
-  GameRecordInput,
   GameRecordsStorage,
   ImportRecordsResult,
 } from '../../persist/gameRecords'
@@ -17,7 +16,7 @@ import {
   EXTERNAL_FORMAT_VERSION,
   exportFilename,
   gameContentKey,
-  resignedByOfEnding,
+  gamePayloadToRecordInput,
   toBackupFile,
   type BackupPreferences,
   type BackupProgress,
@@ -85,17 +84,6 @@ interface Outcome {
   readonly progress: SectionOutcome
   readonly preferences: SectionOutcome
   readonly session: SectionOutcome
-}
-
-function toRecordInput(game: GamePayload): GameRecordInput {
-  return {
-    moves: game.moves,
-    firstPlayer: game.firstPlayer,
-    mode: game.mode,
-    humanColor: game.humanColor,
-    difficulty: game.difficulty,
-    resignedBy: resignedByOfEnding(game.ending),
-  }
 }
 
 function issueSummary(issues: readonly ImportIssue[]): string {
@@ -214,7 +202,7 @@ export function DataManagementPanel({
 
     let recordsResult: ImportRecordsResult
     try {
-      recordsResult = await storage.importMany(games.map(toRecordInput))
+      recordsResult = await storage.importMany(games.map(gamePayloadToRecordInput))
     } catch (err) {
       setPending(null)
       fail(err instanceof Error ? err.message : String(err))

@@ -1,4 +1,4 @@
-import { useEffect, type ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { useStore } from 'zustand'
 import { Board } from '../../components/board/Board'
 import { BoardStage } from '../../components/board/BoardStage'
@@ -9,6 +9,7 @@ import { cx } from '../../lib/cx'
 import { REPLAY_SPEED_LABELS, type ReplaySpeed, type ReplayStore } from '../../store/replayStore'
 import { SIDE_PANEL_CLASS } from '../shell/PageShell'
 import { ReplayTimeline } from './ReplayTimeline'
+import { ShareLinkDialog, type ShareLinkResult } from './ShareLinkDialog'
 
 export interface ReplayBoardProps {
   readonly store: UseBoundStore<StoreApi<ReplayStore>>
@@ -17,6 +18,8 @@ export interface ReplayBoardProps {
   readonly extraPanel?: ReactNode
   /** 从当前游标创建探索分支；未接线时不渲染入口。 */
   readonly onContinue?: (cursor: number) => void
+  /** 生成分享链接；未接线时不渲染分享入口。 */
+  readonly onShare?: (scope: 'game' | 'current', cursor: number) => ShareLinkResult
 }
 
 /**
@@ -55,11 +58,12 @@ const STEP_FONT_SIZE = 0.51
  * `startTimer`），本组件只负责：卸载时如果还在播就停掉，
  * 以及把「手动定位」的意图转给 store。
  */
-export function ReplayBoard({ store, onExit, extraPanel, onContinue }: ReplayBoardProps) {
+export function ReplayBoard({ store, onExit, extraPanel, onContinue, onShare }: ReplayBoardProps) {
   const {
     record, cursor, playing, speed, position,
     hasPrev, hasNext, stepPrev, stepNext, goTo, play, pause, setSpeed,
   } = useReplay(store)
+  const [shareOpen, setShareOpen] = useState(false)
 
   // 卸载时若还在播放，停掉 store 的定时器
   useEffect(() => {
@@ -133,6 +137,12 @@ export function ReplayBoard({ store, onExit, extraPanel, onContinue }: ReplayBoa
             </Button>
           )}
 
+          {onShare !== undefined && (
+            <Button block onClick={() => setShareOpen(true)}>
+              分享棋谱
+            </Button>
+          )}
+
           <div className="flex gap-2">
             <Button block disabled={!hasPrev} onClick={() => goTo(0)}>
               开局
@@ -203,6 +213,28 @@ export function ReplayBoard({ store, onExit, extraPanel, onContinue }: ReplayBoa
 
         {extraPanel}
       </aside>
+
+      {onShare !== undefined && (
+        <ShareLinkDialog
+          open={shareOpen}
+          title="分享棋谱"
+          onClose={() => setShareOpen(false)}
+          options={[
+            {
+              id: 'game',
+              label: '分享整盘',
+              description: `完整 ${total} 手棋谱；接收者可保存到棋谱库`,
+              generate: () => onShare('game', cursor),
+            },
+            {
+              id: 'current',
+              label: `分享第 ${cursor} 手局面`,
+              description: '接收者只会看到当前回合，并可保存为自定义局面',
+              generate: () => onShare('current', cursor),
+            },
+          ]}
+        />
+      )}
     </>
   )
 }

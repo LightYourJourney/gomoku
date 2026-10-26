@@ -147,8 +147,20 @@ export function toGameFile(record: RecordIdentity): GameFile {
 }
 
 /** 内容身份：只取这局棋本身，来源元数据与文件外壳不参与重复判断。 */
-export function resignedByOfEnding(ending: GameEnding): Player | null {
+function resignedByOfEnding(ending: GameEnding): Player | null {
   return ending.type === 'resign' ? ending.resignedBy : null
+}
+
+/** 外部单盘载荷 → 棋谱库写入输入。分享导入与文件导入共用这一处转换。 */
+export function gamePayloadToRecordInput(game: GamePayload): GameRecordInput {
+  return {
+    moves: game.moves,
+    firstPlayer: game.firstPlayer,
+    mode: game.mode,
+    humanColor: game.humanColor,
+    difficulty: game.difficulty,
+    resignedBy: resignedByOfEnding(game.ending),
+  }
 }
 
 export function gameContentKey(game: GamePayload): string {

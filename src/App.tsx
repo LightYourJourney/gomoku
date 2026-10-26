@@ -1,16 +1,39 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { BattleScreen } from './features/battle/BattleScreen'
 import { LearnScreen } from './features/learn/LearnScreen'
 import { PuzzleScreen } from './features/puzzles/PuzzleScreen'
 import { ReviewScreen } from './features/review/ReviewScreen'
 import { indexedDbGameRecords } from './persist/gameRecords'
+import { indexedDbPositions } from './persist/positions'
 import { appEngine, useGameStore } from './store/useGameStore'
 import { useLearnStore } from './store/learnStore'
 import { useThemeEffect } from './store/settingsStore'
 import { useFlushOnHide } from './lib/useFlushOnHide'
+import { SharePreview } from './features/sharing/SharePreview'
+import { shareTokenFromHash } from './sharing/link'
+
+function currentShareToken(): string | null {
+  return shareTokenFromHash(window.location.hash)
+}
 
 export default function App() {
   useThemeEffect()
+  const [shareToken, setShareToken] = useState<string | null>(currentShareToken)
+
+  useEffect(() => {
+    const handleHashChange = () => setShareToken(currentShareToken())
+    window.addEventListener('hashchange', handleHashChange)
+    return () => window.removeEventListener('hashchange', handleHashChange)
+  }, [])
+
+  function exitShare(): void {
+    window.history.replaceState(
+      null,
+      '',
+      `${window.location.pathname}${window.location.search}`,
+    )
+    setShareToken(null)
+  }
 
   const view = useLearnStore((state) => state.view)
   const bootstrap = useLearnStore((state) => state.bootstrap)
@@ -22,6 +45,23 @@ export default function App() {
 
   // 切后台 / 关页面前把学习进度尽力冲出去（不是落盘保证，见 hook 注释）
   useFlushOnHide(flush)
+
+  if (shareToken !== null) {
+    return (
+      <div
+        className="flex min-h-dvh flex-col bg-bg pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)] pt-[env(safe-area-inset-top)] text-fg wide-layout:h-dvh wide-layout:overflow-hidden"
+      >
+        <SharePreview
+          key={shareToken}
+          token={shareToken}
+          games={indexedDbGameRecords}
+          positions={indexedDbPositions}
+          now={Date.now}
+          onExit={exitShare}
+        />
+      </div>
+    )
+  }
 
   return (
     <div

@@ -178,6 +178,8 @@ function AppNav() {
 export interface AppHeaderProps {
   /** 右侧额外内容，例如对战页的局面状态。 */
   readonly children?: ReactNode
+  /** 分享预览等独立页面隐藏四个模块导航；品牌与主题切换保留。 */
+  readonly showNav?: boolean
 }
 
 /**
@@ -188,7 +190,7 @@ export interface AppHeaderProps {
  * **里面**，一滚导航就没了；复盘页放在外面，永远都在。同一件事两种行为，
  * 用户在页面之间切换时会以为界面坏了。`min-h` 则保证换行与否都不跳高度。
  */
-export function AppHeader({ children }: AppHeaderProps) {
+export function AppHeader({ children, showNav = true }: AppHeaderProps) {
   return (
     <header className="sticky top-0 z-20 flex min-h-15 shrink-0 flex-wrap items-center gap-x-3 gap-y-2 border-b border-border bg-surface/80 px-4 py-3 backdrop-blur lg:px-6">
       <BrandMark />
@@ -197,9 +199,11 @@ export function AppHeader({ children }: AppHeaderProps) {
         只给 `w-full` 而不铺满时，四个按钮挤在左边、右边空出一大片，
         看起来像没排完版。
       */}
-      <div className="order-last w-full sm:order-none sm:ml-1 sm:w-auto">
-        <AppNav />
-      </div>
+      {showNav && (
+        <div className="order-last w-full sm:order-none sm:ml-1 sm:w-auto">
+          <AppNav />
+        </div>
+      )}
       <div className="ml-auto flex shrink-0 items-center gap-2">
         {children}
         <ThemeToggle />

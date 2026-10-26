@@ -201,6 +201,11 @@ export function inputFromPosition(
   }
 }
 
+/** 局面内容身份：标题不参与；同一盘面/下一手/已知手顺视为同一条。 */
+export function positionContentKey(input: PositionInput): string {
+  return JSON.stringify([input.cells, input.nextPlayer, input.provenance])
+}
+
 // ── 内存实现（测试 + 降级） ──────────────────────────────────────
 
 export function memoryPositions(degraded = false): PositionStorage {

@@ -7,7 +7,7 @@
 
 **线上地址：<https://gomoku-lab.pages.dev>**（Cloudflare Pages；应用 `0.4.0`、引擎 `search-1`、提交 `d20eca9`）。
 
-**当前进度：Phase 1–5、UI/UX 改版 Phase 00–07、Phase 08 独立审计、Phase 09A/09B 发布与首次上线、Phase 10A–10F AI 评测 / 优化 / 标定 / 审计 / 正式发布、Phase 11A 数据备份与导入导出、Phase 11B 棋盘编辑器与局面研究已正式发布；Phase 11C 棋谱探索分支已完成（尚未发布）。**
+**当前进度：Phase 1–5、UI/UX 改版 Phase 00–07、Phase 08 独立审计、Phase 09A/09B 发布与首次上线、Phase 10A–10F AI 评测 / 优化 / 标定 / 审计 / 正式发布、Phase 11A 数据备份与导入导出、Phase 11B 棋盘编辑器与局面研究已正式发布；Phase 11C 棋谱探索分支、Phase 11D 分享链接已完成（尚未发布）。**
 键盘与读屏可用、平板与触屏专项验证过、生产构建有独立的冒烟通道、用法有[使用说明](docs/USAGE.md)；
 发布就绪评估与部署方案见 [RELEASE_READINESS.md](docs/release/RELEASE_READINESS.md)；
 最终审计与残留问题见 [FINAL_AUDIT.md](docs/ui-redesign/FINAL_AUDIT.md) 与 [KNOWN_ISSUES.md](docs/ui-redesign/KNOWN_ISSUES.md)。
@@ -158,9 +158,9 @@ bench/         引擎基准、渲染探针与棋力评测（测量脚本不进�
 
 | 项 | 数量 |
 | --- | --- |
-| 单元 / 组件用例 | **1356**（85 个文件） |
-| 端到端用例 | **179**（桌面 156 + 移动触屏 13 + 平板 10），另有 Firefox/WebKit 编辑器专项 18 条 |
-| 生产构建冒烟 | 6（`yarn e2e:prod`，含构建版本标识核对） |
+| 单元 / 组件用例 | **1374**（88 个文件） |
+| 端到端用例 | **183**（桌面 159 + 移动触屏 14 + 平板 10），另有 Firefox/WebKit 编辑器专项 18 条 |
+| 生产构建冒烟 | 7（`yarn e2e:prod`，含构建版本标识核对与分享预览） |
 
 关键实现都有反向验证记录（改坏实现确认用例会红），详见 [docs/TEST_REPORT.md](docs/TEST_REPORT.md)。
 性能数字全部可复跑：`yarn bench`（引擎）与 `yarn bench:render`
@@ -200,6 +200,9 @@ bench/         引擎基准、渲染探针与棋力评测（测量脚本不进�
 - [docs/variations/BRANCH_MODEL.md](docs/variations/BRANCH_MODEL.md) —— 棋谱探索分支的数据模型与边界
 - [docs/variations/STATE_TRANSITION.md](docs/variations/STATE_TRANSITION.md) —— 从回放到分支对局的状态迁移
 - [docs/variations/PHASE_11C.md](docs/variations/PHASE_11C.md) —— Phase 11C 实现、测试与已知限制
+- [docs/sharing/LINK_FORMAT.md](docs/sharing/LINK_FORMAT.md) —— 分享链接编码与校验
+- [docs/sharing/SECURITY_MODEL.md](docs/sharing/SECURITY_MODEL.md) —— 分享链接安全边界
+- [docs/sharing/PHASE_11D.md](docs/sharing/PHASE_11D.md) —— Phase 11D 实现、测试与已知限制
 - [docs/ROADMAP.md](docs/ROADMAP.md) —— Phase 1–5、UI 改版 00–07、Phase 08/09、Phase 10A–10F、Phase 11A/11B 的进度与长期待办
 - [docs/TEST_REPORT.md](docs/TEST_REPORT.md) —— 测试覆盖、浏览器验证与性能实测
 - [docs/release/RELEASE_READINESS.md](docs/release/RELEASE_READINESS.md) —— 发布就绪评估（分级结论、门禁读数、未验证项）

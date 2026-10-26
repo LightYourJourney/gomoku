@@ -28,6 +28,8 @@ export interface PageShellProps {
   /** 正文之后、页面底部的说明。 */
   footer?: ReactNode
   variant?: PageVariant
+  /** 分享预览等独立页面隐藏四个模块导航。 */
+  showNav?: boolean
 }
 
 /**
@@ -43,7 +45,7 @@ export interface PageShellProps {
  * **对战页不用它**——它是棋盘优先布局，三栏的宽度与高度自成一套，
  * 硬套一个「阅读列」的壳只会两边都不像。
  */
-export function PageShell({ children, toolbar, footer, variant = 'reading' }: PageShellProps) {
+export function PageShell({ children, toolbar, footer, variant = 'reading', showNav = true }: PageShellProps) {
   /*
    * 换页时把焦点交给正文。不这么做的话，用户点的那个按钮连同整棵树一起
    * 卸载，焦点掉回 `<body>`——读屏不播报新页面，键盘用户得从头 Tab 一遍。
@@ -53,7 +55,7 @@ export function PageShell({ children, toolbar, footer, variant = 'reading' }: Pa
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <AppHeader />
+      <AppHeader showNav={showNav} />
       {toolbar}
       {variant === 'reading' ? (
         <main
