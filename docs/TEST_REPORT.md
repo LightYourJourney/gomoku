@@ -2052,7 +2052,7 @@ Worker / 提示 / 复盘预算的既有用例未改，全部通过。
 | `yarn gates` | 0 环 / knip / 0 重复 / 棘轮 1,356 · 179 |
 | `yarn bench:check` | 19/19 + 29 不变量 |
 | `yarn ui:probe --out ci` | 308 张，七条判据全过 |
-| GitHub Actions `quality` | run `40289429891`（提交 `4ad2d8e`）五个 job 全绿 |
+| GitHub Actions `quality` | run `40303234888`（提交 `ce22256`）五个 job 全绿 |
 
 ### 两轴评审整改（2026-10-26）
 
