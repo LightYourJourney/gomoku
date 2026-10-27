@@ -204,6 +204,7 @@ bench/         引擎基准、渲染探针与棋力评测（测量脚本不进�
 - [docs/sharing/SECURITY_MODEL.md](docs/sharing/SECURITY_MODEL.md) —— 分享链接安全边界
 - [docs/sharing/PHASE_11D.md](docs/sharing/PHASE_11D.md) —— Phase 11D 实现、测试与已知限制
 - [docs/audit/PHASE_11E_AUDIT.md](docs/audit/PHASE_11E_AUDIT.md) —— Phase 11A–11D 独立审计、P1 修复与 RC 判断
+- [docs/release/PHASE_11_RELEASE_REVIEW.md](docs/release/PHASE_11_RELEASE_REVIEW.md) —— Phase 11 发布评审：功能 RC 通过，发布工程 HOLD
 - [docs/ROADMAP.md](docs/ROADMAP.md) —— Phase 1–5、UI 改版 00–07、Phase 08/09、Phase 10A–10F、Phase 11A/11B 的进度与长期待办
 - [docs/TEST_REPORT.md](docs/TEST_REPORT.md) —— 测试覆盖、浏览器验证与性能实测
 - [docs/release/RELEASE_READINESS.md](docs/release/RELEASE_READINESS.md) —— 发布就绪评估（分级结论、门禁读数、未验证项）

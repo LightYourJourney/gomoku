@@ -9,9 +9,9 @@
 - [ ] `git status` 干净，发布提交就是评审过的那个提交
 - [ ] `yarn lint` 通过
 - [ ] `yarn typecheck` 通过
-- [ ] `yarn test` 全过（Phase 11D 基线：1,379）
+- [ ] `yarn test` 全过（Phase 11E 基线：1,384）
 - [ ] `yarn build` 通过
-- [ ] `yarn e2e` 全过（Phase 11D 基线：183）
+- [ ] `yarn e2e` 全过（Phase 11E 基线：186）
 - [ ] `yarn e2e:prod` 全过（Phase 11D 基线：7）
 - [ ] `yarn e2e:browsers` 全过（Firefox / WebKit 各 9 条，基线：18）
 - [ ] `yarn gates` 通过（循环 / 死码 / 重复 / 测试条数棘轮）
@@ -28,7 +28,7 @@
 - [ ] `dist/index.html` 无内联 `<script>`；资源路径带正确的 base
 - [ ] Worker chunk 存在，且被 `index-*.js` 以同源相对路径引用
 - [ ] 子路径部署时：`VITE_BASE=/xxx/ yarn build` 后，HTML/JS/CSS/favicon/Worker 全部带前缀
-- [ ] 产物体积无异常增长（Phase 10F：总计 416 KB / gzip 主 JS 107 KB / Worker 5.4 KB）
+- [ ] 产物体积无异常增长（Phase 11E：`index` 408.76 kB / gzip 127.76 kB / Worker 13.99 kB；CSS gzip 7.53 kB）
 
 ## C. 安全与元数据
 

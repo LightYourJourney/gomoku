@@ -867,8 +867,9 @@ AI 必防与取胜 + 五档实测深度节点（1/2/4/6/7 层，12→104,511 节
 - **门禁**：1,384 单测 / 186 E2E / 生产冒烟 7 / Firefox+WebKit 18 /
   UI 探针 308 / 覆盖 3,084 / bench 19+29；本地全绿，CI 未运行（未推送）。
 - **结论**：达到 RC，生产仍为 `0.4.0`；发布需用户明确授权，P2 备份边界需决策。
-  详见 [PHASE_11E_AUDIT](audit/PHASE_11E_AUDIT.md) 与
-  [PHASE_11_READINESS](release/PHASE_11_READINESS.md)。
+  详见 [PHASE_11E_AUDIT](audit/PHASE_11E_AUDIT.md)、
+  [PHASE_11_READINESS](release/PHASE_11_READINESS.md) 与
+  [PHASE_11_RELEASE_REVIEW](release/PHASE_11_RELEASE_REVIEW.md)。
 
 ## 长期待办
 
