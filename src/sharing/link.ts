@@ -84,7 +84,7 @@ function fromBase64Url(value: string): Uint8Array {
   return bytes
 }
 
-function encodeShare(kind: ShareKind, data: unknown): ShareTokenResult {
+export function encodeSharePayload(kind: ShareKind, data: unknown): ShareTokenResult {
   const body = JSON.stringify({ v: SHARE_VERSION, kind, data } satisfies ShareEnvelope)
   const bytes = new TextEncoder().encode(body)
   const token = `${SHARE_VERSION}.${checksum(bytes)}.${toBase64Url(bytes)}`
@@ -100,7 +100,7 @@ function encodeShare(kind: ShareKind, data: unknown): ShareTokenResult {
 
 export function createGameShare(record: GameRecord): ShareTokenResult {
   try {
-    return encodeShare('game', toGameFile(record))
+    return encodeSharePayload('game', toGameFile(record))
   } catch (error) {
     return {
       ok: false,
@@ -127,7 +127,7 @@ export function createPositionShare(
   title: string | null,
   provenance: PositionProvenance | null = null,
 ): ShareTokenResult {
-  return encodeShare('position', toPositionFile(position, title, provenance))
+  return encodeSharePayload('position', toPositionFile(position, title, provenance))
 }
 
 export interface ShareBase {
@@ -148,15 +148,7 @@ export function shareLink(
   result: ShareTokenResult,
   base: ShareBase,
 ): ShareLinkResult {
-  if (!result.ok) {
-    return {
-      ok: false,
-      message:
-        result.code === 'too_long'
-          ? '内容超过分享链接长度上限，请使用文件导出。'
-          : result.message,
-    }
-  }
+  if (!result.ok) return { ok: false, message: result.message }
   return { ok: true, link: createShareUrl(result.token, base) }
 }
 

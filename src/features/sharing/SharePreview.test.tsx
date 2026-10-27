@@ -108,6 +108,6 @@ describe('SharePreview —— 只读预览与显式导入', () => {
       />,
     )
     expect(screen.getByTestId('share-error')).toBeInTheDocument()
-    expect(screen.getByText('分享链接无法打开')).toBeInTheDocument()
+    expect(screen.getByText('分享链接格式不完整')).toBeInTheDocument()
   })
 })

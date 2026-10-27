@@ -380,6 +380,8 @@ test('棋谱分支：移动端确认框不溢出，能进入探索对战', async
 
 
 test('分享：移动端生成链接并打开只读预览，无横向溢出', async ({ page }) => {
+  test.setTimeout(60_000)
+  await page.context().grantPermissions(['clipboard-read', 'clipboard-write'])
   await seedGameRecords(page, [
     {
       schemaVersion: 1,
@@ -403,6 +405,9 @@ test('分享：移动端生成链接并打开只读预览，无横向溢出', as
   await page.getByRole('button', { name: '分享棋谱' }).tap()
   await page.getByRole('button', { name: '分享整盘' }).tap()
   const link = await page.getByTestId('share-link').inputValue()
+  await page.getByRole('button', { name: '复制链接' }).tap()
+  await expect(page.getByRole('button', { name: '已复制' })).toBeVisible()
+  expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(link)
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth - document.documentElement.clientWidth,

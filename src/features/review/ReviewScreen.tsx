@@ -24,7 +24,7 @@ import { GameLibrary } from './GameLibrary'
 import { PositionEditor } from '../positions/PositionEditor'
 import { ReplayBoard } from './ReplayBoard'
 import { BranchDialog } from './BranchDialog'
-import type { ShareLinkResult } from './ShareLinkDialog'
+import type { ShareLinkResult } from '../../sharing/link'
 import { createGameShare, createReplayPositionShare, shareLink } from '../../sharing/link'
 
 export interface ReviewScreenProps {

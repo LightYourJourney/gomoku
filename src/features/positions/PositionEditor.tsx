@@ -18,7 +18,8 @@ import { PageShell, SIDE_PANEL_CLASS } from '../shell/PageShell'
 import { downloadJson } from '../review/download'
 import { exportFilename } from '../../persist/transfer/format'
 import { parsePositionText, toPositionFile } from '../../persist/transfer/position'
-import { ShareLinkDialog, type ShareLinkResult } from '../review/ShareLinkDialog'
+import { ShareLinkDialog } from '../review/ShareLinkDialog'
+import type { ShareLinkResult } from '../../sharing/link'
 import { createPositionShare, shareLink } from '../../sharing/link'
 
 export interface PositionEditorProps {
@@ -546,6 +547,7 @@ export function PositionEditor({
         </Panel>
       </aside>
 
+      {shareOpen && (
       <ShareLinkDialog
         open={shareOpen}
         title="分享局面"
@@ -562,6 +564,7 @@ export function PositionEditor({
           },
         ]}
       />
+      )}
     </PageShell>
   )
 }

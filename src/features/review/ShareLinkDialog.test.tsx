@@ -48,6 +48,32 @@ describe('ShareLinkDialog —— 生成、复制与失败提示', () => {
     expect(onClose).not.toHaveBeenCalled()
   })
 
+  it('关闭后重置，重新打开不会显示上一次链接', () => {
+    const onClose = vi.fn()
+    const generate = vi.fn(() => ({ ok: true as const, link: 'https://example.test/#share=old' }))
+    render(
+      <ShareLinkDialog
+        open
+        title="分享棋谱"
+        onClose={onClose}
+        options={[
+          {
+            id: 'game',
+            label: '分享整盘',
+            description: '完整棋谱',
+            generate,
+          },
+        ]}
+      />,
+    )
+    fireEvent.click(screen.getByRole('button', { name: '分享整盘' }))
+    expect(screen.getByTestId('share-link')).toHaveValue('https://example.test/#share=old')
+    fireEvent.click(screen.getByRole('button', { name: '关闭' }))
+    expect(screen.queryByTestId('share-link')).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '分享整盘' })).toBeInTheDocument()
+    expect(onClose).toHaveBeenCalledTimes(1)
+  })
+
   it('复制失败时给出手动复制方式', async () => {
     Object.defineProperty(window.navigator, 'clipboard', {
       value: { writeText: vi.fn().mockRejectedValue(new Error('blocked')) },

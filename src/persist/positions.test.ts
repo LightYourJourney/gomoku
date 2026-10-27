@@ -8,6 +8,7 @@ import {
   inputFromPosition,
   memoryPositions,
   parseSavedPosition,
+  positionContentKey,
 } from './positions'
 import { applyEdit, createPosition } from '../core/position'
 
@@ -168,6 +169,14 @@ describe('局面库 —— 校验与迁移', () => {
       [POSITIONS_STORE, PROGRESS_STORE, RECORDS_STORE].sort(),
     )
     db.close()
+  })
+
+  it('局面内容身份不看标题，只看盘面/下一手/provenance', () => {
+    const first = inputFromPosition(applyEdit(createPosition(), { x: 7, y: 7 }, 'black'), '甲', null)
+    const renamed = { ...first, title: '乙' }
+    const changed = inputFromPosition(applyEdit(createPosition(), { x: 8, y: 8 }, 'black'), '甲', null)
+    expect(positionContentKey(first)).toBe(positionContentKey(renamed))
+    expect(positionContentKey(first)).not.toBe(positionContentKey(changed))
   })
 
   it('v1 记录只读迁移到 v2：保留盘面，时间标记为未知', () => {

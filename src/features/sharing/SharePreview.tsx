@@ -14,7 +14,11 @@ import { BoardStage } from '../../components/board/BoardStage'
 import { Button } from '../../components/ui/Button'
 import { Panel } from '../../components/ui/Panel'
 import { useSettingsStore } from '../../store/settingsStore'
-import { decodeShareToken, type ShareDecodeResult } from '../../sharing/link'
+import {
+  decodeShareToken,
+  type ShareDecodeResult,
+  type ShareFailureCode,
+} from '../../sharing/link'
 import { PageShell, SIDE_PANEL_CLASS } from '../shell/PageShell'
 
 export interface SharePreviewProps {
@@ -38,7 +42,7 @@ function endingLabel(game: GamePayload): string {
   }
 }
 
-function errorTitle(code: string): string {
+function errorTitle(code: ShareFailureCode): string {
   switch (code) {
     case 'unsupported_version':
       return '分享链接版本过新'
@@ -48,8 +52,10 @@ function errorTitle(code: string): string {
       return '分享内容已损坏'
     case 'invalid_data':
       return '分享内容不合法'
-    default:
-      return '分享链接无法打开'
+    case 'unsupported_type':
+      return '分享类型不受支持'
+    case 'malformed':
+      return '分享链接格式不完整'
   }
 }
 
@@ -105,7 +111,12 @@ export function SharePreview({ token, games, positions, now, onExit }: SharePrev
       const key = positionContentKey(position)
       const duplicate = list.records.some(
         (record) =>
-          JSON.stringify([record.cells, record.nextPlayer, record.provenance]) === key,
+          positionContentKey({
+            title: record.title,
+            cells: record.cells,
+            nextPlayer: record.nextPlayer,
+            provenance: record.provenance,
+          }) === key,
       )
       if (duplicate) {
         setSaveState('duplicate')

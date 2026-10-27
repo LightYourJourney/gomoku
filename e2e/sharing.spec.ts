@@ -1,4 +1,4 @@
-import { expect, test, type Browser, type Page } from '@playwright/test'
+import { expect, test, type Page } from '@playwright/test'
 import { BLACK, type Point } from '../src/core/types'
 import { DB_NAME, RECORDS_STORE } from '../src/persist/schema'
 import { seedGameRecords } from './helpers/seed'
@@ -46,12 +46,16 @@ async function shareGame(page: Page): Promise<string> {
   await page.getByRole('button', { name: '分享整盘' }).click()
   const link = await page.getByTestId('share-link').inputValue()
   expect(link).toContain('#share=')
+  await page.getByRole('button', { name: '复制链接' }).click()
+  await expect(page.getByRole('button', { name: '已复制' })).toBeVisible()
+  expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(link)
   await page.getByRole('button', { name: '关闭' }).click()
   return link
 }
 
 test('分享：A 复制链接、B 独立上下文预览、确认后保存、刷新仍在', async ({ browser, page }) => {
   test.setTimeout(60_000)
+  await page.context().grantPermissions(['clipboard-read', 'clipboard-write'])
   await seedGameRecords(page, [
     {
       schemaVersion: 1,
@@ -143,6 +147,3 @@ test('分享：损坏 Fragment 显示错误页，普通页面仍可使用', asyn
   await page.getByRole('button', { name: '← 返回应用' }).click()
   await expect(page.getByRole('navigation', { name: '主导航' })).toBeVisible()
 })
-
-// 保留 Browser 类型导入给编辑器检查跨上下文 API 是否可用。
-void (null as Browser | null)

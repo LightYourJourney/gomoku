@@ -9,7 +9,8 @@ import { cx } from '../../lib/cx'
 import { REPLAY_SPEED_LABELS, type ReplaySpeed, type ReplayStore } from '../../store/replayStore'
 import { SIDE_PANEL_CLASS } from '../shell/PageShell'
 import { ReplayTimeline } from './ReplayTimeline'
-import { ShareLinkDialog, type ShareLinkResult } from './ShareLinkDialog'
+import { ShareLinkDialog } from './ShareLinkDialog'
+import type { ShareLinkResult } from '../../sharing/link'
 
 export interface ReplayBoardProps {
   readonly store: UseBoundStore<StoreApi<ReplayStore>>
@@ -214,7 +215,7 @@ export function ReplayBoard({ store, onExit, extraPanel, onContinue, onShare }: 
         {extraPanel}
       </aside>
 
-      {onShare !== undefined && (
+      {shareOpen && onShare !== undefined && (
         <ShareLinkDialog
           open={shareOpen}
           title="分享棋谱"

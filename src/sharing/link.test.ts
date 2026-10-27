@@ -8,6 +8,7 @@ import {
   createReplayPositionShare,
   createShareUrl,
   decodeShareToken,
+  encodeSharePayload,
   MAX_SHARE_TOKEN,
   shareTokenFromHash,
 } from './link'
@@ -101,7 +102,14 @@ describe('分享链接 —— 编码与解码', () => {
     const moves = fullBoardMoves()
     const encodedGame = createGameShare(game({ moves }))
     expect(encodedGame.ok).toBe(true)
-    if (encodedGame.ok) expect(encodedGame.token.length).toBeLessThanOrEqual(MAX_SHARE_TOKEN)
+    if (encodedGame.ok) {
+      expect(encodedGame.token.length).toBeLessThanOrEqual(MAX_SHARE_TOKEN)
+      const decoded = decodeShareToken(encodedGame.token)
+      expect(decoded.ok).toBe(true)
+      if (decoded.ok && decoded.kind === 'game') {
+        expect(decoded.game.moves).toHaveLength(225)
+      }
+    }
 
     let board = createPosition()
     for (const move of moves) {
@@ -116,6 +124,47 @@ describe('分享链接 —— 编码与解码', () => {
 })
 
 describe('分享链接 —— 错误与边界', () => {
+  it('重新计算校验码后，非法棋谱仍被严格校验拒绝', () => {
+    const encoded = encodeSharePayload('game', {
+      format: 'gomoku-lab.game',
+      formatVersion: 1,
+      board: { size: 15 },
+      rules: 'freestyle',
+      firstPlayer: BLACK,
+      moves: [
+        { x: 7, y: 7 },
+        { x: 7, y: 7 },
+      ],
+      mode: 'pvp',
+      humanColor: BLACK,
+      difficulty: 'easy',
+      ending: { type: 'five', winner: BLACK },
+    })
+    expect(encoded.ok).toBe(true)
+    if (!encoded.ok) return
+
+    const decoded = decodeShareToken(encoded.token)
+    expect(decoded.ok).toBe(false)
+    if (decoded.ok) return
+    expect(decoded.code).toBe('invalid_data')
+  })
+
+  it('篡改坐标后校验码不匹配', () => {
+    const encoded = createPositionShare(
+      applyEdit(createPosition(), { x: 7, y: 7 }, 'black'),
+      '坐标',
+      null,
+    )
+    expect(encoded.ok).toBe(true)
+    if (!encoded.ok) return
+    const parts = encoded.token.split('.')
+    const tampered = `${parts[0]}.${parts[1]}.${parts[2]!.slice(0, -2)}AA`
+    const decoded = decodeShareToken(tampered)
+    expect(decoded.ok).toBe(false)
+    if (decoded.ok) return
+    expect(decoded.code).toBe('checksum')
+  })
+
   it('未知版本拒绝', () => {
     const result = decodeShareToken('2.00000000.abc')
     expect(result.ok).toBe(false)

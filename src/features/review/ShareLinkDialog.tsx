@@ -3,7 +3,6 @@ import { Button } from '../../components/ui/Button'
 import { Modal } from '../../components/ui/Modal'
 
 import type { ShareLinkResult } from '../../sharing/link'
-export type { ShareLinkResult } from '../../sharing/link'
 
 export interface ShareOption {
   readonly id: string
@@ -30,6 +29,12 @@ export function ShareLinkDialog({ open, title, options, onClose }: ShareLinkDial
   const [result, setResult] = useState<ShareLinkResult | null>(null)
   const [copied, setCopied] = useState<'idle' | 'copied' | 'manual'>('idle')
 
+  function close(): void {
+    setResult(null)
+    setCopied('idle')
+    onClose()
+  }
+
   function choose(option: ShareOption): void {
     setCopied('idle')
     setResult(option.generate())
@@ -51,9 +56,9 @@ export function ShareLinkDialog({ open, title, options, onClose }: ShareLinkDial
     <Modal
       open={open}
       title={title}
-      onClose={onClose}
+      onClose={close}
       footer={
-        <Button block onClick={onClose}>
+        <Button block onClick={close}>
           关闭
         </Button>
       }
@@ -67,7 +72,7 @@ export function ShareLinkDialog({ open, title, options, onClose }: ShareLinkDial
                 block
                 aria-label={option.label}
                 onClick={() => choose(option)}
-                className="h-auto flex-col items-start gap-0.5 py-2 text-left"
+                className="h-auto flex-col items-start gap-1 py-2 text-left"
               >
                 <span className="font-medium">{option.label}</span>
                 <span className="text-xs font-normal text-muted">{option.description}</span>
