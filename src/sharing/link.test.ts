@@ -9,6 +9,7 @@ import {
   createShareUrl,
   decodeShareToken,
   encodeSharePayload,
+  type ShareKind,
   MAX_SHARE_TOKEN,
   shareTokenFromHash,
 } from './link'
@@ -124,6 +125,16 @@ describe('分享链接 —— 编码与解码', () => {
 })
 
 describe('分享链接 —— 错误与边界', () => {
+  it('未知内容类型拒绝', () => {
+    const encoded = encodeSharePayload('backup' as unknown as ShareKind, {})
+    expect(encoded.ok).toBe(true)
+    if (!encoded.ok) return
+    const decoded = decodeShareToken(encoded.token)
+    expect(decoded.ok).toBe(false)
+    if (decoded.ok) return
+    expect(decoded.code).toBe('unsupported_type')
+  })
+
   it('重新计算校验码后，非法棋谱仍被严格校验拒绝', () => {
     const encoded = encodeSharePayload('game', {
       format: 'gomoku-lab.game',
