@@ -9,7 +9,7 @@
 
 - `src/sharing/link.ts`：版本化外壳、FNV-1a 完整性校验、base64url 编解码、
   长度上限、错误分类；未知版本/非法字符/超长/损坏全部返回结果，不抛到 React。
-- `src/features/review/ShareLinkDialog.tsx`：复盘页「分享棋谱」，可分享整盘或
+- `src/features/sharing/ShareLinkDialog.tsx`：复盘页「分享棋谱」，可分享整盘或
   当前回合；显示链接、复制按钮，复制失败给手动选择方式。
 - `src/features/positions/PositionEditor.tsx`：自由摆盘/已知手顺局面「分享局面」。
 - `src/features/sharing/SharePreview.tsx`：只读预览、显式保存、重复检测、错误页；

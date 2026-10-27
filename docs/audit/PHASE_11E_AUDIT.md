@@ -1,7 +1,7 @@
 # Phase 11E · Phase 11A–11D 独立审计
 
 > **审计基线**：`main` @ `8f2fee3`（审计开始时工作区干净、与 `origin/main` 同步）。
-> 本文记录的是**审计及整改后的状态**；代码修复提交 `dfe510e`，文档与夹具另一次提交。生产站点未动。
+> 本文记录的是**审计及整改后的状态**；代码修复提交 `dfe510e`，发布前评审修复 `20f28a3`，文档与夹具另一次提交。生产站点未动。
 > **审计身份**：没有参与 Phase 11C/11D 开发的独立评审视角。历史交接文档、
 > `TEST_REPORT.md` 与阶段报告只当作**待核验材料**；凡是能实跑的，本次都重跑或补跑。
 > **一句话结论**：**P0 = 0，P1 = 4（全部已修复并做反向验证）**。旧版本数据夹具、
@@ -55,12 +55,12 @@
 | --- | --- |
 | `yarn lint` | 通过 |
 | `yarn typecheck` | 通过（app + e2e + bench 三个 tsconfig） |
-| `yarn test` | **1,384 / 1,384**（88 文件，skip 0） |
-| `yarn build` | 通过；`index-*.js` 408.76 kB（gzip 127.76 kB）、CSS 35.34 kB（gzip 7.53 kB）、Worker 13.99 kB |
-| `yarn e2e` | **186 / 186**（Chrome 桌面 + 移动 + 平板） |
+| `yarn test` | **1,385 / 1,385**（88 文件，skip 0） |
+| `yarn build` | 通过；`index-*.js` 408.65 kB（gzip 127.79 kB）、CSS 35.34 kB（gzip 7.53 kB）、Worker 13.99 kB |
+| `yarn e2e` | **189 / 189**（Chrome 桌面 + 移动 + 平板） |
 | `yarn e2e:prod` | **7 / 7** |
 | `yarn e2e:browsers` | Firefox 9 + WebKit 9 = **18 / 18** |
-| `yarn gates` | 0 循环 / knip 通过 / 0 重复 / 棘轮 1,384 · 186 |
+| `yarn gates` | 0 循环 / knip 通过 / 0 重复 / 棘轮 1,385 · 189 |
 | `yarn bench:check` | 19/19 断言 + 29 项不变量；6 条耗时行按基线跳过 |
 | `yarn ui:probe` | **38 状态 / 308 张**，七条量化判据全过 |
 | `yarn check:coverage` | 172 条 / 21 状态；实比 3,084 条，未缩小，另有 136 条新增覆盖 |
@@ -70,7 +70,7 @@
 第一次全量 `yarn e2e` 与另一次手动 Playwright 试验并发，后者清掉了共享的
 `test-results/` 目录，导致 4 条失败：1 条 layout 断言读到 0（页面被 HMR 刷新）
 与 3 条 tablet 的 trace/trace.zip `ENOENT`。**这次运行作废，不计入结果**；
-无并发重跑 **186/186**。旧实现的最大备份校验用例则真实超时（15 s 断言超时，
+无并发重跑 **186/186**（code-review 补 2 条夹具与 1 条 hash 用例后为 **189/189**）。旧实现的最大备份校验用例则真实超时（15 s 断言超时，
 进程约 92 s），修复后 493 ms 通过——这不是环境噪声，已保留为回归用例。
 上表是**无并发 Playwright** 的最终读数。
 
@@ -105,8 +105,8 @@
 ### 3.4 P3（记录，不影响 RC）
 
 - 分支来源元数据不持久化；**刷新后如果分支最终复现了源棋谱的完整内容，两条内容完全相同的记录会合并成一条**（只剩 `seq` 变化，手顺/模式/结果未丢）。若未来要求「seq 级不可变」，应把 branch origin 写入会话。
-- 在已经运行着的应用内手动改 hash 进入分享页，不会暂停已经在飞的 AI 请求（直接加载/新标签页路径已修）。
-- 主 JS gzip 127.76 kB，高于早期发布检查清单的 107 kB 参考值；没有仓库级 bundle budget 门禁。
+- ~~在已经运行着的应用内手动改 hash 进入分享页，不会暂停已经在飞的 AI 请求~~：**发布前 code-review 已修复**（`suspendAi`），见 §8。
+- 主 JS gzip 127.79 kB，高于早期发布检查清单的 107 kB 参考值；没有仓库级 bundle budget 门禁。
 - `positionContentKey` 依赖 provenance 对象键序；当前生产路径的键序稳定，但不是规范化的序列化。
 - 分享解码在 `JSON.parse` 前没有单独深度闸门；12,000 字符上限 + 外层 `catch` 保证不白屏，最终内容仍走严格解析。
 - `createReplayPositionShare` / `positionFromReplay` 对越界游标是 clamp，不是拒绝；UI 游标本身受控。
@@ -170,7 +170,7 @@
 - **数据升级**：真实 Chrome 中 v2 库打开后版本 3，`positions/progress/records`
   三表就位；2 条旧棋谱可读，导出备份 2 条，干净上下文恢复 2 条，刷新仍 2 条；
   旧进度显示「已完成 1 / 8 节」。
-- **构建**：`index-*.js` 408.76 kB（gzip 127.76 kB），CSS gzip 7.53 kB，Worker 13.99 kB。
+- **构建**：`index-*.js` 408.65 kB（gzip 127.79 kB），CSS gzip 7.53 kB，Worker 13.99 kB。
   没有新增运行时依赖（`package.json`/`yarn.lock` 未改）。
 - **A11y/响应式**：UI 探针 38 状态 / 308 张，七条判据全过；新增 E2E 覆盖
   分享预览、回放分享、事务失败；Firefox/WebKit 编辑器 18/18。
@@ -196,3 +196,25 @@
 详见 [DATA_COMPATIBILITY_REPORT.md](DATA_COMPATIBILITY_REPORT.md)、
 [IMPORT_SECURITY_REPORT.md](IMPORT_SECURITY_REPORT.md) 与
 [PHASE_11_READINESS.md](../release/PHASE_11_READINESS.md)。
+
+## 8. 发布前 code-review 跟进（2026-10-27）
+
+在发布评审前对 `v0.4.0...HEAD` 跑了 Standards / Spec 两轴评审（修复提交 `20f28a3`），并做了以下修复：
+
+- **文档同步**：`ARCHITECTURE.md` 的严格校验描述改为「单次 `replay()`」；
+  `IMPORT_SECURITY_REPORT.md` 同步；`sharing/` 的描述补上分享内容/URL 生成。
+- **播报**：分支横幅从 `role="status"` 改为 `role="note"`，回到「只有一个 live region」；
+  `e2e/variations.spec.ts` 在分支态断言 `role=status` 仍只有 `board-announcer`。
+- **应用内 hash 进入分享**：`gameStore.suspendAi()` 中止在飞 AI；`App` 的 `hashchange`
+  在进入分享时调用，离开时续走。补了「迟到响应不落子」单测。
+- **旧夹具自动化**：新增 `e2e/fixtures.spec.ts`，直接读取
+  `docs/audit/fixtures/phase11e/` 并把旧 v2 库升级、导出完整备份、干净恢复纳入主套件。
+- **模块边界**：`ShareLinkDialog` 从 `features/review/` 移到 `features/sharing/`；
+  根容器样式抽成 `ROOT_CLASS`，避免分享页与四模块页漂移。
+
+未改的 judgement：`BranchOrigin.sourceContentKey` 仍作为来源元数据保留（当前无 UI 读取）；
+两处小的「胜方文案」与 `{origin,pathname}` 仍各写一份；`SharePreview.savePosition`
+仍先查后写（P2 竞态未被本次 code-review 扩大为修复项）。
+
+**最终门禁（code-review 后）**：单测 **1,385 / 1,385**；E2E **189 / 189**；
+生产冒烟 7；Firefox/WebKit 18；UI 探针 308；覆盖 3,084；bench 19+29。

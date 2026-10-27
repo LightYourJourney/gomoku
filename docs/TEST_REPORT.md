@@ -29,8 +29,8 @@ Phase 07 的最终门禁、探针对照与基准在 `ui-redesign/FINAL_TEST_REPO
 
 | 项 | 数量 |
 | --- | --- |
-| 单元 / 组件用例 | **1384**（88 个文件） |
-| 端到端用例 | **186**（桌面 162 + 移动触屏 14 + 平板 10，共 14 个 spec 文件），另有生产构建冒烟 7 条（`yarn e2e:prod`）与 Firefox/WebKit 编辑器专项 18 条（`yarn e2e:browsers`） |
+| 单元 / 组件用例 | **1385**（88 个文件） |
+| 端到端用例 | **189**（桌面 165 + 移动触屏 14 + 平板 10，共 15 个 spec 文件），另有生产构建冒烟 7 条（`yarn e2e:prod`）与 Firefox/WebKit 编辑器专项 18 条（`yarn e2e:browsers`） |
 | 界面基线与量测 | `yarn ui:probe`：38 个受控状态 × 视口矩阵 = 308 张截图 + 308 条 DOM 量测，逐张可对照（Phase 05 是 34 / 276，Phase 04 是 29 / 236，Phase 03 是 27 / 220，Phase 02 是 21 / 172） |
 | 质量门禁 | 本地 pre-push 快档（5 条命令，热跑 30–45 秒，看机器负载）+ CI 全档（5 个 job）+ 四道防退化闸门 + 两把覆盖棘轮，见「〇之十一」 |
 | 基准脚本 | `yarn bench`（引擎，结果见 `docs/AI_ENGINE.md` 的「实测」一节）；`yarn bench:render`（首屏、落子，以及 Phase 06 之后新增的**回放拖动**——200 手棋谱下中位 1.60–2.90 ms，Phase 07 复跑 **2.20 ms**；前两者的历史结果见本文「〇之四、Phase 5 摘要 · 性能实测」与 `ui-redesign/FINAL_TEST_REPORT.md` §5） |
@@ -2094,7 +2094,7 @@ Worker / 提示 / 复盘预算的既有用例未改，全部通过。
 | 文件 | 条数 | 钉住什么 |
 | --- | --- | --- |
 | `src/sharing/link.test.ts` | 14 | 整盘/认输/回合/空盘往返、225 手长度与解码、未知版本、非法字符、校验失败、重算校验后的非法数据、超长、hash、URL |
-| `src/features/review/ShareLinkDialog.test.tsx` | 4 | 生成、复制成功、复制失败手动兜底、生成失败、关闭后重置 |
+| `src/features/sharing/ShareLinkDialog.test.tsx` | 4 | 生成、复制成功、复制失败手动兜底、生成失败、关闭后重置 |
 | `src/features/sharing/SharePreview.test.tsx` | 4 | 预览不写库、显式保存、重复、局面库、错误页 |
 | `src/persist/positions.test.ts` | +1 | 局面内容身份不看标题 |
 | `e2e/sharing.spec.ts` | 3 | A/B 隔离 context、预览不写、保存/刷新/重复、前进后退、自由局面、损坏链接 |
@@ -2129,7 +2129,7 @@ Worker / 提示 / 复盘预算的既有用例未改，全部通过。
 ## 〇之二一、Phase 11E 独立审计（2026-10-27）
 
 **定位**：对 Phase 11A–11D 的数据格式、迁移、存储失败、恶意输入、状态机与真实
-浏览器流程做独立审计；代码修复提交 `dfe510e`，**不发布生产**。
+浏览器流程做独立审计；代码修复提交 `dfe510e`，发布前两轴评审修复 `20f28a3`，**不发布生产**。
 
 ### 结论
 
@@ -2150,7 +2150,7 @@ Worker / 提示 / 复盘预算的既有用例未改，全部通过。
 | A-11E-03 | 2,000×225 手备份校验 O(n²)，10 MiB 上限可卡死主线程 | 单次 `replay` + 单次 `validateMove` | 6,830,098 字节：旧实现 >15 s 超时，新实现 493 ms；新增回归用例 |
 | A-11E-04 | 局面文件先 `file.text()` 再查 10 MiB | 读前检查 `file.size` | 组件用例确认 `text()` 未被调用 |
 
-### 新增用例（+5 单测 / +3 E2E）
+### 新增用例（+6 单测 / +6 E2E；含发布前 code-review）
 
 | 文件 | 内容 |
 | --- | --- |
@@ -2159,8 +2159,10 @@ Worker / 提示 / 复盘预算的既有用例未改，全部通过。
 | `src/persist/transfer/validate.test.ts` | +1：接近 10 MiB 的 2,000 局备份按总手数拒绝且不卡死 |
 | `src/features/positions/PositionEditor.test.tsx` | +1：超限文件在读入前拒绝 |
 | `src/features/review/DataManagementPanel.test.tsx` | +1：明示完整备份不含自定义局面 |
+| `src/store/gameStore.test.ts` | +1：进入分享预览中止在飞 AI，迟到响应不落子 |
 | `e2e/backup.spec.ts` | +1：棋谱事务失败明确「没有写入任何棋谱」 |
-| `e2e/sharing.spec.ts` | +2：回放第 N 手局面分享；打开分享不自动续走/不建库 |
+| `e2e/sharing.spec.ts` | +3：回放第 N 手局面分享；打开分享不自动续走/不建库；应用内 hash 进入分享中止在飞 AI |
+| `e2e/fixtures.spec.ts` | +2：旧夹具解析；旧 v2 库升级、导出完整备份、干净恢复 |
 
 ### 旧版本夹具
 
@@ -2173,6 +2175,13 @@ session v1、progress v1、records v1（含旧 winner）、positions v1、game/b
 - session v1 → v2：只读迁移、非法字段拒绝；
 - positions v1 → v2：时间未知、盘面/provenance 保留，更新写回 v2；
 - 外部 v1 三格式：严格解析、再导出、内容身份一致。
+
+### 发布前 code-review 跟进
+
+- 分支横幅改为 `role="note"`，保持单 live region；`ShareLinkDialog` 移入 `features/sharing/`；
+- 应用内改 hash 进入分享页会 `suspendAi()`，不再让在飞 AI 落子/写入；
+- 旧版本夹具纳入 `e2e/fixtures.spec.ts`，不再只靠一次性脚本；
+- `ARCHITECTURE.md` / `IMPORT_SECURITY_REPORT.md` 的校验描述已同步为单次 `replay()`。
 
 ### 对抗输入与存储失败
 
@@ -2200,12 +2209,12 @@ session v1、progress v1、records v1（含旧 winner）、positions v1、game/b
 | 命令 | 结果 |
 | --- | --- |
 | `yarn lint` / `yarn typecheck` | 通过 |
-| `yarn test` | **1,384 / 1,384**（88 文件） |
-| `yarn build` | 通过（index gzip 127.76 kB / CSS gzip 7.53 kB） |
-| `yarn e2e` | **186 / 186** |
+| `yarn test` | **1,385 / 1,385**（88 文件） |
+| `yarn build` | 通过（index gzip 127.79 kB / CSS gzip 7.53 kB） |
+| `yarn e2e` | **189 / 189** |
 | `yarn e2e:prod` | **7 / 7** |
 | `yarn e2e:browsers` | **18 / 18** |
-| `yarn gates` | 棘轮 1,384 · 186 |
+| `yarn gates` | 棘轮 1,385 · 189 |
 | `yarn bench:check` | 19/19 + 29 不变量 |
 | `yarn ui:probe` | 38 状态 / 308 张，七条判据全过 |
 | `yarn check:coverage` | 3,084 条，未缩小（+136） |

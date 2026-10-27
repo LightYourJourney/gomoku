@@ -77,12 +77,12 @@
   "gates": {
     "lint": "pass",
     "typecheck": "pass",
-    "unit": "1384/1384 (88 files)",
+    "unit": "1385/1385 (88 files)",
     "build": "pass",
-    "e2e": "186/186",
+    "e2e": "189/189",
     "e2eProd": "7/7",
     "e2eBrowsers": "18/18",
-    "gates": "cycles 0; knip pass; duplicates 0; ratchet 1384/186",
+    "gates": "cycles 0; knip pass; duplicates 0; ratchet 1385/189",
     "benchCheck": "19/19 assertions; 29 invariants; 6 skipped timing rows",
     "uiProbe": "38 states / 308 screenshots; seven criteria pass",
     "coverageRatchet": "3084 entries; no shrink; +136 new coverage",
@@ -97,5 +97,24 @@
     "P2: read-side record sequence validation is incomplete",
     "P3: branch reproduction after refresh may collapse identical content to one record",
     "P3: in-app hash navigation to share does not pause an already-running AI request"
-  ]
+  ],
+  "reviewFixes": {
+    "standards": [
+      "ARCHITECTURE 校验/分享描述同步",
+      "分支横幅 role=note，保持单 live region",
+      "App 根容器样式单一常量",
+      "ShareLinkDialog 移入 features/sharing"
+    ],
+    "spec": [
+      "旧版本夹具接入 e2e/fixtures.spec.ts",
+      "应用内 hash 进入分享 suspendAi",
+      "校验描述同步"
+    ],
+    "notChanged": [
+      "sourceContentKey 作为来源元数据保留",
+      "两处胜方文案与 {origin,pathname} 的重复",
+      "SharePreview 先查后写的 P2 竞态"
+    ]
+  },
+  "reviewCommit": "20f28a3"
 }

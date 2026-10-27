@@ -9,9 +9,9 @@
 - [ ] `git status` 干净，发布提交就是评审过的那个提交
 - [ ] `yarn lint` 通过
 - [ ] `yarn typecheck` 通过
-- [ ] `yarn test` 全过（Phase 11E 基线：1,384）
+- [ ] `yarn test` 全过（Phase 11E 基线：1,385）
 - [ ] `yarn build` 通过
-- [ ] `yarn e2e` 全过（Phase 11E 基线：186）
+- [ ] `yarn e2e` 全过（Phase 11E 基线：189）
 - [ ] `yarn e2e:prod` 全过（Phase 11D 基线：7）
 - [ ] `yarn e2e:browsers` 全过（Firefox / WebKit 各 9 条，基线：18）
 - [ ] `yarn gates` 通过（循环 / 死码 / 重复 / 测试条数棘轮）
@@ -28,7 +28,7 @@
 - [ ] `dist/index.html` 无内联 `<script>`；资源路径带正确的 base
 - [ ] Worker chunk 存在，且被 `index-*.js` 以同源相对路径引用
 - [ ] 子路径部署时：`VITE_BASE=/xxx/ yarn build` 后，HTML/JS/CSS/favicon/Worker 全部带前缀
-- [ ] 产物体积无异常增长（Phase 11E：`index` 408.76 kB / gzip 127.76 kB / Worker 13.99 kB；CSS gzip 7.53 kB）
+- [ ] 产物体积无异常增长（Phase 11E：`index` 408.65 kB / gzip 127.79 kB / Worker 13.99 kB；CSS gzip 7.53 kB）
 
 ## C. 安全与元数据
 
@@ -111,6 +111,6 @@
 > **Phase 11E 状态（2026-10-27，未发布）**：独立审计发现 4 个 P1（分享预览自动续走 AI/
 > 写入、同手顺不同配置误删、接近 10 MiB 备份校验 O(n²)、局面文件读前未查大小），
 > 均已修复并反向验证；旧版本夹具、对抗输入与真实浏览器 A–F 通过。当前基线
-> 1,384 单测 / 186 E2E / 18 跨浏览器 / 7 生产冒烟；本地全档绿，CI 未运行（未推送）。
+> 1,385 单测 / 189 E2E / 18 跨浏览器 / 7 生产冒烟；本地全档绿，CI 未运行（未推送）。
 > 达到 RC，但 **生产仍为 `0.4.0`，未部署、未覆盖**。完整备份不含自定义局面（P2）
 > 已在 UI/文档明示，发布前需确认。

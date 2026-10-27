@@ -25,7 +25,7 @@
 | 应用版本 | `0.4.0`（未升版本） |
 | 引擎版本 | `search-1` |
 | 数据版本 | DB 3 / progress 1 / records 1 / session 2 / positions 2 / 外部 1 |
-| 本阶段新增 | Phase 11C 分支、Phase 11D 分享、Phase 11E 4 个 P1 修复（`dfe510e`）与审计文档 |
+| 本阶段新增 | Phase 11C 分支、Phase 11D 分享、Phase 11E 4 个 P1 修复（`dfe510e`）、发布前两轴 code-review 修复（`20f28a3`）与审计文档 |
 | 新增运行时依赖 | 无（`package.json` / `yarn.lock` 未改） |
 | 生产 | `0.4.0`、`d20eca9`、`07a264f2…`（未变） |
 | 预览 | 未部署 |
@@ -36,12 +36,12 @@
 | --- | --- |
 | `yarn lint` | 通过 |
 | `yarn typecheck` | 通过（app/e2e/bench） |
-| `yarn test` | **1,384 / 1,384**（88 文件，skip 0） |
-| `yarn build` | 通过；index gzip 127.76 kB / CSS gzip 7.53 kB / Worker 13.99 kB |
-| `yarn e2e` | **186 / 186** |
+| `yarn test` | **1,385 / 1,385**（88 文件，skip 0） |
+| `yarn build` | 通过；index gzip 127.79 kB / CSS gzip 7.53 kB / Worker 13.99 kB |
+| `yarn e2e` | **189 / 189** |
 | `yarn e2e:prod` | **7 / 7** |
 | `yarn e2e:browsers` | Firefox 9 + WebKit 9 = **18 / 18** |
-| `yarn gates` | 0 循环 / knip 通过 / 0 重复 / 棘轮 1,384 · 186 |
+| `yarn gates` | 0 循环 / knip 通过 / 0 重复 / 棘轮 1,385 · 189 |
 | `yarn bench:check` | 19/19 断言 + 29 不变量（6 条耗时行按基线跳过） |
 | `yarn ui:probe` | 38 状态 / 308 张，七条判据全过 |
 | `yarn check:coverage` | 3,084 条实比，未缩小，+136 新增覆盖 |
@@ -60,6 +60,8 @@
 | 分享只读 | 直接打开不续走 AI、不建学习库；显式点击才保存 |
 | 棋谱事务失败 | 明说没有写入，不退内存冒充 |
 | 旧数据导出/恢复 | 真实 Chrome：2 条旧记录、旧进度 1/8、备份恢复后刷新仍 2 条 |
+
+发布前 code-review 的修复（旧夹具自动化、应用内 hash 中止 AI、单 live region、分享弹窗归位）见 [PHASE_11E_AUDIT.md](../audit/PHASE_11E_AUDIT.md) §8。
 
 详细证据：[PHASE_11E_AUDIT.md](../audit/PHASE_11E_AUDIT.md)、
 [DATA_COMPATIBILITY_REPORT.md](../audit/DATA_COMPATIBILITY_REPORT.md)、
