@@ -51,6 +51,15 @@ v1 里即使出现 `resignedBy` 也不采信——那一版没有这个语义。
 - 时间未知的旧记录 UI 显示「时间未知（旧记录）」，不伪造 1970 年。
 - `DB_VERSION` 不变（3）：这是对象字段形状变化，不是新表/新索引。
 
+## 2.3 Phase 11E 审计（无 schema 变更）
+
+- 审计用 [audit/fixtures/phase11e/](../audit/fixtures/phase11e/) 的 v1/v2 夹具重新验证：
+  v1 库（仅 progress）→ v3、v2 库（progress+records）→ v3、positions v1→v2、
+  session v1→v2、外部 v1 文件读取/导出/恢复，均通过。
+- 本轮未改 `DB_VERSION` 或任何 `schemaVersion`；修复只涉及匹配语义、输入校验与分享启动时序。
+- 新增的审计边界：完整备份仍不含自定义局面（见 [FILE_FORMAT.md](FILE_FORMAT.md) §3），
+  局面需单独导出。
+
 ## 3. 旧库/旧记录的行为
 
 - IndexedDB 老库（v1、只有 `progress` 表）打开时由 `ensureSchema` 补建 `records`；

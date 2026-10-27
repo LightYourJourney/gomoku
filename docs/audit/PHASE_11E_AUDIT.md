@@ -1,0 +1,198 @@
+# Phase 11E · Phase 11A–11D 独立审计
+
+> **审计基线**：`main` @ `8f2fee3`（审计开始时工作区干净、与 `origin/main` 同步）。
+> 本文记录的是**审计及整改后的状态**；代码修复提交 `dfe510e`，文档与夹具另一次提交。生产站点未动。
+> **审计身份**：没有参与 Phase 11C/11D 开发的独立评审视角。历史交接文档、
+> `TEST_REPORT.md` 与阶段报告只当作**待核验材料**；凡是能实跑的，本次都重跑或补跑。
+> **一句话结论**：**P0 = 0，P1 = 4（全部已修复并做反向验证）**。旧版本数据夹具、
+> 恶意输入、真实浏览器 A–F 与全部门禁通过，**达到发布候选（RC）条件**；
+> 仍有非阻塞 P2/P3，是否把它们带入正式发布需要用户决定。**生产仍为 `0.4.0`，
+> 未部署、未覆盖。**
+
+---
+
+## 1. 范围与方法
+
+### 1.1 审计范围
+
+- Phase 11A：外部棋谱/备份格式、严格导入、批量事务、进度合并、会话迁移。
+- Phase 11B：Position 模型、局面编辑器、局面库、内部 v1→v2、DB v2→v3。
+- Phase 11C：单层分支、回放游标、终局/认输语义、原棋谱保护、分支独立保存。
+- Phase 11D：版本化 Fragment 分享、严格解码、只读预览、显式导入、跨上下文导航。
+- 横切：数据格式与迁移、事务与内存兜底、大小限制、状态机一致性、AI 版本闸门、
+  A11y/响应式/键盘/触摸、分层与依赖方向、性能与构建产物。
+
+### 1.2 取证方式
+
+| 路 | 实际执行 |
+| --- | --- |
+| 文档 | 通读 `AGENTS.md`、`RULES.md`、`ARCHITECTURE.md`、`ROADMAP.md`、`TEST_REPORT.md`、`docs/data/*`、`docs/positions/*`、`docs/variations/*`、`docs/sharing/*` |
+| 代码 | 独立通读 `persist/`（schema/records/positions/progress/storage/transfer）、`sharing/link`、`core/position`、`core/branch`、`store/gameStore`、`store/editorStore`、分享/分支/编辑器 UI 与 `App` |
+| 旧数据 | 新增正式旧版本夹具 [`fixtures/phase11e/`](fixtures/phase11e/)；在 fake IndexedDB 与真实 Chrome 中验证升级、读取、导出、干净恢复 |
+| 对抗输入 | 临时 Vitest 夹具（17 条）覆盖坏 JSON、超限、深嵌套、类型混淆、坐标/手顺/胜负、分享 fuzz、存储事务失败；证据已整理进本文与安全报告 |
+| 浏览器 | 既有完整 E2E + 新增 3 条真实浏览器用例；另用隔离 Vite 服务器跑旧库与分享自动写入实验 |
+| 门禁 | `lint` / `typecheck` / `test` / `build` / `e2e` / `e2e:prod` / `e2e:browsers` / `gates` / `bench:check` / `ui:probe` / `check:coverage` 全部实跑 |
+
+**纪律**：不把「文档说做过」当证据；每个 P1 都有复现、修复和反向验证。
+审计期间产生的临时脚本已删除，必要夹具与读数留在仓库。
+
+---
+
+## 2. 当前状态
+
+| 项 | 值 |
+| --- | --- |
+| 审计基线 | `8f2fee3`（Phase 11D 评审整改完成） |
+| 应用/引擎 | `0.4.0` / `search-1`（未升版本） |
+| 内部数据版本 | `DB_VERSION=3`；progress 1；records 1；session 2；positions 2 |
+| 外部格式 | 棋谱/备份/局面 `formatVersion=1`；分享外壳 `v=1` |
+| 生产 | 仍为 `0.4.0`，提交 `d20eca9`，部署 `07a264f2…` |
+| 计划 | 生产未覆盖；没有新标签、没有 preview 部署 |
+
+### 2.1 最终门禁读数
+
+| 命令 | 实际结果 |
+| --- | --- |
+| `yarn lint` | 通过 |
+| `yarn typecheck` | 通过（app + e2e + bench 三个 tsconfig） |
+| `yarn test` | **1,384 / 1,384**（88 文件，skip 0） |
+| `yarn build` | 通过；`index-*.js` 408.76 kB（gzip 127.76 kB）、CSS 35.34 kB（gzip 7.53 kB）、Worker 13.99 kB |
+| `yarn e2e` | **186 / 186**（Chrome 桌面 + 移动 + 平板） |
+| `yarn e2e:prod` | **7 / 7** |
+| `yarn e2e:browsers` | Firefox 9 + WebKit 9 = **18 / 18** |
+| `yarn gates` | 0 循环 / knip 通过 / 0 重复 / 棘轮 1,384 · 186 |
+| `yarn bench:check` | 19/19 断言 + 29 项不变量；6 条耗时行按基线跳过 |
+| `yarn ui:probe` | **38 状态 / 308 张**，七条量化判据全过 |
+| `yarn check:coverage` | 172 条 / 21 状态；实比 3,084 条，未缩小，另有 136 条新增覆盖 |
+| CI | **未运行**（未推送）。本地全档绿，不能冒充 CI 绿 |
+
+**高负载说明与失败记录**：本机在审计期间长期有外部 `xelatex` 等进程占用 CPU。
+第一次全量 `yarn e2e` 与另一次手动 Playwright 试验并发，后者清掉了共享的
+`test-results/` 目录，导致 4 条失败：1 条 layout 断言读到 0（页面被 HMR 刷新）
+与 3 条 tablet 的 trace/trace.zip `ENOENT`。**这次运行作废，不计入结果**；
+无并发重跑 **186/186**。旧实现的最大备份校验用例则真实超时（15 s 断言超时，
+进程约 92 s），修复后 493 ms 通过——这不是环境噪声，已保留为回归用例。
+上表是**无并发 Playwright** 的最终读数。
+
+---
+
+## 3. 发现与整改
+
+### 3.1 P0
+
+**无。**
+
+### 3.2 P1（全部已修复）
+
+| ID | 问题 | 复现 / 证据 | 修复 | 反向验证 |
+| --- | --- | --- | --- | --- |
+| **A-11E-01** | **直接打开分享链接会自动续走本地保存的 AI 对局，甚至落子并入库**，违反「预览不自动写入」 | 真实 Chrome：localStorage 存 1 手人机局（轮到 AI），`goto('/#share=…')` 后 2.5 s，session 变成 2 手；换成 8 手、AI 执黑可成的棋，5 s 后 `records` 从 0 变成 1。分享页还会顺手打开/升级学习库 | `restore` 增加 `resumeAi:false`；`bootstrapStore` 在 `#share=` 路径不续走 AI；预览阶段不启动学习库；离开分享页才显式续走 | 新增 E2E：打开有效分享后 session 仍 1 手、`indexedDB.databases()` 无 `gomoku-lab`；点「返回应用」后才变成 2 手。修复后真实浏览器复测通过 |
+| **A-11E-02** | **`saveGameReplacing` 只比较「先手 + 手顺」，会删掉内容不同的旧棋谱**。同一手顺、不同模式/执子/难度/认输方的两条独立记录，第二条保存时第一条被永久删除 | 单测复现：先存 `pvp/easy/黑`，再存同手顺 `pve/hard/白`，旧实现只剩 1 条 | 改用与导入去重相同的 `recordContentKey`（先手、手顺、模式、执子、难度、认输方全比） | 新增回归用例；临时撤掉修复后该用例变红（只剩 1 条），恢复后 2 条都在 |
+| **A-11E-03** | **接近 10 MiB 的备份校验是 O(n²)**：`validateSequence` 每手调用 `applyMove`，而 `applyMove` 每次都从头 `replay`。2,000 局 × 225 手的主线程校验超过 15 s，旧的临时性能用例进程耗时约 92 s | 临时夹具：2,000 局 × 225 手，**6,830,098 字节**；旧实现 15 s 超时，新实现 **493 ms** 返回 `too_many_moves` | 只 `replay()` 一次；`state.moves.length` 即第一个坏手的位置，再用 `validateMove` 判错误类型。规则仍来自 `core`，没有复制一份 | 新增「接近 10 MiB 备份」用例；用 `HEAD` 旧实现跑该用例 15 s 超时；恢复新实现后通过 |
+| **A-11E-04** | **局面文件导入先 `file.text()` 再检查 10 MiB**，超大文件会先整块读入内存；棋谱/备份面板已在读前检查，局面编辑器没有 | 代码路径对比；临时文件夹具可构造 `size > MAX_IMPORT_BYTES` | `PositionEditor.importPosition` 在读文件前检查 `file.size`，超限直接报错 | 新增组件用例：超大文件时 `file.text()` 一次都没被调用；临时移除检查后该用例变红（`text is not iterable`，因为 `text()` 未被调用），恢复后通过 |
+
+### 3.3 P2（未在本阶段修复，已记录）
+
+| ID | 问题 | 影响 | 处理建议 |
+| --- | --- | --- | --- |
+| **A-11E-05** | **「完整备份」不包含自定义局面** | 用户按提示导出完整备份后换设备/清缓存，局面不会回来；可单独导出局面文件 | 已在本阶段**明示边界**：数据管理面板显示「不含自定义局面，请在局面研究里逐个导出」，`FILE_FORMAT` / `BACKUP_RESTORE` 同步。是否把 positions 纳入备份，留待发布决策 |
+| **A-11E-06** | 局面写入在事务提交阶段失败时，退回内存兜底并返回 `persisted:false`；但 `list()` 仍读 IndexedDB，刚写的记录在本次会话的列表里也看不到 | 提示说「本次会话可用」，实际列表不可见；刷新后丢失 | 与棋谱导入的 `storage:'failed'` 语义对齐；需要扩展 `SavePositionResult` 与 UI 文案 |
+| **A-11E-07** | 学习进度 `saveProgress` 吞掉落盘失败；偏好写入同样没有可观测信号。数据管理面板会把「进度合并完成 / 偏好已恢复」显示成功 | 存储失败时刷新后进度/偏好丢失，用户已被告知成功 | 让进度/偏好写入返回持久化结果，面板分项标失败；这涉及 learnStore 写队列与 settings persist 的接口 |
+| **A-11E-08** | 导出「全部棋谱/完整备份」忽略 `GameRecordList.skipped`；一条损坏或未结束的旧记录会让 `toBackupFile` 整个抛错 | 可能静默少导出旧记录，或一条坏记录阻断全部导出 | 导出前报告 skipped；对坏记录单独导出/跳过并提供计数 |
+| **A-11E-09** | 局面编辑器「保存局面」没有 in-flight 守卫；快速双击可能以 `savedId=null` 并发新增两条相同内容。分享预览的局面保存也是先 `list()` 去重再 `save()`，跨标签页存在同类竞态 | 重复局面记录，不丢旧数据 | 保存按钮加 `saving` 闸门；局面去重放进同一个 IndexedDB 事务，或使用唯一内容键 |
+| **A-11E-10** | `parseRecord` 只校验记录结构/坐标，不验证手顺是否合法/已结束；`positionFromReplay` 对非法 `ply` 静默 clamp | 损坏旧记录可能在列表/回放中显示截断结果，导出/分享可能失败或生成接收端拒绝的链接 | 读取时复用严格序列校验；`positionFromReplay` 对越界/非整数 `ply` 返回错误而不是 clamp |
+
+### 3.4 P3（记录，不影响 RC）
+
+- 分支来源元数据不持久化；**刷新后如果分支最终复现了源棋谱的完整内容，两条内容完全相同的记录会合并成一条**（只剩 `seq` 变化，手顺/模式/结果未丢）。若未来要求「seq 级不可变」，应把 branch origin 写入会话。
+- 在已经运行着的应用内手动改 hash 进入分享页，不会暂停已经在飞的 AI 请求（直接加载/新标签页路径已修）。
+- 主 JS gzip 127.76 kB，高于早期发布检查清单的 107 kB 参考值；没有仓库级 bundle budget 门禁。
+- `positionContentKey` 依赖 provenance 对象键序；当前生产路径的键序稳定，但不是规范化的序列化。
+- 分享解码在 `JSON.parse` 前没有单独深度闸门；12,000 字符上限 + 外层 `catch` 保证不白屏，最终内容仍走严格解析。
+- `createReplayPositionShare` / `positionFromReplay` 对越界游标是 clamp，不是拒绝；UI 游标本身受控。
+- 空字符串标题的局面文件可被解析，分享预览保存后标题为空；UI 正常路径会回落为「未命名局面」。
+- `goTo(NaN)` 未显式拒绝；只可能来自程序调用，不是用户滑杆输入。
+
+---
+
+## 4. 状态机与不变量审计
+
+| 检查 | 结论 | 证据 |
+| --- | --- | --- |
+| 唯一 `GameState` 构造路径 | `replay()` 是唯一来源；分支只取合法前缀 | `core/game.ts`、`core/branch.ts`、单元测试 |
+| 分支游标 | `cursor` 0..`moves.length`；越界/非整数拒绝 | `branch.test.ts` |
+| 终局阻止继续 | 五连/和棋拒绝建立分支；认输按棋盘状态判断，不继承认输 | `branch.test.ts`、`gameStore.test.ts` |
+| 来源完整性 | 先校验整条来源手顺，损坏尾段也拒绝；不拿 `replay` 截断结果当成功 | `buildBranchGame` 测试 |
+| 原棋谱内容 | 分支只读来源；保存分支不修改来源内容；内容身份去重不会误删不同配置的旧记录 | A-11E-02 修复 + 单测 + E2E 47 手原谱保留 |
+| 分支独立保存 | 完成分支走普通终局入库；源棋谱删除后分支仍可回放 | `gameStore.test.ts`、`variations.spec.ts` |
+| AI 双闸门 | 所有落子/提示/分析/编辑器响应都检查 `requestId` + `gameVersion`；分支接管清 pending | `gameStore.test.ts`、`editorStore.test.ts` |
+| 编辑器隔离 | 编辑历史是局部快照栈；不调用 `gameStore.undo`；分析只写 `editorStore` | `editorStore.test.ts`、E2E「编辑/分析不改变正式棋盘」 |
+| 认输语义 | `resignerFor` 单一出处；人机认玩家、双人认当前手方；刷新恢复认输终局不会复活 | `gameStore.test.ts`、E2E |
+| 分享只读 | 预览不写棋谱/局面；直接打开不续走 AI、不建学习库；离开才续走 | A-11E-01、E2E |
+| 分享/导入不自动覆盖 | 预览后必须显式点击；棋谱按内容去重；局面先查内容身份 | `SharePreview`、`DataManagementPanel` 测试 |
+| 事务与兜底 | 棋谱批量导入单事务，失败整笔回滚；打不开库才内存兜底 | `gameRecords.test.ts`、E2E 事务失败 |
+| 旧数据 | v1/v2 库、v1 记录、v1 会话、v1 外部文件均可读；见兼容性报告 | 夹具 + 真实 Chrome |
+
+### 4.1 工程约束
+
+- **规则/校验没有第二份**：严格导入只调用 `core/game.replay` 与
+  `core/rules.validateMove`；内容身份统一走 `recordContentKey`，导入去重与终局替换
+  使用同一套字段。没有为分享/分支另写一套坐标或胜负规则。
+- **依赖方向**：`persist/transfer` 不碰 React/DOM；`sharing/link` 只做编码与分发；
+  `App`/`main` 是组合根，负责装配「分享预览不续走 AI / 不启动学习库」。
+- **无新增运行时依赖**；`package.json` / `yarn.lock` 未改。
+- **全局状态**：分享没有新增模块级可变状态；`learnBootstrapped` 是单个组件内的
+  `useRef`，不跨页面泄漏。AI Worker 仍是单例，没有为分享新建第二套请求通道。
+- **无 `enum` / `eval` / `Function` / 动态脚本**。
+
+---
+
+## 5. 真实浏览器流程 A–F
+
+| # | 流程 | 结果 | 用例 |
+| --- | --- | --- | --- |
+| A | 棋谱导出 → 干净上下文导入 → 回放 → 刷新 | 通过；9 手，刷新仍在 | `e2e/backup.spec.ts` |
+| B | 47 手 → 第 26 手 → 分支 → AI → 认输保存 → 原谱不变 → 刷新 | 通过；27 手分支 + 47 手原谱 | `e2e/variations.spec.ts` |
+| C | 自由局面编辑 → AI 分析 → 保存 → 刷新/重开 | 通过；编辑/分析不污染正式对局 | `e2e/editor.spec.ts`（Chrome/Firefox/WebKit） |
+| D | 分享链接在独立 context 预览 → 显式保存 → 刷新/重开/重复 | 通过；B 预览前 0 条，保存后 1 条，重复不增 | `e2e/sharing.spec.ts` |
+| E | 坏文件导入 → 错误 → 零写入；取消预览 → 零写入 | 通过 | `e2e/backup.spec.ts` |
+| F | 棋谱事务失败 → 明确「没有写入任何棋谱」，不退内存冒充 | 通过 | `e2e/backup.spec.ts`（页面内覆写 `IDBDatabase.transaction`） |
+| D+ | 回放第 5 手分享 → 独立 context 预览 5 子 → 保存到局面库 | 通过 | `e2e/sharing.spec.ts` |
+| D++ | 打开分享不自动续走/不建库；返回后才续走 | 通过 | `e2e/sharing.spec.ts` |
+
+---
+
+## 6. 性能与兼容性
+
+- **导入校验**：6,830,098 字节、2,000 局 × 225 手，从「旧实现 >15 s 超时」降到
+  **493 ms**；单次 `replay` 后只做一次 `validateMove`。
+- **分享**：225 手整盘与满盘局面 token 均在 12,000 字符内；解码为同步小对象。
+- **数据升级**：真实 Chrome 中 v2 库打开后版本 3，`positions/progress/records`
+  三表就位；2 条旧棋谱可读，导出备份 2 条，干净上下文恢复 2 条，刷新仍 2 条；
+  旧进度显示「已完成 1 / 8 节」。
+- **构建**：`index-*.js` 408.76 kB（gzip 127.76 kB），CSS gzip 7.53 kB，Worker 13.99 kB。
+  没有新增运行时依赖（`package.json`/`yarn.lock` 未改）。
+- **A11y/响应式**：UI 探针 38 状态 / 308 张，七条判据全过；新增 E2E 覆盖
+  分享预览、回放分享、事务失败；Firefox/WebKit 编辑器 18/18。
+
+---
+
+## 7. 已知问题与发布判断
+
+**RC 条件**：本轮修复后没有开放 P0/P1；本地全档门禁、旧数据夹具、恶意输入与
+真实浏览器 A–F 均通过，**可以作为发布候选**。
+
+**但不能把「RC」当成「已发布」**：
+
+- 生产仍是 `0.4.0`（`d20eca9` / `07a264f2…`），本阶段没有部署、没有新标签。
+- P2 中 A-11E-05（完整备份不含局面）与 A-11E-06/07（存储失败提示）需要发布决策；
+  若要求「完整备份覆盖全部用户数据」，应先做 11F，而不是靠文案兜底。
+- CI 未运行（未推送），本地绿不能替代干净 runner 的全档结果。
+- 预览部署未执行；按任务要求，未经明确授权不覆盖生产。
+
+**结论**：**Phase 11C/11D + 本轮审计修复达到 RC；不建议在未处理 P2 发布决策前
+自动上线。** 发布动作必须等待用户明确授权。
+
+详见 [DATA_COMPATIBILITY_REPORT.md](DATA_COMPATIBILITY_REPORT.md)、
+[IMPORT_SECURITY_REPORT.md](IMPORT_SECURITY_REPORT.md) 与
+[PHASE_11_READINESS.md](../release/PHASE_11_READINESS.md)。

@@ -1,6 +1,6 @@
 # 测试报告
 
-**日期**：2026-10-22
+**日期**：2026-10-27
 **范围**：Phase 1（基础可玩版本）、Phase 2（强化 AI）、Phase 3（互动教学 + 残局挑战）、
 Phase 4（复盘与分析）、Phase 5（最终打磨）、Phase 5 之后的**全仓工程审计**（见本文「〇之五」）、
 **UI/UX 改版 Phase 00–07**（Phase 01 / 02 见「〇之六」「〇之十」，03–07 见 `docs/ui-redesign/` 各阶段的记录；
@@ -11,7 +11,8 @@ Phase 07 的最终门禁、探针对照与基准在 `ui-redesign/FINAL_TEST_REPO
 **Phase 11A 数据备份/导入导出**（见「〇之十七」）与
 **Phase 11B 棋盘编辑器**（见「〇之十八」）与
 **Phase 11C 棋谱探索分支**（见「〇之十九」）与
-**Phase 11D 分享链接**（见「〇之二十」），
+**Phase 11D 分享链接**（见「〇之二十」）与
+**Phase 11E 独立审计**（见「〇之二一」），
 以及阶段之间的两轴代码审查
 **结论**：类型检查、单元测试、生产构建、真实浏览器验证、端到端测试、生产构建冒烟全部通过；
 四个页面在两套主题下的 Lighthouse 无障碍审计均为 100。
@@ -28,8 +29,8 @@ Phase 07 的最终门禁、探针对照与基准在 `ui-redesign/FINAL_TEST_REPO
 
 | 项 | 数量 |
 | --- | --- |
-| 单元 / 组件用例 | **1379**（88 个文件） |
-| 端到端用例 | **183**（桌面 159 + 移动触屏 14 + 平板 10，共 14 个 spec 文件），另有生产构建冒烟 7 条（`yarn e2e:prod`）与 Firefox/WebKit 编辑器专项 18 条（`yarn e2e:browsers`） |
+| 单元 / 组件用例 | **1384**（88 个文件） |
+| 端到端用例 | **186**（桌面 162 + 移动触屏 14 + 平板 10，共 14 个 spec 文件），另有生产构建冒烟 7 条（`yarn e2e:prod`）与 Firefox/WebKit 编辑器专项 18 条（`yarn e2e:browsers`） |
 | 界面基线与量测 | `yarn ui:probe`：38 个受控状态 × 视口矩阵 = 308 张截图 + 308 条 DOM 量测，逐张可对照（Phase 05 是 34 / 276，Phase 04 是 29 / 236，Phase 03 是 27 / 220，Phase 02 是 21 / 172） |
 | 质量门禁 | 本地 pre-push 快档（5 条命令，热跑 30–45 秒，看机器负载）+ CI 全档（5 个 job）+ 四道防退化闸门 + 两把覆盖棘轮，见「〇之十一」 |
 | 基准脚本 | `yarn bench`（引擎，结果见 `docs/AI_ENGINE.md` 的「实测」一节）；`yarn bench:render`（首屏、落子，以及 Phase 06 之后新增的**回放拖动**——200 手棋谱下中位 1.60–2.90 ms，Phase 07 复跑 **2.20 ms**；前两者的历史结果见本文「〇之四、Phase 5 摘要 · 性能实测」与 `ui-redesign/FINAL_TEST_REPORT.md` §5） |
@@ -2124,3 +2125,94 @@ Worker / 提示 / 复盘预算的既有用例未改，全部通过。
 - 校验码只发现损坏，不是防篡改签名；严格解析器才是安全边界。
 - 不提供短链、二维码或压缩；超过 12,000 字符提示文件导出。
 - 分享预览不持久化；刷新靠 URL；未发布，生产仍为 `0.4.0`。
+
+## 〇之二一、Phase 11E 独立审计（2026-10-27）
+
+**定位**：对 Phase 11A–11D 的数据格式、迁移、存储失败、恶意输入、状态机与真实
+浏览器流程做独立审计；代码修复提交 `dfe510e`，**不发布生产**。
+
+### 结论
+
+- **P0 = 0；P1 = 4，全部修复并反向验证。**
+- 旧版本夹具、恶意输入、真实浏览器 A–F 与本地全档门禁通过；达到 RC。
+- 生产仍为 `0.4.0`（`d20eca9` / `07a264f2…`），未部署。
+- 详细报告：[audit/PHASE_11E_AUDIT.md](audit/PHASE_11E_AUDIT.md)、
+  [DATA_COMPATIBILITY_REPORT.md](audit/DATA_COMPATIBILITY_REPORT.md)、
+  [IMPORT_SECURITY_REPORT.md](audit/IMPORT_SECURITY_REPORT.md)、
+  [PHASE_11_READINESS.md](release/PHASE_11_READINESS.md)。
+
+### P1 修复
+
+| ID | 问题 | 修复 | 验证 |
+| --- | --- | --- | --- |
+| A-11E-01 | 直接打开分享链接会续走本地 AI 对局，甚至落子/入库 | `restore(resumeAi:false)`；分享启动不续走、不打开学习库；离开后再续走 | 真实 Chrome：预览中 session 1 手、无 DB；返回后 2 手；新增 E2E |
+| A-11E-02 | `saveGameReplacing` 只比手顺+先手，误删同手顺不同配置的棋谱 | 改用 `recordContentKey` 全内容身份 | 新增单测；撤修复变红，恢复后 2 条 |
+| A-11E-03 | 2,000×225 手备份校验 O(n²)，10 MiB 上限可卡死主线程 | 单次 `replay` + 单次 `validateMove` | 6,830,098 字节：旧实现 >15 s 超时，新实现 493 ms；新增回归用例 |
+| A-11E-04 | 局面文件先 `file.text()` 再查 10 MiB | 读前检查 `file.size` | 组件用例确认 `text()` 未被调用 |
+
+### 新增用例（+5 单测 / +3 E2E）
+
+| 文件 | 内容 |
+| --- | --- |
+| `src/persist/gameRecords.test.ts` | +1：同手顺不同模式/执子/难度不内容匹配删除 |
+| `src/store/gameStore.test.ts` | +1：`resumeAi:false` 恢复不请求 AI，显式续走才请求 |
+| `src/persist/transfer/validate.test.ts` | +1：接近 10 MiB 的 2,000 局备份按总手数拒绝且不卡死 |
+| `src/features/positions/PositionEditor.test.tsx` | +1：超限文件在读入前拒绝 |
+| `src/features/review/DataManagementPanel.test.tsx` | +1：明示完整备份不含自定义局面 |
+| `e2e/backup.spec.ts` | +1：棋谱事务失败明确「没有写入任何棋谱」 |
+| `e2e/sharing.spec.ts` | +2：回放第 N 手局面分享；打开分享不自动续走/不建库 |
+
+### 旧版本夹具
+
+新增 [audit/fixtures/phase11e/](audit/fixtures/phase11e/)：
+session v1、progress v1、records v1（含旧 winner）、positions v1、game/backup/position
+外部 v1。实测：
+
+- v1 库（仅 progress）→ v3：旧进度保留，三表就位；
+- v2 库（progress+records）→ v3：2 条旧记录、旧进度保留；导出备份 → 干净导入 2 条；
+- session v1 → v2：只读迁移、非法字段拒绝；
+- positions v1 → v2：时间未知、盘面/provenance 保留，更新写回 v2；
+- 外部 v1 三格式：严格解析、再导出、内容身份一致。
+
+### 对抗输入与存储失败
+
+- 坏 JSON、10 MiB+、深嵌套、类型混淆、字符串/布尔/null 坐标、非整数/越界、
+  重复落子、终局后落子、错误胜负/和棋/认输全部拒绝；
+- 局面重复点、坏颜色、坏 provenance、未来版本全部拒绝；
+- 分享超长、版本过新、坏编码、校验失败、未知 kind、重算校验后的非法数据、
+  500 条随机 fuzz 全部返回错误，不抛/不白屏；
+- 棋谱事务失败整笔回滚，不退内存；进度/局面失败边界见报告 P2。
+
+### 真实浏览器
+
+| 流程 | 结果 |
+| --- | --- |
+| 棋谱导出 → 干净上下文导入/回放/刷新 | 通过 |
+| 47 手 → 第 26 手分支 → AI → 保存 → 原谱保留 | 通过 |
+| 自由局面编辑/分析/保存/重开；编辑不污染对战 | 通过（Chrome/Firefox/WebKit） |
+| 分享 A/B 独立 context、显式保存、重复、前进后退 | 通过 |
+| 坏文件/取消零写入；事务失败明确报错 | 通过 |
+| 回放第 5 手分享并保存为局面 | 通过 |
+| 打开分享不自动续走/不建库，返回后续走 | 通过 |
+
+### 门禁
+
+| 命令 | 结果 |
+| --- | --- |
+| `yarn lint` / `yarn typecheck` | 通过 |
+| `yarn test` | **1,384 / 1,384**（88 文件） |
+| `yarn build` | 通过（index gzip 127.76 kB / CSS gzip 7.53 kB） |
+| `yarn e2e` | **186 / 186** |
+| `yarn e2e:prod` | **7 / 7** |
+| `yarn e2e:browsers` | **18 / 18** |
+| `yarn gates` | 棘轮 1,384 · 186 |
+| `yarn bench:check` | 19/19 + 29 不变量 |
+| `yarn ui:probe` | 38 状态 / 308 张，七条判据全过 |
+| `yarn check:coverage` | 3,084 条，未缩小（+136） |
+| CI | 未运行（未推送） |
+
+### 已知问题（非阻塞）
+
+完整备份不含自定义局面（已在 UI/文档明示）；局面/进度存储失败提示不完整；
+导出忽略 `skipped`；快速双击局面保存可能重复；刷新后分支复现原谱时会合并为
+一条内容相同的记录。生产仍为 `0.4.0`，本阶段未部署。

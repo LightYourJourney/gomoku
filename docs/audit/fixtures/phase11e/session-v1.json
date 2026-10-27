@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "moves": [
+    {
+      "x": 7,
+      "y": 7
+    },
+    {
+      "x": 7,
+      "y": 8
+    },
+    {
+      "x": 8,
+      "y": 8
+    }
+  ],
+  "firstPlayer": 1,
+  "mode": "pvp",
+  "humanColor": 1,
+  "difficulty": "easy"
+}

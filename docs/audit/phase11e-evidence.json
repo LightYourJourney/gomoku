@@ -1,0 +1,101 @@
+{
+  "phase": "11E",
+  "date": "2026-10-27",
+  "fixCommit": "dfe510e",
+  "baseline": {
+    "head": "8f2fee3",
+    "branch": "main",
+    "production": {
+      "version": "0.4.0",
+      "commit": "d20eca9",
+      "deployment": "07a264f2-baa4-4bec-b746-d27867e361af"
+    }
+  },
+  "fixes": [
+    {
+      "id": "A-11E-01",
+      "severity": "P1",
+      "summary": "Opening a share link resumed a saved AI-turn game and could write a move/session/record",
+      "before": {
+        "scenario": "saved pve session, 1 move, AI turn; navigate to #share",
+        "sessionMovesAfter2500ms": 2,
+        "nearWinScenarioRecordsAfter5000ms": 1
+      },
+      "after": {
+        "sessionMovesDuringPreview": 1,
+        "databaseCreatedDuringPreview": false,
+        "sessionMovesAfterReturn": 2
+      }
+    },
+    {
+      "id": "A-11E-02",
+      "severity": "P1",
+      "summary": "saveGameReplacing matched only firstPlayer+moves and deleted a distinct record with different mode/humanColor/difficulty",
+      "before": "1 record remained after saving same moves with pve/hard metadata",
+      "after": "2 records remain; source seq preserved"
+    },
+    {
+      "id": "A-11E-03",
+      "severity": "P1",
+      "summary": "Max-size backup validation was O(n^2) and could block the main thread",
+      "fixtureBytes": 6830098,
+      "games": 2000,
+      "movesPerGame": 225,
+      "oldImplementation": "vitest timeout at 15s; temporary perf process ~92s",
+      "newImplementationMs": 493,
+      "result": "too_many_moves"
+    },
+    {
+      "id": "A-11E-04",
+      "severity": "P1",
+      "summary": "Position import read the whole file before checking the 10 MiB limit",
+      "after": "file.size checked before file.text(); component test asserts text() not called"
+    }
+  ],
+  "compatibility": {
+    "fixtures": "docs/audit/fixtures/phase11e/",
+    "dbV1ToV3": "progress retained; positions/progress/records present; version 3",
+    "dbV2ToV3": "2 old records readable, skipped=0, old progress retained; backup export 2 games; clean restore 2; reload 2",
+    "sessionV1ToV2": "read-only migration; resignedBy=null; invalid fields rejected",
+    "positionsV1ToV2": "timestamps null; board/provenance preserved; update writes v2",
+    "externalV1": "game/backup/position parse, re-export and restore; content identity stable"
+  },
+  "adversarial": {
+    "temporaryTestsPassed": 17,
+    "invalidJson": "rejected",
+    "oversize": "rejected before parse",
+    "deepNesting": "rejected before parse",
+    "typeConfusion": "rejected",
+    "invalidCoordinates": "rejected",
+    "duplicateMove": "rejected",
+    "moveAfterEnd": "rejected",
+    "wrongWinner": "rejected",
+    "shareFuzzCases": 500,
+    "uncaughtErrors": 0,
+    "storageTransactionFailure": "game import: storage=failed, no memory write, old data unchanged"
+  },
+  "gates": {
+    "lint": "pass",
+    "typecheck": "pass",
+    "unit": "1384/1384 (88 files)",
+    "build": "pass",
+    "e2e": "186/186",
+    "e2eProd": "7/7",
+    "e2eBrowsers": "18/18",
+    "gates": "cycles 0; knip pass; duplicates 0; ratchet 1384/186",
+    "benchCheck": "19/19 assertions; 29 invariants; 6 skipped timing rows",
+    "uiProbe": "38 states / 308 screenshots; seven criteria pass",
+    "coverageRatchet": "3084 entries; no shrink; +136 new coverage",
+    "ci": "not run (not pushed)"
+  },
+  "known": [
+    "P2: full backup excludes custom positions (disclosed in UI/docs)",
+    "P2: positions transaction failure can leave an invisible memory fallback",
+    "P2: progress/preferences write failures are swallowed",
+    "P2: export ignores skipped records and may fail on one corrupt record",
+    "P2: rapid double-click position save may duplicate",
+    "P2: read-side record sequence validation is incomplete",
+    "P3: branch reproduction after refresh may collapse identical content to one record",
+    "P3: in-app hash navigation to share does not pause an already-running AI request"
+  ]
+}

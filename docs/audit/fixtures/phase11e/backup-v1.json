@@ -1,0 +1,109 @@
+{
+  "format": "gomoku-lab.backup",
+  "formatVersion": 1,
+  "board": {
+    "size": 15
+  },
+  "rules": "freestyle",
+  "games": [
+    {
+      "firstPlayer": 1,
+      "moves": [
+        {
+          "x": 3,
+          "y": 7
+        },
+        {
+          "x": 3,
+          "y": 9
+        },
+        {
+          "x": 4,
+          "y": 7
+        },
+        {
+          "x": 4,
+          "y": 9
+        },
+        {
+          "x": 5,
+          "y": 7
+        },
+        {
+          "x": 5,
+          "y": 9
+        },
+        {
+          "x": 6,
+          "y": 7
+        },
+        {
+          "x": 6,
+          "y": 9
+        },
+        {
+          "x": 7,
+          "y": 7
+        }
+      ],
+      "mode": "pvp",
+      "humanColor": 1,
+      "difficulty": "easy",
+      "ending": {
+        "type": "five",
+        "winner": 1
+      }
+    },
+    {
+      "firstPlayer": 1,
+      "moves": [],
+      "mode": "pve",
+      "humanColor": 1,
+      "difficulty": "medium",
+      "ending": {
+        "type": "resign",
+        "winner": 2,
+        "resignedBy": 1
+      }
+    }
+  ],
+  "progress": {
+    "completedLessons": [
+      "rules"
+    ],
+    "solvedPuzzles": [
+      "win-h"
+    ],
+    "lastVisited": {
+      "kind": "lesson",
+      "id": "two"
+    },
+    "lastView": "learn"
+  },
+  "preferences": {
+    "theme": "dark",
+    "showCoords": false,
+    "soundEnabled": true
+  },
+  "session": {
+    "moves": [
+      {
+        "x": 7,
+        "y": 7
+      },
+      {
+        "x": 7,
+        "y": 8
+      }
+    ],
+    "firstPlayer": 1,
+    "mode": "pvp",
+    "humanColor": 1,
+    "difficulty": "easy",
+    "resignedBy": null
+  },
+  "source": {
+    "app": "gomoku-lab",
+    "engineVersion": "search-1"
+  }
+}

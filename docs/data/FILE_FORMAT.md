@@ -97,6 +97,8 @@
   备份级结构（版本、棋盘、规则、数组类型）无效则整份拒绝。
 - 只导出棋谱时（「导出全部棋谱」）使用同一个 `format`，省略 `progress` /
   `preferences` / `session`。
+- **备份不包含 `positions`**（自定义局面）。局面是独立的 `gomoku-lab.position`
+  文件，需要单独导出/导入；Phase 11E 审计确认该边界并在 UI 明示。
 
 ## 4. 重复判断
 

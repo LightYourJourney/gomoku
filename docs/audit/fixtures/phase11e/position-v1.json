@@ -1,0 +1,28 @@
+{
+  "format": "gomoku-lab.position",
+  "formatVersion": 1,
+  "board": {
+    "size": 15
+  },
+  "rules": "freestyle",
+  "nextPlayer": 2,
+  "stones": [
+    {
+      "x": 7,
+      "y": 7,
+      "color": 1
+    }
+  ],
+  "title": "旧版局面文件",
+  "provenance": {
+    "kind": "replay",
+    "moves": [
+      {
+        "x": 7,
+        "y": 7
+      }
+    ],
+    "firstPlayer": 1,
+    "ply": 1
+  }
+}

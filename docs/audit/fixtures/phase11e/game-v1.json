@@ -1,0 +1,58 @@
+{
+  "format": "gomoku-lab.game",
+  "formatVersion": 1,
+  "board": {
+    "size": 15
+  },
+  "rules": "freestyle",
+  "firstPlayer": 1,
+  "moves": [
+    {
+      "x": 3,
+      "y": 7
+    },
+    {
+      "x": 3,
+      "y": 9
+    },
+    {
+      "x": 4,
+      "y": 7
+    },
+    {
+      "x": 4,
+      "y": 9
+    },
+    {
+      "x": 5,
+      "y": 7
+    },
+    {
+      "x": 5,
+      "y": 9
+    },
+    {
+      "x": 6,
+      "y": 7
+    },
+    {
+      "x": 6,
+      "y": 9
+    },
+    {
+      "x": 7,
+      "y": 7
+    }
+  ],
+  "mode": "pvp",
+  "humanColor": 1,
+  "difficulty": "easy",
+  "ending": {
+    "type": "five",
+    "winner": 1
+  },
+  "source": {
+    "app": "gomoku-lab",
+    "engineVersion": "search-1"
+  }
+}

@@ -1,0 +1,61 @@
+[
+  {
+    "seq": 1,
+    "schemaVersion": 1,
+    "moves": [
+      {
+        "x": 3,
+        "y": 7
+      },
+      {
+        "x": 3,
+        "y": 9
+      },
+      {
+        "x": 4,
+        "y": 7
+      },
+      {
+        "x": 4,
+        "y": 9
+      },
+      {
+        "x": 5,
+        "y": 7
+      },
+      {
+        "x": 5,
+        "y": 9
+      },
+      {
+        "x": 6,
+        "y": 7
+      },
+      {
+        "x": 6,
+        "y": 9
+      },
+      {
+        "x": 7,
+        "y": 7
+      }
+    ],
+    "firstPlayer": 1,
+    "mode": "pvp",
+    "humanColor": 1,
+    "difficulty": "easy",
+    "resignedBy": null,
+    "winner": 1
+  },
+  {
+    "seq": 2,
+    "schemaVersion": 1,
+    "moves": [],
+    "firstPlayer": 1,
+    "mode": "pve",
+    "humanColor": 1,
+    "difficulty": "medium",
+    "resignedBy": 1,
+    "winner": 2
+  }
+]
