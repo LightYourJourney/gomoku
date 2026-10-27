@@ -33,7 +33,8 @@ interface BranchOrigin {
 }
 ```
 
-- `sourceContentKey` 用于回溯来源棋谱的内容身份；不把自增 `seq` 当跨设备 ID。
+- `sourceContentKey` 保留来源棋谱的规范化内容身份，不把自增 `seq` 当跨设备 ID。
+  当前界面只展示 seq 与起点；内容身份暂未用于 UI 校验，保留给后续来源核验。
 - **不复制原棋谱对象**；只保留回指与起点。
 - 该元数据当前只存在于对局 store，随会话页面生命周期存在；不写入
   `PersistedSession`、备份或棋谱记录。刷新页面后对局可恢复，但分支横幅与来源元数据
