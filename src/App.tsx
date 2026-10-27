@@ -16,6 +16,10 @@ function currentShareToken(): string | null {
   return shareTokenFromHash(window.location.hash)
 }
 
+/** 四个模块页与分享预览共用同一套根容器：安全区、滚动模式只在这里改。 */
+const ROOT_CLASS =
+  'flex min-h-dvh flex-col bg-bg pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)] pt-[env(safe-area-inset-top)] text-fg wide-layout:h-dvh wide-layout:overflow-hidden'
+
 export default function App() {
   useThemeEffect()
   const [shareToken, setShareToken] = useState<string | null>(currentShareToken)
@@ -24,8 +28,10 @@ export default function App() {
     const handleHashChange = () => {
       const next = currentShareToken()
       setShareToken(next)
-      // 直接打开分享链接时，bootstrap 刻意没有续走 AI；离开分享页再续。
+      // 直接打开分享链接时，bootstrap 刻意没有续走 AI；应用内改 hash 进入分享
+      // 也要中止在飞请求；离开分享页再续。
       if (next === null) useGameStore.getState().requestAiMove()
+      else useGameStore.getState().suspendAi()
     }
     window.addEventListener('hashchange', handleHashChange)
     return () => window.removeEventListener('hashchange', handleHashChange)
@@ -59,7 +65,7 @@ export default function App() {
   if (shareToken !== null) {
     return (
       <div
-        className="flex min-h-dvh flex-col bg-bg pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)] pt-[env(safe-area-inset-top)] text-fg wide-layout:h-dvh wide-layout:overflow-hidden"
+        className={ROOT_CLASS}
       >
         <SharePreview
           key={shareToken}
@@ -96,7 +102,7 @@ export default function App() {
        * 没有任何影响。
        * 背景色由根容器自己铺（padding 在背景之内），刘海区仍是主题底色。
        */
-      className="flex min-h-dvh flex-col bg-bg pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)] pt-[env(safe-area-inset-top)] text-fg wide-layout:h-dvh wide-layout:overflow-hidden"
+      className={ROOT_CLASS}
     >
       {view === 'battle' && <BattleScreen />}
       {view === 'learn' && <LearnScreen />}

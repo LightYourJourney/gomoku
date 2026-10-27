@@ -19,7 +19,7 @@ import { downloadJson } from '../review/download'
 import { exportFilename } from '../../persist/transfer/format'
 import { parsePositionText, toPositionFile } from '../../persist/transfer/position'
 import { MAX_IMPORT_BYTES } from '../../persist/transfer/validate'
-import { ShareLinkDialog } from '../review/ShareLinkDialog'
+import { ShareLinkDialog } from '../sharing/ShareLinkDialog'
 import type { ShareLinkResult } from '../../sharing/link'
 import { createPositionShare, shareLink } from '../../sharing/link'
 

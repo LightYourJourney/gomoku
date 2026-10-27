@@ -138,6 +138,11 @@ export interface GameStore {
     options?: { readonly resumeAi?: boolean },
   ): void
   setSessionError(message: string | null): void
+  /**
+   * 中止在飞的 AI 落子（进入分享预览时）。旧响应由 requestId 闸门丢弃；
+   * 离开分享页后由 `requestAiMove` 显式续走。
+   */
+  suspendAi(): void
   /** AI 失败后重试。不在 AI 回合时是空操作。 */
   retryAiMove(): void
   setMode(mode: GameMode): void
@@ -604,6 +609,10 @@ export function createGameStore(
 
       setSessionError(message) {
         set({ sessionError: message })
+      },
+
+      suspendAi() {
+        set({ aiThinking: false, aiError: null, pendingRequestId: null })
       },
 
       retryAiMove() {

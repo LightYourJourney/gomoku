@@ -377,7 +377,7 @@ export function BattleScreen({ sound: injectedSound }: BattleScreenProps = {}) {
           {branch !== null && (
             <div
               data-testid="branch-banner"
-              role="status"
+              role="note"
               className="rounded-lg bg-accent-soft px-3 py-2 text-xs text-accent"
             >
               <p className="font-medium">棋谱探索 · 从第 {branch.cursor} 手继续</p>

@@ -603,6 +603,21 @@ describe('restore', () => {
     expect(engine.requests[0]!.gameVersion).toBe(1)
   })
 
+  it('进入分享预览会中止在飞 AI，迟到响应不再落子', async () => {
+    state().playHuman({ x: 7, y: 7 })
+    expect(state().game.current).toBe(WHITE)
+    const request = engine.lastRequest
+    expect(state().aiThinking).toBe(true)
+
+    state().suspendAi()
+    engine.respondTo(request.requestId, makeResponse(request.requestId, 1, { x: 0, y: 0 }))
+    await engine.flush()
+
+    expect(state().game.moves).toHaveLength(1)
+    expect(state().aiThinking).toBe(false)
+    expect(state().pendingRequestId).toBeNull()
+  })
+
   it('分享预览可恢复局面但不续走 AI，离开后再显式续走', () => {
     state().restore(session({ moves: [{ x: 7, y: 7 }] }), { resumeAi: false })
 

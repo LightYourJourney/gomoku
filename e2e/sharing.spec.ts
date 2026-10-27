@@ -167,6 +167,118 @@ test('分享：打开链接不自动续走本地对局，返回应用后才续�
     .toBeGreaterThan(1)
 })
 
+test('分享：应用内改 hash 进入预览会中止在飞 AI，返回后续走', async ({ page }) => {
+  test.setTimeout(60_000)
+  const token = createGameShare({
+    seq: 1,
+    schemaVersion: 1,
+    moves: MOVES,
+    firstPlayer: BLACK,
+    mode: 'pvp',
+    humanColor: BLACK,
+    difficulty: 'easy',
+    resignedBy: null,
+    winner: BLACK,
+  })
+  expect(token.ok).toBe(true)
+  if (!token.ok) return
+
+  await page.addInitScript(() => {
+    type Request = { requestId: number; gameVersion: number }
+    const requests: Request[] = []
+    const listeners: Array<(event: { data: unknown }) => void> = []
+    class StubWorker {
+      postMessage(request: Request): void {
+        requests.push(request)
+      }
+      addEventListener(type: string, listener: (event: { data: unknown }) => void): void {
+        if (type === 'message') listeners.push(listener)
+      }
+      terminate(): void {}
+    }
+    const testWindow = window as unknown as {
+      __aiRequests: Request[]
+      __aiReply: (requestId: number, gameVersion: number) => void
+    }
+    testWindow.__aiRequests = requests
+    testWindow.__aiReply = (requestId, gameVersion) => {
+      for (const listener of listeners) {
+        listener({
+          data: {
+            requestId,
+            gameVersion,
+            move: { x: 0, y: 0 },
+            score: 0,
+            depth: 1,
+            nodes: 1,
+            elapsedMs: 1,
+            confidence: 'exact',
+            reason: 'search',
+            candidates: [],
+            urgency: 'normal',
+          },
+        })
+      }
+    }
+    Object.assign(globalThis, { Worker: StubWorker })
+  })
+
+  await page.goto('/')
+  await page.getByTestId('intersection-7-7').click()
+  await expect.poll(() => page.evaluate(() => (window as unknown as { __aiRequests: unknown[] }).__aiRequests.length)).toBe(1)
+  const first = await page.evaluate(
+    () => (window as unknown as { __aiRequests: Array<{ requestId: number; gameVersion: number }> }).__aiRequests[0]!,
+  )
+
+  // 不重载，只改 hash：应用内进入分享预览。
+  await page.evaluate((shareToken) => {
+    window.location.hash = `#share=${shareToken}`
+  }, token.token)
+  await expect(page.getByTestId('share-kind')).toBeVisible()
+
+  // 迟到的旧 AI 响应必须被 requestId 闸门丢弃。
+  await page.evaluate(
+    ({ requestId, gameVersion }) => {
+      ;(window as unknown as { __aiReply: (id: number, version: number) => void }).__aiReply(
+        requestId,
+        gameVersion,
+      )
+    },
+    first,
+  )
+  await page.waitForTimeout(200)
+  const during = await page.evaluate(() =>
+    JSON.parse(localStorage.getItem('gomoku-lab:session') ?? 'null'),
+  )
+  expect(during.moves).toHaveLength(1)
+
+  await page.getByRole('button', { name: '← 返回应用' }).click()
+  await expect
+    .poll(() => page.evaluate(() => (window as unknown as { __aiRequests: unknown[] }).__aiRequests.length))
+    .toBeGreaterThan(1)
+  const second = await page.evaluate(
+    () => {
+      const requests = (window as unknown as { __aiRequests: Array<{ requestId: number; gameVersion: number }> }).__aiRequests
+      return requests[requests.length - 1]!
+    },
+  )
+  await page.evaluate(
+    ({ requestId, gameVersion }) => {
+      ;(window as unknown as { __aiReply: (id: number, version: number) => void }).__aiReply(
+        requestId,
+        gameVersion,
+      )
+    },
+    second,
+  )
+  await expect
+    .poll(async () => {
+      const raw = await page.evaluate(() => localStorage.getItem('gomoku-lab:session'))
+      return (JSON.parse(raw ?? 'null') as { moves?: unknown[] }).moves?.length ?? 0
+    })
+    .toBe(2)
+})
+
 test('分享：回放中的第 N 手局面可作为带 provenance 的局面导入', async ({ browser, page }) => {
   test.setTimeout(60_000)
   await seedGameRecords(page, [

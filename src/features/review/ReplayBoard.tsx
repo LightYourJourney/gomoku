@@ -9,7 +9,7 @@ import { cx } from '../../lib/cx'
 import { REPLAY_SPEED_LABELS, type ReplaySpeed, type ReplayStore } from '../../store/replayStore'
 import { SIDE_PANEL_CLASS } from '../shell/PageShell'
 import { ReplayTimeline } from './ReplayTimeline'
-import { ShareLinkDialog } from './ShareLinkDialog'
+import { ShareLinkDialog } from '../sharing/ShareLinkDialog'
 import type { ShareLinkResult } from '../../sharing/link'
 
 export interface ReplayBoardProps {
