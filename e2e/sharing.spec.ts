@@ -2,6 +2,7 @@ import { expect, test, type Page } from '@playwright/test'
 import { BLACK, type Point } from '../src/core/types'
 import { DB_NAME, RECORDS_STORE } from '../src/persist/schema'
 import { seedGameRecords } from './helpers/seed'
+import { createGameShare } from '../src/sharing/link'
 
 const MOVES: readonly Point[] = [
   { x: 3, y: 7 }, { x: 3, y: 9 },
@@ -110,6 +111,107 @@ test('分享：A 复制链接、B 独立上下文预览、确认后保存、刷�
   // A 的原棋谱仍在，且没有被 B 的存储影响。
   await page.getByRole('button', { name: '← 棋谱列表' }).click()
   await expect(page.getByTestId(/^record-/)).toHaveCount(1)
+})
+
+test('分享：打开链接不自动续走本地对局，返回应用后才续走', async ({ page }) => {
+  test.setTimeout(60_000)
+  const token = createGameShare({
+    seq: 1,
+    schemaVersion: 1,
+    moves: MOVES,
+    firstPlayer: BLACK,
+    mode: 'pvp',
+    humanColor: BLACK,
+    difficulty: 'easy',
+    resignedBy: null,
+    winner: BLACK,
+  })
+  expect(token.ok).toBe(true)
+  if (!token.ok) return
+
+  await page.addInitScript(() => {
+    localStorage.setItem(
+      'gomoku-lab:session',
+      JSON.stringify({
+        schemaVersion: 2,
+        moves: [{ x: 7, y: 7 }],
+        firstPlayer: 1,
+        mode: 'pve',
+        humanColor: 1,
+        difficulty: 'easy',
+        resignedBy: null,
+      }),
+    )
+  })
+  await page.goto(`/#share=${token.token}`)
+  await expect(page.getByTestId('share-kind')).toContainText('单盘棋谱')
+
+  // 分享预览同样不应打开或升级本地数据库。
+  expect(
+    await page.evaluate(async () =>
+      (await indexedDB.databases()).some((database) => database.name === 'gomoku-lab'),
+    ),
+  ).toBe(false)
+
+  // 打开链接只恢复局面，不能借后台 AI 落子/入库。
+  await page.waitForTimeout(1_500)
+  const during = await page.evaluate(() => JSON.parse(localStorage.getItem('gomoku-lab:session') ?? 'null'))
+  expect(during.moves).toHaveLength(1)
+
+  await page.getByRole('button', { name: '← 返回应用' }).click()
+  await expect
+    .poll(async () => {
+      const raw = await page.evaluate(() => localStorage.getItem('gomoku-lab:session'))
+      return (JSON.parse(raw ?? 'null') as { moves?: unknown[] }).moves?.length ?? 0
+    })
+    .toBeGreaterThan(1)
+})
+
+test('分享：回放中的第 N 手局面可作为带 provenance 的局面导入', async ({ browser, page }) => {
+  test.setTimeout(60_000)
+  await seedGameRecords(page, [
+    {
+      schemaVersion: 1,
+      moves: MOVES,
+      firstPlayer: BLACK,
+      mode: 'pvp',
+      humanColor: BLACK,
+      difficulty: 'easy',
+      resignedBy: null,
+    },
+  ])
+
+  await page.goto('/')
+  await page.getByRole('button', { name: '复盘', exact: true }).click()
+  await page.getByTestId(/^record-/).first().click()
+  const slider = page.getByLabel('回放手数')
+  await slider.focus()
+  await slider.press('Home')
+  for (let i = 0; i < 5; i++) await slider.press('ArrowRight')
+  await expect(page.getByTestId('move-counter')).toHaveText('5 / 9')
+
+  await page.getByRole('button', { name: '分享棋谱' }).click()
+  await page.getByRole('button', { name: '分享第 5 手局面' }).click()
+  const link = await page.getByTestId('share-link').inputValue()
+  await page.getByRole('button', { name: '关闭' }).click()
+
+  const contextB = await browser.newContext()
+  const pageB = await contextB.newPage()
+  try {
+    await pageB.goto(link)
+    await expect(pageB.getByTestId('share-kind')).toContainText('自定义局面')
+    await expect(pageB.getByText('来自棋谱第 5 手（已知手顺）')).toBeVisible()
+    await expect(pageB.getByTestId(/^stone-/)).toHaveCount(5)
+    await pageB.getByTestId('share-save').click()
+    await expect(pageB.getByTestId('share-save-state')).toContainText('已保存')
+
+    await pageB.goto('/')
+    await pageB.getByRole('button', { name: '复盘', exact: true }).click()
+    await pageB.getByRole('button', { name: '局面研究' }).click()
+    await expect(pageB.getByLabel('打开已保存局面')).toContainText('棋谱第 5 手')
+  } finally {
+    await contextB.close()
+  }
 })
 
 test('分享：自由摆盘链接预览并保存为局面', async ({ browser, page }) => {

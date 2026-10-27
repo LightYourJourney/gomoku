@@ -12,6 +12,24 @@ const NINE_MOVES: readonly Point[] = [
   { x: 7, y: 7 },
 ]
 
+function fullDrawMoves(): Point[] {
+  const blacks: Point[] = []
+  const whites: Point[] = []
+  for (let y = 0; y < 15; y++) {
+    for (let x = 0; x < 15; x++) {
+      // 周期染色：四个方向的最大同色连续段都 <= 2，满盘无五连。
+      if ((x + 2 * y) % 4 < 2) blacks.push({ x, y })
+      else whites.push({ x, y })
+    }
+  }
+  const moves: Point[] = []
+  for (let i = 0; i < blacks.length; i++) {
+    moves.push(blacks[i]!)
+    if (i < whites.length) moves.push(whites[i]!)
+  }
+  return moves
+}
+
 function winRecord(): GameRecordInput {
   return {
     moves: [...NINE_MOVES],
@@ -176,23 +194,7 @@ describe('严格导入 · 棋谱内容', () => {
   })
 
   it('满盘 225 手的合法和棋可以通过（最大合法棋谱）', () => {
-    const blacks: Point[] = []
-    const whites: Point[] = []
-    for (let y = 0; y < 15; y++) {
-      for (let x = 0; x < 15; x++) {
-        // 周期染色：四个方向的最大同色连续段都 <= 2，满盘无五连。
-        if ((x + 2 * y) % 4 < 2) blacks.push({ x, y })
-        else whites.push({ x, y })
-      }
-    }
-    expect(blacks).toHaveLength(113)
-    expect(whites).toHaveLength(112)
-
-    const moves: Point[] = []
-    for (let i = 0; i < blacks.length; i++) {
-      moves.push(blacks[i]!)
-      if (i < whites.length) moves.push(whites[i]!)
-    }
+    const moves = fullDrawMoves()
     expect(moves).toHaveLength(225)
 
     const game = validGame()
@@ -262,6 +264,28 @@ describe('严格导入 · 备份', () => {
     expect(result.ok).toBe(true)
     if (!result.ok || result.kind !== 'backup') return
     expect(result.games).toHaveLength(2_000)
+  })
+
+  it('接近 10 MiB 的备份按总手数上限拒绝，且不在校验阶段卡死', () => {
+    const game = {
+      firstPlayer: BLACK,
+      moves: fullDrawMoves(),
+      mode: 'pvp',
+      humanColor: BLACK,
+      difficulty: 'easy',
+      ending: { type: 'draw', winner: null },
+    }
+    const backup = {
+      ...JSON.parse(JSON.stringify(toBackupFile({ games: [] }))),
+      games: Array.from({ length: 2_000 }, () => game),
+    }
+    const text = JSON.stringify(backup)
+    expect(new TextEncoder().encode(text).length).toBeLessThan(MAX_IMPORT_BYTES)
+
+    const result = parseImportText(text)
+    expect(result.ok).toBe(false)
+    if (result.ok) return
+    expect(result.errors[0]!.code).toBe('too_many_moves')
   })
 
   it('超过 2000 局被拒绝', () => {

@@ -5,6 +5,7 @@ import { join } from 'node:path'
 import { expect, test, type Page } from '@playwright/test'
 
 import { DB_VERSION } from '../src/persist/schema'
+import { toGameFile } from '../src/persist/transfer/format'
 
 /**
  * Phase 11A 的真实浏览器验收：文件真的被下载、真的从磁盘读回、真的穿过
@@ -174,6 +175,56 @@ test('完整备份 → 恢复棋谱、进度、偏好与会话；重复导入会
   await expect(fresh.getByTestId('import-result')).toContainText('跳过重复 1 条')
   await expect(fresh.getByTestId(/^record-/)).toHaveCount(1)
   await context.close()
+})
+
+test('棋谱事务失败时结果明说没有写入，不退到内存冒充可用', async ({ page }) => {
+  const dir = mkdtempSync(join(tmpdir(), 'gomoku-fail-'))
+  const path = join(dir, 'game.json')
+  const moves = [
+    { x: 3, y: 7 }, { x: 3, y: 9 },
+    { x: 4, y: 7 }, { x: 4, y: 9 },
+    { x: 5, y: 7 }, { x: 5, y: 9 },
+    { x: 6, y: 7 }, { x: 6, y: 9 },
+    { x: 7, y: 7 },
+  ]
+  writeFileSync(
+    path,
+    JSON.stringify(
+      toGameFile({
+        moves,
+        firstPlayer: 1,
+        mode: 'pvp',
+        humanColor: 1,
+        difficulty: 'easy',
+        resignedBy: null,
+      }),
+    ),
+    'utf8',
+  )
+
+  await page.addInitScript(() => {
+    const original = IDBDatabase.prototype.transaction
+    IDBDatabase.prototype.transaction = function (
+      this: IDBDatabase,
+      storeNames: string | string[],
+      mode?: IDBTransactionMode,
+    ) {
+      const names = Array.isArray(storeNames) ? storeNames : [storeNames]
+      if (mode === 'readwrite' && names.includes('records')) {
+        throw new DOMException('quota', 'QuotaExceededError')
+      }
+      return original.call(this, storeNames, mode)
+    } as typeof IDBDatabase.prototype.transaction
+  })
+
+  await page.goto('/')
+  await page.getByRole('button', { name: '复盘', exact: true }).click()
+  await page.getByTestId('import-file').setInputFiles(path)
+  await expect(page.getByRole('heading', { name: '导入预览' })).toBeVisible()
+  await page.getByRole('button', { name: '确认导入' }).click()
+
+  await expect(page.getByTestId('import-result')).toContainText('没有写入任何棋谱')
+  await expect(page.getByTestId(/^record-/)).toHaveCount(0)
 })
 
 test('坏文件精确报错且零写入；取消预览也不写入', async ({ page }) => {

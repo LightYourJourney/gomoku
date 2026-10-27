@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { BattleScreen } from './features/battle/BattleScreen'
 import { LearnScreen } from './features/learn/LearnScreen'
 import { PuzzleScreen } from './features/puzzles/PuzzleScreen'
@@ -21,7 +21,12 @@ export default function App() {
   const [shareToken, setShareToken] = useState<string | null>(currentShareToken)
 
   useEffect(() => {
-    const handleHashChange = () => setShareToken(currentShareToken())
+    const handleHashChange = () => {
+      const next = currentShareToken()
+      setShareToken(next)
+      // 直接打开分享链接时，bootstrap 刻意没有续走 AI；离开分享页再续。
+      if (next === null) useGameStore.getState().requestAiMove()
+    }
     window.addEventListener('hashchange', handleHashChange)
     return () => window.removeEventListener('hashchange', handleHashChange)
   }, [])
@@ -33,15 +38,20 @@ export default function App() {
       `${window.location.pathname}${window.location.search}`,
     )
     setShareToken(null)
+    useGameStore.getState().requestAiMove()
   }
 
   const view = useLearnStore((state) => state.view)
   const bootstrap = useLearnStore((state) => state.bootstrap)
   const flush = useLearnStore((state) => state.flush)
 
+  const learnBootstrapped = useRef(false)
   useEffect(() => {
+    // 分享预览不应打开/升级本地数据库；离开分享页后再载入学习进度。
+    if (shareToken !== null || learnBootstrapped.current) return
+    learnBootstrapped.current = true
     bootstrap()
-  }, [bootstrap])
+  }, [bootstrap, shareToken])
 
   // 切后台 / 关页面前把学习进度尽力冲出去（不是落盘保证，见 hook 注释）
   useFlushOnHide(flush)

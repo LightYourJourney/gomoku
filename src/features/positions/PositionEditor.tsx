@@ -18,6 +18,7 @@ import { PageShell, SIDE_PANEL_CLASS } from '../shell/PageShell'
 import { downloadJson } from '../review/download'
 import { exportFilename } from '../../persist/transfer/format'
 import { parsePositionText, toPositionFile } from '../../persist/transfer/position'
+import { MAX_IMPORT_BYTES } from '../../persist/transfer/validate'
 import { ShareLinkDialog } from '../review/ShareLinkDialog'
 import type { ShareLinkResult } from '../../sharing/link'
 import { createPositionShare, shareLink } from '../../sharing/link'
@@ -206,6 +207,10 @@ export function PositionEditor({
   }
 
   async function importPosition(file: File): Promise<void> {
+    if (file.size > MAX_IMPORT_BYTES) {
+      fail(`文件超过 ${MAX_IMPORT_BYTES} 字节，拒绝读取`)
+      return
+    }
     try {
       const parsed = parsePositionText(await file.text())
       if (!parsed.ok) {

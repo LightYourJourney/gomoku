@@ -329,6 +329,10 @@ export function DataManagementPanel({
         数据只保存在本机浏览器。换设备或清缓存前，先导出完整备份；导入只做合并，
         不会删除现有棋谱。
       </p>
+      <p data-testid="backup-scope" className="text-xs text-warn">
+        完整备份包含棋谱、学习进度、显示偏好和上次会话，不含自定义局面。
+        局面请在「局面研究」里逐个导出。
+      </p>
 
       <div className="flex flex-wrap gap-2">
         <Button size="sm" onClick={() => void exportGames()}>

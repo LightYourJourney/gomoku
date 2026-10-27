@@ -127,8 +127,16 @@ export interface GameStore {
   newGame(options?: { mode?: GameMode; humanColor?: Player; difficulty?: Difficulty }): void
   /** 从棋谱前缀接管一局探索。校验失败时不修改当前对局。 */
   startBranch(input: BranchStartInput): BranchStartResult
-  /** 从本地存档恢复。传 null 表示没有存档，保持当前状态。 */
-  restore(session: PersistedSession | null): void
+  /**
+   * 从本地存档恢复。传 null 表示没有存档，保持当前状态。
+   *
+   * `resumeAi: false` 用于分享预览：恢复局面只为让返回应用后状态一致，
+   * 但**打开分享链接本身不能触发 AI 落子/入库**。离开分享页时显式续走。
+   */
+  restore(
+    session: PersistedSession | null,
+    options?: { readonly resumeAi?: boolean },
+  ): void
   setSessionError(message: string | null): void
   /** AI 失败后重试。不在 AI 回合时是空操作。 */
   retryAiMove(): void
@@ -477,7 +485,7 @@ export function createGameStore(
         return { ok: true }
       },
 
-      restore(session) {
+      restore(session, options = {}) {
         if (session === null) return
 
         // replay 会忽略非法手顺，因此损坏的存档最坏也只是退回若干手，不会崩。
@@ -501,7 +509,8 @@ export function createGameStore(
         })
 
         // 存档时若正轮到 AI（刷新页面时它还在思考），恢复后要接着把这局走完。
-        get().requestAiMove()
+        // 分享预览关掉这道续走：打开链接不得改变本地对局。
+        if (options.resumeAi !== false) get().requestAiMove()
       },
 
       setMode(mode) {

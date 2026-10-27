@@ -225,9 +225,9 @@ export function memoryGameRecords(degraded = false): GameRecordsStorage {
  * 若写入退到内存兜底（隐私模式、配额满），旧条已经删了、新条没落库——
  * 刷新之后整局从棋谱里消失，比多一条严重得多。
  *
- * `replacesSeq` 为 null 时按**内容**找旧条（同样的手顺 + 同样的先手方
- * 视为同一局）。这条路径覆盖「终局后刷新页面、再悔棋重下到终局」：
- * 那时内存里的 seq 链接已经随刷新丢了，只剩手顺可比。
+ * `replacesSeq` 为 null 时按**规范化内容身份**找旧条（先手、手顺、模式、
+ * 执子、难度、认输方全部相同才视为同一局）。这条路径覆盖「终局后刷新页面、
+ * 再悔棋重下到终局」：那时内存里的 seq 链接已经随刷新丢了，只能按内容比。
  */
 export async function saveGameReplacing(
   input: GameRecordInput,
@@ -241,15 +241,12 @@ export async function saveGameReplacing(
   if (target === null && options.allowContentMatch !== false) {
     // 这里只关心记录本身，降级与跳过两个信号在这条路径上没有意义
     const { records: existing } = await indexedDbGameRecords.list()
+    // 与导入去重使用**同一条内容身份**：手顺只是其中一项。只比手顺+先手方
+    // 会把「同样的棋、不同的模式/执子/难度/认输方」当成同一局并删掉旧记录。
+    // 分支的同手顺保护另有 `allowContentMatch:false` 闸门，不靠这条兜底。
+    const key = recordContentKey(input)
     const sameGame = existing.find(
-      (record) =>
-        record.seq !== saved.record.seq &&
-        record.firstPlayer === input.firstPlayer &&
-        record.moves.length === input.moves.length &&
-        record.moves.every(
-          (point, index) =>
-            point.x === input.moves[index]?.x && point.y === input.moves[index]?.y,
-        ),
+      (record) => record.seq !== saved.record.seq && recordContentKey(record) === key,
     )
     target = sameGame?.seq ?? null
   }

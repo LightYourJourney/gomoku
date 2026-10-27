@@ -603,6 +603,19 @@ describe('restore', () => {
     expect(engine.requests[0]!.gameVersion).toBe(1)
   })
 
+  it('分享预览可恢复局面但不续走 AI，离开后再显式续走', () => {
+    state().restore(session({ moves: [{ x: 7, y: 7 }] }), { resumeAi: false })
+
+    expect(state().game.moves).toHaveLength(1)
+    expect(state().game.current).toBe(WHITE)
+    expect(state().aiThinking).toBe(false)
+    expect(engine.requests).toHaveLength(0)
+
+    state().requestAiMove()
+    expect(state().aiThinking).toBe(true)
+    expect(engine.requests).toHaveLength(1)
+  })
+
   it('恢复后 AI 应手，这一局可以继续走完', async () => {
     state().restore(session({ moves: [{ x: 7, y: 7 }] }))
     engine.reply({ x: 0, y: 0 })

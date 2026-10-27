@@ -240,6 +240,22 @@ describe('saveGameReplacing：替换而不是留下两条', () => {
     expect(again.record.seq).not.toBe(first.seq)
   })
 
+  it('手顺相同但模式/执子/难度不同不是同一局——不能内容匹配删掉旧条', async () => {
+    const first = (await indexedDbGameRecords.put(winRecord())).record
+    const other = {
+      ...winRecord(),
+      mode: 'pve' as const,
+      humanColor: WHITE,
+      difficulty: 'hard' as const,
+    }
+    const second = await saveGameReplacing(other, null)
+
+    const { records } = await indexedDbGameRecords.list()
+    expect(records).toHaveLength(2)
+    expect(records.some((record) => record.seq === first.seq)).toBe(true)
+    expect(records.some((record) => record.seq === second.record.seq)).toBe(true)
+  })
+
   it('关闭内容匹配时同名局不会被删——分支复现原手顺的保护', async () => {
     const first = (await indexedDbGameRecords.put(winRecord())).record
     await saveGameReplacing(winRecord(), null, { allowContentMatch: false })

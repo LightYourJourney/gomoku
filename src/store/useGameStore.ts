@@ -81,10 +81,13 @@ function persistSession(state: {
  *
  * 恢复上次对局要赶在 React 挂载之前：刷新时如果正轮到 AI，恢复动作会立刻发起新的
  * 搜索，界面一挂载就能显示「AI 思考中」，而不是先闪一下空盘再补上。
+ *
+ * `resumeAi: false` 是分享预览通道：恢复局面（返回应用后状态一致），但不让
+ * 打开链接这个动作替用户落子。离开分享页时 `App` 再显式续走。
  */
-export function bootstrapStore(): void {
+export function bootstrapStore(options: { readonly resumeAi?: boolean } = {}): void {
   const loaded = loadSessionResult()
-  useGameStore.getState().restore(loaded.session)
+  useGameStore.getState().restore(loaded.session, { resumeAi: options.resumeAi })
   if (loaded.error !== null) useGameStore.getState().setSessionError(loaded.error)
 
   useGameStore.subscribe(persistSession)

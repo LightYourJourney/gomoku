@@ -182,6 +182,15 @@ describe('数据管理面板 · 导入', () => {
     expect((await storage.list()).records).toHaveLength(0)
   })
 
+  it('明说完整备份不含自定义局面，避免用户以为局面也会被备份', () => {
+    render(
+      <DataManagementPanel storage={memoryGameRecords()} services={services()} onImported={vi.fn()} degraded={false} />,
+    )
+
+    expect(screen.getByTestId('backup-scope')).toHaveTextContent('不含自定义局面')
+    expect(screen.getByTestId('backup-scope')).toHaveTextContent('逐个导出')
+  })
+
   it('事务失败时明说没有写入，不冒充本次会话可用', async () => {
     const base = memoryGameRecords()
     const storage = {

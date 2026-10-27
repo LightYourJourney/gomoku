@@ -1,6 +1,7 @@
 import { isDifficulty } from '../../ai/difficulty'
 import { opponentOf } from '../../core/board'
-import { applyMove, createGame, type GameState } from '../../core/game'
+import { replay, type GameState } from '../../core/game'
+import { validateMove } from '../../core/rules'
 import { BOARD_SIZE, type Player, type Point } from '../../core/types'
 import { isThemePreference } from '../../lib/theme'
 import { isFiniteInt, isObj, isPlayer, issue, type ImportErrorCode, type ImportIssue } from './guards'
@@ -224,38 +225,44 @@ interface SequenceResult {
 }
 
 /**
- * 严格手顺校验。**不用 `replay()` 的截断语义**：它对非法/终局后的手直接停下，
- * 适合恢复旧存档，不适合导入——会把 80 手的坏文件截成 35 手还报成功。
+ * 严格手顺校验。**不接受 `replay()` 的截断结果**：它遇到非法/终局后的手会停下，
+ * 适合恢复旧存档；导入必须把「停下」变成明确失败，不能把 80 手的坏文件截成
+ * 35 手还报成功。
  */
 function validateSequence(
   moves: readonly Point[],
   firstPlayer: Player,
   path: string,
 ): SequenceResult {
-  const errors: ImportIssue[] = []
-  let state = createGame(firstPlayer)
+  /*
+   * **只 replay 一次。** `replay()` 会在第一个非法手/终局后手处停下，返回的
+   * `state.moves.length` 正好是第一个坏手的位置——不需要逐手 `applyMove`
+   * （那会让每手都从头重放，225 手 × 2000 局把 10 MiB 上限变成几十秒的主线程
+   * 卡顿）。停下之后只用 `validateMove` 判一次错误类型，规则仍来自 core。
+   */
+  const state = replay(moves, firstPlayer)
+  if (state.moves.length === moves.length) return { state, errors: [] }
 
-  for (let i = 0; i < moves.length; i++) {
-    if (state.status !== 'playing') {
-      errors.push(issue('move_after_end', `${path}[${i}]`, '对局已经结束，不能再落子'))
-      break
+  const i = state.moves.length
+  if (state.status !== 'playing') {
+    return {
+      state,
+      errors: [issue('move_after_end', `${path}[${i}]`, '对局已经结束，不能再落子')],
     }
-    const outcome = applyMove(state, moves[i]!)
-    if (!outcome.ok) {
-      const code: ImportErrorCode = outcome.error === 'occupied' ? 'duplicate_move' : 'bad_coordinate'
-      errors.push(
-        issue(
-          code,
-          `${path}[${i}]`,
-          outcome.error === 'occupied' ? '该交叉点已有棋子（重复落子）' : '落子非法',
-        ),
-      )
-      break
-    }
-    state = outcome.state
   }
 
-  return { state, errors }
+  const error = validateMove(state.board, moves[i]!)
+  const code: ImportErrorCode = error === 'occupied' ? 'duplicate_move' : 'bad_coordinate'
+  return {
+    state,
+    errors: [
+      issue(
+        code,
+        `${path}[${i}]`,
+        error === 'occupied' ? '该交叉点已有棋子（重复落子）' : '落子非法',
+      ),
+    ],
+  }
 }
 
 function validateEnding(

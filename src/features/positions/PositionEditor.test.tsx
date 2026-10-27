@@ -5,6 +5,7 @@ import type { SearchResponse } from '../../ai/types'
 import { BLACK } from '../../core/types'
 import { memoryGameRecords } from '../../persist/gameRecords'
 import { memoryPositions } from '../../persist/positions'
+import { MAX_IMPORT_BYTES } from '../../persist/transfer/validate'
 import { PositionEditor } from './PositionEditor'
 
 function engineThat(response: (request: { requestId: number; gameVersion: number }) => SearchResponse): AiEngine {
@@ -50,6 +51,23 @@ function setup(overrides: Partial<Parameters<typeof PositionEditor>[0]> = {}) {
 
 beforeEach(() => {
   localStorage.clear()
+})
+
+describe('PositionEditor —— 导入边界', () => {
+  it('超过大小上限的文件在读入前就被拒绝', async () => {
+    setup()
+    const file = new File(['{}'], 'huge.json', { type: 'application/json' })
+    Object.defineProperty(file, 'size', { value: MAX_IMPORT_BYTES + 1 })
+    const text = vi.fn()
+    Object.defineProperty(file, 'text', { value: text })
+
+    fireEvent.change(screen.getByTestId('position-file'), {
+      target: { files: [file] },
+    })
+
+    expect(await screen.findByTestId('position-error')).toHaveTextContent('文件超过')
+    expect(text).not.toHaveBeenCalled()
+  })
 })
 
 describe('PositionEditor —— 编辑', () => {
