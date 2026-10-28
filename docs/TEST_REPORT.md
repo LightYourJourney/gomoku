@@ -2226,7 +2226,7 @@ session v1、progress v1、records v1（含旧 winner）、positions v1、game/b
 | `yarn bench:check` | 19/19 + 29 不变量 |
 | `yarn ui:probe` | 38 状态 / 308 张，七条判据全过 |
 | `yarn check:coverage` | 3,084 条，未缩小（+136） |
-| CI | ✅ `40666665311` / `40667822033` / `40670683165` / `40676317880` 五个 job 全绿 |
+| CI | ✅ `40685523238` 五个 job 全绿 |
 
 ### 已知问题（非阻塞）
 
