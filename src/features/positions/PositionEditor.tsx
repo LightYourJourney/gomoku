@@ -553,22 +553,22 @@ export function PositionEditor({
       </aside>
 
       {shareOpen && (
-      <ShareLinkDialog
-        open={shareOpen}
-        title="分享局面"
-        onClose={() => setShareOpen(false)}
-        options={[
-          {
-            id: 'position',
-            label: '分享当前局面',
-            description:
-              state.provenance === null
-                ? '自由摆盘；接收者可保存为自定义局面'
-                : `来自棋谱第 ${state.provenance.ply} 手；接收者可保存为自定义局面`,
-            generate: sharePosition,
-          },
-        ]}
-      />
+        <ShareLinkDialog
+          open={shareOpen}
+          title="分享局面"
+          onClose={() => setShareOpen(false)}
+          options={[
+            {
+              id: 'position',
+              label: '分享当前局面',
+              description:
+                state.provenance === null
+                  ? '自由摆盘；接收者可保存为自定义局面'
+                  : `来自棋谱第 ${state.provenance.ply} 手；接收者可保存为自定义局面`,
+              generate: sharePosition,
+            },
+          ]}
+        />
       )}
     </PageShell>
   )

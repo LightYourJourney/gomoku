@@ -126,6 +126,18 @@ describe('自动存档的写入频率', () => {
    * 存档里只有 game / mode / humanColor / difficulty 四项，所以这四项没变时
    * 不该落盘。`game` 是不可变的，引用比较就够。
    */
+  it('启动后的第一次无关状态变化也不写 localStorage', () => {
+    bootstrapStore()
+
+    const spy = vi.spyOn(Storage.prototype, 'setItem')
+    try {
+      useGameStore.getState().suspendAi()
+      expect(spy).not.toHaveBeenCalled()
+    } finally {
+      spy.mockRestore()
+    }
+  })
+
   it('与存档无关的状态变化不重复写 localStorage', () => {
     bootstrapStore() // 建立订阅（重复调用只是多挂一个，写入会被过滤掉）
 

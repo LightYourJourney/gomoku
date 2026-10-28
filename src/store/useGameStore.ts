@@ -90,5 +90,16 @@ export function bootstrapStore(options: { readonly resumeAi?: boolean } = {}): v
   useGameStore.getState().restore(loaded.session, { resumeAi: options.resumeAi })
   if (loaded.error !== null) useGameStore.getState().setSessionError(loaded.error)
 
+  // 先把“已经落盘/恢复”的快照记下来：此后只有存档字段真的变化才写。
+  // 否则启动后的第一次无关状态变化（例如进入分享页的 suspendAi）也会写一次
+  // localStorage，违背“预览阶段不调用写入 API”。
+  const primed = useGameStore.getState()
+  lastSaved = {
+    game: primed.game,
+    mode: primed.mode,
+    humanColor: primed.humanColor,
+    difficulty: primed.difficulty,
+  }
+
   useGameStore.subscribe(persistSession)
 }

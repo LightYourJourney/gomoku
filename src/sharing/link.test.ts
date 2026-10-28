@@ -209,6 +209,17 @@ describe('分享链接 —— 错误与边界', () => {
     expect(result.code).toBe('too_long')
   })
 
+  it('随机 fuzz token 不抛出，全部返回结果', () => {
+    let seed = 0x12345678
+    for (let i = 0; i < 500; i++) {
+      seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0
+      const token = Array.from({ length: seed % 64 }, () =>
+        String.fromCharCode(32 + (seed % 95)),
+      ).join('')
+      expect(() => decodeShareToken(token)).not.toThrow()
+    }
+  })
+
   it('从 hash 读取 token，普通 hash 不误判', () => {
     expect(shareTokenFromHash('#share=abc')).toBe('abc')
     expect(shareTokenFromHash('#other')).toBeNull()

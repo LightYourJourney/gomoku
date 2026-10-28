@@ -198,6 +198,45 @@ describe('局面库 —— 校验与迁移', () => {
     })
   })
 
+  it('v1 库记录被更新时写回 v2 时间字段', async () => {
+    const cells = Array.from({ length: 225 }, () => 0)
+    const db = await new Promise<IDBDatabase>((resolve, reject) => {
+      const req = indexedDB.open(DB_NAME, DB_VERSION)
+      req.onsuccess = () => resolve(req.result)
+      req.onerror = () => reject(req.error)
+    })
+    await new Promise<void>((resolve, reject) => {
+      const tx = db.transaction(POSITIONS_STORE, 'readwrite')
+      tx.objectStore(POSITIONS_STORE).put({
+        schemaVersion: 1,
+        id: 77,
+        title: '旧局面',
+        cells,
+        nextPlayer: 1,
+        provenance: null,
+      })
+      tx.oncomplete = () => resolve()
+      tx.onerror = () => reject(tx.error)
+    })
+    db.close()
+
+    const before = await indexedDbPositions.get(77)
+    expect(before).toMatchObject({ schemaVersion: 2, createdAt: null, updatedAt: null })
+
+    const saved = await indexedDbPositions.save(
+      { title: '旧局面（改）', cells, nextPlayer: 1, provenance: null },
+      77,
+      at(1_234),
+    )
+    expect(saved.persisted).toBe(true)
+    expect(await indexedDbPositions.get(77)).toMatchObject({
+      schemaVersion: 2,
+      title: '旧局面（改）',
+      createdAt: 1_234,
+      updatedAt: 1_234,
+    })
+  })
+
   it('v2 记录缺少时间或时间非法时拒绝', () => {
     const cells = Array.from({ length: 225 }, () => 0)
     expect(

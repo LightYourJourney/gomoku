@@ -4,7 +4,7 @@ import { defineConfig, devices } from '@playwright/test'
  * 跨浏览器专项：只跑局面编辑器的主路径，用 Playwright 自带的 Firefox / WebKit。
  *
  * 不并入 `playwright.config.ts`：主套件统一用本机 Chrome，且移动/平板用例依赖
- * 触摸上下文；把整套 177 条复制到三个引擎只会放大环境噪声。编辑器是 Phase 11B
+ * 触摸上下文；把整套 189 条复制到三个引擎只会放大环境噪声。编辑器是 Phase 11B
  * 新增交互最密集的页面，先用它验证「不只 Chrome 能用」。
  */
 const PORT = 5182

@@ -75,6 +75,7 @@ test('分享：A 复制链接、B 独立上下文预览、确认后保存、刷�
   try {
     await pageB.goto(link)
     await expect(pageB.getByTestId('share-kind')).toContainText('单盘棋谱')
+    await expect(pageB.getByRole('navigation', { name: '主导航' })).toHaveCount(0)
     // B 与 A 存储隔离；预览本身不写棋谱。
     expect(await recordCount(pageB)).toBe(0)
 
@@ -86,6 +87,7 @@ test('分享：A 复制链接、B 独立上下文预览、确认后保存、刷�
     await expect(pageB.getByTestId('share-kind')).toContainText('单盘棋谱')
     await pageB.getByRole('button', { name: '← 返回应用' }).click()
     await expect(pageB.getByRole('navigation', { name: '主导航' })).toBeVisible()
+    expect(pageB.url()).not.toContain('#share=')
     await pageB.getByRole('button', { name: '复盘', exact: true }).click()
     await expect(pageB.getByTestId(/^record-/)).toHaveCount(1)
 
