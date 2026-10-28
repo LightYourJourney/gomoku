@@ -47,12 +47,23 @@ let lastSaved: {
   difficulty: Difficulty
 } | null = null
 
-function persistSession(state: {
+type SessionSnapshot = {
   game: GameState
   mode: GameMode
   humanColor: Player
   difficulty: Difficulty
-}): void {
+}
+
+function snapshotOf(state: SessionSnapshot): SessionSnapshot {
+  return {
+    game: state.game,
+    mode: state.mode,
+    humanColor: state.humanColor,
+    difficulty: state.difficulty,
+  }
+}
+
+function persistSession(state: SessionSnapshot): void {
   const { game, mode, humanColor, difficulty } = state
 
   if (
@@ -64,7 +75,7 @@ function persistSession(state: {
   ) {
     return
   }
-  lastSaved = { game, mode, humanColor, difficulty }
+  lastSaved = snapshotOf(state)
 
   saveSession({
     moves: game.moves,
@@ -93,13 +104,7 @@ export function bootstrapStore(options: { readonly resumeAi?: boolean } = {}): v
   // 先把“已经落盘/恢复”的快照记下来：此后只有存档字段真的变化才写。
   // 否则启动后的第一次无关状态变化（例如进入分享页的 suspendAi）也会写一次
   // localStorage，违背“预览阶段不调用写入 API”。
-  const primed = useGameStore.getState()
-  lastSaved = {
-    game: primed.game,
-    mode: primed.mode,
-    humanColor: primed.humanColor,
-    difficulty: primed.difficulty,
-  }
+  lastSaved = snapshotOf(useGameStore.getState())
 
   useGameStore.subscribe(persistSession)
 }

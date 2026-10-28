@@ -27,15 +27,13 @@ export default function App() {
   useEffect(() => {
     const handleHashChange = () => {
       const next = currentShareToken()
+      if (shareToken !== null && next === null) useGameStore.getState().requestAiMove()
+      else if (next !== null) useGameStore.getState().suspendAi()
       setShareToken(next)
-      // 直接打开分享链接时，bootstrap 刻意没有续走 AI；应用内改 hash 进入分享
-      // 也要中止在飞请求；离开分享页再续。
-      if (next === null) useGameStore.getState().requestAiMove()
-      else useGameStore.getState().suspendAi()
     }
     window.addEventListener('hashchange', handleHashChange)
     return () => window.removeEventListener('hashchange', handleHashChange)
-  }, [])
+  }, [shareToken])
 
   function exitShare(): void {
     window.history.replaceState(

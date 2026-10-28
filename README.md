@@ -211,9 +211,9 @@ bench/         引擎基准、渲染探针与棋力评测（测量脚本不进�
 - [docs/release/DEPLOYMENT_PLAN.md](docs/release/DEPLOYMENT_PLAN.md) —— 托管平台对比与部署步骤
 - [docs/release/ROLLBACK_PLAN.md](docs/release/ROLLBACK_PLAN.md) —— 回滚路径、数据影响与演练
 - [docs/release/RELEASE_CHECKLIST.md](docs/release/RELEASE_CHECKLIST.md) —— 发布前 / staging / 公开发布清单
-- [docs/release/DEPLOYMENT_RECORD.md](docs/release/DEPLOYMENT_RECORD.md) —— 已发生的四次部署（Phase 09B / 10F / 11A / 11B）：版本、地址、验收读数、回滚与更新流程
+- [docs/release/DEPLOYMENT_RECORD.md](docs/release/DEPLOYMENT_RECORD.md) —— 已发生的部署（含 0.5.0 与热修）：版本、地址、验收读数、回滚与更新流程
 - [docs/release/RELEASE_NOTES_0.4.0.md](docs/release/RELEASE_NOTES_0.4.0.md) —— `0.4.0` 局面研究发布说明
-- [docs/release/RELEASE_NOTES_0.5.0.md](docs/release/RELEASE_NOTES_0.5.0.md) —— `0.5.0` 分支/分享发布说明（候选）
+- [docs/release/RELEASE_NOTES_0.5.0.md](docs/release/RELEASE_NOTES_0.5.0.md) —— `0.5.0` 分支/分享发布说明
 - [docs/release/RELEASE_NOTES_0.3.0.md](docs/release/RELEASE_NOTES_0.3.0.md) —— `0.3.0` 数据备份/导入导出发布说明
 - [docs/release/RELEASE_NOTES_0.2.0.md](docs/release/RELEASE_NOTES_0.2.0.md) —— `0.2.0` AI 引擎性能版发布说明（历史）
 - [docs/ai-research/BENCHMARK_PROTOCOL.md](docs/ai-research/BENCHMARK_PROTOCOL.md) —— 棋力评测协议：两种模式、局面库、赛制与统计

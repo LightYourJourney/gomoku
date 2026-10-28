@@ -98,6 +98,6 @@
 
 - 单测级：`yarn test` 覆盖 `persist/*`、`transfer/*`、`store/gameStore`、
   `features/positions`、`features/sharing`。
-- 真实浏览器：`yarn e2e`（186 条）与 `yarn e2e:prod`（7 条）。
+- 真实浏览器：`yarn e2e`（189 条）与 `yarn e2e:prod`（7 条）。
 - 旧夹具：可直接用 `docs/audit/fixtures/phase11e/` 的 JSON 重建库或文件；
   夹具 README 说明了每个文件的来源形状。

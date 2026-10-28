@@ -2129,13 +2129,13 @@ Worker / 提示 / 复盘预算的既有用例未改，全部通过。
 ## 〇之二一、Phase 11E 独立审计（2026-10-27）
 
 **定位**：对 Phase 11A–11D 的数据格式、迁移、存储失败、恶意输入、状态机与真实
-浏览器流程做独立审计；代码修复提交 `dfe510e`，发布前两轴评审修复 `20f28a3`，**不发布生产**。
+浏览器流程做独立审计；代码修复与两轴评审整改已随 `0.5.0` 发布（热修 `1f60604`）。
 
 ### 结论
 
 - **P0 = 0；P1 = 4，全部修复并反向验证。**
 - 旧版本夹具、恶意输入、真实浏览器 A–F 与本地全档门禁通过；达到 RC。
-- 生产仍为 `0.4.0`（`d20eca9` / `07a264f2…`），未部署。
+- 生产 `0.5.0`（热修 `1f60604` / `bb679255…`），预览与生产 `e2e:remote` 均 189/189。
 - 详细报告：[audit/PHASE_11E_AUDIT.md](audit/PHASE_11E_AUDIT.md)、
   [DATA_COMPATIBILITY_REPORT.md](audit/DATA_COMPATIBILITY_REPORT.md)、
   [IMPORT_SECURITY_REPORT.md](audit/IMPORT_SECURITY_REPORT.md)、
