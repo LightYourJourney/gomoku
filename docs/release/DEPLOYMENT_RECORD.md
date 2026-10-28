@@ -4,6 +4,25 @@
 > 以及线上验收的原始读数。与方案/清单分开，避免「计划」和「事实」混写。
 > 最新一次在最上面。
 
+## Phase 11C/11D/11E · 0.5.0（当前生产）
+
+| 项 | 值 |
+| --- | --- |
+| 应用版本 | `0.5.0` |
+| 引擎版本 | `search-1`（未改语义） |
+| 提交 / 标签 | `6616ebe` / `v0.5.0` |
+| 生产部署 | `c299d837-bd6f-42d1-b590-b48929800d0f`（https://c299d837.gomoku-lab.pages.dev） |
+| 生产地址 | **https://gomoku-lab.pages.dev** |
+| 预览部署 | `e715f994-d818-4e01-86aa-edee185c5aa4`（https://e715f994.gomoku-lab-preview.pages.dev） |
+| 部署时间 | 2026-10-28（UTC+8） |
+| 回滚目标 | `07a264f2-baa4-4bec-b746-d27867e361af`（`0.4.0` / `d20eca9`） |
+| 产物 | 8 文件 / 484 KB；`index-EBJUguVK.js`、`index-CFWSMnlC.css`、`worker-B6Ge9L6W.js` |
+| 验收 | CI `40676317880` 五 job 全绿；预览 `e2e:remote` **189/189**；生产 `e2e:remote` **189/189**；生产 meta `app-version=0.5.0`、`build-commit=6616ebe…`；CSP/HSTS/X-Frame-Options 正常 |
+
+- **授权**：用户 2026-10-28 明确要求“确认 CI 全绿，再部署”。
+- **P2 决定**：05/08/09/10 接受并披露；06/07 作为发布阻断并已修复。
+- **回滚**：Cloudflare 部署历史切回 `07a264f2…`；DB 仍为 3，回滚到 0.4.0 无需降级。
+
 ## Phase 11B · 棋盘编辑器与局面研究 0.4.0（当前生产）
 
 | 项 | 值 |
