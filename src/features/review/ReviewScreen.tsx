@@ -15,8 +15,8 @@ import { PageShell } from '../shell/PageShell'
 import type { AiEngine } from '../../ai/engine'
 import type { BranchConfig, BranchStartInput, BranchStartResult } from '../../store/gameStore'
 import { useLearnStore } from '../../store/learnStore'
-import { useSettingsStore } from '../../store/settingsStore'
-import { loadProgress, mergeProgress } from '../../persist/progress'
+import { SETTINGS_STORAGE_KEY, useSettingsStore } from '../../store/settingsStore'
+import { loadProgress, mergeProgress, saveProgressStrict } from '../../persist/progress'
 import { loadSession, saveSession, SCHEMA_VERSION, type PersistedSession } from '../../persist/storage'
 import { indexedDbPositions, type PositionStorage } from '../../persist/positions'
 import type { DataManagementServices } from './DataManagementPanel'
@@ -107,15 +107,37 @@ export function ReviewScreen({ storage, engine, stores, onRestoreSession, positi
       const live = useLearnStore.getState()
       const current = live.loaded ? live.progress : await loadProgress()
       const merged = mergeProgress(current, incoming)
-      // `adoptProgress` 自己会走学习进度的串行写队列；这里不再额外 save，
-      // 否则同一份进度会被写两次。
-      adoptProgress(merged)
+      // 导入必须知道是否真的落盘；失败时由面板标“失败”，不能显示“合并完成”。
+      if (!(await saveProgressStrict(merged))) throw new Error('学习进度写入失败')
+      adoptProgress(merged, { persist: false })
     },
     onRestorePreferences: (preferences) => {
       const settings = useSettingsStore.getState()
-      settings.setTheme(preferences.theme)
-      settings.setShowCoords(preferences.showCoords)
-      settings.setSoundEnabled(preferences.soundEnabled)
+      const previous = {
+        theme: settings.theme,
+        showCoords: settings.showCoords,
+        soundEnabled: settings.soundEnabled,
+      }
+      try {
+        settings.setTheme(preferences.theme)
+        settings.setShowCoords(preferences.showCoords)
+        settings.setSoundEnabled(preferences.soundEnabled)
+        const raw = localStorage.getItem(SETTINGS_STORAGE_KEY)
+        if (raw === null) throw new Error('显示偏好写入失败')
+        const stored = (JSON.parse(raw) as { state?: Record<string, unknown> }).state
+        if (
+          stored?.theme !== preferences.theme ||
+          stored?.showCoords !== preferences.showCoords ||
+          stored?.soundEnabled !== preferences.soundEnabled
+        ) {
+          throw new Error('显示偏好写入失败')
+        }
+      } catch (error) {
+        settings.setTheme(previous.theme)
+        settings.setShowCoords(previous.showCoords)
+        settings.setSoundEnabled(previous.soundEnabled)
+        throw error
+      }
     },
     onRestoreSession: (session) => {
       const persisted = { ...session, schemaVersion: SCHEMA_VERSION }

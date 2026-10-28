@@ -338,20 +338,40 @@ export const indexedDbPositions: PositionStorage = {
 
   async save(input, id, now) {
     const stamp = now()
-    const existing = id === null ? null : await indexedDbPositions.get(id)
-    const payload = positionPayload(input, existing?.createdAt ?? stamp, stamp)
+    let db: IDBDatabase
     try {
-      if (id === null) {
-        const newId = await withStore<IDBValidKey>('readwrite', (store) => store.add(payload))
-        return {
-          record: { ...payload, id: Number(newId) },
-          persisted: true,
-        }
-      }
-      await withStore<IDBValidKey>('readwrite', (store) => store.put({ ...payload, id }))
-      return { record: { ...payload, id }, persisted: true }
+      db = await openDatabase()
     } catch {
+      // 打不开库才是“本次会话内存兜底”；list() 也会走同一份兜底。
       return fallbackToMemory().save(input, id, () => stamp)
+    }
+
+    try {
+      const existing =
+        id === null
+          ? null
+          : await new Promise<SavedPosition | null>((resolve, reject) => {
+              const tx = db.transaction(STORE, 'readonly')
+              const request = tx.objectStore(STORE).get(id)
+              tx.oncomplete = () => resolve(request.result === undefined ? null : parseSavedPosition(request.result))
+              tx.onerror = () => reject(new Error('局面库读取失败'))
+              tx.onabort = () => reject(new Error('局面库读取被中止'))
+            })
+      const payload = positionPayload(input, existing?.createdAt ?? stamp, stamp)
+      const newId = await new Promise<IDBValidKey>((resolve, reject) => {
+        const tx = db.transaction(STORE, 'readwrite')
+        const request = id === null ? tx.objectStore(STORE).add(payload) : tx.objectStore(STORE).put({ ...payload, id })
+        tx.oncomplete = () => resolve(request.result)
+        tx.onerror = () => reject(new Error('局面库写入失败'))
+        tx.onabort = () => reject(new Error('局面库写入被中止'))
+      })
+      return { record: { ...payload, id: id ?? Number(newId) }, persisted: true }
+    } catch {
+      // 打开成功但事务失败（典型是配额）：不要退回内存。list() 仍读 IndexedDB，
+      // 内存里的那条记录会在列表里“消失”，界面却以为本次会话可用。
+      throw new Error('局面库写入失败，本地数据未改变')
+    } finally {
+      db.close()
     }
   },
 

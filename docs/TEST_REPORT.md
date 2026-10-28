@@ -29,7 +29,7 @@ Phase 07 的最终门禁、探针对照与基准在 `ui-redesign/FINAL_TEST_REPO
 
 | 项 | 数量 |
 | --- | --- |
-| 单元 / 组件用例 | **1388**（88 个文件） |
+| 单元 / 组件用例 | **1390**（88 个文件） |
 | 端到端用例 | **189**（桌面 165 + 移动触屏 14 + 平板 10，共 15 个 spec 文件），另有生产构建冒烟 7 条（`yarn e2e:prod`）与 Firefox/WebKit 编辑器专项 18 条（`yarn e2e:browsers`） |
 | 界面基线与量测 | `yarn ui:probe`：38 个受控状态 × 视口矩阵 = 308 张截图 + 308 条 DOM 量测，逐张可对照（Phase 05 是 34 / 276，Phase 04 是 29 / 236，Phase 03 是 27 / 220，Phase 02 是 21 / 172） |
 | 质量门禁 | 本地 pre-push 快档（5 条命令，热跑 30–45 秒，看机器负载）+ CI 全档（5 个 job）+ 四道防退化闸门 + 两把覆盖棘轮，见「〇之十一」 |
@@ -2212,12 +2212,12 @@ session v1、progress v1、records v1（含旧 winner）、positions v1、game/b
 | 命令 | 结果 |
 | --- | --- |
 | `yarn lint` / `yarn typecheck` | 通过 |
-| `yarn test` | **1,388 / 1,388**（88 文件） |
-| `yarn build` | 通过（index gzip 127.79 kB / CSS gzip 7.53 kB） |
+| `yarn test` | **1,390 / 1,390**（88 文件） |
+| `yarn build` | 通过（index gzip 128.17 kB / CSS gzip 7.52 kB） |
 | `yarn e2e` | **189 / 189** |
 | `yarn e2e:prod` | **7 / 7** |
 | `yarn e2e:browsers` | **18 / 18** |
-| `yarn gates` | 棘轮 1,388 · 189 |
+| `yarn gates` | 棘轮 1,390 · 189 |
 | `yarn bench:check` | 19/19 + 29 不变量 |
 | `yarn ui:probe` | 38 状态 / 308 张，七条判据全过 |
 | `yarn check:coverage` | 3,084 条，未缩小（+136） |

@@ -55,12 +55,12 @@
 | --- | --- |
 | `yarn lint` | 通过 |
 | `yarn typecheck` | 通过（app + e2e + bench 三个 tsconfig） |
-| `yarn test` | **1,388 / 1,388**（88 文件，skip 0） |
-| `yarn build` | 通过；`index-*.js` 408.65 kB（gzip 127.79 kB）、CSS 35.34 kB（gzip 7.53 kB）、Worker 13.99 kB |
+| `yarn test` | **1,390 / 1,390**（88 文件，skip 0） |
+| `yarn build` | 通过；`index-*.js` 409.88 kB（gzip 128.17 kB）、CSS 35.31 kB（gzip 7.52 kB）、Worker 13.99 kB |
 | `yarn e2e` | **189 / 189**（Chrome 桌面 + 移动 + 平板） |
 | `yarn e2e:prod` | **7 / 7** |
 | `yarn e2e:browsers` | Firefox 9 + WebKit 9 = **18 / 18** |
-| `yarn gates` | 0 循环 / knip 通过 / 0 重复 / 棘轮 1,388 · 189 |
+| `yarn gates` | 0 循环 / knip 通过 / 0 重复 / 棘轮 1,390 · 189 |
 | `yarn bench:check` | 19/19 断言 + 29 项不变量；6 条耗时行按基线跳过 |
 | `yarn ui:probe` | **38 状态 / 308 张**，七条量化判据全过 |
 | `yarn check:coverage` | 172 条 / 21 状态；实比 3,084 条，未缩小，另有 136 条新增覆盖 |
@@ -106,7 +106,7 @@
 
 - 分支来源元数据不持久化；**刷新后如果分支最终复现了源棋谱的完整内容，两条内容完全相同的记录会合并成一条**（只剩 `seq` 变化，手顺/模式/结果未丢）。若未来要求「seq 级不可变」，应把 branch origin 写入会话。
 - ~~在已经运行着的应用内手动改 hash 进入分享页，不会暂停已经在飞的 AI 请求~~：**发布前 code-review 已修复**（`suspendAi`），见 §8。
-- 主 JS gzip 127.79 kB，高于早期发布检查清单的 107 kB 参考值；没有仓库级 bundle budget 门禁。
+- 主 JS gzip 128.17 kB，高于早期发布检查清单的 107 kB 参考值；没有仓库级 bundle budget 门禁。
 - `positionContentKey` 依赖 provenance 对象键序；当前生产路径的键序稳定，但不是规范化的序列化。
 - 分享解码在 `JSON.parse` 前没有单独深度闸门；12,000 字符上限 + 外层 `catch` 保证不白屏，最终内容仍走严格解析。
 - `createReplayPositionShare` / `positionFromReplay` 对越界游标是 clamp，不是拒绝；UI 游标本身受控。
@@ -170,7 +170,7 @@
 - **数据升级**：真实 Chrome 中 v2 库打开后版本 3，`positions/progress/records`
   三表就位；2 条旧棋谱可读，导出备份 2 条，干净上下文恢复 2 条，刷新仍 2 条；
   旧进度显示「已完成 1 / 8 节」。
-- **构建**：`index-*.js` 408.65 kB（gzip 127.79 kB），CSS gzip 7.53 kB，Worker 13.99 kB。
+- **构建**：`index-*.js` 409.88 kB（gzip 128.17 kB），CSS gzip 7.52 kB，Worker 13.99 kB。
   没有新增运行时依赖（发布提交只改 version；`yarn.lock` 未改）。
 - **A11y/响应式**：UI 探针 38 状态 / 308 张，七条判据全过；新增 E2E 覆盖
   分享预览、回放分享、事务失败；Firefox/WebKit 编辑器 18/18。
@@ -216,5 +216,5 @@
 两处小的「胜方文案」与 `{origin,pathname}` 仍各写一份；`SharePreview.savePosition`
 仍先查后写（P2 竞态未被本次 code-review 扩大为修复项）。
 
-**最终门禁（code-review 后）**：单测 **1,388 / 1,388**；E2E **189 / 189**；
+**最终门禁（code-review 后）**：单测 **1,390 / 1,390**；E2E **189 / 189**；
 生产冒烟 7；Firefox/WebKit 18；UI 探针 308；覆盖 3,084；bench 19+29。

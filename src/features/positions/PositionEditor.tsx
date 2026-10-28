@@ -140,21 +140,26 @@ export function PositionEditor({
 
   async function save(): Promise<void> {
     const clean = title.trim() === '' ? '未命名局面' : title.trim()
-    const result = await positions.save(
-      inputFromPosition(state.position, clean, state.provenance),
-      savedId,
-      now,
-    )
-    setSavedId(result.record.id)
-    setConfirmDelete(false)
-    setTitle(result.record.title)
-    const list = await positions.list()
-    setSaved(list.records)
-    flash(
-      result.persisted
-        ? `已保存「${result.record.title}」`
-        : '只写进了内存兜底：本次会话可用，刷新后可能丢失',
-    )
+    try {
+      const result = await positions.save(
+        inputFromPosition(state.position, clean, state.provenance),
+        savedId,
+        now,
+      )
+      setSavedId(result.record.id)
+      setConfirmDelete(false)
+      setTitle(result.record.title)
+      const list = await positions.list()
+      setSaved(list.records)
+      flash(
+        result.persisted
+          ? `已保存「${result.record.title}」`
+          : '只写进了内存兜底：本次会话可用，刷新后可能丢失',
+      )
+    } catch (err) {
+      setConfirmDelete(false)
+      fail(`保存失败：${err instanceof Error ? err.message : String(err)}`)
+    }
   }
 
   async function deleteSaved(): Promise<void> {

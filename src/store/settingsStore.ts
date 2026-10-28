@@ -3,6 +3,8 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { applyTheme, isThemePreference, resolveTheme, type ThemePreference } from '../lib/theme'
 
+export const SETTINGS_STORAGE_KEY = 'gomoku-lab:settings'
+
 export interface SettingsStore {
   theme: ThemePreference
   showCoords: boolean
@@ -23,7 +25,7 @@ export const useSettingsStore = create<SettingsStore>()(
       setSoundEnabled: (soundEnabled) => set({ soundEnabled }),
     }),
     {
-      name: 'gomoku-lab:settings',
+      name: SETTINGS_STORAGE_KEY,
       /**
        * 逐字段校验读回来的设置，不合格的回落到当前值（水合时就是默认值）。
        *

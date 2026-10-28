@@ -9,6 +9,7 @@ import {
   loadProgress,
   PROGRESS_SCHEMA_VERSION,
   saveProgress,
+  saveProgressStrict,
   mergeProgress,
   type LearningProgress,
 } from './progress'
@@ -104,6 +105,13 @@ describe('学习进度存储 —— 降级', () => {
     } finally {
       if (saved !== undefined) Object.defineProperty(globalThis, 'indexedDB', saved)
     }
+  })
+
+  it('严格写入失败返回 false，且不改内存兜底', async () => {
+    __setIndexedDbFactory({ open() { throw new Error('隐私模式') } } as unknown as IDBFactory)
+    await expect(saveProgressStrict(SAMPLE)).resolves.toBe(false)
+    __setIndexedDbFactory(null)
+    expect(await loadProgress()).toEqual(EMPTY_PROGRESS)
   })
 
   it('open 直接抛错时同样降级为内存态', async () => {

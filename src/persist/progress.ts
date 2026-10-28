@@ -220,6 +220,20 @@ export async function saveProgress(progress: LearningProgress): Promise<void> {
     // 已经写进内存态了，本次会话照常可用
   }
 }
+/**
+ * 导入路径的严格写入：只有真正写进 IndexedDB 才返回 true。
+ * 与 `saveProgress` 不同，失败**不**改内存兜底，让调用方如实标失败。
+ */
+export async function saveProgressStrict(progress: LearningProgress): Promise<boolean> {
+  try {
+    await writeToIndexedDb(progress)
+    memoryFallback = progress
+    return true
+  } catch {
+    return false
+  }
+}
+
 
 export async function clearProgress(): Promise<void> {
   memoryFallback = EMPTY_PROGRESS

@@ -275,6 +275,35 @@ describe('局面库 —— 校验与迁移', () => {
     ).toBeNull()
   })
 
+  it('数据库打开成功但事务失败时抛错，不退回内存', async () => {
+    const db = {
+      transaction() { throw new Error('quota') },
+      close() {},
+    }
+    const request = {
+      result: db,
+      onsuccess: null as (() => void) | null,
+      onerror: null as (() => void) | null,
+      onupgradeneeded: null as (() => void) | null,
+      onblocked: null as (() => void) | null,
+    }
+    __setPositionsIndexedDbFactory({
+      open() {
+        queueMicrotask(() => request.onsuccess?.())
+        return request
+      },
+    } as unknown as IDBFactory)
+
+    await expect(
+      indexedDbPositions.save(
+        inputFromPosition(createPosition(), '配额', null),
+        null,
+        at(1_000),
+      ),
+    ).rejects.toThrow('局面库写入失败')
+    __setPositionsIndexedDbFactory(null)
+  })
+
   it('内存实现也能保存、更新并保留创建时间', async () => {
     const storage = memoryPositions()
     const saved = await storage.save(
