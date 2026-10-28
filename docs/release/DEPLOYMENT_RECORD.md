@@ -10,19 +10,19 @@
 | --- | --- |
 | 应用版本 | `0.5.0` |
 | 引擎版本 | `search-1`（未改语义） |
-| 提交 / 标签 | `1f60604`（0.5.0 评审后热修）/ `v0.5.0+build.1`（热修）；`v0.5.0` 保留指向首发 `6616ebe` |
-| 生产部署 | `bb679255-05b9-430f-b8bf-735a7c9af974`（https://bb679255.gomoku-lab.pages.dev） |
+| 提交 / 标签 | `db8881c`（终审 App 热修）/ `v0.5.0+build.2`；`v0.5.0` 保留首发 `6616ebe`，`v0.5.0+build.1` 指向前一热修 `1f60604` |
+| 生产部署 | `f3301897-095b-4223-8e84-220016c856b9`（https://f3301897.gomoku-lab.pages.dev） |
 | 生产地址 | **https://gomoku-lab.pages.dev** |
-| 预览部署 | `4e643fa9-440c-4bc4-927d-f9beddc23d65`（https://4e643fa9.gomoku-lab-preview.pages.dev） |
+| 预览部署 | `a7b4ac2d-5ea0-4a28-b92d-d9f02b2054c0`（https://a7b4ac2d.gomoku-lab-preview.pages.dev） |
 | 部署时间 | 2026-10-28（UTC+8） |
-| 回滚目标 | `c299d837-bd6f-42d1-b590-b48929800d0f`（首发 0.5.0 / `6616ebe`）；再回滚 `07a264f2…`（0.4.0） |
-| 产物 | 8 文件 / 484 KB；`index-CPL4nrfs.js`、`index-CFWSMnlC.css`、`worker-B6Ge9L6W.js` |
-| 验收 | CI `40685523238` 五 job 全绿；预览与生产 `e2e:remote` 均 **189/189**；生产 meta `app-version=0.5.0`、`build-commit=1f60604…`；CSP/HSTS/X-Frame-Options 正常 |
+| 回滚目标 | `bb679255-05b9-430f-b8bf-735a7c9af974`（前一热修 `1f60604`）→ `c299d837…`（首发）→ `07a264f2…`（0.4.0） |
+| 产物 | 8 文件 / 484 KB；`index-eXmydIYX.js`、`index-CFWSMnlC.css`、`worker-B6Ge9L6W.js` |
+| 验收 | CI `40720509578` 五 job 全绿；预览与生产 `e2e:remote` 均 **189/189**；生产 meta `app-version=0.5.0`、`build-commit=db8881c…`；CSP/HSTS/X-Frame-Options 正常 |
 
 - **授权**：用户 2026-10-28 明确要求“确认 CI 全绿，再部署”。
 - **P2 决定**：05/08/09/10 接受并披露；06/07 作为发布阻断并已修复。
 - **回滚**：先切回 `c299d837…`（首发 0.5.0），再回滚 `07a264f2…`（0.4.0）；DB 仍为 3。
-- **待部署**：终审整改 `ed647b3`（App hash 续走范围、文档）尚未上线；线上仍为 `1f60604`。
+- **已部署**：终审整改 `db8881c`（App hash 续走范围、回归与文档）已上线。
 
 ## Phase 11B · 棋盘编辑器与局面研究 0.4.0（历史）
 
