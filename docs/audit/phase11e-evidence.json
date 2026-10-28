@@ -86,7 +86,7 @@
     "benchCheck": "19/19 assertions; 29 invariants; 6 skipped timing rows",
     "uiProbe": "38 states / 308 screenshots; seven criteria pass",
     "coverageRatchet": "3084 entries; no shrink; +136 new coverage",
-    "ci": "success: quality runs 40666665311 (code/version) + 40667822033 (docs), five jobs"
+    "ci": "success: runs 40666665311, 40667822033, 40670683165 (five jobs each)"
   },
   "known": [
     "P2: full backup excludes custom positions (disclosed in UI/docs)",
