@@ -86,7 +86,7 @@
     "benchCheck": "19/19 assertions; 29 invariants; 6 skipped timing rows",
     "uiProbe": "38 states / 308 screenshots; seven criteria pass",
     "coverageRatchet": "3084 entries; no shrink; +136 new coverage",
-    "ci": "not run (not pushed)"
+    "ci": "success: quality run 40666665311 (fast/e2e/browsers/probe/bench)"
   },
   "known": [
     "P2: full backup excludes custom positions (disclosed in UI/docs)",
@@ -95,8 +95,7 @@
     "P2: export ignores skipped records and may fail on one corrupt record",
     "P2: rapid double-click position save may duplicate",
     "P2: read-side record sequence validation is incomplete",
-    "P3: branch reproduction after refresh may collapse identical content to one record",
-    "P3: in-app hash navigation to share does not pause an already-running AI request"
+    "P3: branch reproduction after refresh may collapse identical content to one record"
   ],
   "reviewFixes": {
     "standards": [
