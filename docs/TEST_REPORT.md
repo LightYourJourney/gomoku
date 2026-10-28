@@ -29,7 +29,7 @@ Phase 07 的最终门禁、探针对照与基准在 `ui-redesign/FINAL_TEST_REPO
 
 | 项 | 数量 |
 | --- | --- |
-| 单元 / 组件用例 | **1385**（88 个文件） |
+| 单元 / 组件用例 | **1388**（88 个文件） |
 | 端到端用例 | **189**（桌面 165 + 移动触屏 14 + 平板 10，共 15 个 spec 文件），另有生产构建冒烟 7 条（`yarn e2e:prod`）与 Firefox/WebKit 编辑器专项 18 条（`yarn e2e:browsers`） |
 | 界面基线与量测 | `yarn ui:probe`：38 个受控状态 × 视口矩阵 = 308 张截图 + 308 条 DOM 量测，逐张可对照（Phase 05 是 34 / 276，Phase 04 是 29 / 236，Phase 03 是 27 / 220，Phase 02 是 21 / 172） |
 | 质量门禁 | 本地 pre-push 快档（5 条命令，热跑 30–45 秒，看机器负载）+ CI 全档（5 个 job）+ 四道防退化闸门 + 两把覆盖棘轮，见「〇之十一」 |
@@ -2150,16 +2150,19 @@ Worker / 提示 / 复盘预算的既有用例未改，全部通过。
 | A-11E-03 | 2,000×225 手备份校验 O(n²)，10 MiB 上限可卡死主线程 | 单次 `replay` + 单次 `validateMove` | 6,830,098 字节：旧实现 >15 s 超时，新实现 493 ms；新增回归用例 |
 | A-11E-04 | 局面文件先 `file.text()` 再查 10 MiB | 读前检查 `file.size` | 组件用例确认 `text()` 未被调用 |
 
-### 新增用例（+6 单测 / +6 E2E；含发布前 code-review）
+### 新增用例（+9 单测 / +6 E2E；含发布前 code-review）
 
 | 文件 | 内容 |
 | --- | --- |
 | `src/persist/gameRecords.test.ts` | +1：同手顺不同模式/执子/难度不内容匹配删除 |
 | `src/store/gameStore.test.ts` | +1：`resumeAi:false` 恢复不请求 AI，显式续走才请求 |
+| `src/store/bootstrapStore.test.ts` | +1：启动后无关状态变化不写 localStorage |
 | `src/persist/transfer/validate.test.ts` | +1：接近 10 MiB 的 2,000 局备份按总手数拒绝且不卡死 |
 | `src/features/positions/PositionEditor.test.tsx` | +1：超限文件在读入前拒绝 |
 | `src/features/review/DataManagementPanel.test.tsx` | +1：明示完整备份不含自定义局面 |
 | `src/store/gameStore.test.ts` | +1：进入分享预览中止在飞 AI，迟到响应不落子 |
+| `src/persist/positions.test.ts` | +1：v1 局面记录更新时写回 v2 时间 |
+| `src/sharing/link.test.ts` | +1：500 条随机分享 token fuzz 不抛出 |
 | `e2e/backup.spec.ts` | +1：棋谱事务失败明确「没有写入任何棋谱」 |
 | `e2e/sharing.spec.ts` | +3：回放第 N 手局面分享；打开分享不自动续走/不建库；应用内 hash 进入分享中止在飞 AI |
 | `e2e/fixtures.spec.ts` | +2：旧夹具解析；旧 v2 库升级、导出完整备份、干净恢复 |
@@ -2209,16 +2212,16 @@ session v1、progress v1、records v1（含旧 winner）、positions v1、game/b
 | 命令 | 结果 |
 | --- | --- |
 | `yarn lint` / `yarn typecheck` | 通过 |
-| `yarn test` | **1,385 / 1,385**（88 文件） |
+| `yarn test` | **1,388 / 1,388**（88 文件） |
 | `yarn build` | 通过（index gzip 127.79 kB / CSS gzip 7.53 kB） |
 | `yarn e2e` | **189 / 189** |
 | `yarn e2e:prod` | **7 / 7** |
 | `yarn e2e:browsers` | **18 / 18** |
-| `yarn gates` | 棘轮 1,385 · 189 |
+| `yarn gates` | 棘轮 1,388 · 189 |
 | `yarn bench:check` | 19/19 + 29 不变量 |
 | `yarn ui:probe` | 38 状态 / 308 张，七条判据全过 |
 | `yarn check:coverage` | 3,084 条，未缩小（+136） |
-| CI | 未运行（未推送） |
+| CI | ✅ `40666665311` / `40667822033` 五个 job 全绿 |
 
 ### 已知问题（非阻塞）
 

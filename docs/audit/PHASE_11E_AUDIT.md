@@ -43,7 +43,7 @@
 | 项 | 值 |
 | --- | --- |
 | 审计基线 | `8f2fee3`（Phase 11D 评审整改完成） |
-| 应用/引擎 | `0.4.0` / `search-1`（未升版本） |
+| 应用/引擎 | 审计时 `0.4.0`；发布候选已升 `0.5.0` / `search-1` |
 | 内部数据版本 | `DB_VERSION=3`；progress 1；records 1；session 2；positions 2 |
 | 外部格式 | 棋谱/备份/局面 `formatVersion=1`；分享外壳 `v=1` |
 | 生产 | 仍为 `0.4.0`，提交 `d20eca9`，部署 `07a264f2…` |
@@ -55,16 +55,16 @@
 | --- | --- |
 | `yarn lint` | 通过 |
 | `yarn typecheck` | 通过（app + e2e + bench 三个 tsconfig） |
-| `yarn test` | **1,385 / 1,385**（88 文件，skip 0） |
+| `yarn test` | **1,388 / 1,388**（88 文件，skip 0） |
 | `yarn build` | 通过；`index-*.js` 408.65 kB（gzip 127.79 kB）、CSS 35.34 kB（gzip 7.53 kB）、Worker 13.99 kB |
 | `yarn e2e` | **189 / 189**（Chrome 桌面 + 移动 + 平板） |
 | `yarn e2e:prod` | **7 / 7** |
 | `yarn e2e:browsers` | Firefox 9 + WebKit 9 = **18 / 18** |
-| `yarn gates` | 0 循环 / knip 通过 / 0 重复 / 棘轮 1,385 · 189 |
+| `yarn gates` | 0 循环 / knip 通过 / 0 重复 / 棘轮 1,388 · 189 |
 | `yarn bench:check` | 19/19 断言 + 29 项不变量；6 条耗时行按基线跳过 |
 | `yarn ui:probe` | **38 状态 / 308 张**，七条量化判据全过 |
 | `yarn check:coverage` | 172 条 / 21 状态；实比 3,084 条，未缩小，另有 136 条新增覆盖 |
-| CI | ✅ `quality` run `40666665311` 五个 job 全绿 |
+| CI | ✅ 前两轮 `40666665311` / `40667822033` 全绿；第二轮整改 `fb7fe61` 重跑 |
 
 **高负载说明与失败记录**：本机在审计期间长期有外部 `xelatex` 等进程占用 CPU。
 第一次全量 `yarn e2e` 与另一次手动 Playwright 试验并发，后者清掉了共享的
@@ -140,7 +140,7 @@
   使用同一套字段。没有为分享/分支另写一套坐标或胜负规则。
 - **依赖方向**：`persist/transfer` 不碰 React/DOM；`sharing/link` 只做编码与分发；
   `App`/`main` 是组合根，负责装配「分享预览不续走 AI / 不启动学习库」。
-- **无新增运行时依赖**；`package.json` / `yarn.lock` 未改。
+- **无新增运行时依赖**；发布提交只改 `package.json` 的 version，`yarn.lock` 未改。
 - **全局状态**：分享没有新增模块级可变状态；`learnBootstrapped` 是单个组件内的
   `useRef`，不跨页面泄漏。AI Worker 仍是单例，没有为分享新建第二套请求通道。
 - **无 `enum` / `eval` / `Function` / 动态脚本**。
@@ -171,7 +171,7 @@
   三表就位；2 条旧棋谱可读，导出备份 2 条，干净上下文恢复 2 条，刷新仍 2 条；
   旧进度显示「已完成 1 / 8 节」。
 - **构建**：`index-*.js` 408.65 kB（gzip 127.79 kB），CSS gzip 7.53 kB，Worker 13.99 kB。
-  没有新增运行时依赖（`package.json`/`yarn.lock` 未改）。
+  没有新增运行时依赖（发布提交只改 version；`yarn.lock` 未改）。
 - **A11y/响应式**：UI 探针 38 状态 / 308 张，七条判据全过；新增 E2E 覆盖
   分享预览、回放分享、事务失败；Firefox/WebKit 编辑器 18/18。
 
@@ -187,7 +187,7 @@
 - 生产仍是 `0.4.0`（`d20eca9` / `07a264f2…`），本阶段没有部署、没有新标签。
 - P2 中 A-11E-05（完整备份不含局面）与 A-11E-06/07（存储失败提示）需要发布决策；
   若要求「完整备份覆盖全部用户数据」，应先做 11F，而不是靠文案兜底。
-- CI 未运行（未推送），本地绿不能替代干净 runner 的全档结果。
+- CI 前两轮已运行：`40666665311`（代码/版本）与 `40667822033`（文档）全绿；第二轮整改 `fb7fe61` 推送后重跑。
 - 预览部署未执行；按任务要求，未经明确授权不覆盖生产。
 
 **结论**：**Phase 11C/11D + 本轮审计修复达到 RC；不建议在未处理 P2 发布决策前
@@ -216,5 +216,5 @@
 两处小的「胜方文案」与 `{origin,pathname}` 仍各写一份；`SharePreview.savePosition`
 仍先查后写（P2 竞态未被本次 code-review 扩大为修复项）。
 
-**最终门禁（code-review 后）**：单测 **1,385 / 1,385**；E2E **189 / 189**；
+**最终门禁（code-review 后）**：单测 **1,388 / 1,388**；E2E **189 / 189**；
 生产冒烟 7；Firefox/WebKit 18；UI 探针 308；覆盖 3,084；bench 19+29。

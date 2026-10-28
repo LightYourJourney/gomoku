@@ -77,16 +77,16 @@
   "gates": {
     "lint": "pass",
     "typecheck": "pass",
-    "unit": "1385/1385 (88 files)",
+    "unit": "1388/1388 (88 files)",
     "build": "pass",
     "e2e": "189/189",
     "e2eProd": "7/7",
     "e2eBrowsers": "18/18",
-    "gates": "cycles 0; knip pass; duplicates 0; ratchet 1385/189",
+    "gates": "cycles 0; knip pass; duplicates 0; ratchet 1388/189",
     "benchCheck": "19/19 assertions; 29 invariants; 6 skipped timing rows",
     "uiProbe": "38 states / 308 screenshots; seven criteria pass",
     "coverageRatchet": "3084 entries; no shrink; +136 new coverage",
-    "ci": "success: quality run 40666665311 (fast/e2e/browsers/probe/bench)"
+    "ci": "success: quality runs 40666665311 (code/version) + 40667822033 (docs), five jobs"
   },
   "known": [
     "P2: full backup excludes custom positions (disclosed in UI/docs)",
@@ -115,5 +115,8 @@
       "SharePreview 先查后写的 P2 竞态"
     ]
   },
-  "reviewCommit": "20f28a3"
+  "reviewCommit": "20f28a3",
+  "versionCommit": "d4985d3",
+  "docsCommit": "e1de4d4",
+  "review2Commit": "fb7fe61"
 }

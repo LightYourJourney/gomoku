@@ -38,7 +38,7 @@
 | v2 库（progress+records）打开到 v3 | 2 条旧棋谱可读，`skipped=0`；五连胜者黑、零手认输胜者白；旧进度保留 |
 | v2 记录导出 → 解析 → 干净内存库导入 | 2 条记录；内容身份与导出前一致；无重复 |
 | positions v1 读取 | `schemaVersion=2`、`createdAt/updatedAt=null`；盘面与 provenance 保留 |
-| positions v1 更新保存 | 写回 v2，`createdAt`/`updatedAt=1234`（注入时钟） |
+| positions v1 更新保存 | 写回 v2，`createdAt`/`updatedAt=1234`（注入时钟）；永久用例见 `src/persist/positions.test.ts` |
 | 外部 game/backup/position v1 | 严格校验通过；重新导出后内容身份不变；备份重复导入 `imported=0, duplicates=2` |
 | session v1 | 迁移为 v2，`resignedBy=null`；损坏坐标/未来版本拒绝 |
 

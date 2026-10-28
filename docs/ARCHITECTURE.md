@@ -14,7 +14,7 @@ analysis   learn        ← 分析结论与教学内容（两条互不依赖的�
      browser APIs       ← Worker / localStorage / IndexedDB / WebAudio
 ```
 
-**依赖方向严格单向**：`components → features → store`；`store` 向下依赖 `analysis` / `ai` / `core` / `persist` / `lib`；`analysis → ai → core`，`learn → ai → core`，两条支线互不依赖。`core` 不依赖任何其他层，也不碰 React、DOM、时间与随机数。这条约束让规则与引擎可以脱离浏览器直接单测。
+**依赖方向严格单向**：`components → features → store`；`store` 向下依赖 `analysis` / `ai` / `core` / `persist` / `lib`；`sharing → core` + `persist/transfer`（分享内容复用文件校验器，不反向依赖 features/store）；`analysis → ai → core`，`learn → ai → core`，两条支线互不依赖。`core` 不依赖任何其他层，也不碰 React、DOM、时间与随机数。这条约束让规则与引擎可以脱离浏览器直接单测。
 
 ## 各层职责
 
