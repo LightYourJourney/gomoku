@@ -40,12 +40,7 @@ export const useGameStore = createGameStore(appEngine, {
  * 存档里只有这四项，所以只在它们**真的**变了的时候才写——`game` 是不可变的，
  * 引用比较就够。这既省掉了多余序列化，也省掉了 localStorage 的同步写。
  */
-let lastSaved: {
-  game: GameState
-  mode: GameMode
-  humanColor: Player
-  difficulty: Difficulty
-} | null = null
+let lastSaved: SessionSnapshot | null = null
 
 type SessionSnapshot = {
   game: GameState
