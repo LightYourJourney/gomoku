@@ -82,7 +82,7 @@ test('构建版本标识可核对：应用版本、引擎版本与提交号', as
   })
 
   // 版本号是有意的硬编码：升级版本却忘了改这里，说明发布记录也会漏。
-  expect(info.app).toBe('0.4.0')
+  expect(info.app).toBe('0.5.0')
   expect(info.engine).toBe('search-1')
 
   // 只验 40 位十六进制不够——插件写死一个合法 SHA 也会通过。直接和当前
