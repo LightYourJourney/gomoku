@@ -3,7 +3,7 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { applyTheme, isThemePreference, resolveTheme, type ThemePreference } from '../lib/theme'
 
-export const SETTINGS_STORAGE_KEY = 'gomoku-lab:settings'
+const SETTINGS_STORAGE_KEY = 'gomoku-lab:settings'
 
 export interface SettingsStore {
   theme: ThemePreference
@@ -12,17 +12,46 @@ export interface SettingsStore {
   setTheme(theme: ThemePreference): void
   setShowCoords(showCoords: boolean): void
   setSoundEnabled(soundEnabled: boolean): void
+  /** 导入备份用：三项一起写；落盘校验失败时回滚并抛错。 */
+  restorePreferences(next: { theme: ThemePreference; showCoords: boolean; soundEnabled: boolean }): void
 }
 
 export const useSettingsStore = create<SettingsStore>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       theme: 'system',
       showCoords: true,
       soundEnabled: true,
       setTheme: (theme) => set({ theme }),
       setShowCoords: (showCoords) => set({ showCoords }),
       setSoundEnabled: (soundEnabled) => set({ soundEnabled }),
+      restorePreferences(next) {
+        const previous = {
+          theme: get().theme,
+          showCoords: get().showCoords,
+          soundEnabled: get().soundEnabled,
+        }
+        try {
+          set(next)
+          const raw = localStorage.getItem(SETTINGS_STORAGE_KEY)
+          if (raw === null) throw new Error('显示偏好写入失败')
+          const stored = (JSON.parse(raw) as { state?: Record<string, unknown> }).state
+          if (
+            stored?.theme !== next.theme ||
+            stored?.showCoords !== next.showCoords ||
+            stored?.soundEnabled !== next.soundEnabled
+          ) {
+            throw new Error('显示偏好写入失败')
+          }
+        } catch {
+          try {
+            set(previous)
+          } catch {
+            // 存储仍不可用，至少保持内存回滚；由调用方显示失败。
+          }
+          throw new Error('显示偏好写入失败')
+        }
+      },
     }),
     {
       name: SETTINGS_STORAGE_KEY,

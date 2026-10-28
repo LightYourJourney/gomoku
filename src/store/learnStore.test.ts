@@ -112,6 +112,14 @@ describe('完成与通关', () => {
     expect(state().isPuzzleDone('win-diag')).toBe(false)
   })
 
+  it('adoptProgress 可只更新内存、跳过重复落盘', async () => {
+    state().adoptProgress({ ...EMPTY_PROGRESS, completedLessons: ['rules'] }, false)
+    await tick()
+
+    expect(state().progress.completedLessons).toEqual(['rules'])
+    expect(storage.saved.completedLessons).toEqual([])
+  })
+
   it('落盘失败不影响内存里的进度', async () => {
     store = createLearnStore(new FakeStorage(false, true))
 

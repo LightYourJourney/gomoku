@@ -87,8 +87,8 @@ URL Fragment 不随普通 HTTP 请求发送，但可能进入历史、复制文�
 | IndexedDB 整体不可用 | 棋谱：内存兜底，`storage='memory'`；进度：内存兜底；局面：内存兜底 |
 | 棋谱批量导入事务提交失败 | **不写内存**，整笔回滚，`storage='failed'`，UI 说「没有写入任何棋谱」 |
 | 棋谱单条保存事务失败 | `persisted=false`，不删旧条，UI 说「没能保存这局」 |
-| 局面保存事务失败 | `persisted=false`，退内存兜底（P2：列表仍读 IndexedDB，见主报告 A-11E-06） |
-| 进度写入失败 | `saveProgress` 吞掉失败，内存态继续（P2：导入面板无失败信号） |
+| 局面保存事务失败 | 抛错，界面标「保存失败」；不回内存 |
+| 进度导入写入失败 | `saveProgressStrict` 返回失败，导入面板分项标失败 |
 | localStorage 会话写入失败 | `saveSession` 返回 false；备份恢复路径会抛错，自动存档路径只尽力而为 |
 | 解析/校验/取消 | 零写入 |
 

@@ -182,6 +182,30 @@ describe('数据管理面板 · 导入', () => {
     expect((await storage.list()).records).toHaveLength(0)
   })
 
+  it('进度合并失败时结果分项标失败，不显示合并完成', async () => {
+    const storage = memoryGameRecords()
+    render(
+      <DataManagementPanel
+        storage={storage}
+        services={services({
+          onMergeProgress: async () => {
+            throw new Error('进度写入失败')
+          },
+        })}
+        onImported={vi.fn()}
+        degraded={false}
+      />,
+    )
+
+    fireEvent.change(screen.getByTestId('import-file'), {
+      target: { files: [fileOf(toBackupFile({ games: [record()], progress: PROGRESS }))] },
+    })
+    await screen.findByRole('heading', { name: '导入预览' })
+    fireEvent.click(screen.getByRole('button', { name: '确认导入' }))
+
+    expect(await screen.findByTestId('import-result')).toHaveTextContent('学习/残局进度：失败')
+  })
+
   it('明说完整备份不含自定义局面，避免用户以为局面也会被备份', () => {
     render(
       <DataManagementPanel storage={memoryGameRecords()} services={services()} onImported={vi.fn()} degraded={false} />,

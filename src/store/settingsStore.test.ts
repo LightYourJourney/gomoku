@@ -1,5 +1,5 @@
 import { act, renderHook } from '@testing-library/react'
-import { afterAll, beforeEach, describe, expect, it } from 'vitest'
+import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { useSettingsStore, useThemeEffect } from './settingsStore'
 
 // jsdom 没有 matchMedia，本文件用一个桩顶上。**用完必须还回去**——
@@ -95,6 +95,31 @@ describe('useThemeEffect', () => {
  * zustand `persist` 的。localStorage 里被改坏的值过去会**直接进 store**：
  * `THEME_LABELS[theme]` 变 undefined，主题按钮的 title 显示「主题：undefined」。
  */
+describe('useSettingsStore —— 导入偏好', () => {
+  it('写入失败时回滚并抛错', () => {
+    useSettingsStore.setState({ theme: 'light', showCoords: true, soundEnabled: true })
+    const setItem = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new Error('quota')
+    })
+    try {
+      expect(() =>
+        useSettingsStore.getState().restorePreferences({
+          theme: 'dark',
+          showCoords: false,
+          soundEnabled: false,
+        }),
+      ).toThrow('显示偏好写入失败')
+      expect(useSettingsStore.getState()).toMatchObject({
+        theme: 'light',
+        showCoords: true,
+        soundEnabled: true,
+      })
+    } finally {
+      setItem.mockRestore()
+    }
+  })
+})
+
 describe('useSettingsStore —— 持久化的坏数据', () => {
   const KEY = 'gomoku-lab:settings'
 
