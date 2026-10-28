@@ -10,7 +10,7 @@
 | --- | --- |
 | 应用版本 | `0.5.0` |
 | 引擎版本 | `search-1`（未改语义） |
-| 提交 / 标签 | `1f60604`（0.5.0 评审后热修）/ `v0.5.0`（标签仍指向首发代码 `6616ebe`） |
+| 提交 / 标签 | `1f60604`（0.5.0 评审后热修）/ `v0.5.0+build.1`（热修）；`v0.5.0` 保留指向首发 `6616ebe` |
 | 生产部署 | `bb679255-05b9-430f-b8bf-735a7c9af974`（https://bb679255.gomoku-lab.pages.dev） |
 | 生产地址 | **https://gomoku-lab.pages.dev** |
 | 预览部署 | `4e643fa9-440c-4bc4-927d-f9beddc23d65`（https://4e643fa9.gomoku-lab-preview.pages.dev） |
