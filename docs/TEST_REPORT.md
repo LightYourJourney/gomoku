@@ -2150,7 +2150,7 @@ Worker / 提示 / 复盘预算的既有用例未改，全部通过。
 | A-11E-03 | 2,000×225 手备份校验 O(n²)，10 MiB 上限可卡死主线程 | 单次 `replay` + 单次 `validateMove` | 6,830,098 字节：旧实现 >15 s 超时，新实现 493 ms；新增回归用例 |
 | A-11E-04 | 局面文件先 `file.text()` 再查 10 MiB | 读前检查 `file.size` | 组件用例确认 `text()` 未被调用 |
 
-### 新增用例（+9 单测 / +6 E2E；含发布前 code-review）
+### 新增用例（+14 单测 / +6 E2E；含发布前 code-review）
 
 | 文件 | 内容 |
 | --- | --- |
@@ -2163,6 +2163,11 @@ Worker / 提示 / 复盘预算的既有用例未改，全部通过。
 | `src/store/gameStore.test.ts` | +1：进入分享预览中止在飞 AI，迟到响应不落子 |
 | `src/persist/positions.test.ts` | +1：v1 局面记录更新时写回 v2 时间 |
 | `src/sharing/link.test.ts` | +1：500 条随机分享 token fuzz 不抛出 |
+| `src/persist/progress.test.ts` | +1：严格进度写入失败返回 false |
+| `src/persist/positions.test.ts` | +1：局面事务失败抛错 |
+| `src/store/learnStore.test.ts` | +1：adoptProgress 跳过落盘 |
+| `src/store/settingsStore.test.ts` | +1：偏好写入失败回滚 |
+| `src/features/review/DataManagementPanel.test.tsx` | +1：进度合并失败分项标失败 |
 | `e2e/backup.spec.ts` | +1：棋谱事务失败明确「没有写入任何棋谱」 |
 | `e2e/sharing.spec.ts` | +3：回放第 N 手局面分享；打开分享不自动续走/不建库；应用内 hash 进入分享中止在飞 AI |
 | `e2e/fixtures.spec.ts` | +2：旧夹具解析；旧 v2 库升级、导出完整备份、干净恢复 |
