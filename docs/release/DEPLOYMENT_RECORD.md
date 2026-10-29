@@ -14,7 +14,7 @@
 | 生产部署 | `f3301897-095b-4223-8e84-220016c856b9`（https://f3301897.gomoku-lab.pages.dev） |
 | 生产地址 | **https://gomoku-lab.pages.dev** |
 | 预览部署 | `a7b4ac2d-5ea0-4a28-b92d-d9f02b2054c0`（https://a7b4ac2d.gomoku-lab-preview.pages.dev） |
-| 部署时间 | 2026-10-28（UTC+8） |
+| 部署时间 | 2026-10-29（UTC+8） |
 | 回滚目标 | `bb679255-05b9-430f-b8bf-735a7c9af974`（前一热修 `1f60604`）→ `c299d837…`（首发）→ `07a264f2…`（0.4.0） |
 | 产物 | 8 文件 / 484 KB；`index-eXmydIYX.js`、`index-CFWSMnlC.css`、`worker-B6Ge9L6W.js` |
 | 验收 | CI `40720509578` 五 job 全绿；预览与生产 `e2e:remote` 均 **189/189**；生产 meta `app-version=0.5.0`、`build-commit=db8881c…`；CSP/HSTS/X-Frame-Options 正常 |
