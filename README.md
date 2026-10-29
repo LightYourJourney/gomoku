@@ -5,9 +5,9 @@
 页面加载时从**同源**取静态资源；之后的对局、教学与复盘全部在本机完成（不含 Service Worker，
 断网后刷新页面仍需能访问宿主）。
 
-**线上地址：<https://gomoku-lab.pages.dev>**（Cloudflare Pages；应用 `0.5.0`、引擎 `search-1`、提交 `db8881c`）。
+**线上地址：<https://gomoku-lab.pages.dev>**（Cloudflare Pages；应用 `0.6.0`、引擎 `search-1`、提交 `9a74527`）。
 
-**当前进度：Phase 1–5、UI/UX 改版 Phase 00–07、Phase 08 独立审计、Phase 09A/09B 发布与首次上线、Phase 10A–10F AI 评测 / 优化 / 标定 / 审计 / 正式发布、Phase 11A 数据备份与导入导出、Phase 11B 棋盘编辑器与局面研究已正式发布；Phase 11C/11D/11E 已随 `0.5.0` 发布；`0.6.0` 候选包含备份 v2、DB v4、进度失败提示、分支来源持久化与跨浏览器全量。**
+**当前进度：Phase 1–5、UI/UX 改版 Phase 00–07、Phase 08 独立审计、Phase 09A/09B 发布与首次上线、Phase 10A–10F AI 评测 / 优化 / 标定 / 审计 / 正式发布、Phase 11A 数据备份与导入导出、Phase 11B 棋盘编辑器与局面研究已正式发布；Phase 11C/11D/11E 已随 `0.5.0` 发布；`0.6.0` 已发布：备份 v2、DB v4、进度失败提示、分支来源持久化与跨浏览器全量。**
 键盘与读屏可用、平板与触屏专项验证过、生产构建有独立的冒烟通道、用法有[使用说明](docs/USAGE.md)；
 发布就绪评估与部署方案见 [RELEASE_READINESS.md](docs/release/RELEASE_READINESS.md)；
 最终审计与残留问题见 [FINAL_AUDIT.md](docs/ui-redesign/FINAL_AUDIT.md) 与 [KNOWN_ISSUES.md](docs/ui-redesign/KNOWN_ISSUES.md)。
