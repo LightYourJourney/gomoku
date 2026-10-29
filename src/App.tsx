@@ -10,6 +10,7 @@ import { useLearnStore } from './store/learnStore'
 import { useThemeEffect } from './store/settingsStore'
 import { useFlushOnHide } from './lib/useFlushOnHide'
 import { SharePreview } from './features/sharing/SharePreview'
+import { shouldResumeAiAfterHashChange } from './features/sharing/hash'
 import { shareTokenFromHash } from './sharing/link'
 
 function currentShareToken(): string | null {
@@ -27,7 +28,7 @@ export default function App() {
   useEffect(() => {
     const handleHashChange = () => {
       const next = currentShareToken()
-      if (shareToken !== null && next === null) useGameStore.getState().requestAiMove()
+      if (shouldResumeAiAfterHashChange(shareToken, next)) useGameStore.getState().requestAiMove()
       else if (next !== null) useGameStore.getState().suspendAi()
       setShareToken(next)
     }

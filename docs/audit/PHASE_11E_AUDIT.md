@@ -46,7 +46,7 @@
 | 内部数据版本 | `DB_VERSION=3`；progress 1；records 1；session 2；positions 2 |
 | 外部格式 | 棋谱/备份/局面 `formatVersion=1`；分享外壳 `v=1` |
 | 生产 | `0.5.0`，热修提交 `db8881c`，部署 `f3301897…` |
-| 计划 | 生产未覆盖；没有新标签、没有 preview 部署 |
+| 计划 | 审计阶段不覆盖生产；最终已发布并创建 `v0.5.0+build.1/2` |
 
 ### 2.1 最终门禁读数
 
@@ -54,12 +54,12 @@
 | --- | --- |
 | `yarn lint` | 通过 |
 | `yarn typecheck` | 通过（app + e2e + bench 三个 tsconfig） |
-| `yarn test` | **1,393 / 1,393**（88 文件，skip 0） |
+| `yarn test` | **1,397 / 1,397**（88 文件，skip 0） |
 | `yarn build` | 通过；`index-*.js` 409.84 kB（gzip 128.15 kB）、CSS 35.31 kB（gzip 7.52 kB）、Worker 13.99 kB |
 | `yarn e2e` | **189 / 189**（Chrome 桌面 + 移动 + 平板） |
 | `yarn e2e:prod` | **7 / 7** |
 | `yarn e2e:browsers` | Firefox 9 + WebKit 9 = **18 / 18** |
-| `yarn gates` | 0 循环 / knip 通过 / 0 重复 / 棘轮 1,393 · 189 |
+| `yarn gates` | 0 循环 / knip 通过 / 0 重复 / 棘轮 1,397 · 189 |
 | `yarn bench:check` | 19/19 断言 + 29 项不变量；6 条耗时行按基线跳过 |
 | `yarn ui:probe` | **38 状态 / 308 张**，七条量化判据全过 |
 | `yarn check:coverage` | 172 条 / 21 状态；实比 3,084 条，未缩小，另有 136 条新增覆盖 |
@@ -214,5 +214,5 @@
 两处小的「胜方文案」与 `{origin,pathname}` 仍各写一份；`SharePreview.savePosition`
 仍先查后写（P2 竞态未被本次 code-review 扩大为修复项）。
 
-**最终门禁（code-review 后）**：单测 **1,393 / 1,393**；E2E **189 / 189**；
+**最终门禁（code-review 后）**：单测 **1,397 / 1,397**；E2E **189 / 189**；
 生产冒烟 7；Firefox/WebKit 18；UI 探针 308；覆盖 3,084；bench 19+29。

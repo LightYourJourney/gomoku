@@ -160,7 +160,9 @@ test('分享：打开链接不自动续走本地对局，返回应用后才续�
   const during = await page.evaluate(() => JSON.parse(localStorage.getItem('gomoku-lab:session') ?? 'null'))
   expect(during.moves).toHaveLength(1)
 
-  await page.getByRole('button', { name: '← 返回应用' }).click()
+  await page.evaluate(() => {
+    window.location.hash = '#battle'
+  })
   await expect
     .poll(async () => {
       const raw = await page.evaluate(() => localStorage.getItem('gomoku-lab:session'))
@@ -254,25 +256,10 @@ test('分享：应用内改 hash 进入预览会中止在飞 AI，返回后续�
   )
   expect(during.moves).toHaveLength(1)
 
-  // 不点按钮，直接改 hash 离开分享页：这条路径也必须续走。
-  await page.evaluate(() => {
-    window.location.hash = '#battle'
-  })
+  await page.getByRole('button', { name: '← 返回应用' }).click()
   await expect
     .poll(() => page.evaluate(() => (window as unknown as { __aiRequests: unknown[] }).__aiRequests.length))
     .toBeGreaterThan(1)
-  const afterLeavingShare = await page.evaluate(
-    () => (window as unknown as { __aiRequests: unknown[] }).__aiRequests.length,
-  )
-
-  // 普通页面之间改 hash 不应再次请求 AI。
-  await page.evaluate(() => {
-    window.location.hash = '#learn'
-  })
-  await page.waitForTimeout(200)
-  expect(
-    await page.evaluate(() => (window as unknown as { __aiRequests: unknown[] }).__aiRequests.length),
-  ).toBe(afterLeavingShare)
   const second = await page.evaluate(
     () => {
       const requests = (window as unknown as { __aiRequests: Array<{ requestId: number; gameVersion: number }> }).__aiRequests
@@ -294,6 +281,18 @@ test('分享：应用内改 hash 进入预览会中止在飞 AI，返回后续�
       return (JSON.parse(raw ?? 'null') as { moves?: unknown[] }).moves?.length ?? 0
     })
     .toBe(2)
+
+  // AI 已经空闲，普通页面之间改 hash 仍不应再次请求。
+  const beforeNonShare = await page.evaluate(
+    () => (window as unknown as { __aiRequests: unknown[] }).__aiRequests.length,
+  )
+  await page.evaluate(() => {
+    window.location.hash = '#learn'
+  })
+  await page.waitForTimeout(300)
+  expect(
+    await page.evaluate(() => (window as unknown as { __aiRequests: unknown[] }).__aiRequests.length),
+  ).toBe(beforeNonShare)
 })
 
 test('分享：回放中的第 N 手局面可作为带 provenance 的局面导入', async ({ browser, page }) => {

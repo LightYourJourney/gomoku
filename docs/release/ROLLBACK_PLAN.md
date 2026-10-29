@@ -84,7 +84,7 @@ npx wrangler pages deploy dist --project-name gomoku-lab --branch main \
 
 - 学习进度：`schemaVersion = 1`；棋谱：`schemaVersion = 1`；对局存档：`schemaVersion = 2`。
 - Phase 09B 与 Phase 10F **都没有**改动这三个版本号，因此「回滚到上一版」不会触发任何丢弃路径。
-- 历史 0.2.0 部署为 `d3f5f6cc…`（`b67ea93`）；上一部署 `e5a32d20…`（`2ec65fa`）。
+- 历史 0.2.0 部署为 `d3f5f6cc…`（`b67ea93`），其上一部署为 `e5a32d20…`（`2ec65fa`）。
 - 进度写入是 latest-wins 串行队列；回滚只影响后续写入的格式，不影响已落盘数据。
 - 升级方向（旧 → 新）已验证：v1 只有 progress 表的老库升级到 v2 后，旧进度原样读回；
   另注入 `schemaVersion = 1` 的旧棋谱，复盘页能正常列出。

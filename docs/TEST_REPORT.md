@@ -2217,16 +2217,16 @@ session v1、progress v1、records v1（含旧 winner）、positions v1、game/b
 | 命令 | 结果 |
 | --- | --- |
 | `yarn lint` / `yarn typecheck` | 通过 |
-| `yarn test` | **1,393 / 1,393**（88 文件） |
+| `yarn test` | **1,397 / 1,397**（88 文件） |
 | `yarn build` | 通过（index gzip 128.15 kB / CSS gzip 7.52 kB） |
 | `yarn e2e` | **189 / 189** |
 | `yarn e2e:prod` | **7 / 7** |
 | `yarn e2e:browsers` | **18 / 18** |
-| `yarn gates` | 棘轮 1,393 · 189 |
+| `yarn gates` | 棘轮 1,397 · 189 |
 | `yarn bench:check` | 19/19 + 29 不变量 |
 | `yarn ui:probe` | 38 状态 / 308 张，七条判据全过 |
 | `yarn check:coverage` | 3,084 条，未缩小（+136） |
-| CI | ✅ `40685523238` 五个 job 全绿 |
+| CI | ✅ `40720509578` 五个 job 全绿 |
 
 ### 已知问题（非阻塞）
 
