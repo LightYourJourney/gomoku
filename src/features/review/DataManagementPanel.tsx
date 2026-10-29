@@ -16,6 +16,7 @@ import {
   MAX_IMPORT_BYTES,
   parseImportText,
   type BackupGameError,
+  type BackupPositionError,
   type ImportIssue,
 } from '../../persist/transfer/validate'
 import {
@@ -79,7 +80,7 @@ type Preview =
       readonly preferences: BackupPreferences | null
       readonly session: BackupSession | null
       readonly positions: readonly BackupPosition[]
-      readonly positionErrors: number
+      readonly positionErrors: readonly BackupPositionError[]
       readonly duplicates: number
       readonly warnings: readonly ImportIssue[]
     }
@@ -206,7 +207,7 @@ export function DataManagementPanel({
           preferences: parsed.preferences,
           session: parsed.session,
           positions: parsed.positions,
-          positionErrors: parsed.positionErrors.length,
+          positionErrors: parsed.positionErrors,
           duplicates,
           warnings: parsed.warnings,
         })
@@ -284,10 +285,8 @@ export function DataManagementPanel({
         }
       }
 
-      if (pending.positions.length > 0) {
-        if (!withPositions) {
-          positionsFailed = 0
-        } else {
+      if (pending.positions.length > 0 && withPositions) {
+        {
           try {
             const existing = new Set(
               (await positions.list()).records.map((record) =>
@@ -350,26 +349,34 @@ export function DataManagementPanel({
     onImported()
   }
 
+  async function exportableGames(
+    records: readonly Parameters<typeof toGamePayload>[0][],
+    skipped: number,
+  ): Promise<{ games: GamePayload[]; dropped: number }> {
+    const games: GamePayload[] = []
+    let dropped = skipped
+    for (const record of records) {
+      try {
+        games.push(toGamePayload(record))
+      } catch {
+        dropped += 1
+      }
+    }
+    return { games, dropped }
+  }
+
   async function exportGames(): Promise<void> {
     setError(null)
     setExportNotice(null)
     try {
       const { records, skipped } = await storage.list()
-      if (records.length === 0) {
-        fail('棋谱库是空的，没有可导出的棋谱')
-        return
-      }
-      const games: GamePayload[] = []
-      let dropped = skipped
-      for (const record of records) {
-        try {
-          games.push(toGamePayload(record))
-        } catch {
-          dropped += 1
-        }
-      }
+      const { games, dropped } = await exportableGames(records, skipped)
       if (games.length === 0) {
-        fail('没有可导出的完整棋谱；损坏或未结束的记录不会被写入文件')
+        fail(
+          dropped > 0
+            ? `没有可导出的完整棋谱；已跳过 ${dropped} 条损坏/未结束记录`
+            : '棋谱库是空的，没有可导出的棋谱',
+        )
         return
       }
       downloadJson(
@@ -390,15 +397,11 @@ export function DataManagementPanel({
       const progress = await services.loadProgress()
       const session = services.loadSession()
       const positionList = await positions.list()
-      const games: GamePayload[] = []
-      let dropped = skipped
-      for (const record of records) {
-        try {
-          games.push(toGamePayload(record))
-        } catch {
-          dropped += 1
-        }
+      if (positionList.degraded) {
+        fail('局面库当前不可用，无法生成完整备份；请先恢复 IndexedDB 或使用局面文件单独导出')
+        return
       }
+      const { games, dropped } = await exportableGames(records, skipped)
       downloadJson(
         exportFilename('backup', services.now),
         toBackupFile({
@@ -576,9 +579,14 @@ export function DataManagementPanel({
                   无效 {pending.gameErrors.length} 条。
                 </p>
                 <p>
-                  自定义局面 {pending.positions.length + pending.positionErrors} 个：可导入{' '}
-                  {pending.positions.length} 个，无效 {pending.positionErrors} 个。
+                  自定义局面 {pending.positions.length + pending.positionErrors.length} 个：可导入{' '}
+                  {pending.positions.length} 个，无效 {pending.positionErrors.length} 个。
                 </p>
+                {pending.positionErrors.slice(0, 3).map((entry) => (
+                  <p key={entry.index} className="text-warn">
+                    第 {entry.index + 1} 个局面：{issueSummary(entry.errors)}
+                  </p>
+                ))}
                 {pending.gameErrors.slice(0, 3).map((entry) => (
                   <p key={entry.index} className="text-warn">
                     第 {entry.index + 1} 条：{issueSummary(entry.errors)}

@@ -16,16 +16,17 @@
 | 预览部署 | `8d5da70f-7eec-4226-9e4f-d177a7ae2b0d`（https://8d5da70f.gomoku-lab-preview.pages.dev） |
 | 部署时间 | 2026-10-30（UTC+8） |
 | 回滚目标 | `f3301897…`（0.5.0 / `db8881c`）→ `bb679255…`（1f60604）→ `c299d837…`（首发）→ `07a264f2…`（0.4.0） |
-| 产物 | 8 文件 / 484 KB；`index-CNsAOgk7.js`（gzip 128.7 kB）、`index-CFWSMnlC.css`、`worker-B6Ge9L6W.js` |
+| 产物 | 8 文件 / 484 KB；`index-CNsAOgk7.js`（gzip 128.7 kB）、`index-BW7JL7Wq.css`、`worker-B6Ge9L6W.js` |
 | 验收 | CI `40910588095` 六个 job 全绿；预览与生产 `e2e:remote` 均 **190/190**；生产 meta `app-version=0.6.0`、`build-commit=9a74527…`；CSP/HSTS/X-Frame-Options 正常 |
 
 - **授权**：用户批准 P2/P2-2/P3/工程遗留整改方案并要求发布。
 - **数据格式**：备份 v2（含局面）、DB v4（positions 内容唯一索引）、session v3（分支来源）。
 - **P3 收口**：positions v1 真实浏览器、Firefox/WebKit 301 条核心、JSON 深度预扫描、bundle 135 kB 预算。
 - **回滚**：0.5.0 以 DB 3 打开 v4 会触发 `VersionError`；回滚前必须先导出完整备份。
+- **待部署**：0.6.0 发布后审计整改（进度错误条 UI 测试、局面库降级备份拒绝、更新冲突、内容键回填规范化）已进 `main`，尚未上线；线上仍为 `9a74527`。
 
 
-## Phase 11C/11D/11E · 0.5.0（当前生产）
+## Phase 11C/11D/11E · 0.5.0（历史）
 
 | 项 | 值 |
 | --- | --- |

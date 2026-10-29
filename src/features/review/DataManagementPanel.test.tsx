@@ -229,6 +229,14 @@ describe('数据管理面板 · 导入', () => {
     expect(await screen.findByTestId('export-notice')).toHaveTextContent('跳过 3 条')
   })
 
+  it('局面库降级时拒绝生成完整备份，不静默导出空局面段', async () => {
+    render(
+      <DataManagementPanel positions={memoryPositions(true)} storage={memoryGameRecords()} services={services()} onImported={vi.fn()} degraded={false} />,
+    )
+    fireEvent.click(screen.getByRole('button', { name: '完整备份' }))
+    expect(await screen.findByTestId('import-error')).toHaveTextContent('局面库当前不可用')
+  })
+
   it('完整备份 v2 包含自定义局面', async () => {
     const storage = memoryGameRecords()
     await storage.put(record())

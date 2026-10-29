@@ -121,8 +121,9 @@ async function tabUntil(
 async function tabIntoBoard(page: import('@playwright/test').Page): Promise<void> {
   await expect(page.getByRole('gridcell', { name: 'H8 空位' })).toHaveCount(1)
 
-  const tabs = await tabUntil(page, 18, (focus) => focus.role === 'gridcell')
-  expect(tabs, '按 Tab 应该能在 18 步之内进到棋盘里').toBeLessThanOrEqual(18)
+  const budget = test.info().project.name.startsWith('firefox') ? 18 : 12
+  const tabs = await tabUntil(page, budget, (focus) => focus.role === 'gridcell')
+  expect(tabs, `按 Tab 应该能在 ${budget} 步之内进到棋盘里`).toBeLessThanOrEqual(budget)
 }
 
 test.describe('键盘操作', () => {

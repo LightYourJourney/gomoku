@@ -15,6 +15,11 @@ import { expect, test, type Page } from '@playwright/test'
  * `PageShell` 的 flush 正文，第 2、3 条立刻红。
  */
 
+/** WebKit 的布局取整会差 2px；Chrome 仍按原来的 1px 安全网。 */
+function pixelTolerance(): number {
+  return test.info().project.name.includes('webkit') ? 3 : 1
+}
+
 test.beforeEach(async ({ page }) => {
   await page.addInitScript(() => {
     if (window.sessionStorage.getItem('e2e-fresh') !== null) return
@@ -147,7 +152,7 @@ for (const [width, height] of [
 
     const box = await boardBox(page)
     expect(box.width, `棋盘只有 ${box.width}px 宽`).toBeGreaterThanOrEqual(MIN_BOARD)
-    expect(Math.abs(box.width - box.height)).toBeLessThan(3)
+    expect(Math.abs(box.width - box.height)).toBeLessThan(pixelTolerance())
   })
 }
 
@@ -193,7 +198,7 @@ test.describe('棋盘尺寸预算', () => {
 
       const box = await boardBox(page)
       expect(box.width, `棋盘只有 ${box.width}px 宽`).toBeGreaterThanOrEqual(MIN_BOARD)
-      expect(Math.abs(box.width - box.height)).toBeLessThan(3)
+      expect(Math.abs(box.width - box.height)).toBeLessThan(pixelTolerance())
     })
   }
 
@@ -204,7 +209,7 @@ test.describe('棋盘尺寸预算', () => {
 
       const box = await boardBox(page)
       expect(box.width, `棋盘只有 ${box.width}px 宽`).toBeGreaterThanOrEqual(MIN_BOARD)
-      expect(Math.abs(box.width - box.height)).toBeLessThan(3)
+      expect(Math.abs(box.width - box.height)).toBeLessThan(pixelTolerance())
     })
   }
 
@@ -261,7 +266,7 @@ test.describe('任务书六档视口', () => {
 
       const box = await boardBox(page)
       expect(box.width, `棋盘只有 ${box.width}px 宽`).toBeGreaterThanOrEqual(MIN_BOARD)
-      expect(Math.abs(box.width - box.height), '棋盘不是正方形').toBeLessThanOrEqual(3)
+      expect(Math.abs(box.width - box.height), '棋盘不是正方形').toBeLessThanOrEqual(pixelTolerance())
 
       const overflow = await page.evaluate(
         () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
@@ -290,7 +295,7 @@ test.describe('极小横屏（已知物理边界，见 KNOWN_ISSUES M-3）', () 
 
       const box = await boardBox(page)
       expect(box.width, `棋盘塌到 ${box.width}px`).toBeGreaterThanOrEqual(200)
-      expect(Math.abs(box.width - box.height), '棋盘不是正方形').toBeLessThanOrEqual(3)
+      expect(Math.abs(box.width - box.height), '棋盘不是正方形').toBeLessThanOrEqual(pixelTolerance())
       await expect(page.getByRole('button', { name: '求提示' })).toBeVisible()
 
       const overflow = await page.evaluate(
@@ -313,7 +318,7 @@ test.describe('页面标题', () => {
     const box = (await heading.boundingBox())!
     // 「复盘」两个字在 20px 字号下是 40×28。被 flex 压成一列时变成 20×56——
     // 判据用「宽 > 高」而不是某个绝对宽度：它直接说的就是「横排还是竖排」。
-    expect(box.width).toBeGreaterThanOrEqual(39.5)
+    expect(box.width).toBeGreaterThanOrEqual(test.info().project.name.includes('webkit') ? 39.5 : 40)
     expect(box.width, `标题 ${box.width}×${box.height}，被压成竖排了`).toBeGreaterThan(box.height)
   })
 
@@ -391,8 +396,8 @@ test.describe('顶栏', () => {
     await page.getByRole('button', { name: '复盘', exact: true }).click()
     const review = (await page.getByRole('banner').boundingBox())!.height
 
-    expect(Math.abs(battle - learn)).toBeLessThan(3)
-    expect(Math.abs(battle - review)).toBeLessThan(3)
+    expect(Math.abs(battle - learn)).toBeLessThan(pixelTolerance())
+    expect(Math.abs(battle - review)).toBeLessThan(pixelTolerance())
   })
 })
 
@@ -522,7 +527,7 @@ test.describe('对战页的三档结构', () => {
     expect(boxes).toHaveLength(5)
     // 左边缘全对齐（同一列）
     const left = boxes[0]!.left
-    for (const box of boxes) expect(Math.abs(box.left - left)).toBeLessThan(3)
+    for (const box of boxes) expect(Math.abs(box.left - left)).toBeLessThan(pixelTolerance())
     // 纵向依次排开，互不重叠
     for (let i = 1; i < boxes.length; i++) {
       expect(boxes[i]!.top).toBeGreaterThanOrEqual(boxes[i - 1]!.bottom - 1)
@@ -662,9 +667,9 @@ test.describe('对战页：折叠侧栏不动棋盘', () => {
     const expanded = (await page.getByTestId('board').boundingBox())!
 
     for (const [tag, box] of [['折叠后', collapsed], ['展开后', expanded]] as const) {
-      expect(Math.abs(box.x - before.x), `${tag}棋盘横向移动了`).toBeLessThan(3)
-      expect(Math.abs(box.y - before.y), `${tag}棋盘纵向移动了`).toBeLessThan(3)
-      expect(Math.abs(box.width - before.width), `${tag}棋盘尺寸变了`).toBeLessThan(3)
+      expect(Math.abs(box.x - before.x), `${tag}棋盘横向移动了`).toBeLessThan(pixelTolerance())
+      expect(Math.abs(box.y - before.y), `${tag}棋盘纵向移动了`).toBeLessThan(pixelTolerance())
+      expect(Math.abs(box.width - before.width), `${tag}棋盘尺寸变了`).toBeLessThan(pixelTolerance())
     }
   })
 })

@@ -227,9 +227,10 @@ export function memoryPositions(degraded = false): PositionStorage {
     async save(input, id, now) {
       const stamp = now()
       const key = positionContentKey(input)
-      if (id === null) {
-        const duplicate = [...byId.values()].find((record) => record.contentKey === key)
-        if (duplicate !== undefined) return { record: duplicate, persisted: false }
+      const duplicate = [...byId.values()].find((record) => record.contentKey === key)
+      if (duplicate !== undefined) {
+        if (id === null) return { record: duplicate, persisted: false }
+        if (duplicate.id !== id) throw new Error('同一盘面已存在，未覆盖原记录')
       }
       const target = id === null ? nextId++ : id
       const existing = byId.get(target)
@@ -281,7 +282,14 @@ function openDatabase(): Promise<IDBDatabase> {
       return
     }
     request.onupgradeneeded = () => ensureSchema(request.result, request.transaction)
-    request.onsuccess = () => resolve(request.result)
+    request.onsuccess = () => {
+      const db = request.result
+      void backfillContentKeys(db)
+        .catch(() => {
+          // 回填失败不阻断读取；下次打开会再试。
+        })
+        .finally(() => resolve(db))
+    }
     request.onerror = () => reject(new Error('打不开局面库'))
     request.onblocked = () => reject(new Error('局面库被其他标签页占用'))
   })
@@ -334,6 +342,41 @@ function readPosition(
   })
 }
 
+/** 把旧记录的内容键规范成读取路径会算出的值；重复键只回填第一条。 */
+async function backfillContentKeys(db: IDBDatabase): Promise<void> {
+  await new Promise<void>((resolve, reject) => {
+    const tx = db.transaction(STORE, 'readwrite')
+    const store = tx.objectStore(STORE)
+    const seen = new Set<string>()
+    store.openCursor().onsuccess = (event) => {
+      const cursor = (event.target as IDBRequest<IDBCursorWithValue | null>).result
+      if (cursor === null) return
+      const record = parseSavedPosition(cursor.value)
+      if (record === null) {
+        cursor.continue()
+        return
+      }
+      if (seen.has(record.contentKey)) {
+        cursor.continue()
+        return
+      }
+      seen.add(record.contentKey)
+      const raw = cursor.value as { contentKey?: unknown }
+      if (raw.contentKey !== record.contentKey) {
+        try {
+          cursor.update({ ...cursor.value, contentKey: record.contentKey })
+        } catch {
+          // 唯一索引冲突时保留原记录；读取侧仍按规范化键展示。
+        }
+      }
+      cursor.continue()
+    }
+    tx.oncomplete = () => resolve()
+    tx.onerror = () => reject(new Error('局面内容键回填失败'))
+    tx.onabort = () => reject(new Error('局面内容键回填被中止'))
+  })
+}
+
 export const indexedDbPositions: PositionStorage = {
   async list() {
     try {
@@ -372,9 +415,10 @@ export const indexedDbPositions: PositionStorage = {
       readPosition(db, (store) => store.index(POSITIONS_CONTENT_INDEX).get(contentKey))
 
     try {
-      if (id === null) {
-        const duplicate = await findByContentKey()
-        if (duplicate !== null) return { record: duplicate, persisted: true }
+      const duplicate = await findByContentKey()
+      if (duplicate !== null) {
+        if (id === null) return { record: duplicate, persisted: true }
+        if (duplicate.id !== id) throw new Error('同一盘面已存在，未覆盖原记录')
       }
       const existing = id === null ? null : await readPosition(db, (store) => store.get(id))
       const payload = positionPayload(input, existing?.createdAt ?? stamp, stamp)
@@ -387,14 +431,12 @@ export const indexedDbPositions: PositionStorage = {
       })
       return { record: { ...payload, id: id ?? Number(newId) }, persisted: true }
     } catch (error) {
-      // 唯一索引兜住跨标签页竞态：另一条已经写入时返回它，不新增重复记录。
-      if (error instanceof DOMException && error.name === 'ConstraintError') {
-        const duplicate = await findByContentKey()
-        if (duplicate !== null) return { record: duplicate, persisted: true }
-      }
-      if (error instanceof Error && error.name === 'ConstraintError') {
-        const duplicate = await findByContentKey()
-        if (duplicate !== null) return { record: duplicate, persisted: true }
+      if (error instanceof Error && error.message === '同一盘面已存在，未覆盖原记录') throw error
+      // 唯一索引/并发下 ADD 失败时，查一次同内容记录：新增返回它，更新明确失败。
+      const duplicate = await findByContentKey().catch(() => null)
+      if (duplicate !== null) {
+        if (id === null) return { record: duplicate, persisted: true }
+        throw new Error('同一盘面已存在，未覆盖原记录')
       }
       // 打开成功但事务失败（典型是配额）：不要退回内存。list() 仍读 IndexedDB，
       // 内存里的那条记录会在列表里“消失”，界面却以为本次会话可用。

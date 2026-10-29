@@ -22,9 +22,9 @@ Phase 11B 新增 `positions` 把 `DB_VERSION` 升到 3；0.6.0 为局面内容�
 现在接受 `schemaVersion === 1`：
 
 1. 校验 v1 的既有字段（手顺、先手、模式、执子、难度、坐标）；
-2. 在内存里补 `resignedBy: null`，返回 `schemaVersion: 2`；
+2. 在内存里补 `resignedBy: null`，返回当前 `schemaVersion: 3`；
 3. **只读迁移**：不立即改写 `localStorage`；下一次真正落子/状态变化时，
-   `persistSession` 自然写成 v2。
+   `persistSession` 自然写成 v3。
 
 v1 里即使出现 `resignedBy` 也不采信——那一版没有这个语义。无法解析的 v1 存档
 仍然整条拒绝，不会把半截数据灌进状态机。
@@ -59,13 +59,12 @@ v3 增加 `branch`（分支来源）；v1/v2 读取时补 `null`，v3 校验四�
   v1 库（仅 progress）→ v3、v2 库（progress+records）→ v3、positions v1→v2、
   session v1→v2、外部 v1 文件读取/导出/恢复，均通过。
 - 本轮未改 `DB_VERSION` 或任何 `schemaVersion`；修复只涉及匹配语义、输入校验与分享启动时序。
-- 新增的审计边界：完整备份仍不含自定义局面（见 [FILE_FORMAT.md](FILE_FORMAT.md) §3），
-  局面需单独导出。
+- 11E 审计时完整备份不含自定义局面；0.6.0 起备份 v2 已包含。
 
 ## 2.4 0.6.0：DB 3 → 4 与 session v3 / 备份 v2
 
 - `DB_VERSION 3 → 4`：`positions` 增加 `contentKey` 唯一索引，跨标签页并发保存同一盘面
-  只留一条。旧记录没有 `contentKey`，升级时不会被索引；下次保存时补上。
+  只留一条。旧记录没有 `contentKey`；打开局面库时按读取路径的规范化值回填，重复键只回填第一条。
 - `SCHEMA_VERSION 2 → 3`：session 增加 `branch`；旧 v1/v2 读取补 null，不写回。
 - 外部备份 `formatVersion 1 → 2`：新增 `positions` 段；v1 备份仍可导入，按「文件中没有局面」处理。
 - 回滚到 0.5.0：旧代码以 DB 3 打开 v4 会触发 `VersionError`；必须先导出完整备份，

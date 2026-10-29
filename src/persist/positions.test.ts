@@ -53,6 +53,16 @@ describe('局面库 —— IndexedDB', () => {
     })
   })
 
+  it('更新到另一条已存在的内容键时明确失败，不静默改 savedId', async () => {
+    const first = await indexedDbPositions.save(inputFromPosition(createPosition(), 'a', null), null, at(1_000))
+    const second = await indexedDbPositions.save(inputFromPosition(createPosition(WHITE), 'b', null), null, at(1_000))
+    await expect(
+      indexedDbPositions.save(inputFromPosition(createPosition(WHITE), 'c', null), first.record.id, at(2_000)),
+    ).rejects.toThrow('同一盘面已存在')
+    expect((await indexedDbPositions.get(first.record.id))?.title).toBe('a')
+    expect((await indexedDbPositions.get(second.record.id))?.title).toBe('b')
+  })
+
   it('同一内容键重复/并发保存只留一条（DB v4 唯一索引）', async () => {
     const input = inputFromPosition(createPosition(), '同一盘面', null)
     const [a, b] = await Promise.all([
