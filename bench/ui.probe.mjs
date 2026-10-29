@@ -238,8 +238,8 @@ async function seedIndexedDb(page, { records = null, learn = null }) {
   await page.evaluate(
     async ({ records, learn }) => {
       const db = await new Promise((resolvePromise, rejectPromise) => {
-        // 与 src/persist/schema.ts 的 DB_VERSION 同步（Phase 11B: 3）
-        const request = indexedDB.open('gomoku-lab', 3)
+        // 与 src/persist/schema.ts 的 DB_VERSION 同步（0.6.0: 4）
+        const request = indexedDB.open('gomoku-lab', 4)
         request.onupgradeneeded = () => {
           const database = request.result
           if (!database.objectStoreNames.contains('progress')) database.createObjectStore('progress')
