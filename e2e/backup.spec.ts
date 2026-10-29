@@ -247,7 +247,7 @@ test('坏文件精确报错且零写入；取消预览也不写入', async ({ pa
   await expect(page.getByTestId(/^record-/)).toHaveCount(1)
 })
 
-test('v1 会话存档在真实浏览器里升级到 v2，旧棋局仍能恢复', async ({ page }) => {
+test('v1 会话存档在真实浏览器里升级到 v3，旧棋局仍能恢复', async ({ page }) => {
   await page.addInitScript(() => {
     localStorage.setItem(
       'gomoku-lab:session',
@@ -265,9 +265,9 @@ test('v1 会话存档在真实浏览器里升级到 v2，旧棋局仍能恢复',
 
   await expect(page.getByTestId(/^stone-/)).toHaveCount(3)
 
-  // 迁移是只读的：下一次真正落子时，存档才写成 v2。
+  // 迁移是只读的：下一次真正落子时，存档才写成 v3。
   await page.getByTestId('intersection-9-9').click()
   await expect
     .poll(() => page.evaluate(() => localStorage.getItem('gomoku-lab:session')))
-    .toContain('"schemaVersion":2')
+    .toContain('"schemaVersion":3')
 })

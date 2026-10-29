@@ -1,9 +1,12 @@
 import { isReplayConsistent, type Position, type PositionProvenance } from '../core/position'
 import type { Player } from '../core/types'
+import { positionContentKey } from './positionKey'
+export { positionContentKey } from './positionKey'
 import {
   DB_NAME,
   DB_VERSION,
   ensureSchema,
+  POSITIONS_CONTENT_INDEX,
   POSITIONS_STORE,
 } from './schema'
 
@@ -24,6 +27,8 @@ export interface SavedPosition {
   /** 旧 v1 记录没有时间，迁移后为 null；UI 必须如实显示「时间未知」。 */
   readonly createdAt: number | null
   readonly updatedAt: number | null
+  /** 盘面/下一手/已知手顺的唯一键；DB v4 的唯一索引。 */
+  readonly contentKey: string
 }
 
 export interface PositionInput {
@@ -81,6 +86,7 @@ function positionPayload(
     provenance: input.provenance,
     createdAt,
     updatedAt,
+    contentKey: positionContentKey(input),
   }
 }
 
@@ -178,6 +184,7 @@ export function parseSavedPosition(value: unknown): SavedPosition | null {
     provenance,
     createdAt: timestamps.createdAt,
     updatedAt: timestamps.updatedAt,
+    contentKey: positionContentKey({ cells, nextPlayer: raw.nextPlayer, provenance }),
   }
 }
 
@@ -201,11 +208,6 @@ export function inputFromPosition(
   }
 }
 
-/** 局面内容身份：标题不参与；同一盘面/下一手/已知手顺视为同一条。 */
-export function positionContentKey(input: PositionInput): string {
-  return JSON.stringify([input.cells, input.nextPlayer, input.provenance])
-}
-
 // ── 内存实现（测试 + 降级） ──────────────────────────────────────
 
 export function memoryPositions(degraded = false): PositionStorage {
@@ -224,6 +226,11 @@ export function memoryPositions(degraded = false): PositionStorage {
     },
     async save(input, id, now) {
       const stamp = now()
+      const key = positionContentKey(input)
+      if (id === null) {
+        const duplicate = [...byId.values()].find((record) => record.contentKey === key)
+        if (duplicate !== undefined) return { record: duplicate, persisted: false }
+      }
       const target = id === null ? nextId++ : id
       const existing = byId.get(target)
       const record: SavedPosition = {
@@ -273,7 +280,7 @@ function openDatabase(): Promise<IDBDatabase> {
       reject(error instanceof Error ? error : new Error(String(error)))
       return
     }
-    request.onupgradeneeded = () => ensureSchema(request.result)
+    request.onupgradeneeded = () => ensureSchema(request.result, request.transaction)
     request.onsuccess = () => resolve(request.result)
     request.onerror = () => reject(new Error('打不开局面库'))
     request.onblocked = () => reject(new Error('局面库被其他标签页占用'))
@@ -313,6 +320,20 @@ function withStore<T>(
   )
 }
 
+function readPosition(
+  db: IDBDatabase,
+  run: (store: IDBObjectStore) => IDBRequest<unknown>,
+): Promise<SavedPosition | null> {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE, 'readonly')
+    const request = run(tx.objectStore(STORE))
+    tx.oncomplete = () =>
+      resolve(request.result === undefined ? null : parseSavedPosition(request.result))
+    tx.onerror = () => reject(new Error('局面库读取失败'))
+    tx.onabort = () => reject(new Error('局面库读取被中止'))
+  })
+}
+
 export const indexedDbPositions: PositionStorage = {
   async list() {
     try {
@@ -346,27 +367,35 @@ export const indexedDbPositions: PositionStorage = {
       return fallbackToMemory().save(input, id, () => stamp)
     }
 
+    const contentKey = positionContentKey(input)
+    const findByContentKey = (): Promise<SavedPosition | null> =>
+      readPosition(db, (store) => store.index(POSITIONS_CONTENT_INDEX).get(contentKey))
+
     try {
-      const existing =
-        id === null
-          ? null
-          : await new Promise<SavedPosition | null>((resolve, reject) => {
-              const tx = db.transaction(STORE, 'readonly')
-              const request = tx.objectStore(STORE).get(id)
-              tx.oncomplete = () => resolve(request.result === undefined ? null : parseSavedPosition(request.result))
-              tx.onerror = () => reject(new Error('局面库读取失败'))
-              tx.onabort = () => reject(new Error('局面库读取被中止'))
-            })
+      if (id === null) {
+        const duplicate = await findByContentKey()
+        if (duplicate !== null) return { record: duplicate, persisted: true }
+      }
+      const existing = id === null ? null : await readPosition(db, (store) => store.get(id))
       const payload = positionPayload(input, existing?.createdAt ?? stamp, stamp)
       const newId = await new Promise<IDBValidKey>((resolve, reject) => {
         const tx = db.transaction(STORE, 'readwrite')
         const request = id === null ? tx.objectStore(STORE).add(payload) : tx.objectStore(STORE).put({ ...payload, id })
         tx.oncomplete = () => resolve(request.result)
-        tx.onerror = () => reject(new Error('局面库写入失败'))
-        tx.onabort = () => reject(new Error('局面库写入被中止'))
+        tx.onerror = () => reject(request.error ?? new Error('局面库写入失败'))
+        tx.onabort = () => reject(request.error ?? new Error('局面库写入被中止'))
       })
       return { record: { ...payload, id: id ?? Number(newId) }, persisted: true }
-    } catch {
+    } catch (error) {
+      // 唯一索引兜住跨标签页竞态：另一条已经写入时返回它，不新增重复记录。
+      if (error instanceof DOMException && error.name === 'ConstraintError') {
+        const duplicate = await findByContentKey()
+        if (duplicate !== null) return { record: duplicate, persisted: true }
+      }
+      if (error instanceof Error && error.name === 'ConstraintError') {
+        const duplicate = await findByContentKey()
+        if (duplicate !== null) return { record: duplicate, persisted: true }
+      }
       // 打开成功但事务失败（典型是配额）：不要退回内存。list() 仍读 IndexedDB，
       // 内存里的那条记录会在列表里“消失”，界面却以为本次会话可用。
       throw new Error('局面库写入失败，本地数据未改变')

@@ -1,22 +1,22 @@
 # 数据版本与迁移
 
-## 1. 当前版本（Phase 11B）
+## 1. 当前版本（0.6.0）
 
 | 数据 | 位置 | 版本常量 | 当前值 |
 | --- | --- | --- | --- |
-| IndexedDB 库 | `gomoku-lab` | `DB_VERSION` | `3` |
+| IndexedDB 库 | `gomoku-lab` | `DB_VERSION` | `4` |
 | 学习进度 | `progress` 表 | `PROGRESS_SCHEMA_VERSION` | `1` |
 | 棋谱 | `records` 表 | `GAME_RECORDS_SCHEMA_VERSION` | `1` |
-| 对局会话 | `localStorage: gomoku-lab:session` | `SCHEMA_VERSION` | `2` |
+| 对局会话 | `localStorage: gomoku-lab:session` | `SCHEMA_VERSION` | `3` |
 | 自定义局面 | `positions` 表 | `POSITION_SCHEMA_VERSION` | `2` |
-| 外部棋谱/备份/局面 | 文件 | `EXTERNAL_FORMAT_VERSION` / position v1 | `1` |
+| 外部棋谱/局面 | 文件 | `GAME_FORMAT_VERSION` / position v1 | `1` |
+| 外部完整备份 | 文件 | `BACKUP_FORMAT_VERSION` | `2` |
 
-Phase 11A **没有**为了「有迁移」而递增内部版本；Phase 11B 因新增 `positions`
-对象表，把 `DB_VERSION` 从 2 升到 3（结构性变更，必须升库版本）。`progress` /
-`records` 不动，旧记录原样可读；升级由 `ensureSchema` 统一补建 `positions` 表。
+Phase 11B 新增 `positions` 把 `DB_VERSION` 升到 3；0.6.0 为局面内容唯一索引升到 4，
+并把 session 升到 v3、备份外部格式升到 v2。`progress` / `records` 不动。
 外部格式版本与内部版本独立（见 [FILE_FORMAT.md](FILE_FORMAT.md)）。
 
-## 2. 已有迁移：会话 v1 → v2
+## 2. 已有迁移：会话 v1 → v2 → v3
 
 `storage.ts` 的 v1 存档没有 `resignedBy`（那一版认输局无法恢复）。`decodeSession`
 现在接受 `schemaVersion === 1`：
@@ -28,6 +28,8 @@ Phase 11A **没有**为了「有迁移」而递增内部版本；Phase 11B 因�
 
 v1 里即使出现 `resignedBy` 也不采信——那一版没有这个语义。无法解析的 v1 存档
 仍然整条拒绝，不会把半截数据灌进状态机。
+
+v3 增加 `branch`（分支来源）；v1/v2 读取时补 `null`，v3 校验四个字段后恢复横幅。
 
 启动时 `loadSessionResult()` 会区分「没有存档」「JSON 损坏」「版本不支持」
 「字段不完整/类型错误」，把具体原因放进 `GameStore.sessionError`，对战页显示警告；
@@ -59,6 +61,15 @@ v1 里即使出现 `resignedBy` 也不采信——那一版没有这个语义。
 - 本轮未改 `DB_VERSION` 或任何 `schemaVersion`；修复只涉及匹配语义、输入校验与分享启动时序。
 - 新增的审计边界：完整备份仍不含自定义局面（见 [FILE_FORMAT.md](FILE_FORMAT.md) §3），
   局面需单独导出。
+
+## 2.4 0.6.0：DB 3 → 4 与 session v3 / 备份 v2
+
+- `DB_VERSION 3 → 4`：`positions` 增加 `contentKey` 唯一索引，跨标签页并发保存同一盘面
+  只留一条。旧记录没有 `contentKey`，升级时不会被索引；下次保存时补上。
+- `SCHEMA_VERSION 2 → 3`：session 增加 `branch`；旧 v1/v2 读取补 null，不写回。
+- 外部备份 `formatVersion 1 → 2`：新增 `positions` 段；v1 备份仍可导入，按「文件中没有局面」处理。
+- 回滚到 0.5.0：旧代码以 DB 3 打开 v4 会触发 `VersionError`；必须先导出完整备份，
+  且不能直接降级打开。session v3 在 0.5.0 会被当作未来版本拒绝（只丢会话，不丢棋谱/局面）。
 
 ## 3. 旧库/旧记录的行为
 

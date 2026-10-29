@@ -4,9 +4,16 @@ import { inBounds } from '../core/board'
 import type { Player, Point } from '../core/types'
 
 /** 存档格式版本。字段含义发生变化时递增，旧存档会被安全丢弃。 */
-export const SCHEMA_VERSION = 2
+export const SCHEMA_VERSION = 3
 
 export const STORAGE_KEY = 'gomoku-lab:session'
+
+export interface PersistedBranch {
+  readonly sourceSeq: number
+  readonly sourceContentKey: string
+  readonly cursor: number
+  readonly sourceMoves: number
+}
 
 export interface PersistedSession {
   readonly schemaVersion: number
@@ -22,6 +29,9 @@ export interface PersistedSession {
    * 少了这个字段，认输后刷新页面会让对局复活成进行中。
    */
   readonly resignedBy: Player | null
+  /** 探索分支来源；v1/v2 没有，迁移后为 null。 */
+  /** 旧调用方可省略；解码 v1/v2 会补 null。 */
+  readonly branch?: PersistedBranch | null
 }
 
 function isPlayer(value: unknown): value is Player {
@@ -47,6 +57,29 @@ function migratedResignedBy(value: unknown, version: number): Player | null | un
   if (version === 1) return null
   if (value === null) return null
   return isPlayer(value) ? value : undefined
+}
+
+function parseBranch(value: unknown, version: number): PersistedBranch | null | undefined {
+  if (version < 3 || value === null || value === undefined) return null
+  if (typeof value !== 'object') return undefined
+  const raw = value as Record<string, unknown>
+  if (
+    typeof raw.sourceSeq !== 'number' ||
+    !Number.isInteger(raw.sourceSeq) ||
+    typeof raw.sourceContentKey !== 'string' ||
+    typeof raw.cursor !== 'number' ||
+    !Number.isInteger(raw.cursor) ||
+    typeof raw.sourceMoves !== 'number' ||
+    !Number.isInteger(raw.sourceMoves)
+  ) {
+    return undefined
+  }
+  return {
+    sourceSeq: raw.sourceSeq,
+    sourceContentKey: raw.sourceContentKey,
+    cursor: raw.cursor,
+    sourceMoves: raw.sourceMoves,
+  }
 }
 
 export function encodeSession(input: Omit<PersistedSession, 'schemaVersion'>): string {
@@ -79,7 +112,7 @@ export function decodeSession(raw: string | null): PersistedSession | null {
    * 解析失败仍然整条拒绝，不会把半截 v1 存档灌进状态机。
    */
   const version = value.schemaVersion
-  if (version !== 1 && version !== SCHEMA_VERSION) return null
+  if (version !== 1 && version !== 2 && version !== SCHEMA_VERSION) return null
   if (!isPlayer(value.firstPlayer)) return null
   if (!isPlayer(value.humanColor)) return null
   if (value.mode !== 'pve' && value.mode !== 'pvp') return null
@@ -88,6 +121,8 @@ export function decodeSession(raw: string | null): PersistedSession | null {
 
   const resignedBy = migratedResignedBy(value.resignedBy, version)
   if (resignedBy === undefined) return null
+  const branch = parseBranch(value.branch, version)
+  if (branch === undefined) return null
 
   const moves: Point[] = []
   for (const entry of value.moves) {
@@ -104,6 +139,7 @@ export function decodeSession(raw: string | null): PersistedSession | null {
     humanColor: value.humanColor,
     difficulty: value.difficulty,
     resignedBy,
+    ...(branch === null ? {} : { branch }),
   }
 }
 
@@ -133,7 +169,7 @@ function describeSessionError(raw: string): string {
   if (typeof parsed !== 'object' || parsed === null) return '顶层不是对象'
 
   const version = (parsed as Record<string, unknown>).schemaVersion
-  if (version !== 1 && version !== SCHEMA_VERSION) {
+  if (version !== 1 && version !== 2 && version !== SCHEMA_VERSION) {
     return `存档版本 ${String(version)} 不受支持（当前 ${SCHEMA_VERSION}）`
   }
   return `v${String(version)} 存档字段不完整或类型错误`

@@ -1,7 +1,7 @@
 import type { GameRecord } from '../persist/gameRecords'
 import { positionFromReplay, type Position, type PositionProvenance } from '../core/position'
 import { parsePositionText, toPositionFile } from '../persist/transfer/position'
-import { parseImportText } from '../persist/transfer/validate'
+import { jsonDepth, MAX_JSON_DEPTH, parseImportText } from '../persist/transfer/validate'
 import { toGameFile, type GamePayload } from '../persist/transfer/format'
 
 /**
@@ -193,9 +193,13 @@ function decodeEnvelope(token: string): ShareEnvelope | ShareFailure {
     return { ok: false, code: 'checksum', message: '分享链接校验失败，内容可能被截断或修改。' }
   }
 
+  const text = new TextDecoder().decode(bytes)
+  if (jsonDepth(text) > MAX_JSON_DEPTH) {
+    return { ok: false, code: 'invalid_data', message: '分享链接的 JSON 嵌套过深。' }
+  }
   let parsed: unknown
   try {
-    parsed = JSON.parse(new TextDecoder().decode(bytes))
+    parsed = JSON.parse(text)
   } catch {
     return { ok: false, code: 'malformed', message: '分享链接内容不是有效的 JSON。' }
   }

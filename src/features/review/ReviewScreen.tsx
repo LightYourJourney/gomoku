@@ -255,6 +255,7 @@ export function ReviewScreen({ storage, engine, stores, onRestoreSession, positi
     <PageShell key="library">
       <GameLibrary
         storage={storage}
+        positions={positions ?? indexedDbPositions}
         onOpen={openRecord}
         onStartBattle={() => setView('battle')}
         services={dataServices}

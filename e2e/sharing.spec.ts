@@ -49,14 +49,18 @@ async function shareGame(page: Page): Promise<string> {
   expect(link).toContain('#share=')
   await page.getByRole('button', { name: '复制链接' }).click()
   await expect(page.getByRole('button', { name: '已复制' })).toBeVisible()
-  expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(link)
+  if (page.context().browser()?.browserType().name() === 'chromium') {
+    expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(link)
+  }
   await page.getByRole('button', { name: '关闭' }).click()
   return link
 }
 
 test('分享：A 复制链接、B 独立上下文预览、确认后保存、刷新仍在', async ({ browser, page }) => {
   test.setTimeout(60_000)
-  await page.context().grantPermissions(['clipboard-read', 'clipboard-write'])
+  if (browser.browserType().name() === 'chromium') {
+    await page.context().grantPermissions(['clipboard-read', 'clipboard-write'])
+  }
   await seedGameRecords(page, [
     {
       schemaVersion: 1,

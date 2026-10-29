@@ -174,8 +174,10 @@ export function positionFromReplay(
   firstPlayer: Player,
   ply: number,
 ): ReplayPosition {
-  const clamped = Math.max(0, Math.min(moves.length, Math.floor(ply)))
-  const prefix = moves.slice(0, clamped)
+  if (!Number.isInteger(ply) || ply < 0 || ply > moves.length) {
+    throw new RangeError(`回放位置必须是 0–${moves.length} 的整数`)
+  }
+  const prefix = moves.slice(0, ply)
   const state = replay(prefix, firstPlayer)
   return {
     position: {
@@ -186,7 +188,7 @@ export function positionFromReplay(
       kind: 'replay',
       moves: prefix.map((point) => ({ ...point })),
       firstPlayer,
-      ply: clamped,
+      ply,
     },
   }
 }

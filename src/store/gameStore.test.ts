@@ -584,6 +584,12 @@ describe('restore', () => {
     expect(state().difficulty).toBe('easy')
   })
 
+  it('restore 恢复分支来源，刷新后横幅与防合并信息还在', () => {
+    const branch = { sourceSeq: 7, sourceContentKey: 'key', cursor: 5, sourceMoves: 9 }
+    state().restore(session({ branch }))
+    expect(state().branch).toEqual(branch)
+  })
+
   it('传 null 时保持当前状态不变', () => {
     state().playHuman({ x: 3, y: 3 })
     state().restore(null)

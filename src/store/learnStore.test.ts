@@ -8,7 +8,7 @@ class FakeStorage implements ProgressStorage {
   loadCount = 0
 
   private readonly failLoad: boolean
-  private readonly failSave: boolean
+  private failSave: boolean
 
   constructor(failLoad = false, failSave = false) {
     this.failLoad = failLoad
@@ -26,6 +26,16 @@ class FakeStorage implements ProgressStorage {
     if (this.failSave) return Promise.reject(new Error('写不进去'))
     this.saved = progress
     return Promise.resolve()
+  }
+
+  saveStrict(progress: LearningProgress): Promise<boolean> {
+    if (this.failSave) return Promise.resolve(false)
+    this.saved = progress
+    return Promise.resolve(true)
+  }
+
+  setFailSave(fail: boolean): void {
+    this.failSave = fail
   }
 
   clear(): Promise<void> {
@@ -110,6 +120,21 @@ describe('完成与通关', () => {
     expect(state().progress.solvedPuzzles).toEqual(['win-h'])
     expect(state().isPuzzleDone('win-h')).toBe(true)
     expect(state().isPuzzleDone('win-diag')).toBe(false)
+  })
+
+  it('落盘失败进入 failed，重试成功后回到 idle', async () => {
+    state().bootstrap()
+    await tick()
+    storage.setFailSave(true)
+    state().completeLesson('rules')
+    await state().flush()
+    expect(state().persistState).toBe('failed')
+
+    storage.setFailSave(false)
+    state().retryPersist()
+    await state().flush()
+    expect(state().persistState).toBe('idle')
+    expect(storage.saved.completedLessons).toEqual(['rules'])
   })
 
   it('adoptProgress 可只更新内存、跳过重复落盘', async () => {

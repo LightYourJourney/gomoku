@@ -58,6 +58,11 @@ test('分支：47 手棋谱第 26 手继续，AI 接管并保存独立棋谱', a
   // 分支横幅是静态说明，不是第二个 live region；播报仍只由 BoardAnnouncer 负责。
   await expect(page.getByRole('status')).toHaveCount(1)
   await expect(page.getByRole('status')).toHaveAttribute('data-testid', 'board-announcer')
+
+  // 刷新后分支来源随 session v3 恢复，横幅不丢。
+  await page.reload()
+  await expect(page.getByTestId('branch-banner')).toContainText('从第 26 手继续')
+
   await expect
     .poll(async () => page.getByTestId(/^stone-/).count(), { timeout: 20_000 })
     .toBeGreaterThan(26)

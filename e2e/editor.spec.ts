@@ -60,7 +60,7 @@ test('编辑器：保存局面 → 刷新后显示时间并删除', async ({ pag
   await openEditor(page)
   await page.getByTestId('intersection-7-7').click()
   await page.getByLabel('局面名称').fill('斜月研究')
-  await page.getByRole('button', { name: '保存局面' }).click()
+  await page.getByRole('button', { name: '保存局面', exact: true }).click()
   await expect(page.getByTestId('position-notice')).toContainText('已保存')
 
   await page.reload()
@@ -135,7 +135,7 @@ test('编辑器：导出局面文件 → 清空 → 导入恢复', async ({ page
   await expect(page.getByTestId('stone-7-7')).toBeVisible()
 })
 
-test('编辑器：v2 库升级到 v3 后旧进度与棋谱仍在', async ({ page }) => {
+test('编辑器：v3 库升级到 v4 后旧进度与棋谱仍在', async ({ page }) => {
   const schema = {
     dbName: DB_NAME,
     oldVersion: DB_VERSION - 1,
@@ -196,7 +196,7 @@ test('编辑器：v2 库升级到 v3 后旧进度与棋谱仍在', async ({ page
   await expect(page.getByText(/双人 · 2 手/)).toBeVisible()
   await page.getByRole('button', { name: '局面研究' }).click()
   await page.getByTestId('intersection-7-7').click()
-  await page.getByRole('button', { name: '保存局面' }).click()
+  await page.getByRole('button', { name: '保存局面', exact: true }).click()
   await expect(page.getByTestId('position-notice')).toContainText('已保存')
 
   const state = await page.evaluate(async ({ dbName, progressStore, recordsStore }) => {
@@ -224,6 +224,57 @@ test('编辑器：v2 库升级到 v3 后旧进度与棋谱仍在', async ({ page
   expect(state.stores).toEqual([POSITIONS_STORE, PROGRESS_STORE, RECORDS_STORE].sort())
   expect(state.records).toBe(1)
   expect(state.progress).toMatchObject({ completedLessons: ['battle-basics'] })
+})
+
+test('编辑器：positions v1 记录在真实浏览器里读取并写回 v2', async ({ page }) => {
+  const cells = Array(225).fill(0)
+  cells[7 * 15 + 7] = 1
+  await page.goto('/robots.txt')
+  await page.evaluate(async ({ dbName, version, positionsStore, cells }) => {
+    await new Promise<void>((resolve) => {
+      const del = indexedDB.deleteDatabase(dbName)
+      del.onsuccess = del.onerror = del.onblocked = () => resolve()
+    })
+    await new Promise<void>((resolve, reject) => {
+      const req = indexedDB.open(dbName, version)
+      req.onupgradeneeded = () => {
+        req.result.createObjectStore(positionsStore, { keyPath: 'id', autoIncrement: true })
+      }
+      req.onerror = () => reject(req.error)
+      req.onsuccess = () => {
+        const db = req.result
+        const tx = db.transaction(positionsStore, 'readwrite')
+        tx.objectStore(positionsStore).add({ schemaVersion: 1, title: '旧局面', cells, nextPlayer: 2, provenance: null })
+        tx.oncomplete = () => { db.close(); resolve() }
+        tx.onerror = () => reject(tx.error)
+      }
+    })
+  }, { dbName: DB_NAME, version: DB_VERSION - 1, positionsStore: POSITIONS_STORE, cells })
+
+  await openEditor(page)
+  await page.getByLabel('打开已保存局面').selectOption({ label: '旧局面' })
+  await expect(page.getByTestId('position-saved-at')).toContainText('时间未知')
+  await page.getByRole('button', { name: '保存局面', exact: true }).click()
+  await expect(page.getByTestId('position-notice')).toContainText('已保存')
+
+  const stored = await page.evaluate(async ({ dbName, positionsStore }) => {
+    const db = await new Promise<IDBDatabase>((resolve, reject) => {
+      const req = indexedDB.open(dbName)
+      req.onsuccess = () => resolve(req.result)
+      req.onerror = () => reject(req.error)
+    })
+    const value = await new Promise<unknown>((resolve, reject) => {
+      const tx = db.transaction(positionsStore, 'readonly')
+      const req = tx.objectStore(positionsStore).getAll()
+      req.onsuccess = () => resolve(req.result[0])
+      req.onerror = () => reject(req.error)
+    })
+    db.close()
+    return value
+  }, { dbName: DB_NAME, positionsStore: POSITIONS_STORE })
+  expect(stored).toMatchObject({ schemaVersion: 2 })
+  expect((stored as { createdAt: number }).createdAt).toBeGreaterThan(0)
+  expect((stored as { updatedAt: number }).updatedAt).toBeGreaterThan(0)
 })
 
 test('编辑器：编辑与分析不改变正式对战棋盘', async ({ page }) => {

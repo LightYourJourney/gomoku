@@ -7,7 +7,7 @@
 
 **线上地址：<https://gomoku-lab.pages.dev>**（Cloudflare Pages；应用 `0.5.0`、引擎 `search-1`、提交 `db8881c`）。
 
-**当前进度：Phase 1–5、UI/UX 改版 Phase 00–07、Phase 08 独立审计、Phase 09A/09B 发布与首次上线、Phase 10A–10F AI 评测 / 优化 / 标定 / 审计 / 正式发布、Phase 11A 数据备份与导入导出、Phase 11B 棋盘编辑器与局面研究已正式发布；Phase 11C 棋谱探索分支、Phase 11D 分享链接、Phase 11E 独立审计整改已随 `0.5.0` 发布。**
+**当前进度：Phase 1–5、UI/UX 改版 Phase 00–07、Phase 08 独立审计、Phase 09A/09B 发布与首次上线、Phase 10A–10F AI 评测 / 优化 / 标定 / 审计 / 正式发布、Phase 11A 数据备份与导入导出、Phase 11B 棋盘编辑器与局面研究已正式发布；Phase 11C/11D/11E 已随 `0.5.0` 发布；`0.6.0` 候选包含备份 v2、DB v4、进度失败提示、分支来源持久化与跨浏览器全量。**
 键盘与读屏可用、平板与触屏专项验证过、生产构建有独立的冒烟通道、用法有[使用说明](docs/USAGE.md)；
 发布就绪评估与部署方案见 [RELEASE_READINESS.md](docs/release/RELEASE_READINESS.md)；
 最终审计与残留问题见 [FINAL_AUDIT.md](docs/ui-redesign/FINAL_AUDIT.md) 与 [KNOWN_ISSUES.md](docs/ui-redesign/KNOWN_ISSUES.md)。
@@ -159,7 +159,7 @@ bench/         引擎基准、渲染探针与棋力评测（测量脚本不进�
 | 项 | 数量 |
 | --- | --- |
 | 单元 / 组件用例 | **1393**（88 个文件） |
-| 端到端用例 | **189**（桌面 165 + 移动触屏 14 + 平板 10），另有 Firefox/WebKit 编辑器专项 18 条 |
+| 端到端用例 | **190**（桌面 165 + 移动触屏 14 + 平板 10），另有 Firefox/WebKit 编辑器专项 18 条 |
 | 生产构建冒烟 | 7（`yarn e2e:prod`，含构建版本标识核对与分享预览） |
 
 关键实现都有反向验证记录（改坏实现确认用例会红），详见 [docs/TEST_REPORT.md](docs/TEST_REPORT.md)。
@@ -213,6 +213,7 @@ bench/         引擎基准、渲染探针与棋力评测（测量脚本不进�
 - [docs/release/RELEASE_CHECKLIST.md](docs/release/RELEASE_CHECKLIST.md) —— 发布前 / staging / 公开发布清单
 - [docs/release/DEPLOYMENT_RECORD.md](docs/release/DEPLOYMENT_RECORD.md) —— 已发生的部署（含 0.5.0 与热修）：版本、地址、验收读数、回滚与更新流程
 - [docs/release/RELEASE_NOTES_0.4.0.md](docs/release/RELEASE_NOTES_0.4.0.md) —— `0.4.0` 局面研究发布说明
+- [docs/release/RELEASE_NOTES_0.6.0.md](docs/release/RELEASE_NOTES_0.6.0.md) —— `0.6.0` 数据格式与可靠性发布说明
 - [docs/release/RELEASE_NOTES_0.5.0.md](docs/release/RELEASE_NOTES_0.5.0.md) —— `0.5.0` 分支/分享发布说明
 - [docs/release/RELEASE_NOTES_0.3.0.md](docs/release/RELEASE_NOTES_0.3.0.md) —— `0.3.0` 数据备份/导入导出发布说明
 - [docs/release/RELEASE_NOTES_0.2.0.md](docs/release/RELEASE_NOTES_0.2.0.md) —— `0.2.0` AI 引擎性能版发布说明（历史）

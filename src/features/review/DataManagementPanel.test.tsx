@@ -2,6 +2,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { BLACK, WHITE, type Point } from '../../core/types'
 import { memoryGameRecords, type GameRecordInput } from '../../persist/gameRecords'
+import { memoryPositions } from '../../persist/positions'
 import { EMPTY_PROGRESS, type LearningProgress } from '../../persist/progress'
 import { toBackupFile, toGameFile } from '../../persist/transfer/format'
 import type { PersistedSession } from '../../persist/storage'
@@ -92,7 +93,7 @@ describe('数据管理面板 · 导出', () => {
     const storage = memoryGameRecords()
     await storage.put(record())
     render(
-      <DataManagementPanel storage={storage} services={services()} onImported={vi.fn()} degraded={false} />,
+      <DataManagementPanel positions={memoryPositions()} storage={storage} services={services()} onImported={vi.fn()} degraded={false} />,
     )
 
     fireEvent.click(screen.getByRole('button', { name: '导出全部棋谱' }))
@@ -107,7 +108,7 @@ describe('数据管理面板 · 导出', () => {
     const storage = memoryGameRecords()
     await storage.put(record())
     render(
-      <DataManagementPanel storage={storage} services={services()} onImported={vi.fn()} degraded={false} />,
+      <DataManagementPanel positions={memoryPositions()} storage={storage} services={services()} onImported={vi.fn()} degraded={false} />,
     )
 
     fireEvent.click(screen.getByRole('button', { name: '完整备份' }))
@@ -122,7 +123,7 @@ describe('数据管理面板 · 导出', () => {
 
   it('空库导出全部棋谱时不伪造数据', async () => {
     render(
-      <DataManagementPanel storage={memoryGameRecords()} services={services()} onImported={vi.fn()} degraded={false} />,
+      <DataManagementPanel positions={memoryPositions()} storage={memoryGameRecords()} services={services()} onImported={vi.fn()} degraded={false} />,
     )
     fireEvent.click(screen.getByRole('button', { name: '导出全部棋谱' }))
     expect(await screen.findByTestId('import-error')).toHaveTextContent('空的')
@@ -135,7 +136,7 @@ describe('数据管理面板 · 导入', () => {
     const storage = memoryGameRecords()
     const onImported = vi.fn()
     render(
-      <DataManagementPanel storage={storage} services={services()} onImported={onImported} degraded={false} />,
+      <DataManagementPanel positions={memoryPositions()} storage={storage} services={services()} onImported={onImported} degraded={false} />,
     )
 
     fireEvent.change(screen.getByTestId('import-file'), {
@@ -153,7 +154,7 @@ describe('数据管理面板 · 导入', () => {
     const storage = memoryGameRecords()
     await storage.put(record())
     render(
-      <DataManagementPanel storage={storage} services={services()} onImported={vi.fn()} degraded={false} />,
+      <DataManagementPanel positions={memoryPositions()} storage={storage} services={services()} onImported={vi.fn()} degraded={false} />,
     )
 
     fireEvent.change(screen.getByTestId('import-file'), {
@@ -169,7 +170,7 @@ describe('数据管理面板 · 导入', () => {
   it('取消预览不做任何写入', async () => {
     const storage = memoryGameRecords()
     render(
-      <DataManagementPanel storage={storage} services={services()} onImported={vi.fn()} degraded={false} />,
+      <DataManagementPanel positions={memoryPositions()} storage={storage} services={services()} onImported={vi.fn()} degraded={false} />,
     )
 
     fireEvent.change(screen.getByTestId('import-file'), {
@@ -187,6 +188,7 @@ describe('数据管理面板 · 导入', () => {
     render(
       <DataManagementPanel
         storage={storage}
+        positions={memoryPositions()}
         services={services({
           onMergeProgress: async () => {
             throw new Error('进度写入失败')
@@ -206,13 +208,74 @@ describe('数据管理面板 · 导入', () => {
     expect(await screen.findByTestId('import-result')).toHaveTextContent('学习/残局进度：失败')
   })
 
-  it('明说完整备份不含自定义局面，避免用户以为局面也会被备份', () => {
+  it('导出跳过损坏/未结束记录并如实计数', async () => {
+    const base = memoryGameRecords()
+    const unfinished = {
+      ...record(),
+      seq: 1,
+      schemaVersion: 1,
+      moves: [{ x: 7, y: 7 }],
+      winner: null,
+    }
+    const storage = {
+      ...base,
+      list: async () => ({ records: [unfinished, { ...unfinished, seq: 2, moves: MOVES, winner: null }], degraded: false, skipped: 2 }),
+    }
     render(
-      <DataManagementPanel storage={memoryGameRecords()} services={services()} onImported={vi.fn()} degraded={false} />,
+      <DataManagementPanel positions={memoryPositions()} storage={storage} services={services()} onImported={vi.fn()} degraded={false} />,
     )
 
-    expect(screen.getByTestId('backup-scope')).toHaveTextContent('不含自定义局面')
-    expect(screen.getByTestId('backup-scope')).toHaveTextContent('逐个导出')
+    fireEvent.click(screen.getByRole('button', { name: '导出全部棋谱' }))
+    expect(await screen.findByTestId('export-notice')).toHaveTextContent('跳过 3 条')
+  })
+
+  it('完整备份 v2 包含自定义局面', async () => {
+    const storage = memoryGameRecords()
+    await storage.put(record())
+    const positions = memoryPositions()
+    await positions.save(
+      { title: '天元', cells: Array(225).fill(0).map((_, i) => (i === 112 ? 1 : 0)), nextPlayer: 2, provenance: null },
+      null,
+      () => 1,
+    )
+    render(
+      <DataManagementPanel positions={positions} storage={storage} services={services()} onImported={vi.fn()} degraded={false} />,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: '完整备份' }))
+    const payload = await readBlob()
+    expect(payload.formatVersion).toBe(2)
+    expect(payload.positions).toHaveLength(1)
+    expect((payload.positions as Array<{ title: string }>)[0]!.title).toBe('天元')
+  })
+
+  it('导入备份 v2 时按内容键合并自定义局面', async () => {
+    const positions = memoryPositions()
+    const backup = toBackupFile({
+      games: [record()],
+      positions: [
+        { title: '天元', cells: Array(225).fill(0).map((_, i) => (i === 112 ? BLACK : 0)), nextPlayer: WHITE, provenance: null },
+      ],
+    })
+    render(
+      <DataManagementPanel positions={positions} storage={memoryGameRecords()} services={services()} onImported={vi.fn()} degraded={false} />,
+    )
+
+    fireEvent.change(screen.getByTestId('import-file'), { target: { files: [fileOf(backup)] } })
+    await screen.findByRole('heading', { name: '导入预览' })
+    fireEvent.click(screen.getByRole('button', { name: '确认导入' }))
+
+    expect(await screen.findByTestId('import-result')).toHaveTextContent('自定义局面：导入 1 个')
+    expect((await positions.list()).records[0]!.title).toBe('天元')
+  })
+
+  it('明说完整备份包含自定义局面', () => {
+    render(
+      <DataManagementPanel positions={memoryPositions()} storage={memoryGameRecords()} services={services()} onImported={vi.fn()} degraded={false} />,
+    )
+
+    expect(screen.getByTestId('backup-scope')).toHaveTextContent('包含')
+    expect(screen.getByTestId('backup-scope')).toHaveTextContent('自定义局面')
   })
 
   it('事务失败时明说没有写入，不冒充本次会话可用', async () => {
@@ -227,7 +290,7 @@ describe('数据管理面板 · 导入', () => {
       }),
     }
     render(
-      <DataManagementPanel storage={storage} services={services()} onImported={vi.fn()} degraded={false} />,
+      <DataManagementPanel positions={memoryPositions()} storage={storage} services={services()} onImported={vi.fn()} degraded={false} />,
     )
 
     fireEvent.change(screen.getByTestId('import-file'), {
@@ -243,7 +306,7 @@ describe('数据管理面板 · 导入', () => {
   it('坏 JSON 精确报错，零写入', async () => {
     const storage = memoryGameRecords()
     render(
-      <DataManagementPanel storage={storage} services={services()} onImported={vi.fn()} degraded={false} />,
+      <DataManagementPanel positions={memoryPositions()} storage={storage} services={services()} onImported={vi.fn()} degraded={false} />,
     )
 
     fireEvent.change(screen.getByTestId('import-file'), {
@@ -258,7 +321,7 @@ describe('数据管理面板 · 导入', () => {
     const storage = memoryGameRecords()
     const api = services()
     render(
-      <DataManagementPanel storage={storage} services={api} onImported={vi.fn()} degraded={false} />,
+      <DataManagementPanel positions={memoryPositions()} storage={storage} services={api} onImported={vi.fn()} degraded={false} />,
     )
 
     const backup = toBackupFile({
@@ -282,7 +345,7 @@ describe('数据管理面板 · 导入', () => {
   it('备份里一条无效棋谱：只导入有效的一条，并点名无效数量', async () => {
     const storage = memoryGameRecords()
     render(
-      <DataManagementPanel storage={storage} services={services()} onImported={vi.fn()} degraded={false} />,
+      <DataManagementPanel positions={memoryPositions()} storage={storage} services={services()} onImported={vi.fn()} degraded={false} />,
     )
 
     const good = JSON.parse(JSON.stringify(toGameFile(record())))

@@ -142,6 +142,12 @@ function parseRecord(value: unknown): GameRecord | null {
     moves.push({ x: point.x, y: point.y })
   }
 
+  const state = replay(moves, raw.firstPlayer)
+  // 读到库里就必须是完整合法手顺：非法/重复/终局后落子都整条拒绝，
+  // 不能把截断后的前 35 手当成一局棋展示或再导出。
+  if (state.moves.length !== moves.length) return null
+  if (resignedBy !== null && state.status !== 'playing') return null
+
   return {
     seq: raw.seq,
     schemaVersion: GAME_RECORDS_SCHEMA_VERSION,
@@ -302,7 +308,7 @@ function openDatabase(): Promise<IDBDatabase> {
 
     request.onupgradeneeded = () => {
       const db = request.result
-      ensureSchema(db)
+      ensureSchema(db, request.transaction)
     }
     request.onsuccess = () => resolve(request.result)
     request.onerror = () => reject(new Error('打不开棋谱库'))

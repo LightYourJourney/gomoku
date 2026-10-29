@@ -78,6 +78,20 @@ jobs:
       - run: yarn playwright install --with-deps firefox webkit
       - run: yarn e2e:browsers
 
+  browsers-full:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '26'
+          cache: yarn
+      - run: yarn install --frozen-lockfile
+      - uses: ./.github/actions/install-cjk-font
+      - run: yarn playwright install --with-deps firefox webkit
+      - run: yarn e2e:browsers:full
+
   probe:
     runs-on: ubuntu-latest
     # 本地全量 172 张约 4.7 分钟；runner 上更慢，给足。

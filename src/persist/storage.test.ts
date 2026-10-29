@@ -31,6 +31,12 @@ describe('encodeSession / decodeSession', () => {
     expect(decoded).toEqual({ schemaVersion: SCHEMA_VERSION, ...sample })
   })
 
+  it('分支来源随 session v3 往返', () => {
+    const branch = { sourceSeq: 7, sourceContentKey: 'key', cursor: 5, sourceMoves: 9 }
+    const decoded = decodeSession(encodeSession({ ...sample, branch }))
+    expect(decoded?.branch).toEqual(branch)
+  })
+
   it('空存档返回 null', () => {
     expect(decodeSession(null)).toBeNull()
     expect(decodeSession('')).toBeNull()

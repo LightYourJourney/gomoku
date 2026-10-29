@@ -6,13 +6,20 @@ import { BOARD_SIZE, type Player, type Point } from '../../core/types'
 import { isThemePreference } from '../../lib/theme'
 import { isFiniteInt, isObj, isPlayer, issue, type ImportErrorCode, type ImportIssue } from './guards'
 import type {
+  BackupPosition,
   BackupPreferences,
   BackupProgress,
   BackupSession,
   GameEnding,
   GamePayload,
 } from './format'
-import { BACKUP_FORMAT, GAME_FORMAT, EXTERNAL_FORMAT_VERSION, RULES_FREESTYLE } from './format'
+import {
+  BACKUP_FORMAT,
+  BACKUP_FORMAT_VERSION,
+  GAME_FORMAT,
+  GAME_FORMAT_VERSION,
+  RULES_FREESTYLE,
+} from './format'
 
 /**
  * 导入的硬边界。数字不是拍脑袋：
@@ -59,6 +66,11 @@ export interface BackupGameError {
   readonly errors: readonly ImportIssue[]
 }
 
+export interface BackupPositionError {
+  readonly index: number
+  readonly errors: readonly ImportIssue[]
+}
+
 export interface BackupFileResult {
   readonly ok: true
   readonly kind: 'backup'
@@ -67,6 +79,8 @@ export interface BackupFileResult {
   readonly progress: BackupProgress | null
   readonly preferences: BackupPreferences | null
   readonly session: BackupSession | null
+  readonly positions: readonly BackupPosition[]
+  readonly positionErrors: readonly BackupPositionError[]
   readonly warnings: readonly ImportIssue[]
 }
 export interface BackupFileFailure {
@@ -108,6 +122,7 @@ export function warnUnknownFields(
 function parseEnvelope(
   value: Obj,
   expectedFormat: string,
+  maxVersion: number,
   path: string,
   errors: ImportIssue[],
   warnings: ImportIssue[],
@@ -122,12 +137,12 @@ function parseEnvelope(
     errors.push(issue('invalid_field', `${path}.formatVersion`, '格式版本应为整数'))
     return null
   }
-  if (version > EXTERNAL_FORMAT_VERSION) {
+  if (version > maxVersion) {
     errors.push(
       issue(
         'unsupported_version',
         `${path}.formatVersion`,
-        `不支持版本 ${version}（当前支持 ${EXTERNAL_FORMAT_VERSION}）`,
+        `不支持版本 ${version}（当前支持 ${maxVersion}）`,
       ),
     )
     return null
@@ -437,7 +452,7 @@ function validateGameFile(value: unknown, path: string): GameFileResult | GameFi
   // 这里再查一遍会对同一个未知字段报两次。
   const { top, errors, warnings } = validationContext(value, path, [], false)
   if (top === null) return { ok: false, errors, warnings }
-  if (parseEnvelope(top, GAME_FORMAT, path, errors, warnings) === null) {
+  if (parseEnvelope(top, GAME_FORMAT, GAME_FORMAT_VERSION, path, errors, warnings) === null) {
     return { ok: false, errors, warnings }
   }
 
@@ -530,6 +545,87 @@ function validatePreferences(
   return { theme: raw.theme, showCoords: raw.showCoords, soundEnabled: raw.soundEnabled }
 }
 
+function validateBackupPosition(
+  value: unknown,
+  path: string,
+): { position: BackupPosition | null; errors: ImportIssue[]; warnings: ImportIssue[] } {
+  const errors: ImportIssue[] = []
+  const warnings: ImportIssue[] = []
+  const raw = objectAt(value, path, errors)
+  if (raw === null) return { position: null, errors, warnings }
+  warnUnknownFields(raw, ['title', 'cells', 'nextPlayer', 'provenance'], path, warnings)
+
+  const title = raw.title ?? null
+  if (title !== null && (typeof title !== 'string' || title.length > 80)) {
+    errors.push(issue('invalid_field', `${path}.title`, '标题必须是不超过 80 字符的字符串或 null'))
+  }
+  if (!isPlayer(raw.nextPlayer)) {
+    errors.push(issue('invalid_field', `${path}.nextPlayer`, '下一手必须是 1 或 2'))
+  }
+  if (!Array.isArray(raw.cells) || raw.cells.length !== BOARD_SIZE * BOARD_SIZE) {
+    errors.push(issue('invalid_field', `${path}.cells`, `cells 必须是 ${BOARD_SIZE * BOARD_SIZE} 项数组`))
+  } else {
+    for (let i = 0; i < raw.cells.length; i++) {
+      const cell = raw.cells[i]
+      if (cell !== 0 && cell !== 1 && cell !== 2) {
+        errors.push(issue('invalid_field', `${path}.cells[${i}]`, '格子必须是 0 / 1 / 2'))
+        break
+      }
+    }
+  }
+
+  let provenance: BackupPosition['provenance'] = null
+  if (raw.provenance !== null && raw.provenance !== undefined) {
+    const p = objectAt(raw.provenance, `${path}.provenance`, errors)
+    if (p !== null) {
+      warnUnknownFields(p, ['kind', 'moves', 'firstPlayer', 'ply'], `${path}.provenance`, warnings)
+      if (p.kind !== 'replay') {
+        errors.push(issue('invalid_field', `${path}.provenance.kind`, '必须是 replay'))
+      }
+      if (!isPlayer(p.firstPlayer)) {
+        errors.push(issue('invalid_field', `${path}.provenance.firstPlayer`, '先手方必须是 1 或 2'))
+      }
+      const moves = validateMoveObjects(p.moves, `${path}.provenance.moves`, errors, warnings)
+      if (moves !== null) {
+        if (!isFiniteInt(p.ply) || p.ply !== moves.length) {
+          errors.push(issue('invalid_field', `${path}.provenance.ply`, 'ply 必须等于手顺长度'))
+        } else if (isPlayer(p.firstPlayer)) {
+          const state = replay(moves, p.firstPlayer)
+          if (state.moves.length !== moves.length) {
+            errors.push(issue('invalid_field', `${path}.provenance.moves`, '手顺包含非法落子'))
+          } else if (
+            Array.isArray(raw.cells) &&
+            raw.cells.length === BOARD_SIZE * BOARD_SIZE &&
+            raw.cells.some((cell, i) => cell !== state.board[i])
+          ) {
+            errors.push(issue('invalid_field', `${path}.provenance`, '手顺重建出的盘面与 cells 不一致'))
+          } else if (state.current !== raw.nextPlayer) {
+            errors.push(issue('invalid_field', `${path}.provenance`, '手顺的下一手与 nextPlayer 不一致'))
+          }
+        }
+        provenance = {
+          kind: 'replay',
+          moves,
+          firstPlayer: p.firstPlayer as Player,
+          ply: p.ply as number,
+        }
+      }
+    }
+  }
+
+  if (errors.length > 0) return { position: null, errors, warnings }
+  return {
+    position: {
+      title: title as string | null,
+      cells: raw.cells as number[],
+      nextPlayer: raw.nextPlayer as Player,
+      provenance,
+    },
+    errors,
+    warnings,
+  }
+}
+
 function validateSession(
   value: unknown,
   path: string,
@@ -540,7 +636,7 @@ function validateSession(
   if (raw === null) return null
   warnUnknownFields(
     raw,
-    ['moves', 'firstPlayer', 'mode', 'humanColor', 'difficulty', 'resignedBy'],
+    ['moves', 'firstPlayer', 'mode', 'humanColor', 'difficulty', 'resignedBy', 'branch'],
     path,
     warnings,
   )
@@ -585,6 +681,34 @@ function validateSession(
     return null
   }
 
+  let branch: BackupSession['branch'] = null
+  if (raw.branch !== null && raw.branch !== undefined) {
+    const value = objectAt(raw.branch, `${path}.branch`, errors)
+    if (value === null) return null
+    warnUnknownFields(
+      value,
+      ['sourceSeq', 'sourceContentKey', 'cursor', 'sourceMoves'],
+      `${path}.branch`,
+      warnings,
+    )
+    if (
+      !isFiniteInt(value.sourceSeq) ||
+      typeof value.sourceContentKey !== 'string' ||
+      value.sourceContentKey.length > MAX_STRING_LENGTH * 4 ||
+      !isFiniteInt(value.cursor) ||
+      !isFiniteInt(value.sourceMoves)
+    ) {
+      errors.push(issue('bad_session', `${path}.branch`, '分支来源字段不合法'))
+      return null
+    }
+    branch = {
+      sourceSeq: value.sourceSeq,
+      sourceContentKey: value.sourceContentKey,
+      cursor: value.cursor,
+      sourceMoves: value.sourceMoves,
+    }
+  }
+
   return {
     moves,
     firstPlayer,
@@ -592,6 +716,7 @@ function validateSession(
     humanColor,
     difficulty,
     resignedBy,
+    ...(branch === null ? {} : { branch }),
   }
 }
 
@@ -616,10 +741,10 @@ function optionalSection<T>(
 function validateBackupFile(value: unknown, path: string): BackupFileResult | BackupFileFailure {
   const { top, errors, warnings } = validationContext(value, path, [
     'format', 'formatVersion', 'board', 'rules', 'games', 'progress', 'preferences',
-    'session', 'source',
+    'session', 'positions', 'source',
   ])
   if (top === null) return { ok: false, errors, warnings }
-  if (parseEnvelope(top, BACKUP_FORMAT, path, errors, warnings) === null) {
+  if (parseEnvelope(top, BACKUP_FORMAT, BACKUP_FORMAT_VERSION, path, errors, warnings) === null) {
     return { ok: false, errors, warnings }
   }
 
@@ -677,6 +802,25 @@ function validateBackupFile(value: unknown, path: string): BackupFileResult | Ba
     warnings,
   )
 
+  const positions: BackupPosition[] = []
+  const positionErrors: BackupPositionError[] = []
+  if (top.positions !== undefined && top.positions !== null) {
+    if (!Array.isArray(top.positions)) {
+      errors.push(issue('wrong_type', `${path}.positions`, 'positions 应为数组'))
+      return { ok: false, errors, warnings }
+    }
+    if (top.positions.length > 1_000) {
+      errors.push(issue('too_many_games', `${path}.positions`, '最多 1,000 个局面'))
+      return { ok: false, errors, warnings }
+    }
+    for (let i = 0; i < top.positions.length; i++) {
+      const parsed = validateBackupPosition(top.positions[i], `${path}.positions[${i}]`)
+      warnings.push(...parsed.warnings)
+      if (parsed.position === null) positionErrors.push({ index: i, errors: parsed.errors })
+      else positions.push(parsed.position)
+    }
+  }
+
   const sourceErrorsBefore = errors.length
   validateSource(top.source, `${path}.source`, errors, warnings)
   if (errors.length > sourceErrorsBefore) {
@@ -691,6 +835,8 @@ function validateBackupFile(value: unknown, path: string): BackupFileResult | Ba
     progress,
     preferences,
     session,
+    positions,
+    positionErrors,
     warnings,
   }
 }

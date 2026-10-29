@@ -509,7 +509,7 @@ export function createGameStore(
           mode: session.mode,
           humanColor: session.humanColor,
           difficulty: session.difficulty,
-          branch: null,
+          branch: session.branch ?? null,
           ...TRANSIENT_RESET,
         })
 

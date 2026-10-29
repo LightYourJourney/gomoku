@@ -18,7 +18,8 @@ import { recordContentKey, type RecordIdentity } from '../recordIdentity'
  */
 export const GAME_FORMAT = 'gomoku-lab.game'
 export const BACKUP_FORMAT = 'gomoku-lab.backup'
-export const EXTERNAL_FORMAT_VERSION = 1
+export const GAME_FORMAT_VERSION = 1
+export const BACKUP_FORMAT_VERSION = 2
 export const RULES_FREESTYLE = 'freestyle'
 
 export type GameEnding =
@@ -69,6 +70,24 @@ export interface BackupSession {
   readonly humanColor: Player
   readonly difficulty: Difficulty
   readonly resignedBy: Player | null
+  readonly branch?: {
+    readonly sourceSeq: number
+    readonly sourceContentKey: string
+    readonly cursor: number
+    readonly sourceMoves: number
+  } | null
+}
+
+export interface BackupPosition {
+  readonly title: string | null
+  readonly cells: readonly number[]
+  readonly nextPlayer: Player
+  readonly provenance: {
+    readonly kind: 'replay'
+    readonly moves: readonly Point[]
+    readonly firstPlayer: Player
+    readonly ply: number
+  } | null
 }
 
 export interface BackupFile {
@@ -85,6 +104,8 @@ export interface BackupFile {
   readonly progress?: BackupProgress
   readonly preferences?: BackupPreferences
   readonly session?: BackupSession | null
+  /** 完整备份 v2 起包含；导出全部棋谱时省略。 */
+  readonly positions?: readonly BackupPosition[]
   readonly source?: SourceMeta
 }
 
@@ -139,7 +160,7 @@ export function toGamePayload(record: RecordIdentity): GamePayload {
 export function toGameFile(record: RecordIdentity): GameFile {
   return {
     format: GAME_FORMAT,
-    formatVersion: EXTERNAL_FORMAT_VERSION,
+    formatVersion: GAME_FORMAT_VERSION,
     board: { size: BOARD_SIZE },
     rules: RULES_FREESTYLE,
     ...toGamePayload(record),
@@ -192,25 +213,29 @@ export function backupSessionOf(session: PersistedSession | null): BackupSession
     humanColor: session.humanColor,
     difficulty: session.difficulty,
     resignedBy: session.resignedBy,
+    ...(session.branch === undefined ? {} : { branch: session.branch }),
   }
 }
 
+export type BackupGameInput = GameRecord | GameRecordInput | GamePayload
+
 export interface BackupInput {
-  readonly games: readonly (GameRecord | GameRecordInput)[]
+  readonly games: readonly BackupGameInput[]
   readonly progress?: LearningProgress | null
   readonly preferences?: BackupPreferences | null
   /** `undefined` 表示这份文件不含会话；`null` 表示明确「没有进行中的对局」。 */
   readonly session?: PersistedSession | null
+  readonly positions?: readonly BackupPosition[] | null
 }
 
 /** 完整备份。`progress` / `preferences` / `session` 不传就省略该段。 */
 export function toBackupFile(input: BackupInput): BackupFile {
   return {
     format: BACKUP_FORMAT,
-    formatVersion: EXTERNAL_FORMAT_VERSION,
+    formatVersion: BACKUP_FORMAT_VERSION,
     board: { size: BOARD_SIZE },
     rules: RULES_FREESTYLE,
-    games: input.games.map(toGamePayload),
+    games: input.games.map((game) => ('ending' in game ? game : toGamePayload(game))),
     ...(input.progress === undefined || input.progress === null
       ? {}
       : { progress: backupProgressOf(input.progress) }),
@@ -218,6 +243,9 @@ export function toBackupFile(input: BackupInput): BackupFile {
       ? {}
       : { preferences: input.preferences }),
     ...(input.session === undefined ? {} : { session: backupSessionOf(input.session) }),
+    ...(input.positions === undefined || input.positions === null
+      ? {}
+      : { positions: input.positions }),
     source: SOURCE_META,
   }
 }

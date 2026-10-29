@@ -2,7 +2,7 @@
   "name": "gomoku-lab",
   "private": true,
   "license": "MIT",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -29,10 +29,12 @@
     "check:deadcode": "knip --reporter compact",
     "check:dupes": "jscpd --config .jscpd.json",
     "bench:check": "yarn bench && node bench/gate.mjs",
-    "gates": "yarn check:cycles && yarn check:deadcode && yarn check:dupes && yarn check:tests",
+    "gates": "yarn check:cycles && yarn check:deadcode && yarn check:dupes && yarn check:tests && yarn check:bundle",
     "prepare": "git config core.hooksPath .githooks",
     "check:coverage": "node quality/coverage.ratchet.mjs",
-    "check:tests": "node quality/tests.ratchet.mjs"
+    "check:tests": "node quality/tests.ratchet.mjs",
+    "check:bundle": "node quality/bundle-budget.mjs",
+    "e2e:browsers:full": "playwright test --config playwright.browsers-full.config.ts"
   },
   "dependencies": {
     "react": "^19.2.8",

@@ -153,6 +153,12 @@ describe('Position —— 已知手顺与合法性分级', () => {
     expect(isReplayConsistent(end.position, end.provenance)).toBe(true)
   })
 
+  it('越界、负数或非整数回放位置直接报错，不静默 clamp', () => {
+    expect(() => positionFromReplay(NINE_MOVES, BLACK, -1)).toThrow(RangeError)
+    expect(() => positionFromReplay(NINE_MOVES, BLACK, 10)).toThrow(RangeError)
+    expect(() => positionFromReplay(NINE_MOVES, BLACK, 1.5)).toThrow(RangeError)
+  })
+
   it('编辑后或手顺含非法尾段，都不再能证明当前盘面', () => {
     const loaded = positionFromReplay(NINE_MOVES, BLACK, 5)
     const edited = applyEdit(loaded.position, { x: 0, y: 0 }, 'black')

@@ -202,7 +202,7 @@ async function writeRaw(value: unknown): Promise<void> {
   const request = globalThis.indexedDB.open(DB_NAME, DB_VERSION)
 
   await new Promise<void>((resolve, reject) => {
-    request.onupgradeneeded = () => ensureSchema(request.result)
+    request.onupgradeneeded = () => ensureSchema(request.result, request.transaction)
     request.onsuccess = () => resolve()
     request.onerror = () => reject(new Error('打不开数据库'))
   })

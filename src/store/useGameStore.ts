@@ -4,7 +4,7 @@ import type { Difficulty } from '../ai/types'
 import type { Player } from '../core/types'
 import { saveGameReplacing } from '../persist/gameRecords'
 import { loadSessionResult, saveSession } from '../persist/storage'
-import { createGameStore, type GameMode } from './gameStore'
+import { createGameStore, type BranchOrigin, type GameMode } from './gameStore'
 
 /**
  * 应用唯一的 AI 引擎实例。
@@ -45,6 +45,7 @@ type SessionSnapshot = {
   mode: GameMode
   humanColor: Player
   difficulty: Difficulty
+  branch: BranchOrigin | null
 }
 
 let lastSaved: SessionSnapshot | null = null
@@ -55,18 +56,20 @@ function snapshotOf(state: SessionSnapshot): SessionSnapshot {
     mode: state.mode,
     humanColor: state.humanColor,
     difficulty: state.difficulty,
+    branch: state.branch,
   }
 }
 
 function persistSession(state: SessionSnapshot): void {
-  const { game, mode, humanColor, difficulty } = state
+  const { game, mode, humanColor, difficulty, branch } = state
 
   if (
     lastSaved !== null &&
     lastSaved.game === game &&
     lastSaved.mode === mode &&
     lastSaved.humanColor === humanColor &&
-    lastSaved.difficulty === difficulty
+    lastSaved.difficulty === difficulty &&
+    lastSaved.branch === branch
   ) {
     return
   }
@@ -79,6 +82,7 @@ function persistSession(state: SessionSnapshot): void {
     humanColor,
     difficulty,
     resignedBy: resignerOf(game),
+    branch,
   })
 }
 

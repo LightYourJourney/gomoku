@@ -190,6 +190,18 @@ describe('分享链接 —— 错误与边界', () => {
     expect(result.code).toBe('malformed')
   })
 
+  it('分享内容 JSON 嵌套过深时拒绝，不进入解析器', () => {
+    let deep: Record<string, unknown> = { x: 1 }
+    for (let i = 0; i < 30; i++) deep = { x: deep }
+    const encoded = encodeSharePayload('position', deep)
+    expect(encoded.ok).toBe(true)
+    if (!encoded.ok) return
+    const decoded = decodeShareToken(encoded.token)
+    expect(decoded.ok).toBe(false)
+    if (decoded.ok) return
+    expect(decoded.code).toBe('invalid_data')
+  })
+
   it('校验码不匹配拒绝', () => {
     const encoded = createGameShare(game())
     expect(encoded.ok).toBe(true)

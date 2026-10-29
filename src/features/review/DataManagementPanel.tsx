@@ -1,5 +1,11 @@
 import { useRef, useState } from 'react'
 import type { PersistedSession } from '../../persist/storage'
+import {
+  positionContentKey,
+  positionFromSaved,
+  type PositionStorage,
+  type SavedPosition,
+} from '../../persist/positions'
 import type { LearningProgress } from '../../persist/progress'
 import type {
   GameRecordsStorage,
@@ -13,11 +19,13 @@ import {
   type ImportIssue,
 } from '../../persist/transfer/validate'
 import {
-  EXTERNAL_FORMAT_VERSION,
+  GAME_FORMAT_VERSION,
   exportFilename,
   gameContentKey,
   gamePayloadToRecordInput,
   toBackupFile,
+  toGamePayload,
+  type BackupPosition,
   type BackupPreferences,
   type BackupProgress,
   type BackupSession,
@@ -48,6 +56,7 @@ export interface DataManagementServices {
 
 export interface DataManagementPanelProps {
   readonly storage: GameRecordsStorage
+  readonly positions: PositionStorage
   readonly services: DataManagementServices
   /** 导入成功后让棋谱列表重新读盘。 */
   readonly onImported: () => void
@@ -69,6 +78,8 @@ type Preview =
       readonly progress: BackupProgress | null
       readonly preferences: BackupPreferences | null
       readonly session: BackupSession | null
+      readonly positions: readonly BackupPosition[]
+      readonly positionErrors: number
       readonly duplicates: number
       readonly warnings: readonly ImportIssue[]
     }
@@ -84,6 +95,9 @@ interface Outcome {
   readonly progress: SectionOutcome
   readonly preferences: SectionOutcome
   readonly session: SectionOutcome
+  readonly positionsImported: number
+  readonly positionsDuplicates: number
+  readonly positionsFailed: number
 }
 
 function issueSummary(issues: readonly ImportIssue[]): string {
@@ -108,8 +122,19 @@ function sectionLabel(section: SectionOutcome, verb: '合并' | '恢复'): strin
   }
 }
 
+function backupPositionOf(record: SavedPosition): BackupPosition {
+  const position = positionFromSaved(record)
+  return {
+    title: record.title === '' ? null : record.title,
+    cells: [...position.board],
+    nextPlayer: position.nextPlayer,
+    provenance: record.provenance,
+  }
+}
+
 export function DataManagementPanel({
   storage,
+  positions,
   services,
   onImported,
   degraded,
@@ -118,10 +143,12 @@ export function DataManagementPanel({
   const [pending, setPending] = useState<Preview | null>(null)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [exportNotice, setExportNotice] = useState<string | null>(null)
   const [outcome, setOutcome] = useState<Outcome | null>(null)
   const [withProgress, setWithProgress] = useState(true)
   const [withPreferences, setWithPreferences] = useState(false)
   const [withSession, setWithSession] = useState(false)
+  const [withPositions, setWithPositions] = useState(true)
 
   function fail(message: string): void {
     setError(message)
@@ -178,12 +205,15 @@ export function DataManagementPanel({
           progress: parsed.progress,
           preferences: parsed.preferences,
           session: parsed.session,
+          positions: parsed.positions,
+          positionErrors: parsed.positionErrors.length,
           duplicates,
           warnings: parsed.warnings,
         })
         setWithProgress(parsed.progress !== null)
         setWithPreferences(false)
         setWithSession(false)
+        setWithPositions(parsed.positions.length > 0)
       }
     } catch (err) {
       fail(err instanceof Error ? err.message : String(err))
@@ -213,6 +243,9 @@ export function DataManagementPanel({
     let progress: SectionOutcome = 'absent'
     let preferences: SectionOutcome = 'absent'
     let session: SectionOutcome = 'absent'
+    let positionsImported = 0
+    let positionsDuplicates = 0
+    let positionsFailed = 0
 
     if (pending.kind === 'backup') {
       if (pending.progress !== null) {
@@ -250,6 +283,53 @@ export function DataManagementPanel({
           }
         }
       }
+
+      if (pending.positions.length > 0) {
+        if (!withPositions) {
+          positionsFailed = 0
+        } else {
+          try {
+            const existing = new Set(
+              (await positions.list()).records.map((record) =>
+                positionContentKey({
+                  cells: record.cells,
+                  nextPlayer: record.nextPlayer,
+                  provenance: record.provenance,
+                }),
+              ),
+            )
+            for (const entry of pending.positions) {
+              const key = positionContentKey({
+                cells: entry.cells,
+                nextPlayer: entry.nextPlayer,
+                provenance: entry.provenance,
+              })
+              if (existing.has(key)) {
+                positionsDuplicates += 1
+                continue
+              }
+              try {
+                await positions.save(
+                  {
+                    title: entry.title ?? '',
+                    cells: entry.cells,
+                    nextPlayer: entry.nextPlayer,
+                    provenance: entry.provenance,
+                  },
+                  null,
+                  services.now,
+                )
+                existing.add(key)
+                positionsImported += 1
+              } catch {
+                positionsFailed += 1
+              }
+            }
+          } catch {
+            positionsFailed += pending.positions.length
+          }
+        }
+      }
     }
 
     setOutcome({
@@ -261,6 +341,9 @@ export function DataManagementPanel({
       progress,
       preferences,
       session,
+      positionsImported,
+      positionsDuplicates,
+      positionsFailed,
     })
     setPending(null)
     setBusy(false)
@@ -269,16 +352,31 @@ export function DataManagementPanel({
 
   async function exportGames(): Promise<void> {
     setError(null)
+    setExportNotice(null)
     try {
-      const { records } = await storage.list()
+      const { records, skipped } = await storage.list()
       if (records.length === 0) {
         fail('棋谱库是空的，没有可导出的棋谱')
         return
       }
+      const games: GamePayload[] = []
+      let dropped = skipped
+      for (const record of records) {
+        try {
+          games.push(toGamePayload(record))
+        } catch {
+          dropped += 1
+        }
+      }
+      if (games.length === 0) {
+        fail('没有可导出的完整棋谱；损坏或未结束的记录不会被写入文件')
+        return
+      }
       downloadJson(
         exportFilename('games', services.now),
-        toBackupFile({ games: records }),
+        toBackupFile({ games }),
       )
+      setExportNotice(`已导出 ${games.length} 条${dropped > 0 ? `，跳过 ${dropped} 条损坏/未结束记录` : ''}。`)
     } catch (err) {
       fail(err instanceof Error ? err.message : String(err))
     }
@@ -286,19 +384,32 @@ export function DataManagementPanel({
 
   async function exportBackup(): Promise<void> {
     setError(null)
+    setExportNotice(null)
     try {
-      const { records } = await storage.list()
+      const { records, skipped } = await storage.list()
       const progress = await services.loadProgress()
       const session = services.loadSession()
+      const positionList = await positions.list()
+      const games: GamePayload[] = []
+      let dropped = skipped
+      for (const record of records) {
+        try {
+          games.push(toGamePayload(record))
+        } catch {
+          dropped += 1
+        }
+      }
       downloadJson(
         exportFilename('backup', services.now),
         toBackupFile({
-          games: records,
+          games,
           progress,
           preferences: services.preferences(),
           session,
+          positions: positionList.records.map(backupPositionOf),
         }),
       )
+      setExportNotice(`已导出 ${games.length} 条棋谱、${positionList.records.length} 个局面${dropped > 0 ? `；跳过 ${dropped} 条损坏/未结束记录` : ''}。`)
     } catch (err) {
       fail(err instanceof Error ? err.message : String(err))
     }
@@ -321,7 +432,8 @@ export function DataManagementPanel({
       (pending.kind === 'backup' &&
         ((withProgress && pending.progress !== null) ||
           (withPreferences && pending.preferences !== null) ||
-          (withSession && pending.session !== null))))
+          (withSession && pending.session !== null) ||
+          (withPositions && pending.positions.length > 0))))
 
   return (
     <Panel title="数据管理" bodyClassName="space-y-3">
@@ -330,8 +442,7 @@ export function DataManagementPanel({
         不会删除现有棋谱。
       </p>
       <p data-testid="backup-scope" className="text-xs text-warn">
-        完整备份包含棋谱、学习进度、显示偏好和上次会话，不含自定义局面。
-        局面请在「局面研究」里逐个导出。
+        完整备份包含棋谱、学习进度、显示偏好、上次会话和自定义局面。
       </p>
 
       <div className="flex flex-wrap gap-2">
@@ -370,6 +481,12 @@ export function DataManagementPanel({
         </p>
       )}
 
+      {exportNotice !== null && (
+        <p role="status" data-testid="export-notice" className="text-xs text-muted">
+          {exportNotice}
+        </p>
+      )}
+
       {outcome !== null && (
         <div
           role="status"
@@ -388,6 +505,12 @@ export function DataManagementPanel({
           )}
           {outcome.session !== 'absent' && (
             <p>当前对局会话：{outcome.session === 'restored' ? '已恢复' : sectionLabel(outcome.session, '恢复')}</p>
+          )}
+          {(outcome.positionsImported > 0 || outcome.positionsDuplicates > 0 || outcome.positionsFailed > 0) && (
+            <p>
+              自定义局面：导入 {outcome.positionsImported} 个，跳过重复 {outcome.positionsDuplicates} 个
+              {outcome.positionsFailed > 0 ? `，失败 ${outcome.positionsFailed} 个` : ''}
+            </p>
           )}
           {outcome.storage === 'memory' && (
             <p className="mt-1 text-warn">
@@ -433,7 +556,7 @@ export function DataManagementPanel({
             {pending.kind === 'game' ? (
               <div data-testid="import-preview">
                 <p className="text-xs text-faint">
-                  格式：gomoku-lab.game v{EXTERNAL_FORMAT_VERSION}
+                  格式：gomoku-lab.game v{GAME_FORMAT_VERSION}
                 </p>
                 <p>
                   单盘棋谱 · {pending.game.moves.length} 手 ·{' '}
@@ -446,11 +569,15 @@ export function DataManagementPanel({
               </div>
             ) : (
               <div data-testid="import-preview" className="space-y-1">
-                <p>备份格式版本：{EXTERNAL_FORMAT_VERSION}</p>
+                <p>备份格式版本：2</p>
                 <p>
                   棋谱 {pending.games.length + pending.gameErrors.length} 条：可导入{' '}
                   {pending.games.length - pending.duplicates} 条，重复 {pending.duplicates} 条，
                   无效 {pending.gameErrors.length} 条。
+                </p>
+                <p>
+                  自定义局面 {pending.positions.length + pending.positionErrors} 个：可导入{' '}
+                  {pending.positions.length} 个，无效 {pending.positionErrors} 个。
                 </p>
                 {pending.gameErrors.slice(0, 3).map((entry) => (
                   <p key={entry.index} className="text-warn">
@@ -501,6 +628,16 @@ export function DataManagementPanel({
                   <p className="text-xs text-danger">对局会话段无效，已跳过。</p>
                 ) : (
                   <p className="text-xs text-faint">文件中没有对局会话。</p>
+                )}
+                {pending.positions.length > 0 ? (
+                  <Switch
+                    checked={withPositions}
+                    onChange={setWithPositions}
+                    label="导入自定义局面"
+                    description="按盘面/下一手/已知手顺去重，不删除现有局面"
+                  />
+                ) : (
+                  <p className="text-xs text-faint">文件中没有自定义局面。</p>
                 )}
               </div>
             )}

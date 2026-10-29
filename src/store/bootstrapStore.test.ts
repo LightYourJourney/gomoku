@@ -83,7 +83,7 @@ describe('bootstrapStore', () => {
     expect(raw).not.toBeNull()
 
     const persisted = JSON.parse(raw!) as { schemaVersion: number; moves: unknown[]; mode: string }
-    expect(persisted.schemaVersion).toBe(2)
+    expect(persisted.schemaVersion).toBe(3)
     expect(persisted.mode).toBe('pvp')
     expect(persisted.moves).toEqual([...moves, { x: 5, y: 7 }])
 

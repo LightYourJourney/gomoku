@@ -5,6 +5,12 @@ import { applyTheme, isThemePreference, resolveTheme, type ThemePreference } fro
 
 const SETTINGS_STORAGE_KEY = 'gomoku-lab:settings'
 
+export interface PreferencesSnapshot {
+  readonly theme: ThemePreference
+  readonly showCoords: boolean
+  readonly soundEnabled: boolean
+}
+
 export interface SettingsStore {
   theme: ThemePreference
   showCoords: boolean
@@ -13,7 +19,7 @@ export interface SettingsStore {
   setShowCoords(showCoords: boolean): void
   setSoundEnabled(soundEnabled: boolean): void
   /** 导入备份用：三项一起写；落盘校验失败时回滚并抛错。 */
-  restorePreferences(next: { theme: ThemePreference; showCoords: boolean; soundEnabled: boolean }): void
+  restorePreferences(next: PreferencesSnapshot): void
 }
 
 export const useSettingsStore = create<SettingsStore>()(

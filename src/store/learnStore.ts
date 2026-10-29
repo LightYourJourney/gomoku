@@ -7,6 +7,8 @@ export interface LearnStore {
   readonly progress: LearningProgress
   /** 进度是否已从存储载入。false 时界面不该断言「没做过」。 */
   readonly loaded: boolean
+  /** 最近一次写入是否失败；成功后回到 idle。 */
+  readonly persistState: 'idle' | 'saving' | 'failed'
   /** 当前在哪一页。与 `progress.lastView` 是同一件事，所以放在同一个 store 里。 */
   readonly view: View
 
@@ -20,6 +22,8 @@ export interface LearnStore {
    * **它不是「落盘保证」**：页面在等待期间被销毁，异步写入仍可能来不及提交。
    */
   flush(): Promise<void>
+  /** 重新尝试落盘当前内存进度。 */
+  retryPersist(): void
   setView(view: View): void
   completeLesson(id: string): void
   solvePuzzle(id: string): void
@@ -73,10 +77,15 @@ export function createLearnStore(storage: ProgressStorage): UseBoundStore<StoreA
         while (queued !== null) {
           const next = queued
           queued = null
+          set({ persistState: 'saving' })
           try {
-            await storage.save(next)
+            const ok = storage.saveStrict
+              ? await storage.saveStrict(next)
+              : (await storage.save(next), true)
+            set({ persistState: ok ? 'idle' : 'failed' })
           } catch {
-            // 见上：丢掉这一笔，让后续变更继续
+            // 失败不原地重试；下一次变更或用户点“重试”再排队。
+            set({ persistState: 'failed' })
           }
         }
       } finally {
@@ -129,6 +138,7 @@ export function createLearnStore(storage: ProgressStorage): UseBoundStore<StoreA
     return {
       progress: EMPTY_PROGRESS,
       loaded: false,
+      persistState: 'idle',
       view: 'battle',
 
       bootstrap() {
@@ -178,6 +188,11 @@ export function createLearnStore(storage: ProgressStorage): UseBoundStore<StoreA
       },
 
       flush,
+
+      retryPersist() {
+        if (!get().loaded) return
+        persist(get().progress)
+      },
 
       completeLesson(id) {
         update({ completedLessons: withAdded(get().progress.completedLessons, id) })

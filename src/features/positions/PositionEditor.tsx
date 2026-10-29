@@ -67,6 +67,7 @@ export function PositionEditor({
   const [positionsDegraded, setPositionsDegraded] = useState(false)
   const [savedId, setSavedId] = useState<number | null>(null)
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const [saving, setSaving] = useState(false)
   const [shareOpen, setShareOpen] = useState(false)
   const [title, setTitle] = useState('未命名局面')
   const [recordSeq, setRecordSeq] = useState('')
@@ -139,6 +140,8 @@ export function PositionEditor({
   }
 
   async function save(): Promise<void> {
+    if (saving) return
+    setSaving(true)
     const clean = title.trim() === '' ? '未命名局面' : title.trim()
     let result
     try {
@@ -150,6 +153,7 @@ export function PositionEditor({
     } catch (err) {
       setConfirmDelete(false)
       fail(`保存失败：${err instanceof Error ? err.message : String(err)}`)
+      setSaving(false)
       return
     }
     setSavedId(result.record.id)
@@ -166,6 +170,7 @@ export function PositionEditor({
         ? `已保存「${result.record.title}」`
         : '只写进了内存兜底：本次会话可用，刷新后可能丢失',
     )
+    setSaving(false)
   }
 
   async function deleteSaved(): Promise<void> {
@@ -436,8 +441,8 @@ export function PositionEditor({
             />
           </label>
           <div className="flex flex-wrap gap-2">
-            <Button size="sm" variant="primary" onClick={() => void save()}>
-              保存局面
+            <Button size="sm" variant="primary" disabled={saving} onClick={() => void save()}>
+              {saving ? '保存中…' : '保存局面'}
             </Button>
             <Button size="sm" onClick={exportPosition}>
               导出局面文件

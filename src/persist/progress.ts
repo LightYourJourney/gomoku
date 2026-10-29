@@ -67,6 +67,8 @@ export const EMPTY_PROGRESS: LearningProgress = {
 export interface ProgressStorage {
   load(): Promise<LearningProgress>
   save(progress: LearningProgress): Promise<void>
+  /** 可选：返回是否真正落盘；没有实现时按 `save` 成功处理。 */
+  saveStrict?(progress: LearningProgress): Promise<boolean>
   clear(): Promise<void>
 }
 
@@ -116,7 +118,7 @@ function openDatabase(): Promise<IDBDatabase> {
 
     request.onupgradeneeded = () => {
       const db = request.result
-      ensureSchema(db)
+      ensureSchema(db, request.transaction)
     }
     request.onsuccess = () => resolve(request.result)
     request.onerror = () => reject(new Error('打不开进度库'))
@@ -249,5 +251,6 @@ export async function clearProgress(): Promise<void> {
 export const indexedDbProgress: ProgressStorage = {
   load: loadProgress,
   save: saveProgress,
+  saveStrict: saveProgressStrict,
   clear: clearProgress,
 }

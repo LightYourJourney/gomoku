@@ -53,6 +53,16 @@ describe('局面库 —— IndexedDB', () => {
     })
   })
 
+  it('同一内容键重复/并发保存只留一条（DB v4 唯一索引）', async () => {
+    const input = inputFromPosition(createPosition(), '同一盘面', null)
+    const [a, b] = await Promise.all([
+      indexedDbPositions.save(input, null, at(1_000)),
+      indexedDbPositions.save(input, null, at(2_000)),
+    ])
+    expect(a.record.id).toBe(b.record.id)
+    expect((await indexedDbPositions.list()).records).toHaveLength(1)
+  })
+
   it('按最近保存排序；旧记录没有时间时排在后面', async () => {
     const first = await indexedDbPositions.save(
       inputFromPosition(createPosition(), '旧', null),
@@ -163,7 +173,7 @@ describe('局面库 —— 校验与迁移', () => {
       const req = indexedDB.open(DB_NAME, DB_VERSION)
       req.onsuccess = () => resolve(req.result)
       req.onerror = () => reject(req.error)
-      req.onupgradeneeded = () => ensureSchema(req.result)
+      req.onupgradeneeded = () => ensureSchema(req.result, req.transaction)
     })
     expect([...db.objectStoreNames].sort()).toEqual(
       [POSITIONS_STORE, PROGRESS_STORE, RECORDS_STORE].sort(),

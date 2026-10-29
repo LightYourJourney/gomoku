@@ -49,6 +49,8 @@ export default function App() {
   const view = useLearnStore((state) => state.view)
   const bootstrap = useLearnStore((state) => state.bootstrap)
   const flush = useLearnStore((state) => state.flush)
+  const persistState = useLearnStore((state) => state.persistState)
+  const retryPersist = useLearnStore((state) => state.retryPersist)
 
   const learnBootstrapped = useRef(false)
   useEffect(() => {
@@ -103,6 +105,22 @@ export default function App() {
        */
       className={ROOT_CLASS}
     >
+      {persistState === 'failed' && (
+        <div
+          role="alert"
+          data-testid="progress-persist-error"
+          className="flex flex-wrap items-center justify-between gap-2 border-b border-danger/30 bg-danger/10 px-3 py-2 text-xs text-danger"
+        >
+          <span>学习进度未能保存到本机，刷新后可能丢失。</span>
+          <button
+            type="button"
+            className="rounded border border-danger/40 px-2 py-1 font-medium"
+            onClick={retryPersist}
+          >
+            重试
+          </button>
+        </div>
+      )}
       {view === 'battle' && <BattleScreen />}
       {view === 'learn' && <LearnScreen />}
       {view === 'puzzles' && <PuzzleScreen />}

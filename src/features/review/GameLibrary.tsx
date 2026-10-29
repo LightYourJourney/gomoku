@@ -8,6 +8,7 @@ import { Button } from '../../components/ui/Button'
 import { DataManagementPanel, type DataManagementServices } from './DataManagementPanel'
 import { exportFilename, toGameFile } from '../../persist/transfer/format'
 import { downloadJson } from './download'
+import { indexedDbPositions, type PositionStorage } from '../../persist/positions'
 
 export interface GameLibraryProps {
   readonly storage: GameRecordsStorage
@@ -16,6 +17,7 @@ export interface GameLibraryProps {
   readonly onStartBattle: () => void
   /** 生产环境注入；测试不传时不渲染数据面板与单盘导出。 */
   readonly services?: DataManagementServices
+  readonly positions?: PositionStorage
   /** 打开局面编辑器；测试/未接线时不渲染入口。 */
   readonly onOpenEditor?: () => void
 }
@@ -92,7 +94,14 @@ function LibraryGlyph() {
  * `degraded`（存储不可用，数据来自内存兜底）与 `skipped`（读到了但没通过校验）。
  * 两个都**只说事实、不猜原因**。
  */
-export function GameLibrary({ storage, onOpen, onStartBattle, services, onOpenEditor }: GameLibraryProps) {
+export function GameLibrary({
+  storage,
+  positions,
+  onOpen,
+  onStartBattle,
+  services,
+  onOpenEditor,
+}: GameLibraryProps) {
   const [result, setResult] = useState<GameRecordList | null>(null)
   const [reloadKey, setReloadKey] = useState(0)
   const [exportError, setExportError] = useState<string | null>(null)
@@ -136,6 +145,7 @@ export function GameLibrary({ storage, onOpen, onStartBattle, services, onOpenEd
         <div className="mb-3">
           <DataManagementPanel
             storage={storage}
+            positions={positions ?? indexedDbPositions}
             services={services}
             degraded={result?.degraded ?? false}
             onImported={() => setReloadKey((key) => key + 1)}

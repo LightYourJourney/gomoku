@@ -17,7 +17,7 @@ const load = (name: string): unknown => JSON.parse(readFileSync(join(FIXTURES, n
 
 test('旧版本夹具：外部文件、内部记录与会话都还能被当前解析器读取', async () => {
   const session = decodeSession(JSON.stringify(load('session-v1.json')))
-  expect(session).toMatchObject({ schemaVersion: 2, resignedBy: null })
+  expect(session).toMatchObject({ schemaVersion: 3, resignedBy: null })
   expect(session?.moves).toHaveLength(3)
 
   const gameFile = load('game-v1.json')

@@ -145,6 +145,36 @@ describe('棋谱库 —— 损坏数据', () => {
   })
 })
 
+describe('棋谱库 —— 严格读取', () => {
+  it('非法/重复手顺记录整条跳过并计入 skipped', async () => {
+    await indexedDbGameRecords.put(winRecord())
+    const db = await new Promise<IDBDatabase>((resolve, reject) => {
+      const request = indexedDB.open(DB_NAME)
+      request.onsuccess = () => resolve(request.result)
+      request.onerror = () => reject(request.error)
+    })
+    await new Promise<void>((resolve, reject) => {
+      const tx = db.transaction('records', 'readwrite')
+      tx.objectStore('records').add({
+        seq: 999,
+        schemaVersion: 1,
+        moves: [{ x: 7, y: 7 }, { x: 7, y: 7 }],
+        firstPlayer: BLACK,
+        mode: 'pvp',
+        humanColor: BLACK,
+        difficulty: 'easy',
+        resignedBy: null,
+      })
+      tx.oncomplete = () => { db.close(); resolve() }
+      tx.onerror = () => reject(tx.error)
+    })
+
+    const list = await indexedDbGameRecords.list()
+    expect(list.records).toHaveLength(1)
+    expect(list.skipped).toBe(1)
+  })
+})
+
 describe('棋谱库 —— 降级', () => {
   it('IndexedDB 整个不存在时降级为内存态，读写仍然能用', async () => {
     const saved = Object.getOwnPropertyDescriptor(globalThis, 'indexedDB')

@@ -1,4 +1,4 @@
-# 外部数据格式（v1）
+# 外部数据格式（棋谱 v1 / 备份 v2）
 
 > 这份文件定义**文件协议**，不是 IndexedDB 的内部形状。内部记录带自增 `seq` 与
 > `schemaVersion`，它们只在当前浏览器/当前库里成立；文件只描述数据本身，换设备、
@@ -9,8 +9,8 @@
 - UTF-8 JSON，缩进 2 空格，末尾一个换行。
 - 顶层必须是对象；未知字段只警告并忽略，不按猜测解释。
 - 不包含账号、IP、浏览器指纹、构建环境变量或内部临时分析缓存。
-- 当前外部版本：`formatVersion = 1`。
-- 未来版本（`formatVersion > 1`）**明确拒绝**，提示不支持；不会尝试向下兼容猜测。
+- 单盘棋谱：`formatVersion = 1`；完整备份：`formatVersion = 2`。
+- 未来版本（棋谱 >1 / 备份 >2）**明确拒绝**，提示不支持；不会尝试向下兼容猜测。
 - 单文件上限 10 MiB；JSON 嵌套上限 24 层；单次最多 2,000 局、100,000 手。
 - 坐标是 0-based 的有限整数，范围 0–14；棋盘固定 15×15，规则固定 `freestyle`。
 
@@ -66,7 +66,7 @@
 ```json
 {
   "format": "gomoku-lab.backup",
-  "formatVersion": 1,
+  "formatVersion": 2,
   "board": { "size": 15 },
   "rules": "freestyle",
   "games": [ { "firstPlayer": 1, "moves": [], "mode": "pvp", "humanColor": 1, "difficulty": "easy", "ending": { "type": "resign", "winner": 1, "resignedBy": 2 } } ],
@@ -83,22 +83,36 @@
     "mode": "pve",
     "humanColor": 2,
     "difficulty": "medium",
-    "resignedBy": null
+    "resignedBy": null,
+    "branch": {
+      "sourceSeq": 7,
+      "sourceContentKey": "…",
+      "cursor": 26,
+      "sourceMoves": 47
+    }
   },
+  "positions": [
+    {
+      "title": "棋谱第 26 手",
+      "cells": [0, 0, "…"],
+      "nextPlayer": 1,
+      "provenance": { "kind": "replay", "moves": [], "firstPlayer": 1, "ply": 0 }
+    }
+  ],
   "source": { "app": "gomoku-lab", "engineVersion": "search-1" }
 }
 ```
 
 - `games`：内容与单盘相同，但**不重复** `format/formatVersion/board/rules` 外壳。
-- `progress` / `preferences` / `session`：可选。**字段缺失表示这份文件不包含该段**，
+- `progress` / `preferences` / `session` / `positions`：可选。**字段缺失表示这份文件不包含该段**，
   导入时绝不能把它当成空值去覆盖本地。
 - `session` 可以是 `null`，表示导出时明确没有可恢复的对局会话（进行中或刚结束都算会话）。
 - `games` 中单条无效时，**其余有效棋谱仍可导入**；预览与结果会点名无效条数与索引。
   备份级结构（版本、棋盘、规则、数组类型）无效则整份拒绝。
 - 只导出棋谱时（「导出全部棋谱」）使用同一个 `format`，省略 `progress` /
   `preferences` / `session`。
-- **备份不包含 `positions`**（自定义局面）。局面是独立的 `gomoku-lab.position`
-  文件，需要单独导出/导入；Phase 11E 审计确认该边界并在 UI 明示。
+- 备份 v2 起包含 `positions`；每个局面是 `{ title, cells, nextPlayer, provenance }`，
+  导入按内容键去重。v1 备份没有该段，仍可导入。
 
 ## 4. 重复判断
 
@@ -115,7 +129,7 @@
 ## 5. 版本演进规则
 
 - **外部版本**与内部 `DB_VERSION` / 各 `schemaVersion` 独立。
-- 新增可选字段：不升版本，旧解析器按「未知字段」警告并忽略。
+- 新增可选字段：不升版本，旧解析器按「未知字段」警告并忽略；备份新增 `positions` 因容器语义扩大，升到 v2。
 - 改变必填字段含义、结束语义或坐标含义：升 `formatVersion`，旧版本明确拒绝。
 - 新增格式（例如单盘以外的容器）：新的 `format` 标识，不复用旧标识。
 - 不为了「有迁移」而改内部字段；本阶段内部 schema 未变。

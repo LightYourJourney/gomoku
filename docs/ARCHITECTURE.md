@@ -68,9 +68,9 @@ analysis   learn        ← 分析结论与教学内容（两条互不依赖的�
 **为什么分两种存储**：对局存档每次落子都要写、数据小、丢了就丢了；学习进度写得少但**丢了会让人白学一遍**，值得用更耐久的 IndexedDB。进度层在 IndexedDB 不可用时（隐私模式、open 抛错、被其他标签页占用）整体降级为内存态——进度丢了可以接受，白屏不行。
 
 
-`positions.ts` 是 Phase 11B 的自定义局面库：同一个 `gomoku-lab` 库的 `positions` 表（`DB_VERSION=3`），保存 `cells + nextPlayer + 可选 provenance + 创建/更新时间`；打不开库时退内存兜底，打开后事务失败则抛错让界面标失败；列表按最近保存排序，删除返回是否真正持久化；读到与盘面不一致的已知手顺时降级为自由摆盘，不丢盘面。内部记录 v1→v2 为只读迁移，旧记录时间显示「时间未知」。
+`positions.ts` 是 Phase 11B 的自定义局面库：同一个 `gomoku-lab` 库的 `positions` 表（`DB_VERSION=4`），保存 `cells + nextPlayer + 可选 provenance + 创建/更新时间 + 内容键`；`contentKey` 唯一索引兜住同标签页/跨标签页重复保存；打不开库时退内存兜底，打开后事务失败则抛错让界面标失败；列表按最近保存排序，删除返回是否真正持久化；读到与盘面不一致的已知手顺时降级为自由摆盘，不丢盘面。内部记录 v1→v2 为只读迁移，旧记录时间显示「时间未知」。
 
-**`persist/transfer/`** —— 对外交换格式（Phase 11A）。`format.ts` 定义 `gomoku-lab.game` / `gomoku-lab.backup` 两个版本化文件形状，并用 `toGameFile` / `toBackupFile` 把内部记录转成**不含 `seq`** 的载荷；`validate.ts` 把导入文件当不可信输入，先查大小/深度，再用**单次 `replay()`** 做严格手顺校验（把截断变成明确失败），最后核对结束方式、认输方与胜负。`recordIdentity.ts` 定义规范化的内容身份——重复判断不看自增 `seq`，看先手、手顺、模式、执子、难度与认输方。批量写入 `GameRecordsStorage.importMany` 在**一个 IndexedDB 事务**内去重 + 插入；失败整笔回滚并如实报 `persisted=false`。外部格式版本与内部 `DB_VERSION` / `schemaVersion` **分开维护**，规范见 `docs/data/FILE_FORMAT.md`。
+**`persist/transfer/`** —— 对外交换格式（Phase 11A）。`format.ts` 定义 `gomoku-lab.game`（v1）/ `gomoku-lab.backup`（v2）两个版本化文件形状，备份 v2 含自定义局面，并用 `toGameFile` / `toBackupFile` 把内部记录转成**不含 `seq`** 的载荷；`validate.ts` 把导入文件当不可信输入，先查大小/深度，再用**单次 `replay()`** 做严格手顺校验（把截断变成明确失败），最后核对结束方式、认输方与胜负。`recordIdentity.ts` 定义规范化的内容身份——重复判断不看自增 `seq`，看先手、手顺、模式、执子、难度与认输方。批量写入 `GameRecordsStorage.importMany` 在**一个 IndexedDB 事务**内去重 + 插入；失败整笔回滚并如实报 `persisted=false`。session v3 持久化分支来源；外部格式版本与内部 `DB_VERSION` / `schemaVersion` **分开维护**，规范见 `docs/data/FILE_FORMAT.md`。
 
 **`lib/`** —— 跨 feature 共用的小工具与小组件级 hook：主题解析、WebAudio 音效合成、动效类名（`motion.ts`）、坐标格式化、类名拼接、媒体查询（`useMediaQuery.ts`）、换页时的焦点接管（`useFocusOnMount.ts`）。**这些模块都没有一个 import store**——要碰 store 的东西属于 `store/` 或 `features/`。（`contrast.test.tsx` 是例外，它为了渲染真实组件才引 store，那是测试的本分。原先这里写的是「无状态工具」，但 `useMediaQuery` 早就是个有状态的 hook 了。）
 

@@ -112,7 +112,6 @@ export function SharePreview({ token, games, positions, now, onExit }: SharePrev
       const duplicate = list.records.some(
         (record) =>
           positionContentKey({
-            title: record.title,
             cells: record.cells,
             nextPlayer: record.nextPlayer,
             provenance: record.provenance,
