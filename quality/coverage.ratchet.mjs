@@ -22,19 +22,17 @@ import { fileURLToPath } from 'node:url'
 import { argValue, assertShape, readJson } from './lib.mjs'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
-const REPO = resolve(HERE, '..')
 
 const DEFAULTS = {
   baseline: resolve(HERE, 'coverage.baseline.json'),
   /*
-   * 指向**最新一代**的量测快照。
+   * 不设默认值。
    *
-   * 基线（`coverage.baseline.json`）是冻结的，快照必须跟着最近一次 `yarn ui:probe` 走——
-   * 否则 `yarn check:coverage` 本地跑的是「phase02 比 phase02」，
-   * 一条**恒真的空检查**（Phase 03 收尾时发现它停在了 after-phase02）。
-   * CI 显式传 `--current`，不受这里影响。
+   * 这里曾指向 `after-phase06` 的旧快照：本地 `yarn check:coverage` 于是永远在
+   * 「旧快照 vs 冻结基线」上跑，和当前 UI 无关，**恒绿**。判据必须对着本次探针的
+   * 产物跑；包在 `check:coverage` 脚本里的路径与 CI 完全一致。
    */
-  current: resolve(REPO, 'docs/ui-redesign/screenshots/after-phase06/measurements.json'),
+  current: null,
 }
 
 
@@ -56,8 +54,16 @@ function assertBaselineShape(baseline) {
 }
 
 
+const currentArg = argValue('--current') ?? DEFAULTS.current
+if (currentArg === null) {
+  console.error('✗ 缺少 --current：覆盖棘轮必须对着**本次** `yarn ui:probe` 的量测产物跑。')
+  console.error('  先运行：yarn ui:probe --out docs/ui-redesign/screenshots/ci')
+  console.error('  再运行：node quality/coverage.ratchet.mjs --current docs/ui-redesign/screenshots/ci/measurements.json')
+  process.exit(2)
+}
+
 const baseline = await readJson(argValue('--baseline') ?? DEFAULTS.baseline, '基线')
-const measured = await readJson(argValue('--current') ?? DEFAULTS.current, '量测产物')
+const measured = await readJson(currentArg, '量测产物')
 
 const key = (r) => `${r.state}|${r.size}|${r.theme}`
 assertBaselineShape(baseline)
@@ -122,7 +128,7 @@ if (failures.length > 0) {
 } else {
   const extra = grew.length > 0 ? `，另有 ${grew.length} 条新增覆盖（不报错）` : ''
   console.log(
-    `✓ 覆盖棘轮通过：${baseRows.size} 条 / ${new Set(baseline.rows.map((r) => r.state)).size} 个状态，` +
+    `✓ 覆盖棘轮通过（量测产物：${currentArg}）：${baseRows.size} 条 / ${new Set(baseline.rows.map((r) => r.state)).size} 个状态，` +
       `实比控件与标题 ${comparisons} 条，覆盖未缩小${extra}`,
   )
 }

@@ -32,7 +32,16 @@ const baseline = await readJson(resolve(HERE, 'tests.baseline.json'), '基线')
  */
 {
   const bad = []
-  for (const k of ['unitTotal', 'unitPending', 'unitTodo', 'e2eTotal']) {
+  for (const k of [
+    'unitTotal',
+    'unitPending',
+    'unitTodo',
+    'e2eTotal',
+    'e2eSkipped',
+    'e2eProdTotal',
+    'e2eBrowsersTotal',
+    'e2eBrowsersFullTotal',
+  ]) {
     if (typeof baseline[k] !== 'number') bad.push(`${k} 不是数字（实际 ${JSON.stringify(baseline[k])}）`)
   }
   assertShape(bad, 'quality/tests.baseline.json')
@@ -50,28 +59,44 @@ try {
 }
 
 // ── e2e 条数（问 playwright 要，不去数字符）────────────────────────
-let e2eTotal = null
-let e2eError = null
-try {
-  const out = execFileSync('yarn', ['playwright', 'test', '--list'], {
-    cwd: REPO,
-    encoding: 'utf8',
-    stdio: ['ignore', 'pipe', 'pipe'],
-  })
-  const m = out.match(/Total:\s*(\d+)\s+tests?/)
-  if (m) e2eTotal = Number(m[1])
-  else e2eError = 'playwright 跑完了，但输出里没有 `Total: N tests`'
-} catch (err) {
-  /*
-   * **不能吞掉它的输出**：这一条本来最可能因为「自己写的 spec 有语法错 / 配置错」
-   * 而失败，而那是要看报错才能修的。早先这里是个空 `catch {}`，
-   * 于是任何原因都只表现为「playwright 没跑起来？」，把人往环境问题上引。
-   */
-  const stderr = (err.stderr ?? '').toString().trim()
-  e2eError =
-    `playwright --list 失败（退出码 ${err.status ?? '?'}）` +
-    (stderr === '' ? '' : `：\n${stderr.split('\n').slice(-6).join('\n')}`)
+/**
+ * 逐个配置数用例。
+ *
+ * 只数默认配置是不够的：`e2e:prod`（7 条）、`e2e:browsers`（20 条）、
+ * `e2e:browsers:full`（301 条）各有独立配置，删掉其中一整条用例或缩小
+ * `grepInvert`，默认配置的 190 都不会变——安全网变小却全绿。
+ */
+function listE2e(extraArgs) {
+  try {
+    const out = execFileSync('yarn', ['playwright', 'test', '--list', ...extraArgs], {
+      cwd: REPO,
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe'],
+    })
+    const m = out.match(/Total:\s*(\d+)\s+tests?/)
+    return m ? { total: Number(m[1]), error: null } : { total: null, error: '输出里没有 `Total: N tests`' }
+  } catch (err) {
+    /*
+     * **不能吞掉它的输出**：这一条本来最可能因为「自己写的 spec 有语法错 / 配置错」
+     * 而失败，而那是要看报错才能修的。早先这里是个空 `catch {}`，
+     * 于是任何原因都只表现为「playwright 没跑起来？」，把人往环境问题上引。
+     */
+    const stderr = (err.stderr ?? '').toString().trim()
+    return {
+      total: null,
+      error:
+        `playwright --list 失败（退出码 ${err.status ?? '?'}）` +
+        (stderr === '' ? '' : `：\n${stderr.split('\n').slice(-6).join('\n')}`),
+    }
+  }
 }
+
+const defaultList = listE2e([])
+const e2eTotal = defaultList.total
+const e2eError = defaultList.error
+const prodList = listE2e(['--config', 'playwright.prod.config.ts'])
+const browsersList = listE2e(['--config', 'playwright.browsers.config.ts'])
+const browsersFullList = listE2e(['--config', 'playwright.browsers-full.config.ts'])
 
 /*
  * e2e 的**静态** skip 检查。
@@ -99,6 +124,15 @@ const checks = [
   ['单测被跳过的（.skip）', report.numPendingTests, baseline.unitPending, 'above', 'vitest-report.json 里没有这个字段'],
   ['单测待办的（.todo）', report.numTodoTests, baseline.unitTodo, 'above', 'vitest-report.json 里没有这个字段'],
   ['e2e 总数', e2eTotal, baseline.e2eTotal, 'below', e2eError ?? 'playwright --list 的输出里没找到总数'],
+  ['e2e:prod 总数', prodList.total, baseline.e2eProdTotal, 'below', prodList.error ?? ''],
+  ['e2e:browsers 总数', browsersList.total, baseline.e2eBrowsersTotal, 'below', browsersList.error ?? ''],
+  [
+    'e2e:browsers:full 总数',
+    browsersFullList.total,
+    baseline.e2eBrowsersFullTotal,
+    'below',
+    browsersFullList.error ?? '',
+  ],
   [
     'e2e 被跳过的（.skip/.fixme）',
     skipHits.length,

@@ -2,8 +2,17 @@
   "extends": "./tsconfig.app.json",
   "compilerOptions": {
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.e2e.tsbuildinfo",
-    "types": ["node"],
+    "types": [
+      "node"
+    ],
     "noEmit": true
   },
-  "include": ["e2e", "playwright.config.ts", "playwright.remote.config.ts"]
+  "include": [
+    "e2e",
+    "playwright.config.ts",
+    "playwright.remote.config.ts",
+    "playwright.prod.config.ts",
+    "playwright.browsers.config.ts",
+    "playwright.browsers-full.config.ts"
+  ]
 }

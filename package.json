@@ -31,7 +31,7 @@
     "bench:check": "yarn bench && node bench/gate.mjs",
     "gates": "yarn check:cycles && yarn check:deadcode && yarn check:dupes && yarn check:tests && yarn check:bundle",
     "prepare": "git config core.hooksPath .githooks",
-    "check:coverage": "node quality/coverage.ratchet.mjs",
+    "check:coverage": "node quality/coverage.ratchet.mjs --current docs/ui-redesign/screenshots/ci/measurements.json",
     "check:tests": "node quality/tests.ratchet.mjs",
     "check:bundle": "node quality/bundle-budget.mjs",
     "e2e:browsers:full": "playwright test --config playwright.browsers-full.config.ts"
