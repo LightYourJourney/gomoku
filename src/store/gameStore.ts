@@ -502,6 +502,10 @@ export function createGameStore(
         // （老的那条手顺不同，内容匹配对不上）。**这是有意的**——要修就得把
         // seq 也持久化进存档（`PersistedSession`）并升 schema 版本，
         // 那会让所有存档作废，代价比一条重复棋谱大。见 FINDINGS 的 F-25。
+        //
+        // 入库链接由下一行的 `notifier.reset()` 切断（清 `lastSeq`、自增局号）。
+        // 但两个**展示用**字段不在 `TRANSIENT_RESET` 里：不清的话，恢复出的
+        // 终局会沿用上一局的「已存入」状态。
         notifier.reset()
         set({
           game:
@@ -510,6 +514,8 @@ export function createGameStore(
           humanColor: session.humanColor,
           difficulty: session.difficulty,
           branch: session.branch ?? null,
+          recordSaveState: 'idle',
+          recordedSeq: null,
           ...TRANSIENT_RESET,
         })
 
@@ -545,6 +551,9 @@ export function createGameStore(
 
       undoMove() {
         const current = get()
+        // 与按钮的禁用条件共用同一条判据：人机执白、盘上只有 AI 开局子时，
+        // 直调也要拒绝，不能撤掉 AI 那一手再让它重想。
+        if (!canUndo(current)) return
         const plies = undoPlies(current)
         if (plies === 0) return
 

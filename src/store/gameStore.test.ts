@@ -516,6 +516,10 @@ describe('undoMove', () => {
 
     expect(state().game.moves).toHaveLength(1)
     expect(canUndo(state())).toBe(false)
+
+    // 直调也不许撤：撤掉之后又轮到 AI，等于让它重想一手。
+    state().undoMove()
+    expect(state().game.moves).toHaveLength(1)
   })
 
   it('玩家执白时，撤销会同时收回双方最近一手', async () => {
@@ -1214,6 +1218,51 @@ describe('终局入库的状态（供界面显示）', () => {
 
     s.getState().newGame()
     expect(s.getState().recordSaveState).toBe('idle')
+  })
+})
+
+describe('恢复会话切断上一局的入库链接', () => {
+  function finishGame(target: ReturnType<typeof createGameStore>): void {
+    target.getState().setMode('pvp')
+    for (const x of [3, 4, 5, 6, 7]) {
+      target.getState().playHuman({ x, y: 7 })
+      if (x !== 7) target.getState().playHuman({ x, y: 9 })
+    }
+  }
+
+  it('已存过一局再恢复会话：新的一局终局时不得替换上一局的记录', async () => {
+    const inputs: Array<{ replacesSeq: number | null }> = []
+    let seq = 0
+    const s = createGameStore(engine, {
+      onGameEnd: (input) => {
+        inputs.push({ replacesSeq: input.replacesSeq })
+        return Promise.resolve(++seq)
+      },
+    })
+
+    finishGame(s)
+    await flush()
+    expect(inputs[0]?.replacesSeq).toBeNull()
+    expect(s.getState().recordSaveState).toBe('saved')
+
+    // 导入一份进行中的会话：它跟上一局没有任何入库关系。
+    s.getState().restore({
+      schemaVersion: SCHEMA_VERSION,
+      moves: [{ x: 0, y: 0 }, { x: 0, y: 1 }],
+      firstPlayer: BLACK,
+      mode: 'pvp',
+      humanColor: BLACK,
+      difficulty: 'easy',
+      resignedBy: null,
+    })
+    expect(s.getState().recordSaveState).toBe('idle')
+    expect(s.getState().recordedSeq).toBeNull()
+
+    finishGame(s)
+    await flush()
+
+    // 不切断的话这里会是 1，存储层按替换语义把上一局的棋谱删掉。
+    expect(inputs[1]?.replacesSeq).toBeNull()
   })
 })
 
