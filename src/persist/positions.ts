@@ -256,6 +256,9 @@ let memoryFallback: PositionStorage | null = null
 export function __setPositionsIndexedDbFactory(next: IDBFactory | null): void {
   factory = next
   memoryFallback = null
+  // 测试隔离：换工厂等于换一个存储会话，回填也要重新允许。
+  backfillDone = false
+  backfillPending = null
 }
 
 function resolveFactory(): IDBFactory | null {
@@ -284,11 +287,9 @@ function openDatabase(): Promise<IDBDatabase> {
     request.onupgradeneeded = () => ensureSchema(request.result, request.transaction)
     request.onsuccess = () => {
       const db = request.result
-      void backfillContentKeys(db)
-        .catch(() => {
-          // 回填失败不阻断读取；下次打开会再试。
-        })
-        .finally(() => resolve(db))
+      // 每个会话最多扫一次：`openDatabase` 会被 list/get/save 反复调用，
+      // 每次都全表回填会把读操作变成写事务。
+      backfillOnce(db).finally(() => resolve(db))
     }
     request.onerror = () => reject(new Error('打不开局面库'))
     request.onblocked = () => reject(new Error('局面库被其他标签页占用'))
@@ -342,6 +343,26 @@ function readPosition(
   })
 }
 
+let backfillDone = false
+let backfillPending: Promise<void> | null = null
+
+/** 回填只在首次成功前重试；失败不阻断读取，下次会话再试。 */
+function backfillOnce(db: IDBDatabase): Promise<void> {
+  if (backfillDone) return Promise.resolve()
+  if (backfillPending !== null) return backfillPending
+  backfillPending = backfillContentKeys(db)
+    .then(() => {
+      backfillDone = true
+    })
+    .catch(() => {
+      // 失败保持未完成状态，下次打开重试。
+    })
+    .finally(() => {
+      backfillPending = null
+    })
+  return backfillPending
+}
+
 /** 把旧记录的内容键规范成读取路径会算出的值；重复键只回填第一条。 */
 async function backfillContentKeys(db: IDBDatabase): Promise<void> {
   await new Promise<void>((resolve, reject) => {
@@ -363,11 +384,10 @@ async function backfillContentKeys(db: IDBDatabase): Promise<void> {
       seen.add(record.contentKey)
       const raw = cursor.value as { contentKey?: unknown }
       if (raw.contentKey !== record.contentKey) {
-        try {
-          cursor.update({ ...cursor.value, contentKey: record.contentKey })
-        } catch {
-          // 唯一索引冲突时保留原记录；读取侧仍按规范化键展示。
-        }
+        const update = cursor.update({ ...cursor.value, contentKey: record.contentKey })
+        // IDB 的约束错误是**异步**的：不 preventDefault 会中止整笔回填事务，
+        // 把其余记录也一起回滚。单条冲突只跳过该条，读取侧仍按规范化键展示。
+        update.onerror = (event) => event.preventDefault()
       }
       cursor.continue()
     }

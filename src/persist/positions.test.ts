@@ -191,6 +191,103 @@ describe('局面库 —— 校验与迁移', () => {
     db.close()
   })
 
+  it('回填遇到唯一键冲突只跳过该条，不中止后续回填', async () => {
+    const cellsA = Array.from({ length: 225 }, () => 0)
+    cellsA[7 * 15 + 7] = BLACK
+    const cellsB = Array.from({ length: 225 }, () => 0)
+    cellsB[8 * 15 + 8] = WHITE
+    const keyA = positionContentKey({ cells: cellsA, nextPlayer: WHITE, provenance: null })
+    const keyB = positionContentKey({ cells: cellsB, nextPlayer: WHITE, provenance: null })
+    const base = { schemaVersion: 2, nextPlayer: WHITE, provenance: null, createdAt: 1, updatedAt: 1 }
+
+    await new Promise<void>((resolve, reject) => {
+      const req = indexedDB.open(DB_NAME, DB_VERSION)
+      req.onupgradeneeded = () => ensureSchema(req.result, req.transaction)
+      req.onsuccess = () => {
+        const db = req.result
+        const tx = db.transaction(POSITIONS_STORE, 'readwrite')
+        // 911 先被访问：写回 keyA 时与 912 已占用的 keyA 冲突，事务不能因此中止。
+        tx.objectStore(POSITIONS_STORE).put({ ...base, id: 911, title: '冲突', cells: cellsA, contentKey: 'stale-911' })
+        tx.objectStore(POSITIONS_STORE).put({ ...base, id: 912, title: '已正确', cells: cellsA, contentKey: keyA })
+        // 913 排在冲突之后：它能否写回 keyB，就是「事务有没有被中止」的判据。
+        tx.objectStore(POSITIONS_STORE).put({ ...base, id: 913, title: '后续', cells: cellsB, contentKey: 'stale-913' })
+        tx.oncomplete = () => { db.close(); resolve() }
+        tx.onerror = () => reject(tx.error)
+      }
+      req.onerror = () => reject(req.error)
+    })
+
+    __setPositionsIndexedDbFactory(null)
+    await indexedDbPositions.list()
+
+    const keys = await new Promise<Record<number, string>>((resolve, reject) => {
+      const req = indexedDB.open(DB_NAME, DB_VERSION)
+      req.onsuccess = () => {
+        const db = req.result
+        const tx = db.transaction(POSITIONS_STORE, 'readonly')
+        const get = tx.objectStore(POSITIONS_STORE).getAll()
+        get.onsuccess = () => {
+          db.close()
+          resolve(
+            Object.fromEntries(
+              (get.result as Array<{ id: number; contentKey: string }>).map((record) => [record.id, record.contentKey]),
+            ),
+          )
+        }
+        get.onerror = () => reject(get.error)
+      }
+      req.onerror = () => reject(req.error)
+    })
+    expect(keys[913]).toBe(keyB)
+  })
+
+  it('旧记录缺内容键时按读取规范化回填一次，坏 provenance 不产生不一致键', async () => {
+    const cells = Array.from({ length: 225 }, () => 0)
+    cells[7 * 15 + 7] = BLACK
+    const raw = {
+      schemaVersion: 2,
+      id: 901,
+      title: '旧记录',
+      cells,
+      nextPlayer: WHITE,
+      provenance: { kind: 'replay', moves: [], firstPlayer: BLACK, ply: 0 },
+      createdAt: 1,
+      updatedAt: 1,
+    }
+    await new Promise<void>((resolve, reject) => {
+      const req = indexedDB.open(DB_NAME, DB_VERSION)
+      req.onupgradeneeded = () => ensureSchema(req.result, req.transaction)
+      req.onsuccess = () => {
+        const db = req.result
+        const tx = db.transaction(POSITIONS_STORE, 'readwrite')
+        tx.objectStore(POSITIONS_STORE).put(raw)
+        tx.oncomplete = () => { db.close(); resolve() }
+        tx.onerror = () => reject(tx.error)
+      }
+      req.onerror = () => reject(req.error)
+    })
+
+    __setPositionsIndexedDbFactory(null)
+    await indexedDbPositions.list()
+
+    const stored = await new Promise<{ contentKey?: string; provenance?: unknown }>((resolve, reject) => {
+      const req = indexedDB.open(DB_NAME, DB_VERSION)
+      req.onsuccess = () => {
+        const db = req.result
+        const tx = db.transaction(POSITIONS_STORE, 'readonly')
+        const get = tx.objectStore(POSITIONS_STORE).get(901)
+        get.onsuccess = () => { db.close(); resolve(get.result as { contentKey?: string; provenance?: unknown }) }
+        get.onerror = () => reject(get.error)
+      }
+      req.onerror = () => reject(req.error)
+    })
+
+    // 读取路径会把与盘面不一致的 provenance 降级为 null；原始字段不改写，
+    // 但键必须按降级后的值算，否则唯一索引与读取去重对不上。
+    expect(stored.provenance).toEqual(raw.provenance)
+    expect(stored.contentKey).toBe(positionContentKey({ cells, nextPlayer: WHITE, provenance: null }))
+  })
+
   it('局面内容身份不看标题，只看盘面/下一手/provenance', () => {
     const first = inputFromPosition(applyEdit(createPosition(), { x: 7, y: 7 }, 'black'), '甲', null)
     const renamed = { ...first, title: '乙' }

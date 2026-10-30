@@ -208,6 +208,49 @@ describe('数据管理面板 · 导入', () => {
     expect(await screen.findByTestId('import-result')).toHaveTextContent('学习/残局进度：失败')
   })
 
+  it('库里只有坏记录时提示跳过数，而不是说库是空的', async () => {
+    const base = memoryGameRecords()
+    const unfinished = {
+      ...record(),
+      seq: 1,
+      schemaVersion: 1,
+      moves: [{ x: 7, y: 7 }],
+      winner: null,
+    }
+    const storage = {
+      ...base,
+      list: async () => ({ records: [unfinished], degraded: false, skipped: 1 }),
+    }
+    render(
+      <DataManagementPanel positions={memoryPositions()} storage={storage} services={services()} onImported={vi.fn()} degraded={false} />,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: '导出全部棋谱' }))
+    expect(await screen.findByTestId('import-error')).toHaveTextContent('已跳过 2 条')
+  })
+
+  it('预览列出局面无效原因，而不只报数量', async () => {
+    const backup = toBackupFile({
+      games: [record()],
+      positions: [
+        {
+          title: '坏局面',
+          cells: [0, 1] as unknown as number[],
+          nextPlayer: BLACK,
+          provenance: null,
+        },
+      ],
+    })
+    render(
+      <DataManagementPanel positions={memoryPositions()} storage={memoryGameRecords()} services={services()} onImported={vi.fn()} degraded={false} />,
+    )
+
+    fireEvent.change(screen.getByTestId('import-file'), { target: { files: [fileOf(backup)] } })
+    await screen.findByRole('heading', { name: '导入预览' })
+    expect(screen.getByText(/第 1 个局面：/)).toBeVisible()
+    expect(screen.getByText(/cells 必须是/)).toBeVisible()
+  })
+
   it('导出跳过损坏/未结束记录并如实计数', async () => {
     const base = memoryGameRecords()
     const unfinished = {

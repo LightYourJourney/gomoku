@@ -15,7 +15,7 @@ import { expect, test, type Page } from '@playwright/test'
  * `PageShell` 的 flush 正文，第 2、3 条立刻红。
  */
 
-/** WebKit 的布局取整会差 2px；Chrome 仍按原来的 1px 安全网。 */
+/** WebKit 的布局取整会差 2px；Chrome / Firefox 仍按原来的 1px 安全网。 */
 function pixelTolerance(): number {
   return test.info().project.name.includes('webkit') ? 3 : 1
 }

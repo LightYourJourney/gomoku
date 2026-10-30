@@ -8,6 +8,7 @@ import {
 } from '../../persist/positions'
 import type { LearningProgress } from '../../persist/progress'
 import type {
+  GameRecord,
   GameRecordsStorage,
   ImportRecordsResult,
 } from '../../persist/gameRecords'
@@ -286,47 +287,45 @@ export function DataManagementPanel({
       }
 
       if (pending.positions.length > 0 && withPositions) {
-        {
-          try {
-            const existing = new Set(
-              (await positions.list()).records.map((record) =>
-                positionContentKey({
-                  cells: record.cells,
-                  nextPlayer: record.nextPlayer,
-                  provenance: record.provenance,
-                }),
-              ),
-            )
-            for (const entry of pending.positions) {
-              const key = positionContentKey({
-                cells: entry.cells,
-                nextPlayer: entry.nextPlayer,
-                provenance: entry.provenance,
-              })
-              if (existing.has(key)) {
-                positionsDuplicates += 1
-                continue
-              }
-              try {
-                await positions.save(
-                  {
-                    title: entry.title ?? '',
-                    cells: entry.cells,
-                    nextPlayer: entry.nextPlayer,
-                    provenance: entry.provenance,
-                  },
-                  null,
-                  services.now,
-                )
-                existing.add(key)
-                positionsImported += 1
-              } catch {
-                positionsFailed += 1
-              }
+        try {
+          const existing = new Set(
+            (await positions.list()).records.map((record) =>
+              positionContentKey({
+                cells: record.cells,
+                nextPlayer: record.nextPlayer,
+                provenance: record.provenance,
+              }),
+            ),
+          )
+          for (const entry of pending.positions) {
+            const key = positionContentKey({
+              cells: entry.cells,
+              nextPlayer: entry.nextPlayer,
+              provenance: entry.provenance,
+            })
+            if (existing.has(key)) {
+              positionsDuplicates += 1
+              continue
             }
-          } catch {
-            positionsFailed += pending.positions.length
+            try {
+              await positions.save(
+                {
+                  title: entry.title ?? '',
+                  cells: entry.cells,
+                  nextPlayer: entry.nextPlayer,
+                  provenance: entry.provenance,
+                },
+                null,
+                services.now,
+              )
+              existing.add(key)
+              positionsImported += 1
+            } catch {
+              positionsFailed += 1
+            }
           }
+        } catch {
+          positionsFailed += pending.positions.length
         }
       }
     }
@@ -349,10 +348,10 @@ export function DataManagementPanel({
     onImported()
   }
 
-  async function exportableGames(
-    records: readonly Parameters<typeof toGamePayload>[0][],
+  function exportableGames(
+    records: readonly GameRecord[],
     skipped: number,
-  ): Promise<{ games: GamePayload[]; dropped: number }> {
+  ): { games: GamePayload[]; dropped: number } {
     const games: GamePayload[] = []
     let dropped = skipped
     for (const record of records) {
@@ -370,7 +369,7 @@ export function DataManagementPanel({
     setExportNotice(null)
     try {
       const { records, skipped } = await storage.list()
-      const { games, dropped } = await exportableGames(records, skipped)
+      const { games, dropped } = exportableGames(records, skipped)
       if (games.length === 0) {
         fail(
           dropped > 0
@@ -401,7 +400,7 @@ export function DataManagementPanel({
         fail('局面库当前不可用，无法生成完整备份；请先恢复 IndexedDB 或使用局面文件单独导出')
         return
       }
-      const { games, dropped } = await exportableGames(records, skipped)
+      const { games, dropped } = exportableGames(records, skipped)
       downloadJson(
         exportFilename('backup', services.now),
         toBackupFile({
