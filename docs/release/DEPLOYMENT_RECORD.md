@@ -10,20 +10,20 @@
 | --- | --- |
 | 应用版本 | `0.6.0` |
 | 引擎版本 | `search-1` |
-| 提交 / 标签 | `9a74527` / `v0.6.0` |
-| 生产部署 | `b6a5ebe7-b551-4256-9531-99a067a077ee`（https://b6a5ebe7.gomoku-lab.pages.dev） |
+| 提交 / 标签 | `af7ca3e`（发布后审计+复审热修）/ `v0.6.0+build.1`；`v0.6.0` 保留首发 `9a74527` |
+| 生产部署 | `f2b8c458-6818-4e3b-8697-09ae36f01a76`（https://f2b8c458.gomoku-lab.pages.dev） |
 | 生产地址 | **https://gomoku-lab.pages.dev** |
-| 预览部署 | `8d5da70f-7eec-4226-9e4f-d177a7ae2b0d`（https://8d5da70f.gomoku-lab-preview.pages.dev） |
-| 部署时间 | 2026-10-30（UTC+8） |
-| 回滚目标 | `f3301897…`（0.5.0 / `db8881c`）→ `bb679255…`（1f60604）→ `c299d837…`（首发）→ `07a264f2…`（0.4.0） |
-| 产物 | 8 文件 / 484 KB；`index-CNsAOgk7.js`（gzip 128.7 kB）、`index-BW7JL7Wq.css`、`worker-B6Ge9L6W.js` |
-| 验收 | CI `40910588095` 六个 job 全绿；预览与生产 `e2e:remote` 均 **190/190**；生产 meta `app-version=0.6.0`、`build-commit=9a74527…`；CSP/HSTS/X-Frame-Options 正常 |
+| 预览部署 | `9949fe7f-b65e-4228-b010-6b26328a03de`（https://9949fe7f.gomoku-lab-preview.pages.dev） |
+| 部署时间 | 2026-10-30（UTC+8）；热修部署同日 |
+| 回滚目标 | `b6a5ebe7…`（0.6.0 首发 `9a74527`）→ `f3301897…`（0.5.0）→ `bb679255…` → `c299d837…` → `07a264f2…` |
+| 产物 | 8 文件 / 492 KB；`index-DwhYsXtG.js`（gzip 130.7 kB）、`index-BW7JL7Wq.css`、`worker-B6Ge9L6W.js` |
+| 验收 | CI `41010708037` 六个 job 全绿；预览与生产 `e2e:remote` 均 **190/190**；生产 meta `app-version=0.6.0`、`build-commit=af7ca3e…`；CSP/HSTS/X-Frame-Options 正常 |
 
 - **授权**：用户批准 P2/P2-2/P3/工程遗留整改方案并要求发布。
 - **数据格式**：备份 v2（含局面）、DB v4（positions 内容唯一索引）、session v3（分支来源）。
 - **P3 收口**：positions v1 真实浏览器、Firefox/WebKit 301 条核心、JSON 深度预扫描、bundle 135 kB 预算。
 - **回滚**：0.5.0 以 DB 3 打开 v4 会触发 `VersionError`；回滚前必须先导出完整备份。
-- **待部署**：0.6.0 发布后审计整改（进度错误条 UI 测试、局面库降级备份拒绝、更新冲突、内容键回填规范化）已进 `main`，尚未上线；线上仍为 `9a74527`。
+- **热修内容**：审计与复审整改——进度错误条 UI、局面库降级拒绝备份、更新冲突明确失败、内容键每会话回填一次且异步冲突不中止、导出跳过计数、预览列局面原因。
 
 
 ## Phase 11C/11D/11E · 0.5.0（历史）
