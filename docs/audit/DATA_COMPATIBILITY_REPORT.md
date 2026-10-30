@@ -8,12 +8,13 @@
 
 | 数据 | 位置 | 当前版本 | 旧版本 | 读取策略 |
 | --- | --- | --- | --- | --- |
-| IndexedDB 库 | `gomoku-lab` | `DB_VERSION=3` | v1（仅 progress）、v2（progress+records） | `ensureSchema` 补建缺表；旧表不改写 |
+| IndexedDB 库 | `gomoku-lab` | `DB_VERSION=4` | v1/v2/v3 | `ensureSchema` 补建缺表与 `contentKey` 唯一索引；旧表不改写 |
 | 学习进度 | `progress` 表，键 `learning` | schema 1 | v1（同形状） | 版本不符返回空；不做逐字段猜测 |
 | 棋谱 | `records` 表 | schema 1 | v1（同 schema，旧记录可能带 `winner`） | 逐条校验；`list()` 报告 `skipped` |
-| 对局会话 | `localStorage: gomoku-lab:session` | schema 2 | v1（无 `resignedBy`） | 只读迁移，补 `resignedBy:null`；不立即回写 |
+| 对局会话 | `localStorage: gomoku-lab:session` | schema 3 | v1（无 `resignedBy`）、v2（无 `branch`） | 只读迁移，补 `resignedBy:null` / `branch:null`；不立即回写 |
 | 自定义局面 | `positions` 表 | schema 2 | v1（无时间字段） | 只读迁移，时间标 `null`；下次保存写 v2 |
-| 外部棋谱/备份/局面 | JSON 文件 | `formatVersion=1` | v1 | 严格校验；未来版本拒绝 |
+| 外部棋谱/局面 | JSON 文件 | 棋谱 v1、局面 v1 | v1 | 严格校验；未来版本拒绝 |
+| 外部完整备份 | JSON 文件 | `formatVersion=2`（含局面） | v1 | 严格校验；v1 仍可导入 |
 | 分享链接 | URL Fragment | `v=1` | 无更早版本 | 版本过新拒绝；内容复用上述校验器 |
 
 ## 2. 旧版本夹具
@@ -83,12 +84,9 @@
 
 1. **完整备份不包含自定义局面**（A-11E-05）。面板已明示；局面只能逐个导出。
    若产品要求「完整备份覆盖全部数据」，需要扩展外部备份格式。
-2. **存储失败提示（已修复，P2-2 发布阻断）**：局面事务失败现在抛错；进度严格落盘；偏好回读校验并回滚。
-3. **导出会忽略 `skipped`**：有读不出的旧记录时，「全部棋谱/完整备份」不会在
-   导出结果里点名；一条损坏/未结束记录还可能让整次导出失败。
-4. **刷新后的分支**：分支 origin 不持久化；若分支最终复现源棋谱的完整内容，
-   两条内容完全相同的记录会合并成一条（只变 `seq`，内容不丢）。若要求 seq 级不可变，
-   需要把 branch origin 写入会话/备份。
+2. **存储失败提示（0.6.0 已修复）**：局面事务失败抛错；导入进度的严格落盘；偏好回读校验并回滚。
+3. **导出跳过坏记录（0.6.0 已修复）**：跳过数量会在结果里显示；只含坏记录时提示跳过数。
+4. **分支来源（0.6.0 已修复）**：session v3 与备份 v2 持久化 `branch`；刷新后横幅恢复。
 5. **读入侧校验**：`parseRecord` 只做结构/坐标校验，不验证手顺完整合法；
    损坏旧记录可能显示截断结果。对外导入路径已严格校验，不受此影响。
 6. **回滚**：生产 `0.4.0` 已经是 DB v3；本轮没有 DB 版本变化。回滚到 0.3.0（DB2）
