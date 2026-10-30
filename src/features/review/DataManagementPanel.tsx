@@ -75,6 +75,7 @@ type Preview =
     }
   | {
       readonly kind: 'backup'
+      readonly formatVersion: number
       readonly games: readonly GamePayload[]
       readonly gameErrors: readonly BackupGameError[]
       readonly progress: BackupProgress | null
@@ -100,6 +101,7 @@ interface Outcome {
   readonly positionsImported: number
   readonly positionsDuplicates: number
   readonly positionsFailed: number
+  readonly positionsMemory: number
 }
 
 function issueSummary(issues: readonly ImportIssue[]): string {
@@ -202,6 +204,7 @@ export function DataManagementPanel({
         }
         setPending({
           kind: 'backup',
+          formatVersion: parsed.formatVersion,
           games: parsed.games,
           gameErrors: parsed.gameErrors,
           progress: parsed.progress,
@@ -248,6 +251,7 @@ export function DataManagementPanel({
     let positionsImported = 0
     let positionsDuplicates = 0
     let positionsFailed = 0
+    let positionsMemory = 0
 
     if (pending.kind === 'backup') {
       if (pending.progress !== null) {
@@ -308,7 +312,7 @@ export function DataManagementPanel({
               continue
             }
             try {
-              await positions.save(
+              const saved = await positions.save(
                 {
                   title: entry.title ?? '',
                   cells: entry.cells,
@@ -320,6 +324,7 @@ export function DataManagementPanel({
               )
               existing.add(key)
               positionsImported += 1
+              if (!saved.persisted) positionsMemory += 1
             } catch {
               positionsFailed += 1
             }
@@ -342,6 +347,7 @@ export function DataManagementPanel({
       positionsImported,
       positionsDuplicates,
       positionsFailed,
+      positionsMemory,
     })
     setPending(null)
     setBusy(false)
@@ -512,6 +518,7 @@ export function DataManagementPanel({
             <p>
               自定义局面：导入 {outcome.positionsImported} 个，跳过重复 {outcome.positionsDuplicates} 个
               {outcome.positionsFailed > 0 ? `，失败 ${outcome.positionsFailed} 个` : ''}
+              {outcome.positionsMemory > 0 ? `，其中 ${outcome.positionsMemory} 个仅本次会话可用` : ''}
             </p>
           )}
           {outcome.storage === 'memory' && (
@@ -571,7 +578,7 @@ export function DataManagementPanel({
               </div>
             ) : (
               <div data-testid="import-preview" className="space-y-1">
-                <p>备份格式版本：2</p>
+                <p>备份格式版本：{pending.formatVersion}</p>
                 <p>
                   棋谱 {pending.games.length + pending.gameErrors.length} 条：可导入{' '}
                   {pending.games.length - pending.duplicates} 条，重复 {pending.duplicates} 条，

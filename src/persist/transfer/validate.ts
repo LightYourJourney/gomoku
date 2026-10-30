@@ -74,6 +74,8 @@ export interface BackupPositionError {
 export interface BackupFileResult {
   readonly ok: true
   readonly kind: 'backup'
+  /** 文件自己声明的版本；预览要显示**真实**版本，不能写死当前值。 */
+  readonly formatVersion: number
   readonly games: readonly GamePayload[]
   readonly gameErrors: readonly BackupGameError[]
   readonly progress: BackupProgress | null
@@ -126,7 +128,7 @@ function parseEnvelope(
   path: string,
   errors: ImportIssue[],
   warnings: ImportIssue[],
-): { board: { size: number }; rules: typeof RULES_FREESTYLE } | null {
+): { board: { size: number }; rules: typeof RULES_FREESTYLE; version: number } | null {
   if (value.format !== expectedFormat) {
     errors.push(issue('wrong_format', `${path}.format`, `格式应为 ${expectedFormat}`))
     return null
@@ -165,7 +167,7 @@ function parseEnvelope(
     return null
   }
 
-  return { board: { size: BOARD_SIZE }, rules: RULES_FREESTYLE }
+  return { board: { size: BOARD_SIZE }, rules: RULES_FREESTYLE, version }
 }
 
 /** JSON 深度扫描：在 `JSON.parse` 之前挡住深嵌套，避免解析器递归爆栈。 */
@@ -744,9 +746,8 @@ function validateBackupFile(value: unknown, path: string): BackupFileResult | Ba
     'session', 'positions', 'source',
   ])
   if (top === null) return { ok: false, errors, warnings }
-  if (parseEnvelope(top, BACKUP_FORMAT, BACKUP_FORMAT_VERSION, path, errors, warnings) === null) {
-    return { ok: false, errors, warnings }
-  }
+  const envelope = parseEnvelope(top, BACKUP_FORMAT, BACKUP_FORMAT_VERSION, path, errors, warnings)
+  if (envelope === null) return { ok: false, errors, warnings }
 
   if (!Array.isArray(top.games)) {
     errors.push(issue('wrong_type', `${path}.games`, 'games 应为数组'))
@@ -830,6 +831,7 @@ function validateBackupFile(value: unknown, path: string): BackupFileResult | Ba
   return {
     ok: true,
     kind: 'backup',
+    formatVersion: envelope.version,
     games,
     gameErrors,
     progress,

@@ -229,6 +229,22 @@ describe('数据管理面板 · 导入', () => {
     expect(await screen.findByTestId('import-error')).toHaveTextContent('已跳过 2 条')
   })
 
+  it('预览显示文件自己的备份版本，不写死当前版本', async () => {
+    const v1 = {
+      format: 'gomoku-lab.backup',
+      formatVersion: 1,
+      board: { size: 15 },
+      rules: 'freestyle',
+      games: [],
+    }
+    render(
+      <DataManagementPanel positions={memoryPositions()} storage={memoryGameRecords()} services={services()} onImported={vi.fn()} degraded={false} />,
+    )
+    fireEvent.change(screen.getByTestId('import-file'), { target: { files: [fileOf(v1)] } })
+    await screen.findByRole('heading', { name: '导入预览' })
+    expect(screen.getByText('备份格式版本：1')).toBeVisible()
+  })
+
   it('预览列出局面无效原因，而不只报数量', async () => {
     const backup = toBackupFile({
       games: [record()],
