@@ -153,6 +153,12 @@ describe('Position —— 已知手顺与合法性分级', () => {
     expect(isReplayConsistent(end.position, end.provenance)).toBe(true)
   })
 
+  it('前缀含非法落子时直接报错，不把截断盘面当第 N 手', () => {
+    expect(() =>
+      positionFromReplay([{ x: 7, y: 7 }, { x: 7, y: 7 }], BLACK, 2),
+    ).toThrow(RangeError)
+  })
+
   it('越界、负数或非整数回放位置直接报错，不静默 clamp', () => {
     expect(() => positionFromReplay(NINE_MOVES, BLACK, -1)).toThrow(RangeError)
     expect(() => positionFromReplay(NINE_MOVES, BLACK, 10)).toThrow(RangeError)

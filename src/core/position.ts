@@ -179,6 +179,11 @@ export function positionFromReplay(
   }
   const prefix = moves.slice(0, ply)
   const state = replay(prefix, firstPlayer)
+  // replay 遇到非法/重复手会提前停下。前缀本身就是坏的时候，宁可报错，
+  // 也不要把「重放到一半的盘面」当成第 ply 手交出去。
+  if (state.moves.length !== prefix.length) {
+    throw new RangeError('回放前缀包含非法落子')
+  }
   return {
     position: {
       board: new Uint8Array(state.board),
