@@ -2236,4 +2236,4 @@ session v1、progress v1、records v1（含旧 winner）、positions v1、game/b
 
 以下各项在 0.6.0 已修复：完整备份含自定义局面（v2）；局面/进度存储失败显式报告；
 导出跳过 `skipped` 并计数；快速双击有 `saving` 闸门且 DB v4 按内容键去重；
-分支来源随 session v3 持久化。当前生产：0.6.0 热修 `af7ca3e`（`f2b8c458…`）。
+分支来源随 session v3 持久化。当前生产：0.6.0 终审整改 `68e28ec`（`12e748bb…`）。

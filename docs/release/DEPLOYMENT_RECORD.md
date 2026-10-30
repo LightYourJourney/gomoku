@@ -4,7 +4,28 @@
 > 以及线上验收的原始读数。与方案/清单分开，避免「计划」和「事实」混写。
 > 最新一次在最上面。
 
-## Phase 12 · 0.6.0 数据格式与可靠性收口（当前生产）
+## Phase 12 · 0.6.0 build.2 全量终审整改（当前生产）
+
+| 项 | 值 |
+| --- | --- |
+| 应用版本 | `0.6.0` |
+| 引擎版本 | `search-1` |
+| 提交 / 标签 | `68e28ec`（全项目终审整改）/ `v0.6.0+build.2`；`v0.6.0` 保留首发 `9a74527`，`v0.6.0+build.1` 指向前一热修 `af7ca3e` |
+| 生产部署 | `12e748bb-1834-4a45-b7d9-9dfb4baa0aa8`（https://12e748bb.gomoku-lab.pages.dev） |
+| 生产地址 | **https://gomoku-lab.pages.dev** |
+| 预览部署 | `3cc678ff-a211-48ea-b08b-b4cade06a3b4`（https://3cc678ff.gomoku-lab-preview.pages.dev） |
+| 部署时间 | 2026-10-30（UTC+8） |
+| 回滚目标 | `f2b8c458…`（`af7ca3e` / build.1）→ `b6a5ebe7…`（首发）→ `f3301897…`（0.5.0）→ … |
+| 产物 | `index-CbFCncAb.js`（419.14 kB / gzip **130.83 kB**）、`index-BW7JL7Wq.css`、`worker-B6Ge9L6W.js` |
+| 验收 | CI `41030316569` 六个 job 全绿；预览与生产 `e2e:remote` 均 **190/190**；生产 meta `app-version=0.6.0`、`build-commit=68e28ec…`；CSP/HSTS/X-Frame-Options/cache-control 正常 |
+
+- **授权**：用户要求把最新版部署到预览和生产。
+- **整改内容**：恢复会话时重置入库展示状态、回放前缀非法直接拒绝、备份预览显示真实 `formatVersion`、条数与覆盖率棘轮不可被绕过、回滚文档按 v2/DB v4 重写。
+- **数据格式**：与 build.1 相同（备份 v2、DB v4、session v3），无新增迁移。
+- **回滚**：同库回 `f2b8c458…` 或 `b6a5ebe7…` 无数据代价；回 0.5.0 仍需清站点数据，见 `ROLLBACK_PLAN.md` §4.0.1。
+
+
+## Phase 12 · 0.6.0 build.1 发布后审计热修（历史）
 
 | 项 | 值 |
 | --- | --- |
