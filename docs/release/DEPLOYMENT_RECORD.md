@@ -4,7 +4,27 @@
 > 以及线上验收的原始读数。与方案/清单分开，避免「计划」和「事实」混写。
 > 最新一次在最上面。
 
-## Phase 12 · 0.6.0 build.2 全量终审整改（当前生产）
+## Phase 12 · 0.6.0 build.3 两轴审查整改（当前生产）
+
+| 项 | 值 |
+| --- | --- |
+| 应用版本 | `0.6.0` |
+| 引擎版本 | `search-1` |
+| 提交 / 标签 | `6301201`（两轴审查整改）/ `v0.6.0+build.3`；`v0.6.0` 保留首发 `9a74527` |
+| 生产部署 | `16bed862-d26f-47b3-981a-b5fc1fa2ebf4`（https://16bed862.gomoku-lab.pages.dev） |
+| 生产地址 | **https://gomoku-lab.pages.dev** |
+| 预览部署 | `ad9a66d5-f1c0-4dce-bbec-f6649eae108e`（https://ad9a66d5.gomoku-lab-preview.pages.dev） |
+| 部署时间 | 2026-11-01（UTC+8） |
+| 回滚目标 | `12e748bb…`（`68e28ec` / build.2）→ `f2b8c458…`（build.1）→ … |
+| 产物 | `index-Dyf8j44k.js`（422.59 kB / gzip **131.88 kB**）、`index-B9jJHDL2.css`、`worker-B6Ge9L6W.js` |
+| 验收 | CI `41191888916` 六个 job 全绿；预览 `e2e:remote` **190/192 + 2 条超时单跑通过**、生产 **189/192 + 3 条超时单跑通过**（整轮 19.7 / 22.3 分钟，机器负载 64–80；正常情况下约 5.8 分钟）；生产 meta `app-version=0.6.0`、`build-commit=6301201…`；CSP/HSTS/X-Frame-Options/cache-control 正常 |
+
+- **授权**：用户要求把最新版部署到预览和生产。
+- **整改内容**：局面段未知键告警同样受上限（十万级不再 `RangeError`）；导入侧 `lastView` 与本地读取共用白名单并回落；连接与事务生命周期收进 `persist/idb.ts`（含 `onblocked` 迟到连接）；补写内存记录失败标 `degraded`；键盘换模式后的焦点有判据。
+- **数据格式**：与 build.2 相同（备份 v2、DB v4、session v3），无新增迁移。
+- **回滚**：同库回 `12e748bb…` 或 `f2b8c458…` 无数据代价；回 0.5.0 仍需清站点数据，见 `ROLLBACK_PLAN.md` §4.0.1。
+
+## Phase 12 · 0.6.0 build.2 全量终审整改（历史）
 
 | 项 | 值 |
 | --- | --- |
