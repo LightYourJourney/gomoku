@@ -154,7 +154,7 @@ GitHub Pages 没有等效功能，见 §10。
 
 ## 8. IndexedDB 兼容（§七）
 
-- 库名 `gomoku-lab`，版本 **2**，`progress` + `records` 两个对象表由
+- 库名 `gomoku-lab`，版本 **4**（0.5.0 起为 3，0.6.0 起为 4），`progress` + `records` + `positions` 三个对象表由
   `persist/schema.ts` 统一建；任何一处打开都调用 `ensureSchema`，避免「各建各的表」的老 bug。
 - 进度载荷自带 `schemaVersion = 1`；版本不匹配时安全丢弃，不静默串读。
 - **老库可读**：新增测试构造「v1、只有 progress 表」的库，写入一份合法进度，
@@ -194,8 +194,8 @@ yarn bench:blocking                       # 页内同步点击 → MutationObser
 
 | 项 | 影响 | 处置 |
 | --- | --- | --- |
-| **没有在真实托管环境验证** | 响应头、缓存、404、HTTPS 重定向、自定义域名都只是本地等价验证 | staging 部署后按 RELEASE_CHECKLIST 逐项核 |
-| **浏览器矩阵只有 Chrome** | Firefox / Safari 未实测；`module worker`、IndexedDB、CSS 特性在旧版 Safari 上可能有差异 | 公开发布前补一次 Safari/Firefox 冒烟；README 已声明 Worker 无降级 |
+| ~~没有在真实托管环境验证~~ | — | **已解决**：生产已上线并逐次核验（响应头、缓存、404、产物一致性）；见 `DEPLOYMENT_RECORD.md` |
+| **浏览器矩阵** | Firefox/WebKit 已由 CI 自动化覆盖（专项 20 / 全量核心 301）；**真机 Safari / iOS 仍未验** | 真机冒烟仍未做；README 已声明 Worker 无降级 |
 | **低端设备未实测** | 9 ms 是桌面 CPU 上的上界；低端手机可能慢数倍 | 仍远低于 2 s / 3 s 预算；若公开发布，建议在真机复跑 `bench:blocking` |
 | **CSP 依赖自定义响应头** | GitHub Pages 无法下发 CSP / X-Frame-Options / HSTS | 默认推荐 Cloudflare Pages；GitHub Pages 作为降级方案，明确损失 |
 | **关闭页面前的 flush 不保证** | 极端时机（隐藏后立即杀进程）可能丢最后一笔 | 已如实标注；进度为低价值数据，不做更强承诺 |

@@ -9,9 +9,9 @@
 - [ ] `git status` 干净，发布提交就是评审过的那个提交
 - [ ] `yarn lint` 通过
 - [ ] `yarn typecheck` 通过
-- [ ] `yarn test` 全过（0.6.0 基线：1,418）
+- [ ] `yarn test` 全过（2026-10-31 基线：1,447）
 - [ ] `yarn build` 通过
-- [ ] `yarn e2e` 全过（0.6.0 基线：190）
+- [ ] `yarn e2e` 全过（2026-10-31 基线：192）
 - [ ] `yarn e2e:prod` 全过（0.6.0 基线：7）
 - [ ] `yarn e2e:browsers` 全过（Firefox / WebKit 各 10 条，基线：20）
 - [ ] `yarn gates` 通过（循环 / 死码 / 重复 / 测试条数棘轮）
@@ -28,7 +28,7 @@
 - [ ] `dist/index.html` 无内联 `<script>`；资源路径带正确的 base
 - [ ] Worker chunk 存在，且被 `index-*.js` 以同源相对路径引用
 - [ ] 子路径部署时：`VITE_BASE=/xxx/ yarn build` 后，HTML/JS/CSS/favicon/Worker 全部带前缀
-- [ ] 产物体积无异常增长（Phase 11E：`index` 409.84 kB / gzip 128.15 kB / Worker 13.99 kB；CSS gzip 7.52 kB）
+- [ ] 产物体积无异常增长（0.6.0 build.2：`index` 419.14 kB / gzip 129.10 kB / Worker 13.99 kB；CSS gzip 7.52 kB；`check:bundle` 的预算是 gzip ≤ 135,000 B）
 
 ## C. 安全与元数据
 
@@ -62,7 +62,7 @@
 
 - [ ] 用户明确授权发布，并确认域名与公开范围
 - [ ] 已决定是否允许搜索引擎索引（当前 `robots.txt` 为允许）
-- [ ] Safari / Firefox 至少各做一次冒烟（当前自动化只覆盖 Chrome）
+- [ ] 真机 Safari / iOS 至少各做一次冒烟（Firefox/WebKit 已由 CI 的 `browsers` / `browsers-full` 覆盖 20 / 301 条，真机与 Safari 官方引擎仍未验）
 - [ ] 在发布说明中写明：无后端、数据只存本机、换域名/换浏览器不会带走进度
 - [ ] 在发布说明中写明：关闭页面前的最后一次写入是尽力而为，不是保证
 - [ ] 知悉 GitHub Pages 无法落地安全头；若选它，发布说明必须注明
@@ -105,7 +105,7 @@
 > `positions` 表；回滚到 0.3.0 不能直接打开已升级的库，回滚前先导出需要保留的局面。
 >
 > **Phase 11C/11D 状态（2026-10-28，已随 0.5.0 发布）**：棋谱探索分支与分享链接完成；
-> 当前仓库基线 1,418 单测 / 190 E2E / 20 跨浏览器专项 / 301 跨浏览器全量 / 7 生产冒烟。
+> 当前仓库基线 1,447 单测 / 192 E2E / 20 跨浏览器专项 / 301 跨浏览器全量 / 7 生产冒烟。
 > 生产已为 `0.5.0`（热修 `db8881c`，部署 `f3301897…`）。
 >
 > **Phase 12 状态（2026-10-30，已发布 0.6.0 + 两次热修）**：备份 v2、DB v4、session v3、进度失败提示、分支来源持久化；生产 `68e28ec` / 部署 `12e748bb…` / 标签 `v0.6.0+build.2`；Chrome 190、Firefox/WebKit 301、prod 7。

@@ -1,9 +1,13 @@
 # 测试报告
 
-**日期**：2026-10-30
+**日期**：2026-10-31
 **0.6.0 已发布（2026-10-30）**：备份 v2（含局面）、DB v4 内容唯一索引、session v3 分支来源、
 进度失败顶部提示、严格读取、positions v1 真实浏览器用例、Firefox/WebKit 全量核心 E2E。
 本地单测 **1,418 / 1,418**，E2E **190 / 190**；发布验收见 DEPLOYMENT_RECORD。
+**2026-10-31 终审整改 II**：单测 **1,447**（+29）、E2E **192**（+2，超宽屏密度）；
+修复导入告警放大、导出忽略降级、存档写失败静默、删除吞异常、Modal 首按 Shift+Tab 逃逸、
+连接泄漏、分支来源越界、内存记录回收、AI 响应超时、备份导入半恢复、进度迁移缺位；
+M-1 与 P3-4 一并收口。详见「〇之二二」。
 
 **范围**：Phase 1（基础可玩版本）、Phase 2（强化 AI）、Phase 3（互动教学 + 残局挑战）、
 Phase 4（复盘与分析）、Phase 5（最终打磨）、Phase 5 之后的**全仓工程审计**（见本文「〇之五」）、
@@ -16,7 +20,8 @@ Phase 07 的最终门禁、探针对照与基准在 `ui-redesign/FINAL_TEST_REPO
 **Phase 11B 棋盘编辑器**（见「〇之十八」）与
 **Phase 11C 棋谱探索分支**（见「〇之十九」）与
 **Phase 11D 分享链接**（见「〇之二十」）与
-**Phase 11E 独立审计**（见「〇之二一」），
+**Phase 11E 独立审计**（见「〇之二一」）、
+**0.6.0 终审整改 II**（见「〇之二二」），
 以及阶段之间的两轴代码审查
 **结论**：类型检查、单元测试、生产构建、真实浏览器验证、端到端测试、生产构建冒烟全部通过；
 四个页面在两套主题下的 Lighthouse 无障碍审计均为 100。
@@ -26,17 +31,17 @@ Phase 07 的最终门禁、探针对照与基准在 `ui-redesign/FINAL_TEST_REPO
 部署 `f02c38ca…`），预览与生产线上 e2e 均 166/166。
 **局面研究 `0.4.0` 已于 2026-10-24 发布到生产**（提交 `d20eca9`，
 部署 `07a264f2…`），预览与生产线上 e2e 均 174/174。
-**质量门禁已建立并在 CI 上完整跑通**：五个 job（fast / e2e / browsers / probe / bench）全绿，
+**质量门禁已建立并在 CI 上完整跑通**：六个 job（fast / e2e / browsers / browsers-full / probe / bench）全绿，
 **没有任何 `continue-on-error`**。见「〇之十一」。
 
 现行总数：
 
 | 项 | 数量 |
 | --- | --- |
-| 单元 / 组件用例 | **1418**（90 个文件） |
-| 端到端用例 | **190**（桌面 166 + 移动触屏 14 + 平板 10，共 14 个 spec 文件，另有 `prod.spec.ts` 走独立配置），另有生产构建冒烟 7 条（`yarn e2e:prod`）、Firefox/WebKit 编辑器专项 20 条与全量核心 301 条 |
+| 单元 / 组件用例 | **1447**（90 个文件） |
+| 端到端用例 | **192**（桌面 168 + 移动触屏 14 + 平板 10，共 14 个 spec 文件，另有 `prod.spec.ts` 走独立配置），另有生产构建冒烟 7 条（`yarn e2e:prod`）、Firefox/WebKit 编辑器专项 20 条与全量核心 301 条 |
 | 界面基线与量测 | `yarn ui:probe`：38 个受控状态 × 视口矩阵 = 308 张截图 + 308 条 DOM 量测，逐张可对照（Phase 05 是 34 / 276，Phase 04 是 29 / 236，Phase 03 是 27 / 220，Phase 02 是 21 / 172） |
-| 质量门禁 | 本地 pre-push 快档（5 条命令，热跑 30–45 秒，看机器负载）+ CI 全档（5 个 job）+ 四道防退化闸门 + 两把覆盖棘轮，见「〇之十一」 |
+| 质量门禁 | 本地 pre-push 快档（5 条命令，热跑 30–45 秒，看机器负载）+ CI 全档（6 个 job）+ 五道防退化闸门 + 两把覆盖棘轮，见「〇之十一」 |
 | 基准脚本 | `yarn bench`（引擎，结果见 `docs/AI_ENGINE.md` 的「实测」一节）；`yarn bench:render`（首屏、落子，以及 Phase 06 之后新增的**回放拖动**——200 手棋谱下中位 1.60–2.90 ms，Phase 07 复跑 **2.20 ms**；前两者的历史结果见本文「〇之四、Phase 5 摘要 · 性能实测」与 `ui-redesign/FINAL_TEST_REPORT.md` §5） |
 
 各阶段发现并修复的问题：
@@ -2237,3 +2242,50 @@ session v1、progress v1、records v1（含旧 winner）、positions v1、game/b
 以下各项在 0.6.0 已修复：完整备份含自定义局面（v2）；局面/进度存储失败显式报告；
 导出跳过 `skipped` 并计数；快速双击有 `saving` 闸门且 DB v4 按内容键去重；
 分支来源随 session v3 持久化。当前生产：0.6.0 终审整改 `68e28ec`（`12e748bb…`）。
+
+## 〇之二二、0.6.0 终审整改 II（2026-10-31）
+
+起因：对当前 HEAD 做全项目代码 + 文档终审。审查结论是没有 P0/P1，剩下 2 条 P2 与一组 P3；
+文档 `docs/release/*`、`README.md`、`AGENTS.md` 有 15 处与代码不一致。用户裁定全部修复，
+并把进度迁移框架与两件体验小项（M-1、P3-4）并入。
+
+### 修复与新增判据
+
+| 项 | 修复 | 判据（反向验证过：撤掉修复会变红） |
+| --- | --- | --- |
+| 导入告警可被放大 | `MAX_WARNINGS=100` + 省略说明；合并告警改为逐条，不再 `push(...arr)` | 200,000 未知键不再抛 `RangeError`；500 个只留 101 条 |
+| 导出忽略棋谱库降级 | 「导出全部棋谱 / 完整备份」在 `list().degraded` 时拒绝 | 降级时零产物、报错文案 |
+| 存档写失败静默 | `saveSession()` 结果写回 `sessionSaveFailed`，对战页出提示 | localStorage 抛错后 banner 可见，恢复后自动消失 |
+| 删除吞异常 | `delete` 只在打不开库时退内存；事务失败抛错；替换保存失败时撤回新条 | 事务创建失败 → reject；替换失败 → 抛错并撤回 |
+| Modal 首按 Shift+Tab | 焦点在 dialog 根时也算「不在可聚焦项内」 | 刚打开即 Shift+Tab，焦点留在弹窗内 |
+| 换模式后焦点错位 | `Segmented` 在焦点位于组内时跟随外部改值 | 外部改选中 → 焦点落到新停靠点 |
+| 连接泄漏 | `onblocked` 后迟到的 open 关闭连接；事务同步抛错时也 `close()` | 阻塞后 close 恰好一次 |
+| 局面删除语义分叉 | IDB 删除先探测存在性，`deleted` 与内存实现一致 | 删不存在的 id → `deleted:false` |
+| 分支来源越界 | `sourceSeq/cursor/sourceMoves` 校验范围 | 5 组越界输入全被拒绝 |
+| 内存记录消失 | 库恢复后把内存兜底记录补写进库；失效 `replacesSeq` 退回内容匹配 | 降级保存的一局在恢复后仍可见，重复保存仍只一条 |
+| AI 永不响应 | `AI_RESPONSE_TIMEOUT_MS=15s` 兜底，超时复位并提示 | 假引擎不结算 → 15s 后 `aiThinking=false` |
+| 备份导入半恢复 | 棋谱段 `storage='failed'` 时中止，其余段不动 | 进度/偏好/会话均未被调用 |
+| 进度无迁移 | `migrateProgress` + 注册表；未知 `lastView` 回落到对战页 | 迁移链、缺步、未来版本、非法版本号、lastView 兜底 |
+| M-1 | 恢复终局时按内容身份查库并说明，查不了保持沉默 | 在库/不在库/存储降级三种结果 |
+| P3-4 | ≥1920 新档：中列 ≤900、侧栏变宽 | 1920 实测中列 1240→900、右栏 380→510、棋盘 729→818 |
+
+### 门禁读数（本次整改后，本机）
+
+| 命令 | 结果 |
+| --- | --- |
+| `yarn lint` / `yarn typecheck` | 通过 |
+| `yarn test` | **1,447**（90 文件；`bench/strength/positions.test.ts` 的一条开局证明在机器负载 130 时吃过 15s 超时，空载单跑 30/30 通过——属环境抖动，非代码问题） |
+| `yarn build` | 通过（入口 gzip 约 130 kB） |
+| `yarn e2e`（相关用例） | 超宽屏两条、教学/残局 1920 各两条通过 |
+| `yarn check:cycles` / `check:deadcode` / `check:dupes` / `check:bundle` | 通过 |
+| CI | 以推送后的 quality 运行结果为准 |
+
+### 文档修正
+
+`README.md`（覆盖棘轮无默认值、gates 实为五道、补 `check:bundle`、发布评审不再是 HOLD）、
+`AGENTS.md`（快档五道、全档含 `browsers-full`）、`docs/release/RELEASE_READINESS.md`
+（DB v4 / 三表 / 风险表）、`RELEASE_CHECKLIST.md`（真机 Safari 与自动化覆盖的区分、体积基线）、
+`DEPLOYMENT_RECORD.md`（历史段标清、现行流程与 190/190）、`DEPLOYMENT_PLAN.md`（产物 492 KB / 8 文件）、
+`TEST_REPORT.md`（六个 job、总数）、`docs/positions/EDITOR_DESIGN.md`、
+`docs/ai-research/KNOWN_LIMITATIONS.md`、`docs/audit/DATA_COMPATIBILITY_REPORT.md`、
+`docs/audit/TECH_DEBT.md`、`docs/ui-redesign/KNOWN_ISSUES.md`、`docs/audit/POST_UI_REDESIGN_AUDIT.md`。

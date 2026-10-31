@@ -311,18 +311,27 @@ build-commit   = b67ea930528375e2cff21bcb3c9332c82061a75e
 | 部署方式 | 仍为手动 Wrangler；未开启 Git 自动部署 |
 | 域名 | 仍使用 `*.pages.dev`；未改 DNS / 自定义域名 |
 
-### 7. 更新流程（当前有效）
+### 7. 更新流程（0.2.0 当时）
+
+> **这是历史记录。** 命令结构仍然适用，但用例条数与门禁项已经变了——
+> 现行的完整口径见本节末尾的「现行更新流程」。
 
 ```bash
 yarn lint && yarn typecheck && yarn test && yarn build && yarn e2e && yarn e2e:prod && yarn gates && yarn bench:check
 npx wrangler pages deploy dist --project-name gomoku-lab-preview --branch main \
   --commit-hash "$(git rev-parse HEAD)" --commit-message "…"
-REMOTE_BASE=https://<preview-deployment-url> yarn e2e:remote   # 必须 162/162
+REMOTE_BASE=https://<preview-deployment-url> yarn e2e:remote   # 0.2.0 时为 162/162
 # 用户明确批准后：
 npx wrangler pages deploy dist --project-name gomoku-lab --branch main \
   --commit-hash "$(git rev-parse HEAD)" --commit-message "…"
 REMOTE_BASE=https://gomoku-lab.pages.dev yarn e2e:remote
 ```
+
+**现行更新流程（0.6.0 build.2）**：命令同上，另有两处必须一起做——
+
+- 部署前跑全档：`yarn lint && yarn typecheck && yarn test && yarn build && yarn e2e && yarn e2e:prod && yarn gates && yarn bench:check`；
+  界面结构有改动的，还要等 CI 的 `probe`（`yarn ui:probe --out ci` + 覆盖棘轮）与 `browsers` / `browsers-full` 全绿。
+- `e2e:remote` 的当前期望是 **190/190**（预览与生产各跑一次），不是 162/162。
 
 ---
 

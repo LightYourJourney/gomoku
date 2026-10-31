@@ -58,7 +58,7 @@
 | --- | --- |
 | 仅 Chrome 实测 | Playwright 的 mobile/tablet 也是 Chromium 内核；Safari/Firefox 未验 |
 | 预览与生产隔离 | 预览项目 `gomoku-lab-preview` 与生产同账号、不同项目；预览数据不进入生产 |
-| 生产已发布 `0.2.0` | Phase 10F 上线（`b67ea93` / `d3f5f6cc…`）；线上 e2e 162/162 验的是新构建，旧部署 `e5a32d20…` 保留用于回滚 |
+| 生产已发布 `0.6.0` | 本节写于 Phase 10F（当时为 `0.2.0`）；当前生产 `68e28ec` / 部署 `12e748bb…`，线上 e2e 190/190。旧部署保留用于回滚，见 `docs/release/DEPLOYMENT_RECORD.md` |
 | 手动部署 | 未启用 Git 自动部署；回滚依赖 Cloudflare Dashboard 的上一部署 |
 | 数据不跨源 | `localhost` 与 `gomoku-lab.pages.dev` 不同源，进度不迁移 |
 | 关闭前落盘不保证 | 见既有 RELEASE_READINESS §3.3；与本次改动无关 |

@@ -46,9 +46,10 @@ yarn dev          # 开发服务器
 | `yarn strength` | **AI 棋力评测**：配对赛 + 置信区间 + 搜索指标。`STRENGTH_MODE=smoke/standard/extended`、`STRENGTH_A/B=<难度>`；报告写 `bench/strength/results/` |
 | `yarn profile` | **搜索热点剖析**：V8 采样（固定深度 / 真实预算）、热点单价、增量评估生命周期；结果解读见 [CPU_PROFILE](docs/ai-research/CPU_PROFILE.md) |
 | `yarn strength:bundle` | 把任意源码树（含 `git worktree`）的引擎打成独立包，用于**版本对照** |
-| `yarn gates` | 四道防退化闸门串跑（`check:cycles` + `check:deadcode` + `check:dupes` + `check:tests`）。**pre-push 钩子跑的就是它**，见 [AGENTS.md](AGENTS.md) |
+| `yarn gates` | 五道防退化闸门串跑（`check:cycles` + `check:deadcode` + `check:dupes` + `check:tests` + `check:bundle`）。**pre-push 钩子跑的就是它**，见 [AGENTS.md](AGENTS.md) |
 | `yarn check:tests` | 测试条数棘轮：单测/e2e 条数与跳过数只许涨不许跌。删用例、加 `.skip` 都会红，要减就显式改 `quality/tests.baseline.json`。e2e 的跳过是**静态扫 spec 文件**数出来的——`playwright --list` 对跳过的用例不打标记，工具这条路走不通 |
-| `yarn check:coverage` | 覆盖棘轮：探针扫到的状态、每行的控件与棋盘，必须是入库基线的**超集**。**基线**的来源是 `docs/ui-redesign/screenshots/after-phase02/measurements.json`（写在 `quality/coverage.baseline.json` 的 `source` 里）；脚本本地默认读 `docs/ui-redesign/screenshots/after-phase06/measurements.json`（`quality/coverage.ratchet.mjs` 的默认值，可用 `--current` 指定；CI 显式传当期探针产物）。**改了界面之后要在 CI 的 probe job 里跑**（本地单跑用的是上一期产物，不是这次的新量测） |
+| `yarn check:coverage` | 覆盖棘轮：探针扫到的状态、每行的控件与棋盘，必须是入库基线的**超集**。**基线**的来源是 `docs/ui-redesign/screenshots/after-phase02/measurements.json`（写在 `quality/coverage.baseline.json` 的 `source` 里）。**脚本没有默认值**：必须用 `--current` 指定本次探针产物（`yarn check:coverage` 里固定传 `docs/ui-redesign/screenshots/ci/measurements.json`，与 CI 完全一致）；不给就退出 2 并打印用法——曾经那个默认值指向旧快照，本地跑永远恒绿。**改了界面之后要在 CI 的 probe job 里跑**（本地单跑用的是上一期产物，不是这次的新量测） |
+| `yarn check:bundle` | 入口 JS 体积预算：gzip 后 ≤ **135,000 B**（`quality/bundle-budget.mjs`）。上限按当前产物（约 132 kB）留出余量：真要涨，先说明为什么这笔代码必须进主包 |
 | `yarn check:cycles` | 循环依赖闸门（madge）。**范围只到 `src/`**——`bench/`、`e2e/` 是脚本，循环风险低，但别以为全仓都查过。有环即红并点名环路 |
 | `yarn check:dupes` | 重复代码闸门（jscpd）。范围 `src/`、排除测试、**阈值 0**（零容忍），已接受的 6 个文件显式豁免并在 `TECH_DEBT.md` 写明理由。**它只认逐字相同的克隆**：复制粘贴会红，**改掉标识符的复制不会**——别把它当成「重复实现」检测器 |
 | `yarn check:deadcode` | 死代码闸门（knip）。基线写在 `knip.jsonc` 里，**理由也在里面**——放行的是「只被签名引用的类型导出」整类（见 `TECH_DEBT.md` §1.3 的裁定），真·多余导出照样会红 |
@@ -158,8 +159,8 @@ bench/         引擎基准、渲染探针与棋力评测（测量脚本不进�
 
 | 项 | 数量 |
 | --- | --- |
-| 单元 / 组件用例 | **1418**（90 个文件） |
-| 端到端用例 | **190**（桌面 166 + 移动触屏 14 + 平板 10），另有 Firefox/WebKit 编辑器专项 20 条、全量核心 301 条 |
+| 单元 / 组件用例 | **1447**（90 个文件） |
+| 端到端用例 | **192**（桌面 168 + 移动触屏 14 + 平板 10），另有 Firefox/WebKit 编辑器专项 20 条、全量核心 301 条 |
 | 生产构建冒烟 | 7（`yarn e2e:prod`，含构建版本标识核对与分享预览） |
 
 关键实现都有反向验证记录（改坏实现确认用例会红），详见 [docs/TEST_REPORT.md](docs/TEST_REPORT.md)。
@@ -204,7 +205,7 @@ bench/         引擎基准、渲染探针与棋力评测（测量脚本不进�
 - [docs/sharing/SECURITY_MODEL.md](docs/sharing/SECURITY_MODEL.md) —— 分享链接安全边界
 - [docs/sharing/PHASE_11D.md](docs/sharing/PHASE_11D.md) —— Phase 11D 实现、测试与已知限制
 - [docs/audit/PHASE_11E_AUDIT.md](docs/audit/PHASE_11E_AUDIT.md) —— Phase 11A–11D 独立审计、P1 修复与 RC 判断
-- [docs/release/PHASE_11_RELEASE_REVIEW.md](docs/release/PHASE_11_RELEASE_REVIEW.md) —— Phase 11 发布评审：功能 RC 通过，发布工程 HOLD
+- [docs/release/PHASE_11_RELEASE_REVIEW.md](docs/release/PHASE_11_RELEASE_REVIEW.md) —— Phase 11 发布评审：RC 通过，0.5.0 已发布
 - [docs/ROADMAP.md](docs/ROADMAP.md) —— Phase 1–5、UI 改版 00–07、Phase 08/09、Phase 10A–10F、Phase 11A/11B 的进度与长期待办
 - [docs/TEST_REPORT.md](docs/TEST_REPORT.md) —— 测试覆盖、浏览器验证与性能实测
 - [docs/release/RELEASE_READINESS.md](docs/release/RELEASE_READINESS.md) —— 发布就绪评估（分级结论、门禁读数、未验证项）

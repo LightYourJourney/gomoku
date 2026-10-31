@@ -19,7 +19,7 @@ Phase D 只做**设计级影响分析**，不开发任何新功能。
 | --- | --- | --- | --- |
 | **专家档深度上限从未达到** | `ai/difficulty.ts:74` | **快** | 用户能直接看到「专家」名不副实。真正的杠杆已定位到 `evaluateBoard` 的 O(整盘) 扫描，但**改动它要同时面对正确性与性能两个约束**，且性能数字必须能 `yarn bench` 复现 |
 | **局面评估不识别跨方向组合形状** | `ai/evaluate.ts:176-185` | **快** | 与上一条同源：都在 `evaluate.ts`。做增量评估时顺手做掉最划算 |
-| **学习进度无迁移机制** | `persist/progress.ts:101` | **快（发布后立即变成用户可见损失）** | 现在是「版本不符即清零」。发布后每次递增 `PROGRESS_SCHEMA_VERSION` 都意味着用户白学一遍 |
+| ~~学习进度无迁移机制~~ | `persist/progress.ts` | — | **2026-10-31 已偿还**：`migrateProgress` 逐级迁移 + `PROGRESS_MIGRATIONS` 注册表；仍不认识的版本/缺步骤一律拒绝，不猜。另：认不出的 `lastView` 回落到对战页，不再丢弃整条进度 |
 | 不算 VCT、活三链只允许一层 | `ai/threat.ts:37`、`difficulty.ts` 的 `threatThrees: false` | 慢 | 有意的漏杀，有实测数据支撑决策，不随时间恶化 |
 | 分析缓存只在页面打开期间有效 | `store/analysisStore.ts:56` | 慢 | 设计取舍，不是遗漏 |
 | 分析固定初级档 + 400ms、同时只分析一局、满盘末局无结论 | `ReviewScreen.tsx:112`、`analysisStore.ts:36,92` | 慢 | 同上 |
