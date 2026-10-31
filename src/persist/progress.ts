@@ -1,4 +1,5 @@
-import { DB_NAME, DB_VERSION, ensureSchema, PROGRESS_STORE as STORE } from './schema'
+import { openDatabaseWithSchema } from './idb'
+import { PROGRESS_STORE as STORE } from './schema'
 
 /**
  * 进度格式版本。
@@ -13,7 +14,7 @@ export const PROGRESS_SCHEMA_VERSION = 1
 export const VIEWS = ['battle', 'learn', 'puzzles', 'review'] as const
 export type View = (typeof VIEWS)[number]
 
-function isView(value: unknown): value is View {
+export function isView(value: unknown): value is View {
   return typeof value === 'string' && (VIEWS as readonly string[]).includes(value)
 }
 
@@ -147,44 +148,9 @@ function resolveFactory(): IDBFactory | null {
 }
 
 function openDatabase(): Promise<IDBDatabase> {
-  return new Promise((resolve, reject) => {
-    const active = resolveFactory()
-    if (active === null) {
-      reject(new Error('IndexedDB 不可用'))
-      return
-    }
-
-    let request: IDBOpenDBRequest
-    try {
-      request = active.open(DB_NAME, DB_VERSION)
-    } catch (error) {
-      reject(error instanceof Error ? error : new Error(String(error)))
-      return
-    }
-
-    request.onupgradeneeded = () => {
-      const db = request.result
-      ensureSchema(db, request.transaction)
-    }
-    // `blocked` 之后 open 仍可能 `success`：先 reject 了也要把那个连接关掉，
-    // 否则它会一直占着库、挡住下一次版本升级。
-    let settled = false
-    request.onsuccess = () => {
-      if (settled) {
-        request.result.close()
-        return
-      }
-      settled = true
-      resolve(request.result)
-    }
-    request.onerror = () => {
-      settled = true
-      reject(new Error('打不开进度库'))
-    }
-    request.onblocked = () => {
-      settled = true
-      reject(new Error('进度库被其他标签页占用'))
-    }
+  return openDatabaseWithSchema(resolveFactory(), {
+    errorMessage: '打不开进度库',
+    blockedMessage: '进度库被其他标签页占用',
   })
 }
 

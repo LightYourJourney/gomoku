@@ -91,6 +91,29 @@ describe('BattleScreen —— 旧存档提示', () => {
   })
 })
 
+describe('BattleScreen —— 切换模式后的焦点', () => {
+  /*
+   * 键盘路径才会踩到：方向键把选择挪向另一端时 `beforeChange` 拦下并开弹窗，
+   * 焦点仍停在**旧**选项上；确认后选中项换成新的，旧选项变成 `tabIndex=-1`。
+   * 弹窗关闭会把焦点还给打开它的旧选项，所以必须有地方把它挪到新停靠点。
+   */
+  it('键盘切换模式并确认后，焦点落在新的选中项上', async () => {
+    const playing = applyMove(createGame(), { x: 7, y: 7 })
+    if (!playing.ok) throw new Error('构造局面失败')
+    setup(playing.state)
+
+    const current = screen.getByRole('radio', { name: '人机对战' })
+    current.focus()
+    fireEvent.keyDown(current, { key: 'ArrowRight' })
+
+    fireEvent.click(await screen.findByRole('button', { name: '确认切换' }))
+
+    const next = screen.getByRole('radio', { name: '本地双人' })
+    expect(next).toHaveAttribute('tabindex', '0')
+    expect(document.activeElement).toBe(next)
+  })
+})
+
 describe('BattleScreen —— 存档写入失败', () => {
   it('存储写不进时明确提示刷新会丢失', () => {
     useGameStore.setState({ sessionSaveFailed: true })

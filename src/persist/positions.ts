@@ -2,13 +2,8 @@ import { isReplayConsistent, type Position, type PositionProvenance } from '../c
 import type { Player } from '../core/types'
 import { positionContentKey } from './positionKey'
 export { positionContentKey } from './positionKey'
-import {
-  DB_NAME,
-  DB_VERSION,
-  ensureSchema,
-  POSITIONS_CONTENT_INDEX,
-  POSITIONS_STORE,
-} from './schema'
+import { openDatabaseWithSchema, withObjectStore } from './idb'
+import { POSITIONS_CONTENT_INDEX, POSITIONS_STORE } from './schema'
 
 const POSITION_SCHEMA_VERSION = 2
 const LEGACY_POSITION_SCHEMA_VERSION = 1
@@ -271,42 +266,12 @@ function resolveFactory(): IDBFactory | null {
 }
 
 function openDatabase(): Promise<IDBDatabase> {
-  return new Promise((resolve, reject) => {
-    const active = resolveFactory()
-    if (active === null) {
-      reject(new Error('IndexedDB 不可用'))
-      return
-    }
-    let request: IDBOpenDBRequest
-    try {
-      request = active.open(DB_NAME, DB_VERSION)
-    } catch (error) {
-      reject(error instanceof Error ? error : new Error(String(error)))
-      return
-    }
-    request.onupgradeneeded = () => ensureSchema(request.result, request.transaction)
-    // `blocked` 之后 open 仍可能 `success`：先 reject 了也要把那个连接关掉，
-    // 否则它会一直占着库、挡住下一次版本升级。
-    let settled = false
-    request.onsuccess = () => {
-      const db = request.result
-      if (settled) {
-        db.close()
-        return
-      }
-      settled = true
-      // 每个会话最多扫一次：`openDatabase` 会被 list/get/save 反复调用，
-      // 每次都全表回填会把读操作变成写事务。
-      backfillOnce(db).finally(() => resolve(db))
-    }
-    request.onerror = () => {
-      settled = true
-      reject(new Error('打不开局面库'))
-    }
-    request.onblocked = () => {
-      settled = true
-      reject(new Error('局面库被其他标签页占用'))
-    }
+  return openDatabaseWithSchema(resolveFactory(), {
+    errorMessage: '打不开局面库',
+    blockedMessage: '局面库被其他标签页占用',
+    // 每个会话最多扫一次：`openDatabase` 会被 list/get/save 反复调用，
+    // 每次都全表回填会把读操作变成写事务。
+    onOpen: (db) => backfillOnce(db),
   })
 }
 
@@ -321,31 +286,9 @@ function withStore<T>(
 ): Promise<T> {
   return openDatabase().then(
     (db) =>
-      new Promise<T>((resolve, reject) => {
-        // 事务创建是同步的，可能直接抛（连接已关闭、库被删）。这里抛出去虽然
-        // 也会 reject，但 `db.close()` 在下面的事件回调里，等于漏关一个连接。
-        let tx: IDBTransaction
-        let request: IDBRequest<T>
-        try {
-          tx = db.transaction(STORE, mode)
-          request = run(tx.objectStore(STORE))
-        } catch (error) {
-          db.close()
-          reject(error instanceof Error ? error : new Error(String(error)))
-          return
-        }
-        tx.oncomplete = () => {
-          db.close()
-          resolve(request.result)
-        }
-        tx.onerror = () => {
-          db.close()
-          reject(new Error('局面库读写失败'))
-        }
-        tx.onabort = () => {
-          db.close()
-          reject(new Error('局面库读写被中止'))
-        }
+      withObjectStore(db, STORE, mode, run, {
+        errorMessage: '局面库读写失败',
+        abortMessage: '局面库读写被中止',
       }),
     (error) => {
       throw error

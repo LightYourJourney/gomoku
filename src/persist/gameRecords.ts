@@ -2,7 +2,8 @@ import { replay } from '../core/game'
 import { inBounds, opponentOf } from '../core/board'
 import type { Player, Point } from '../core/types'
 import { isDifficulty } from '../ai/difficulty'
-import { DB_NAME, DB_VERSION, ensureSchema, RECORDS_STORE } from './schema'
+import { openDatabaseWithSchema, withObjectStore } from './idb'
+import { RECORDS_STORE } from './schema'
 import { recordContentKey } from './recordIdentity'
 import type { Difficulty } from '../ai/types'
 
@@ -307,47 +308,9 @@ function resolveFactory(): IDBFactory | null {
 }
 
 function openDatabase(): Promise<IDBDatabase> {
-  return new Promise((resolve, reject) => {
-    const active = resolveFactory()
-    if (active === null) {
-      reject(new Error('IndexedDB 不可用'))
-      return
-    }
-
-    let request: IDBOpenDBRequest
-    try {
-      request = active.open(DB_NAME, DB_VERSION)
-    } catch (error) {
-      reject(error instanceof Error ? error : new Error(String(error)))
-      return
-    }
-
-    request.onupgradeneeded = () => {
-      const db = request.result
-      ensureSchema(db, request.transaction)
-    }
-    /*
-     * `blocked` 之后 open 请求并没有结束：别的标签页关掉时它还会 `success`。
-     * 那时 Promise 早就 reject 了，没人接这个连接——必须有意识地关掉，
-     * 否则它会一直占着库，挡住下一次版本升级。
-     */
-    let settled = false
-    request.onsuccess = () => {
-      if (settled) {
-        request.result.close()
-        return
-      }
-      settled = true
-      resolve(request.result)
-    }
-    request.onerror = () => {
-      settled = true
-      reject(new Error('打不开棋谱库'))
-    }
-    request.onblocked = () => {
-      settled = true
-      reject(new Error('棋谱库被其他标签页占用'))
-    }
+  return openDatabaseWithSchema(resolveFactory(), {
+    errorMessage: '打不开棋谱库',
+    blockedMessage: '棋谱库被其他标签页占用',
   })
 }
 
@@ -364,43 +327,9 @@ function withStore<T>(
 ): Promise<T> {
   return openDatabase().then(
     (db) =>
-      new Promise<T>((resolve, reject) => {
-        // 事务创建是同步的，可能直接抛（连接已关闭、库被删）。这里抛出去虽然
-        // 也会 reject，但 `db.close()` 在下面的事件回调里，等于漏关一个连接。
-        let tx: IDBTransaction
-        let request: IDBRequest<T>
-        try {
-          tx = db.transaction(STORE, mode)
-          request = run(tx.objectStore(STORE))
-        } catch (error) {
-          db.close()
-          reject(error instanceof Error ? error : new Error(String(error)))
-          return
-        }
-
-        /*
-         * 成功以**事务提交**为准，不是单条请求成功。
-         *
-         * 请求的 success 事件派发之后，事务才去尝试提交；提交失败走的是
-         * `tx.onabort`——那时 `request.onsuccess` 早就派发过了。只看 request
-         * 会把「没写进去」报成「写进去了」，而 `persisted` 正是界面
-         * 「这局已存入棋谱库 / 没能保存这局」的判据，等于骗用户。
-         *
-         * 口径与 `progress.ts` 的 `writeToIndexedDb` 一致：三个 tx 事件都算数。
-         * 多个回调重复调用 resolve/reject 是无害的（promise 只认第一次）。
-         */
-        tx.oncomplete = () => {
-          db.close()
-          resolve(request.result)
-        }
-        tx.onerror = () => {
-          db.close()
-          reject(new Error('棋谱库读写失败'))
-        }
-        tx.onabort = () => {
-          db.close()
-          reject(new Error('棋谱库读写被中止'))
-        }
+      withObjectStore(db, STORE, mode, run, {
+        errorMessage: '棋谱库读写失败',
+        abortMessage: '棋谱库读写被中止',
       }),
     (error) => {
       throw error
@@ -412,6 +341,8 @@ export const indexedDbGameRecords: GameRecordsStorage = {
   async list() {
     try {
       let raw = await withStore<unknown[]>('readonly', (store) => store.getAll())
+      // 补写没成功时，本次列表并不完整；`degraded` 是唯一能让界面说出来的信号。
+      let drainFailed = false
 
       /*
        * 存储恢复后把降级期间只在内存里的记录补写进库。
@@ -437,6 +368,8 @@ export const indexedDbGameRecords: GameRecordsStorage = {
           if (imported.storage === 'indexeddb') {
             memoryFallback = null
             raw = await withStore<unknown[]>('readonly', (store) => store.getAll())
+          } else {
+            drainFailed = true
           }
         }
       }
@@ -445,7 +378,7 @@ export const indexedDbGameRecords: GameRecordsStorage = {
       const records = parsed.filter((record): record is GameRecord => record !== null)
       return {
         records: records.sort((a, b) => b.seq - a.seq),
-        degraded: false,
+        degraded: drainFailed,
         // 数一下有多少条**读出来了但没通过校验**——那是「下过棋却看不到」
         // 的另一半原因，不能让它悄悄消失。
         skipped: parsed.length - records.length,

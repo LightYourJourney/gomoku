@@ -528,6 +528,40 @@ describe('棋谱库 —— 存储恢复后合并内存记录', () => {
       __setGameRecordsIndexedDbFactory(null)
     }
   })
+
+  it('补写失败时如实标 degraded，不让界面以为列表是完整的', async () => {
+    const real = globalThis.indexedDB
+    let opens = 0
+    const flaky = {
+      open: (name: string, version: number) => {
+        opens += 1
+        if (opens === 1) {
+          const request = {
+            onsuccess: null as (() => void) | null,
+            onerror: null as ((event: unknown) => void) | null,
+            onupgradeneeded: null as (() => void) | null,
+            onblocked: null as (() => void) | null,
+          }
+          setTimeout(() => request.onerror?.({}), 0)
+          return request
+        }
+        return real.open(name, version)
+      },
+    } as unknown as IDBFactory
+
+    __setGameRecordsIndexedDbFactory(flaky)
+    const importMany = vi
+      .spyOn(indexedDbGameRecords, 'importMany')
+      .mockResolvedValue({ imported: 0, duplicates: 0, persisted: false, storage: 'failed' })
+    try {
+      await indexedDbGameRecords.put(winRecord())
+      const listed = await indexedDbGameRecords.list()
+      expect(listed.degraded).toBe(true)
+    } finally {
+      importMany.mockRestore()
+      __setGameRecordsIndexedDbFactory(null)
+    }
+  })
 })
 
 describe('棋谱库 —— 批量导入', () => {

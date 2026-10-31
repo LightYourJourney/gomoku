@@ -43,6 +43,12 @@ const WIDE_QUERY = '(min-width: 1440px)'
  * 谁在生成的 CSS 里靠后谁赢，实测两栏那条排在后面：两条同时挂上去，
  * ≥1440 会**静默**退回两栏，而 JS 以为自己在宽档，左栏就不见了。
  * 先例见 `Panel.tsx` 的 `bodyClassName` 注释。
+ *
+ * **`ultra-wide` 是叠在两条模板之上的第三个变体**（≥1920 收窄中列、加宽侧栏），
+ * 不是第三种模板：它只在 wide 模板生效的同一屏上覆盖 `grid-cols`，命中与否由媒体
+ * 查询决定，JS 不需要知道。依赖的是 Tailwind 的变体顺序（`ultra-wide` 声明在
+ * `wide-layout` 之后）——所以它不是「靠 CSS 巧合」而是有判据的：`e2e/layout.spec.ts`
+ * 的「超宽屏 @1920」会实测中列 900px。变体顺序若被改动，那条用例会红。
  */
 const THREE_COLUMNS =
   'wide-layout:grid-cols-[clamp(240px,18vw,300px)_minmax(0,1fr)_clamp(300px,24vw,380px)] ultra-wide:grid-cols-[minmax(280px,1fr)_minmax(0,900px)_minmax(320px,1fr)]'

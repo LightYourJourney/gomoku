@@ -21,7 +21,7 @@ import type {
   Urgency,
 } from '../ai/types'
 import type { GameRecord } from '../persist/gameRecords'
-import { recordContentKey } from '../persist/recordIdentity'
+import { recordContentKey, type RecordIdentity } from '../persist/recordIdentity'
 import type { PersistedSession } from '../persist/storage'
 import { nextRequestId } from './requestCounter'
 
@@ -327,14 +327,7 @@ export interface GameStoreOptions {
    * 返回 `null` 表示查不了（存储降级/不可用）——那时保持 `idle`，不猜。
    * 恢复本身不会入库，所以答案只可能是「在」或「不在」。
    */
-  readonly findSavedGame?: (input: {
-    readonly moves: readonly Point[]
-    readonly firstPlayer: Player
-    readonly mode: GameMode
-    readonly humanColor: Player
-    readonly difficulty: Difficulty
-    readonly resignedBy: Player | null
-  }) => Promise<boolean | null>
+  readonly findSavedGame?: (input: RecordIdentity) => Promise<boolean | null>
 }
 
 export function createGameStore(
@@ -666,7 +659,7 @@ export function createGameStore(
           set({
             aiThinking: false,
             pendingRequestId: null,
-            aiError: 'AI 超过 15 秒没有响应，请重试',
+            aiError: `AI 超过 ${AI_RESPONSE_TIMEOUT_MS / 1000} 秒没有响应，请重试`,
           })
         }, AI_RESPONSE_TIMEOUT_MS)
 

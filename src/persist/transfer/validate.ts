@@ -4,6 +4,7 @@ import { replay, type GameState } from '../../core/game'
 import { validateMove } from '../../core/rules'
 import { BOARD_SIZE, type Player, type Point } from '../../core/types'
 import { isThemePreference } from '../../lib/theme'
+import { isView } from '../progress'
 import { isFiniteInt, isObj, isPlayer, issue, type ImportErrorCode, type ImportIssue } from './guards'
 import type {
   BackupPosition,
@@ -540,10 +541,16 @@ function validateProgress(
     lastVisited = { kind: visited.kind, id: visited.id }
   }
 
-  const lastView = raw.lastView
-  if (lastView !== 'battle' && lastView !== 'learn' && lastView !== 'puzzles' && lastView !== 'review') {
-    errors.push(issue('bad_progress', `${path}.lastView`, '视图不在白名单内'))
-    return null
+  /*
+   * 认不出的视图只影响「打开哪一页」。本地读取已经改成回落到对战页，
+   * 导入这里必须同一口径——否则一份来自更新版本的备份会因为一个位置字段
+   * 整段进度被跳过，而课程与题目记录本来是可以安全收下的。
+   * 白名单来自 `persist/progress.ts` 的 `VIEWS`，这里不再复制一份。
+   */
+  let lastView: BackupProgress['lastView'] = 'battle'
+  if (isView(raw.lastView)) lastView = raw.lastView
+  else if (raw.lastView !== undefined) {
+    addWarning(warnings, issue('bad_progress', `${path}.lastView`, '视图认不出，按对战页处理'))
   }
 
   return { completedLessons, solvedPuzzles, lastVisited, lastView }
@@ -856,7 +863,8 @@ function validateBackupFile(value: unknown, path: string): BackupFileResult | Ba
     }
     for (let i = 0; i < top.positions.length; i++) {
       const parsed = validateBackupPosition(top.positions[i], `${path}.positions[${i}]`)
-      warnings.push(...parsed.warnings)
+      // 与棋谱同一口径：单个局面的未知键同样可能上十万，展开传参会 RangeError。
+      for (const warning of parsed.warnings) addWarning(warnings, warning)
       if (parsed.position === null) positionErrors.push({ index: i, errors: parsed.errors })
       else positions.push(parsed.position)
     }

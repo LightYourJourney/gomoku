@@ -365,6 +365,44 @@ describe('严格导入 · 告警规模', () => {
     }
   })
 
+  it('单个局面的未知键同样受告警上限约束（十万级也不放大）', () => {
+    const position: Record<string, unknown> = {
+      title: '带垃圾键的局面',
+      cells: Array(225).fill(0),
+      nextPlayer: BLACK,
+      provenance: null,
+    }
+    for (let i = 0; i < 200_000; i++) position[`junk${i}`] = i
+    const backup = {
+      ...JSON.parse(JSON.stringify(toBackupFile({ games: [] }))),
+      positions: [position],
+    }
+
+    const result = parse(backup)
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+    // 上限由 `warnUnknownFields` 统一执行；这里钉住它同样覆盖局面段。
+    expect(result.warnings).toHaveLength(MAX_WARNINGS + 1)
+  })
+
+  it('导入时认不出的 lastView 回落到对战页，不整段丢弃进度', () => {
+    const backup = JSON.parse(JSON.stringify(toBackupFile({ games: [winRecord()] }))) as {
+      progress?: Record<string, unknown>
+    }
+    backup.progress = {
+      completedLessons: ['rules'],
+      solvedPuzzles: ['win-h'],
+      lastVisited: null,
+      lastView: 'settings-not-yet-existing',
+    }
+    const result = parse(backup)
+    expect(result.ok).toBe(true)
+    if (!result.ok || result.kind !== 'backup') return
+    expect(result.progress?.completedLessons).toEqual(['rules'])
+    expect(result.progress?.lastView).toBe('battle')
+    expect(result.warnings.some((warning) => warning.path.endsWith('.lastView'))).toBe(true)
+  })
+
   it('分支来源在范围内时保留', () => {
     const backup = JSON.parse(JSON.stringify(toBackupFile({ games: [] }))) as { session?: unknown }
     backup.session = {

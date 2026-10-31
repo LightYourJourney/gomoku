@@ -1522,7 +1522,8 @@ describe('AI 响应超时', () => {
       vi.advanceTimersByTime(1)
       expect(state().aiThinking).toBe(false)
       expect(state().pendingRequestId).toBeNull()
-      expect(state().aiError).toContain('15 秒')
+      // 文案由常量推导，改预算不会让这句话变成谎话
+      expect(state().aiError).toContain(`${AI_RESPONSE_TIMEOUT_MS / 1000} 秒`)
     } finally {
       vi.useRealTimers()
     }
