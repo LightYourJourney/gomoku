@@ -77,7 +77,7 @@ function setGame(game: GameState): void {
 
 beforeEach(() => {
   vi.clearAllMocks()
-  useGameStore.setState({ sessionError: null })
+  useGameStore.setState({ sessionError: null, sessionSaveFailed: false })
 })
 
 describe('BattleScreen —— 旧存档提示', () => {
@@ -88,6 +88,15 @@ describe('BattleScreen —— 旧存档提示', () => {
     expect(screen.getByTestId('session-restore-error')).toHaveTextContent(
       'v1 存档字段不完整或类型错误',
     )
+  })
+})
+
+describe('BattleScreen —— 存档写入失败', () => {
+  it('存储写不进时明确提示刷新会丢失', () => {
+    useGameStore.setState({ sessionSaveFailed: true })
+    setup()
+
+    expect(screen.getByTestId('session-save-error')).toHaveTextContent('刷新后会丢失')
   })
 })
 

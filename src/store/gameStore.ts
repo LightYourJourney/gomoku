@@ -89,6 +89,11 @@ export interface GameStore {
   readonly aiError: string | null
   /** 启动时旧存档迁移失败的具体原因；null 表示没有失败。 */
   readonly sessionError: string | null
+  /**
+   * 自动存档写不进 localStorage（配额满、隐私模式、被策略禁用）。
+   * 与 `sessionError`（读失败）分开：一个说「上次没接回来」，一个说「这次存不下」。
+   */
+  readonly sessionSaveFailed: boolean
   readonly aiInfo: AiInfo | null
   /** 当前对局是否来自棋谱探索分支；null = 普通对局。 */
   readonly branch: BranchOrigin | null
@@ -138,6 +143,7 @@ export interface GameStore {
     options?: { readonly resumeAi?: boolean },
   ): void
   setSessionError(message: string | null): void
+  setSessionSaveFailed(failed: boolean): void
   /**
    * 中止在飞的 AI 落子（进入分享预览时）。旧响应由 requestId 闸门丢弃；
    * 离开分享页后由 `requestAiMove` 显式续走。
@@ -167,8 +173,21 @@ export interface GameStore {
  */
 export const HINT_BUDGET_MS = 800
 
-/** 终局入库的进度，供对局结束时的界面显示。 */
-export type RecordSaveState = 'idle' | 'saving' | 'saved' | 'failed'
+/**
+ * 等 AI 响应的硬上限。
+ *
+ * 不是搜索预算：搜索自己会在 2600ms 内收手。这一条只防「Worker 静默死亡后
+ * 永不结算」——预算的 5 倍以上，正常机器不可能触发。
+ */
+export const AI_RESPONSE_TIMEOUT_MS = 15_000
+
+/**
+ * 终局入库的进度，供对局结束时的界面显示。
+ *
+ * `absent` 只出现在「恢复了一局已经结束的存档」：那不是刚刚入库，而是查过库之后
+ * 确认不在里面。`idle` 表示既没有动作、也没有结论（进行中，或查不了）。
+ */
+export type RecordSaveState = 'idle' | 'saving' | 'saved' | 'failed' | 'absent'
 
 /** 局面一变就要把提示整体清掉。 */
 const HINT_CLEARED = {
@@ -302,12 +321,28 @@ export interface GameStoreOptions {
    * 触发的话同一局会被重复入库。
    */
   readonly onGameEnd?: (input: GameEndInput) => void | Promise<number | void>
+  /**
+   * 「这局在不在棋谱库」的查询，供恢复一局**已经结束**的存档时说明状态。
+   *
+   * 返回 `null` 表示查不了（存储降级/不可用）——那时保持 `idle`，不猜。
+   * 恢复本身不会入库，所以答案只可能是「在」或「不在」。
+   */
+  readonly findSavedGame?: (input: {
+    readonly moves: readonly Point[]
+    readonly firstPlayer: Player
+    readonly mode: GameMode
+    readonly humanColor: Player
+    readonly difficulty: Difficulty
+    readonly resignedBy: Player | null
+  }) => Promise<boolean | null>
 }
 
 export function createGameStore(
   engine: AiEngine,
   options: GameStoreOptions = {},
 ): UseBoundStore<StoreApi<GameStore>> {
+  // `restore` 也有一个叫 `options` 的参数（resumeAi），别让两者互相遮蔽。
+  const deps = options
   /**
    * 只在「进行中 → 终局」这一跃迁上回调。落子路径有三条（玩家、AI、认输），
    * 都汇到这里判定，避免各处各写一遍「是不是刚结束」。
@@ -436,6 +471,7 @@ export function createGameStore(
       aiThinking: false,
       aiError: null,
       sessionError: null,
+      sessionSaveFailed: false,
       aiInfo: null,
       branch: null,
       pendingRequestId: null,
@@ -519,6 +555,31 @@ export function createGameStore(
           ...TRANSIENT_RESET,
         })
 
+        /*
+         * 恢复出的终局要能回答「这局在不在棋谱库」。恢复本身不入库，所以不能在
+         * `idle` 上撒谎说「已存入」，也不能什么都不说——按内容身份查一次库即可。
+         * 只在状态没变（用户没在这期间开新局/落子）时写回；查不了就保持 idle。
+         */
+        const restored = get()
+        if (restored.game.status !== 'playing' && deps.findSavedGame !== undefined) {
+          const version = restored.game.version
+          void deps
+            .findSavedGame({
+              moves: restored.game.moves,
+              firstPlayer: restored.game.firstPlayer,
+              mode: restored.mode,
+              humanColor: restored.humanColor,
+              difficulty: restored.difficulty,
+              resignedBy: resignerOf(restored.game),
+            })
+            .then((found) => {
+              const now = get()
+              if (found === null || now.game.version !== version || now.recordSaveState !== 'idle') return
+              set({ recordSaveState: found ? 'saved' : 'absent' })
+            })
+            .catch(() => {})
+        }
+
         // 存档时若正轮到 AI（刷新页面时它还在思考），恢复后要接着把这局走完。
         // 分享预览关掉这道续走：打开链接不得改变本地对局。
         if (options.resumeAi !== false) get().requestAiMove()
@@ -593,6 +654,22 @@ export function createGameStore(
 
         set({ aiThinking: true, aiError: null, pendingRequestId: requestId })
 
+        /*
+         * 兜底超时：引擎本身没有取消接口，正常路径一定会结算（响应或错误）。
+         * 但 Worker 若静默死亡（脚本加载失败后不再发任何事件、或内部死循环），
+         * 这个 Promise 永远不结算，界面就会一直停在「AI 思考中」——不是崩溃，
+         * 却和卡死没有区别。预算最大 2600ms，15 秒足够覆盖最慢的机器。
+         * 超时后旧响应仍会被 `requestId` 闸门丢弃，不会迟到一个落子。
+         */
+        const timer = setTimeout(() => {
+          if (get().pendingRequestId !== requestId) return
+          set({
+            aiThinking: false,
+            pendingRequestId: null,
+            aiError: 'AI 超过 15 秒没有响应，请重试',
+          })
+        }, AI_RESPONSE_TIMEOUT_MS)
+
         void engine
           .search({
             requestId,
@@ -603,8 +680,12 @@ export function createGameStore(
             purpose: 'play',
           })
           .then(
-            (response) => get().applyAiResponse(response),
+            (response) => {
+              clearTimeout(timer)
+              get().applyAiResponse(response)
+            },
             (error: unknown) => {
+              clearTimeout(timer)
               // 已经被取代的旧请求失败了也无所谓，不要拿它去打断当前对局。
               if (get().pendingRequestId !== requestId) return
               set({
@@ -618,6 +699,12 @@ export function createGameStore(
 
       setSessionError(message) {
         set({ sessionError: message })
+      },
+
+      setSessionSaveFailed(failed) {
+        // 只在状态翻转时写一次：这个 action 由存档订阅回调调用，而写状态本身
+        // 又会触发订阅——不加闸门就是每次落子都多建一个数组、多一次渲染。
+        if (get().sessionSaveFailed !== failed) set({ sessionSaveFailed: failed })
       },
 
       suspendAi() {

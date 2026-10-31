@@ -285,14 +285,28 @@ function openDatabase(): Promise<IDBDatabase> {
       return
     }
     request.onupgradeneeded = () => ensureSchema(request.result, request.transaction)
+    // `blocked` 之后 open 仍可能 `success`：先 reject 了也要把那个连接关掉，
+    // 否则它会一直占着库、挡住下一次版本升级。
+    let settled = false
     request.onsuccess = () => {
       const db = request.result
+      if (settled) {
+        db.close()
+        return
+      }
+      settled = true
       // 每个会话最多扫一次：`openDatabase` 会被 list/get/save 反复调用，
       // 每次都全表回填会把读操作变成写事务。
       backfillOnce(db).finally(() => resolve(db))
     }
-    request.onerror = () => reject(new Error('打不开局面库'))
-    request.onblocked = () => reject(new Error('局面库被其他标签页占用'))
+    request.onerror = () => {
+      settled = true
+      reject(new Error('打不开局面库'))
+    }
+    request.onblocked = () => {
+      settled = true
+      reject(new Error('局面库被其他标签页占用'))
+    }
   })
 }
 
@@ -308,8 +322,18 @@ function withStore<T>(
   return openDatabase().then(
     (db) =>
       new Promise<T>((resolve, reject) => {
-        const tx = db.transaction(STORE, mode)
-        const request = run(tx.objectStore(STORE))
+        // 事务创建是同步的，可能直接抛（连接已关闭、库被删）。这里抛出去虽然
+        // 也会 reject，但 `db.close()` 在下面的事件回调里，等于漏关一个连接。
+        let tx: IDBTransaction
+        let request: IDBRequest<T>
+        try {
+          tx = db.transaction(STORE, mode)
+          request = run(tx.objectStore(STORE))
+        } catch (error) {
+          db.close()
+          reject(error instanceof Error ? error : new Error(String(error)))
+          return
+        }
         tx.oncomplete = () => {
           db.close()
           resolve(request.result)
@@ -467,11 +491,33 @@ export const indexedDbPositions: PositionStorage = {
   },
 
   async delete(id) {
+    let db: IDBDatabase | null = null
     try {
-      await withStore<undefined>('readwrite', (store) => store.delete(id))
-      return { deleted: true, persisted: true }
+      db = await openDatabase()
+      /*
+       * `deleted` 必须回答「本来有没有这一条」，不是「这条语句执行了没有」。
+       * IDB 的 `delete` 对不存在的键同样成功，直接返回 true 会让内存实现
+       * （`Map.delete` 返回 false）与它语义分叉，界面据此报「已删除」。
+       */
+      const deleted = await new Promise<boolean>((resolve, reject) => {
+        const tx = db!.transaction(STORE, 'readwrite')
+        const store = tx.objectStore(STORE)
+        const probe = store.get(id)
+        let existed = false
+        probe.onsuccess = () => {
+          existed = probe.result !== undefined
+          if (existed) store.delete(id)
+        }
+        tx.oncomplete = () => resolve(existed)
+        tx.onerror = () => reject(new Error('局面库删除失败'))
+        tx.onabort = () => reject(new Error('局面库删除被中止'))
+      })
+      return { deleted, persisted: true }
     } catch {
+      // 打不开库 / 事务失败都退回内存态：删除是幂等的，界面会按 `deleted` 说明结果。
       return fallbackToMemory().delete(id)
+    } finally {
+      db?.close()
     }
   },
 }

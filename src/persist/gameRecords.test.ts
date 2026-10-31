@@ -1,5 +1,5 @@
 import 'fake-indexeddb/auto'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { BLACK, WHITE } from '../core/types'
 import { replay } from '../core/game'
 import {
@@ -12,6 +12,7 @@ import {
   type GameRecord,
 } from './gameRecords'
 import { DB_NAME, PROGRESS_STORE } from './schema'
+import { recordContentKey } from './recordIdentity'
 
 /** 黑棋第 7 行五连、白棋下方散四子——第 9 手黑棋成五。 */
 const FIVE_IN_NINE = [
@@ -295,6 +296,21 @@ describe('saveGameReplacing：替换而不是留下两条', () => {
     expect(await indexedDbGameRecords.get(first.seq)).not.toBeNull()
   })
 
+  it('删旧条失败时撤回新条，并如实报错（不冒充已替换）', async () => {
+    const first = (await indexedDbGameRecords.put(winRecord())).record
+    const del = vi
+      .spyOn(indexedDbGameRecords, 'delete')
+      .mockRejectedValueOnce(new Error('删除被中止'))
+      .mockResolvedValueOnce(undefined)
+
+    await expect(saveGameReplacing(resignRecord(), first.seq)).rejects.toThrow('本次保存已撤回')
+    // 第一次删旧的，第二次撤回刚写的新条
+    expect(del).toHaveBeenCalledTimes(2)
+    expect(del.mock.calls[1]![0]).toBeGreaterThan(first.seq)
+
+    del.mockRestore()
+  })
+
   it('没真正落库时**不删**旧条——宁可多一条，也不能整局消失', async () => {
     const first = (await indexedDbGameRecords.put(winRecord())).record
 
@@ -402,6 +418,112 @@ describe('棋谱库 —— 事务提交阶段失败', () => {
     try {
       const saved = await saveGameReplacing(winRecord(), null)
       expect(saved.persisted).toBe(false)
+    } finally {
+      __setGameRecordsIndexedDbFactory(null)
+    }
+  })
+})
+
+describe('棋谱库 —— 删除不吞异常', () => {
+  it('库打得开但事务失败时抛错，不悄悄退到内存当作删掉了', async () => {
+    const broken = {
+      open: () => {
+        const request = {
+          result: {
+            transaction: () => {
+              throw new Error('事务创建失败')
+            },
+            close: () => {},
+          },
+          onsuccess: null as (() => void) | null,
+          onerror: null as (() => void) | null,
+          onupgradeneeded: null as (() => void) | null,
+          onblocked: null as (() => void) | null,
+        }
+        setTimeout(() => request.onsuccess?.(), 0)
+        return request
+      },
+    } as unknown as IDBFactory
+
+    __setGameRecordsIndexedDbFactory(broken)
+    try {
+      await expect(indexedDbGameRecords.delete(1)).rejects.toThrow('事务创建失败')
+    } finally {
+      __setGameRecordsIndexedDbFactory(null)
+    }
+  })
+})
+
+describe('棋谱库 —— 连接生命周期', () => {
+  it('onblocked 之后迟到的 open 成功会被关掉，不留下占着库的连接', async () => {
+    const closed = vi.fn()
+    const request = {
+      result: { close: closed },
+      onsuccess: null as (() => void) | null,
+      onerror: null as ((event: unknown) => void) | null,
+      onupgradeneeded: null as (() => void) | null,
+      onblocked: null as (() => void) | null,
+    }
+    const factory = {
+      open: () => {
+        setTimeout(() => {
+          request.onblocked?.()
+          request.onsuccess?.()
+        }, 0)
+        return request
+      },
+    } as unknown as IDBFactory
+
+    __setGameRecordsIndexedDbFactory(factory)
+    try {
+      const listed = await indexedDbGameRecords.list()
+      expect(listed.degraded).toBe(true) // 已被占用 → 内存兜底
+      await new Promise((resolve) => setTimeout(resolve, 0))
+      expect(closed).toHaveBeenCalledTimes(1)
+    } finally {
+      __setGameRecordsIndexedDbFactory(null)
+    }
+  })
+})
+
+describe('棋谱库 —— 存储恢复后合并内存记录', () => {
+  it('降级期间保存的一局，在库恢复后的同一次会话里仍然看得到', async () => {
+    const real = globalThis.indexedDB
+    let opens = 0
+    const flaky = {
+      open: (name: string, version: number) => {
+        opens += 1
+        if (opens === 1) {
+          const request = {
+            onsuccess: null as (() => void) | null,
+            onerror: null as ((event: unknown) => void) | null,
+            onupgradeneeded: null as (() => void) | null,
+            onblocked: null as (() => void) | null,
+          }
+          setTimeout(() => request.onerror?.({}), 0)
+          return request
+        }
+        return real.open(name, version)
+      },
+    } as unknown as IDBFactory
+
+    __setGameRecordsIndexedDbFactory(flaky)
+    try {
+      const saved = await indexedDbGameRecords.put(winRecord())
+      expect(saved.persisted).toBe(false) // 只进了内存
+
+      const listed = await indexedDbGameRecords.list()
+      expect(listed.degraded).toBe(false)
+      // 补写时 seq 由库重新分配，所以按内容身份比，而不是旧 seq
+      expect(listed.records.some((record) => recordContentKey(record) === recordContentKey(saved.record))).toBe(true)
+
+      // 补写之后再列一次不会重复
+      const again = await indexedDbGameRecords.list()
+      expect(again.records).toHaveLength(1)
+
+      // 界面手里还是旧的（内存里的）seq：再次保存同一局也不能留两条
+      await saveGameReplacing(winRecord(), saved.record.seq)
+      expect((await indexedDbGameRecords.list()).records).toHaveLength(1)
     } finally {
       __setGameRecordsIndexedDbFactory(null)
     }

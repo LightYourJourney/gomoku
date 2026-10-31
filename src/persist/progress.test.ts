@@ -7,6 +7,7 @@ import {
   EMPTY_PROGRESS,
   indexedDbProgress,
   loadProgress,
+  migrateProgress,
   PROGRESS_SCHEMA_VERSION,
   saveProgress,
   saveProgressStrict,
@@ -192,6 +193,55 @@ describe('学习进度存储 —— 损坏数据', () => {
     })
 
     expect(await loadProgress()).toEqual(EMPTY_PROGRESS)
+  })
+
+  it('认不出的 lastView 只回落到对战页，课程与题目记录照常保留', async () => {
+    // 只影响「打开哪一页」的位置信息，不值得拿整条进度去换。
+    // 'review' 上线时白名单漏改，用户的课程记录就是这样被整条丢掉的。
+    await writeRaw({
+      schemaVersion: PROGRESS_SCHEMA_VERSION,
+      completedLessons: ['rules'],
+      solvedPuzzles: ['win-h'],
+      lastVisited: null,
+      lastView: 'settings-not-yet-existing',
+    })
+
+    const loaded = await loadProgress()
+    expect(loaded.completedLessons).toEqual(['rules'])
+    expect(loaded.solvedPuzzles).toEqual(['win-h'])
+    expect(loaded.lastView).toBe('battle')
+  })
+})
+
+describe('进度迁移框架', () => {
+  it('按版本逐级应用迁移', () => {
+    const steps = {
+      1: (raw: Record<string, unknown>) => ({ ...raw, schemaVersion: 2, extra: true }),
+      2: (raw: Record<string, unknown>) => ({ ...raw, schemaVersion: 3, more: true }),
+    }
+    const migrated = migrateProgress({ schemaVersion: 1, a: 1 }, steps, 3)
+    expect(migrated).toEqual({ schemaVersion: 3, a: 1, extra: true, more: true })
+  })
+
+  it('中间缺一步迁移时拒绝，而不是跳级读成半成品', () => {
+    const steps = { 2: (raw: Record<string, unknown>) => raw }
+    expect(migrateProgress({ schemaVersion: 1 }, steps, 3)).toBeNull()
+  })
+
+  it('比当前版本更新的数据不猜', () => {
+    expect(migrateProgress({ schemaVersion: PROGRESS_SCHEMA_VERSION + 1 })).toBeNull()
+  })
+
+  it('版本号缺失或不是正整数时拒绝', () => {
+    expect(migrateProgress({})).toBeNull()
+    expect(migrateProgress({ schemaVersion: '1' })).toBeNull()
+    expect(migrateProgress({ schemaVersion: 1.5 })).toBeNull()
+    expect(migrateProgress({ schemaVersion: 0 })).toBeNull()
+  })
+
+  it('同版本原样返回', () => {
+    const raw = { schemaVersion: PROGRESS_SCHEMA_VERSION, completedLessons: [] }
+    expect(migrateProgress(raw)).toBe(raw)
   })
 })
 

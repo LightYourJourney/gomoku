@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useState } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -105,6 +105,53 @@ describe('Segmented 的键盘可达性', () => {
     await user.keyboard('{End}')
     expect(onChange).toHaveBeenLastCalledWith('dark')
     expect(radios()[2]).toHaveFocus()
+  })
+})
+
+describe('Segmented 的焦点跟随外部改值', () => {
+  /*
+   * 对战页换模式/执子走的是确认弹窗：弹窗关闭后会把焦点还给打开它的旧选项，
+   * 而那个选项此时已经 `tabIndex=-1`。焦点必须跟到新的停靠点上。
+   */
+  it('焦点在组内时，外部改掉选中项会把焦点搬到新的停靠点', () => {
+    function External() {
+      const [value, setValue] = useState<string>('light')
+      return (
+        <>
+          <button type="button" onClick={() => setValue('dark')}>
+            外部切换
+          </button>
+          <Segmented label="主题" value={value} options={OPTIONS} onChange={() => {}} />
+        </>
+      )
+    }
+    render(<External />)
+
+    screen.getByRole('radio', { name: '浅色' }).focus()
+    fireEvent.click(screen.getByRole('button', { name: '外部切换' }))
+
+    expect(document.activeElement).toBe(screen.getByRole('radio', { name: '深色' }))
+  })
+
+  it('焦点不在组内时不抢焦点', () => {
+    function External() {
+      const [value, setValue] = useState<string>('light')
+      return (
+        <>
+          <button type="button" onClick={() => setValue('dark')}>
+            外部切换
+          </button>
+          <Segmented label="主题" value={value} options={OPTIONS} onChange={() => {}} />
+        </>
+      )
+    }
+    render(<External />)
+
+    const trigger = screen.getByRole('button', { name: '外部切换' })
+    trigger.focus()
+    fireEvent.click(trigger)
+
+    expect(document.activeElement).toBe(trigger)
   })
 })
 

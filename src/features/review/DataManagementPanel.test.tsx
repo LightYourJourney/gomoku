@@ -208,6 +208,41 @@ describe('数据管理面板 · 导入', () => {
     expect(await screen.findByTestId('import-result')).toHaveTextContent('学习/残局进度：失败')
   })
 
+  it('棋谱段写入失败时中止整次导入，不再动进度/偏好/会话', async () => {
+    const base = memoryGameRecords()
+    const storage = {
+      ...base,
+      importMany: async () => ({ imported: 0, duplicates: 0, persisted: false, storage: 'failed' as const }),
+    }
+    const merge = vi.fn(async () => {})
+    const restorePreferences = vi.fn()
+    const restoreSession = vi.fn()
+    render(
+      <DataManagementPanel
+        storage={storage}
+        positions={memoryPositions()}
+        services={services({
+          onMergeProgress: merge,
+          onRestorePreferences: restorePreferences,
+          onRestoreSession: restoreSession,
+        })}
+        onImported={vi.fn()}
+        degraded={false}
+      />,
+    )
+
+    fireEvent.change(screen.getByTestId('import-file'), {
+      target: { files: [fileOf(toBackupFile({ games: [record()], progress: PROGRESS, session: SESSION }))] },
+    })
+    await screen.findByRole('heading', { name: '导入预览' })
+    fireEvent.click(screen.getByRole('button', { name: '确认导入' }))
+
+    expect(await screen.findByTestId('import-error')).toHaveTextContent('其余各段均未改动')
+    expect(merge).not.toHaveBeenCalled()
+    expect(restorePreferences).not.toHaveBeenCalled()
+    expect(restoreSession).not.toHaveBeenCalled()
+  })
+
   it('库里只有坏记录时提示跳过数，而不是说库是空的', async () => {
     const base = memoryGameRecords()
     const unfinished = {
@@ -294,6 +329,24 @@ describe('数据管理面板 · 导入', () => {
     )
     fireEvent.click(screen.getByRole('button', { name: '完整备份' }))
     expect(await screen.findByTestId('import-error')).toHaveTextContent('局面库当前不可用')
+  })
+
+  it('棋谱库降级时两种导出都拒绝，不产出「成功」的空备份', async () => {
+    const base = memoryGameRecords()
+    const degradedStorage = {
+      ...base,
+      list: async () => ({ records: [], degraded: true, skipped: 0 }),
+    }
+
+    render(
+      <DataManagementPanel positions={memoryPositions()} storage={degradedStorage} services={services()} onImported={vi.fn()} degraded={false} />,
+    )
+    fireEvent.click(screen.getByRole('button', { name: '导出全部棋谱' }))
+    expect(await screen.findByTestId('import-error')).toHaveTextContent('棋谱库当前不可用')
+
+    fireEvent.click(screen.getByRole('button', { name: '完整备份' }))
+    expect(await screen.findByTestId('import-error')).toHaveTextContent('无法生成完整备份')
+    expect(blobs).toHaveLength(0)
   })
 
   it('完整备份 v2 包含自定义局面', async () => {

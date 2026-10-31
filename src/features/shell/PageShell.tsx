@@ -80,7 +80,7 @@ export function PageShell({ children, toolbar, footer, variant = 'reading', show
         <main
           ref={mainRef}
           tabIndex={-1}
-          className="flex min-h-0 flex-1 flex-col outline-none wide-layout:grid wide-layout:grid-cols-[minmax(0,1fr)_344px]"
+          className="flex min-h-0 flex-1 flex-col outline-none wide-layout:grid wide-layout:grid-cols-[minmax(0,1fr)_344px] ultra-wide:grid-cols-[minmax(0,1fr)_clamp(380px,26vw,520px)]"
         >
           {children}
         </main>

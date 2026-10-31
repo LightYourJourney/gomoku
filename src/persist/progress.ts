@@ -3,12 +3,19 @@ import { DB_NAME, DB_VERSION, ensureSchema, PROGRESS_STORE as STORE } from './sc
 /**
  * 进度格式版本。
  *
- * 与 `storage.ts` 的 `SCHEMA_VERSION` 同一条口径：字段形状一变就递增，
- * 旧数据被安全丢弃。没有这个字段的话，形状一变 `parseProgress` 会静默
- * 返回 null、进度整个消失，而**没有任何地方能看出那是刻意的**——
- * 也就没有地方能挂一个迁移函数。
+ * 与 `storage.ts` 的 `SCHEMA_VERSION` 同一条口径：字段形状一变就递增。
+ * **递增之后必须同时补一条迁移**（见下面的 `PROGRESS_MIGRATIONS`），否则老用户的
+ * 进度会在下一次打开时被当成「不认识的版本」丢掉——对用户来说就是白学一遍。
  */
 export const PROGRESS_SCHEMA_VERSION = 1
+
+/** 顶层视图。运行时清单与类型出自同一处，避免「加了视图忘了改白名单」。 */
+export const VIEWS = ['battle', 'learn', 'puzzles', 'review'] as const
+export type View = (typeof VIEWS)[number]
+
+function isView(value: unknown): value is View {
+  return typeof value === 'string' && (VIEWS as readonly string[]).includes(value)
+}
 
 export interface LearningProgress {
   readonly schemaVersion: number
@@ -21,7 +28,46 @@ export interface LearningProgress {
    *
    * 不存它的话，在残局页刷新会被踢回对战页——「刷新后回到原处」就只覆盖了课程。
    */
-  readonly lastView: 'battle' | 'learn' | 'puzzles' | 'review'
+  readonly lastView: View
+}
+
+/**
+ * 迁移表：键是**源**版本，值把它变成「源 + 1」的形状。
+ *
+ * 现在的空表是有意的：`PROGRESS_SCHEMA_VERSION` 还是 1，没有历史版本要迁。
+ * 它存在的意义是把「升版本」从「丢数据」变成「写一个函数」——加版本时的动作是：
+ *   1. `PROGRESS_SCHEMA_VERSION += 1`；
+ *   2. 在这里补一条 `源版本: (raw) => ...`；
+ *   3. 在 `progress.test.ts` 里补一条「旧版本能读成新版本」的用例。
+ */
+export type ProgressMigration = (raw: Record<string, unknown>) => Record<string, unknown>
+
+const PROGRESS_MIGRATIONS: Readonly<Record<number, ProgressMigration>> = {}
+
+/**
+ * 把任意版本的原始进度升级到 `target`。
+ *
+ * 三条判定：
+ * - 版本号缺失 / 不是正整数 → `null`（不是本应用的进度）；
+ * - 比当前版本**还新** → `null`：旧代码读新数据时不猜，猜错就是把用户数据写坏；
+ * - 中间缺一步迁移 → `null`：宁可当作没有进度，也不把半截数据灌进状态机。
+ */
+export function migrateProgress(
+  raw: Record<string, unknown>,
+  steps: Readonly<Record<number, ProgressMigration>> = PROGRESS_MIGRATIONS,
+  target: number = PROGRESS_SCHEMA_VERSION,
+): Record<string, unknown> | null {
+  const from = raw.schemaVersion
+  if (typeof from !== 'number' || !Number.isInteger(from) || from < 1) return null
+  if (from > target) return null
+
+  let value = raw
+  for (let version = from; version < target; version += 1) {
+    const step = steps[version]
+    if (step === undefined) return null
+    value = step(value)
+  }
+  return value
 }
 
 /** 可合并的进度段：外部备份只带这四个字段，不带内部 schemaVersion。 */
@@ -120,18 +166,34 @@ function openDatabase(): Promise<IDBDatabase> {
       const db = request.result
       ensureSchema(db, request.transaction)
     }
-    request.onsuccess = () => resolve(request.result)
-    request.onerror = () => reject(new Error('打不开进度库'))
-    request.onblocked = () => reject(new Error('进度库被其他标签页占用'))
+    // `blocked` 之后 open 仍可能 `success`：先 reject 了也要把那个连接关掉，
+    // 否则它会一直占着库、挡住下一次版本升级。
+    let settled = false
+    request.onsuccess = () => {
+      if (settled) {
+        request.result.close()
+        return
+      }
+      settled = true
+      resolve(request.result)
+    }
+    request.onerror = () => {
+      settled = true
+      reject(new Error('打不开进度库'))
+    }
+    request.onblocked = () => {
+      settled = true
+      reject(new Error('进度库被其他标签页占用'))
+    }
   })
 }
 
 /** 校验读回来的东西。任何一处不符合预期都当作没有进度。 */
 function parseProgress(value: unknown): LearningProgress | null {
   if (typeof value !== 'object' || value === null) return null
-  const raw = value as Record<string, unknown>
-
-  if (raw.schemaVersion !== PROGRESS_SCHEMA_VERSION) return null
+  const migrated = migrateProgress(value as Record<string, unknown>)
+  if (migrated === null) return null
+  const raw = migrated
 
   const strings = (input: unknown): string[] | null => {
     if (!Array.isArray(input)) return null
@@ -145,10 +207,13 @@ function parseProgress(value: unknown): LearningProgress | null {
   const solvedPuzzles = strings(raw.solvedPuzzles)
   if (completedLessons === null || solvedPuzzles === null) return null
 
-  const view = raw.lastView
-  // 白名单与 lastView 的联合类型同步——新视图上线时这里漏改，用户一刷新
-  // 整条进度就会被当成损坏数据丢弃（'review' 上线时真发生过，见 TEST_REPORT）。
-  if (view !== 'battle' && view !== 'learn' && view !== 'puzzles' && view !== 'review') return null
+  /*
+   * `lastView` 只影响「打开哪一页」，是纯位置信息。认不出的取值（未来版本写的、
+   * 或被人改坏的）回落到对战页，而不是把整条进度判死——'review' 上线那次，
+   * 白名单漏改导致用户一刷新全部进度被丢弃，代价远大于「这次停在首页」。
+   * 课程与题目完成记录才是不可再生的那部分。
+   */
+  const lastView = isView(raw.lastView) ? raw.lastView : 'battle'
 
   let lastVisited: LearningProgress['lastVisited'] = null
   if (raw.lastVisited !== null && raw.lastVisited !== undefined) {
@@ -165,7 +230,7 @@ function parseProgress(value: unknown): LearningProgress | null {
     completedLessons,
     solvedPuzzles,
     lastVisited,
-    lastView: view,
+    lastView,
   }
 }
 

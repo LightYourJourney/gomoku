@@ -45,8 +45,9 @@ const WIDE_QUERY = '(min-width: 1440px)'
  * 先例见 `Panel.tsx` 的 `bodyClassName` 注释。
  */
 const THREE_COLUMNS =
-  'wide-layout:grid-cols-[clamp(240px,18vw,300px)_minmax(0,1fr)_clamp(300px,24vw,380px)]'
-const TWO_COLUMNS = 'wide-layout:grid-cols-[minmax(0,1fr)_clamp(300px,24vw,380px)]'
+  'wide-layout:grid-cols-[clamp(240px,18vw,300px)_minmax(0,1fr)_clamp(300px,24vw,380px)] ultra-wide:grid-cols-[minmax(280px,1fr)_minmax(0,900px)_minmax(320px,1fr)]'
+const TWO_COLUMNS =
+  'wide-layout:grid-cols-[minmax(0,1fr)_clamp(300px,24vw,380px)] ultra-wide:grid-cols-[minmax(0,1fr)_clamp(400px,26vw,520px)]'
 
 /** 待确认的操作。同一时刻只可能有一个——弹窗是模态的。 */
 type PendingConfirm =
@@ -83,6 +84,7 @@ export function BattleScreen({ sound: injectedSound }: BattleScreenProps = {}) {
   const aiThinking = useGameStore((state) => state.aiThinking)
   const aiError = useGameStore((state) => state.aiError)
   const sessionError = useGameStore((state) => state.sessionError)
+  const sessionSaveFailed = useGameStore((state) => state.sessionSaveFailed)
   const aiInfo = useGameStore((state) => state.aiInfo)
   const recordSaveState = useGameStore((state) => state.recordSaveState)
   const branch = useGameStore((state) => state.branch)
@@ -325,6 +327,15 @@ export function BattleScreen({ sound: injectedSound }: BattleScreenProps = {}) {
               className="rounded-lg bg-warn-soft px-2 py-1 text-xs text-warn"
             >
               上次对局没能恢复：{sessionError}
+            </p>
+          )}
+          {sessionSaveFailed && (
+            <p
+              role="alert"
+              data-testid="session-save-error"
+              className="rounded-lg bg-warn-soft px-2 py-1 text-xs text-warn"
+            >
+              当前对局没能自动保存（浏览器存储不可用或已满），刷新后会丢失。
             </p>
           )}
           <MatchBar

@@ -116,8 +116,31 @@ export function warnUnknownFields(
 ): void {
   for (const key of Object.keys(value)) {
     if (!allowed.includes(key)) {
-      warnings.push(issue('invalid_field', `${path}.${key}`, '未知字段，已忽略'))
+      addWarning(warnings, issue('invalid_field', `${path}.${key}`, '未知字段，已忽略'))
     }
+  }
+}
+
+/**
+ * 告警上限。
+ *
+ * 告警条数与**输入里的键数**成正比，而输入是不可信文件：一份 10 MiB 的备份可以
+ * 塞进八十多万个未知键。实测（本机，2026-10-31）这样一份文件会产生 88 万条
+ * issue、多占约 100 MB 堆，解析加校验要好几秒——都在主线程上。
+ * 告警是给人看的摘要，不是审计日志：前 100 条足够定位问题，其余折叠成一条。
+ *
+ * 上限之外还要防第二个坑：V8 对 `fn(...arr)` 的参数个数有上限（实测 20 万元素即
+ * `RangeError`），所以合并各段告警时不能展开传参，只能逐条走这个函数。
+ */
+export const MAX_WARNINGS = 100
+
+function addWarning(warnings: ImportIssue[], next: ImportIssue): void {
+  if (warnings.length < MAX_WARNINGS) {
+    warnings.push(next)
+    return
+  }
+  if (warnings.length === MAX_WARNINGS) {
+    warnings.push(issue('invalid_field', 'file', `告警超过 ${MAX_WARNINGS} 条，其余已省略`))
   }
 }
 
@@ -703,6 +726,22 @@ function validateSession(
       errors.push(issue('bad_session', `${path}.branch`, '分支来源字段不合法'))
       return null
     }
+    /*
+     * 只校验「是不是整数」不够：负数与越界同样能进界面。
+     * `cursor` 是「看到第几手」，取值只能是 `0…sourceMoves`；来源手数不可能超过
+     * 棋盘上限；`sourceSeq` 是棋谱库里的序号，从 1 开始。
+     * 手改存档或导入别人的备份都能构造这些值，校验必须在这一层做完。
+     */
+    if (
+      value.sourceSeq < 1 ||
+      value.sourceMoves < 1 ||
+      value.sourceMoves > MAX_MOVES ||
+      value.cursor < 0 ||
+      value.cursor > value.sourceMoves
+    ) {
+      errors.push(issue('bad_session', `${path}.branch`, '分支来源的序号或游标越界'))
+      return null
+    }
     branch = {
       sourceSeq: value.sourceSeq,
       sourceContentKey: value.sourceContentKey,
@@ -736,7 +775,7 @@ function optionalSection<T>(
 ): T | null {
   if (value === undefined || value === null) return null
   const parsed = parse(value, path, warnings)
-  if (parsed === null) warnings.push(issue(code, path, `${label}段无效，已跳过`))
+  if (parsed === null) addWarning(warnings, issue(code, path, `${label}段无效，已跳过`))
   return parsed
 }
 
@@ -770,7 +809,8 @@ function validateBackupFile(value: unknown, path: string): BackupFileResult | Ba
     }
     totalMoves += result.game.moves.length
     games.push(result.game)
-    warnings.push(...result.warnings)
+    // 逐条合并，不展开传参：单局告警理论上可到十万级，`push(...arr)` 会抛 RangeError。
+    for (const warning of result.warnings) addWarning(warnings, warning)
   }
 
   if (totalMoves > MAX_TOTAL_MOVES) {

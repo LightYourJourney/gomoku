@@ -244,6 +244,12 @@ export async function saveGameReplacing(
   if (!saved.persisted) return saved // 没落库就不动旧的
 
   let target = replacesSeq
+  /*
+   * `replacesSeq` 可能已经失效：降级期间只写进内存的记录，在存储恢复后被补写进库
+   * 时拿的是新 seq；界面手里还握着旧的。指向不存在的记录时，退回内容身份匹配——
+   * 否则这一次保存会在库里留下两条同一局。
+   */
+  if (target !== null && (await indexedDbGameRecords.get(target)) === null) target = null
   if (target === null && options.allowContentMatch !== false) {
     // 这里只关心记录本身，降级与跳过两个信号在这条路径上没有意义
     const { records: existing } = await indexedDbGameRecords.list()
@@ -258,7 +264,17 @@ export async function saveGameReplacing(
   }
 
   if (target !== null && target !== saved.record.seq) {
-    await indexedDbGameRecords.delete(target)
+    try {
+      await indexedDbGameRecords.delete(target)
+    } catch {
+      /*
+       * 旧条删不掉（事务被中止/阻塞）。此时库里是「旧的 + 刚写的新」两条同内容记录。
+       * 先试着把新条撤掉，保持「同一局一条」；撤不掉也没办法，但**绝不能**
+       * 报告成功——界面会显示「已存入」，而库里的状态已经不是它描述的那样。
+       */
+      await indexedDbGameRecords.delete(saved.record.seq).catch(() => {})
+      throw new Error('旧棋谱没能替换，本次保存已撤回')
+    }
   }
   return saved
 }
@@ -310,9 +326,28 @@ function openDatabase(): Promise<IDBDatabase> {
       const db = request.result
       ensureSchema(db, request.transaction)
     }
-    request.onsuccess = () => resolve(request.result)
-    request.onerror = () => reject(new Error('打不开棋谱库'))
-    request.onblocked = () => reject(new Error('棋谱库被其他标签页占用'))
+    /*
+     * `blocked` 之后 open 请求并没有结束：别的标签页关掉时它还会 `success`。
+     * 那时 Promise 早就 reject 了，没人接这个连接——必须有意识地关掉，
+     * 否则它会一直占着库，挡住下一次版本升级。
+     */
+    let settled = false
+    request.onsuccess = () => {
+      if (settled) {
+        request.result.close()
+        return
+      }
+      settled = true
+      resolve(request.result)
+    }
+    request.onerror = () => {
+      settled = true
+      reject(new Error('打不开棋谱库'))
+    }
+    request.onblocked = () => {
+      settled = true
+      reject(new Error('棋谱库被其他标签页占用'))
+    }
   })
 }
 
@@ -330,8 +365,18 @@ function withStore<T>(
   return openDatabase().then(
     (db) =>
       new Promise<T>((resolve, reject) => {
-        const tx = db.transaction(STORE, mode)
-        const request = run(tx.objectStore(STORE))
+        // 事务创建是同步的，可能直接抛（连接已关闭、库被删）。这里抛出去虽然
+        // 也会 reject，但 `db.close()` 在下面的事件回调里，等于漏关一个连接。
+        let tx: IDBTransaction
+        let request: IDBRequest<T>
+        try {
+          tx = db.transaction(STORE, mode)
+          request = run(tx.objectStore(STORE))
+        } catch (error) {
+          db.close()
+          reject(error instanceof Error ? error : new Error(String(error)))
+          return
+        }
 
         /*
          * 成功以**事务提交**为准，不是单条请求成功。
@@ -366,7 +411,36 @@ function withStore<T>(
 export const indexedDbGameRecords: GameRecordsStorage = {
   async list() {
     try {
-      const raw = await withStore<unknown[]>('readonly', (store) => store.getAll())
+      let raw = await withStore<unknown[]>('readonly', (store) => store.getAll())
+
+      /*
+       * 存储恢复后把降级期间只在内存里的记录补写进库。
+       *
+       * 不做这一步的话：IDB 短暂不可用时保存的一局，界面说「本次会话可用」，
+       * 而存储一恢复、列表改读 IDB，这一局就在**同一个会话里**消失了——
+       * 提示与行为对不上。补写走 `importMany`（按内容身份去重），失败就保持原样、
+       * 下一次列表再试，不影响本次读数。
+       */
+      if (memoryFallback !== null) {
+        const pending = await memoryFallback.list()
+        if (pending.records.length > 0) {
+          const imported = await indexedDbGameRecords.importMany(
+            pending.records.map((record) => ({
+              moves: record.moves,
+              firstPlayer: record.firstPlayer,
+              mode: record.mode,
+              humanColor: record.humanColor,
+              difficulty: record.difficulty,
+              resignedBy: record.resignedBy,
+            })),
+          )
+          if (imported.storage === 'indexeddb') {
+            memoryFallback = null
+            raw = await withStore<unknown[]>('readonly', (store) => store.getAll())
+          }
+        }
+      }
+
       const parsed = raw.map((entry) => parseRecord(entry))
       const records = parsed.filter((record): record is GameRecord => record !== null)
       return {
@@ -457,10 +531,27 @@ export const indexedDbGameRecords: GameRecordsStorage = {
   },
 
   async delete(seq) {
+    // 与 `importMany` 同一口径：**打不开库**才退内存；事务失败要如实抛。
+    // 以前这里吞掉一切异常再退内存（内存里本来就没有这条），调用方于是以为
+    // 删成功了——`saveGameReplacing` 就会留下「新的写进去了、旧的没删掉」两条。
+    let db: IDBDatabase | null = null
     try {
-      await withStore<undefined>('readwrite', (store) => store.delete(seq))
-    } catch {
-      await fallbackToMemory().delete(seq)
+      db = await openDatabase()
+      await new Promise<void>((resolve, reject) => {
+        const tx = db!.transaction(STORE, 'readwrite')
+        tx.objectStore(STORE).delete(seq)
+        tx.oncomplete = () => resolve()
+        tx.onerror = () => reject(new Error('棋谱库删除失败'))
+        tx.onabort = () => reject(new Error('棋谱库删除被中止'))
+      })
+    } catch (error) {
+      if (db === null) {
+        await fallbackToMemory().delete(seq)
+        return
+      }
+      throw error
+    } finally {
+      db?.close()
     }
   },
 }

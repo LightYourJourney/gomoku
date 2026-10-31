@@ -156,6 +156,34 @@ for (const [width, height] of [
   })
 }
 
+/*
+ * P3-4 的正面判据：1920 下中列不再吃满，省下的宽度给侧栏。
+ * 改之前中列 1240px、右栏 380px，棋盘被高度卡在 729px，两侧全是空地。
+ */
+test('超宽屏 @1920：中列收窄、侧栏变宽，棋盘不缩水', async ({ page }) => {
+  await page.setViewportSize({ width: 1920, height: 1080 })
+  await page.goto('/')
+  await expect(page.getByTestId('board')).toBeVisible()
+
+  const center = await page.getByTestId('battle-center-column').boundingBox()
+  const aside = await page.locator('aside').first().boundingBox()
+  const board = await boardBox(page)
+
+  expect(center!.width, `中列 ${Math.round(center!.width)}px 仍然吃满`).toBeLessThanOrEqual(950)
+  expect(aside!.width, `侧栏只有 ${Math.round(aside!.width)}px`).toBeGreaterThanOrEqual(480)
+  expect(board.width).toBeGreaterThanOrEqual(DESKTOP_BOARD)
+})
+
+test('超宽屏 @1920：教学详情也把宽度让给讲解栏', async ({ page }) => {
+  await page.setViewportSize({ width: 1920, height: 1080 })
+  await gotoLessonPractice(page)
+
+  const aside = await page.locator('aside').first().boundingBox()
+  const board = await boardBox(page)
+  expect(aside!.width, `讲解栏只有 ${Math.round(aside!.width)}px`).toBeGreaterThanOrEqual(480)
+  expect(board.width).toBeGreaterThanOrEqual(DESKTOP_BOARD)
+})
+
 test('平板**竖屏**（768×1024）仍是纵向堆叠——竖屏本来就该这样', async ({ page }) => {
   await page.setViewportSize({ width: 768, height: 1024 })
   await gotoPuzzle(page)

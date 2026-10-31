@@ -21,6 +21,8 @@ const SAVE_LABELS: Record<Exclude<RecordSaveState, 'idle'>, string> = {
   saving: '正在存入棋谱库…',
   saved: '这局已存入棋谱库',
   failed: '没能保存这局',
+  // 恢复的对局不会自动入库；查过库之后才敢这么说。
+  absent: '这局不在棋谱库（恢复的对局不会自动入库）',
 }
 
 export function ResultDialog({

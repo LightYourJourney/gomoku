@@ -130,7 +130,12 @@ export function Modal({
       const first = items[0]!
       const last = items[items.length - 1]!
       const active = document.activeElement
-      const inside = active !== null && root.contains(active)
+      /*
+       * 打开瞬间焦点就在 dialog 根上（它 `tabIndex=-1`，不在上面那份 FOCUSABLE 里）。
+       * 根节点也要算「不在可聚焦项内」：否则第一次 Shift+Tab 既不是从 first 出发、
+       * `inside` 又为真，判据落空，焦点直接退到背景页面——`aria-modal` 就成了假话。
+       */
+      const inside = active !== null && active !== root && root.contains(active)
 
       const leftTheStart = event.shiftKey && (active === first || !inside)
       const leftTheEnd = !event.shiftKey && (active === last || !inside)

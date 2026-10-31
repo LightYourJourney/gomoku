@@ -2,7 +2,8 @@ import { createBrowserAiEngine } from '../ai/browserEngine'
 import { resignerOf, type GameState } from '../core/game'
 import type { Difficulty } from '../ai/types'
 import type { Player } from '../core/types'
-import { saveGameReplacing } from '../persist/gameRecords'
+import { indexedDbGameRecords, saveGameReplacing } from '../persist/gameRecords'
+import { recordContentKey } from '../persist/recordIdentity'
 import { loadSessionResult, saveSession } from '../persist/storage'
 import { createGameStore, type BranchOrigin, type GameMode } from './gameStore'
 
@@ -27,6 +28,13 @@ export const useGameStore = createGameStore(appEngine, {
     // 而不是显示「已存入」然后刷新就没了。
     if (!persisted) throw new Error('没能写入棋谱库')
     return record.seq
+  },
+  // 恢复一局已结束的存档时回答「这局在不在库里」；存储降级时返回 null，不猜。
+  findSavedGame: async (input) => {
+    const { records, degraded } = await indexedDbGameRecords.list()
+    if (degraded) return null
+    const key = recordContentKey(input)
+    return records.some((record) => recordContentKey(record) === key)
   },
 })
 
@@ -75,7 +83,8 @@ function persistSession(state: SessionSnapshot): void {
   }
   lastSaved = snapshotOf(state)
 
-  saveSession({
+  // 写失败必须能被看见：存储满/被禁用时不提示，用户会以为刷新后还在。
+  const saved = saveSession({
     moves: game.moves,
     firstPlayer: game.firstPlayer,
     mode,
@@ -84,6 +93,7 @@ function persistSession(state: SessionSnapshot): void {
     resignedBy: resignerOf(game),
     branch,
   })
+  useGameStore.getState().setSessionSaveFailed(!saved)
 }
 
 /**

@@ -1,4 +1,4 @@
-import { useRef, type KeyboardEvent } from 'react'
+import { useEffect, useRef, type KeyboardEvent } from 'react'
 import { cx } from '../../lib/cx'
 
 export interface SegmentedOption<T extends string> {
@@ -59,11 +59,28 @@ export function Segmented<T extends string>({
   beforeChange,
 }: SegmentedProps<T>) {
   const buttons = useRef(new Map<T, HTMLButtonElement>())
+  const groupRef = useRef<HTMLDivElement>(null)
 
   const enabled = options.filter((option) => option.disabled !== true)
   const selectedIndex = enabled.findIndex((option) => option.value === value)
   // 选中的那一项是停靠点；万一它被禁用了（不该发生，但不能让它锁死键盘），退回第一项
   const stopValue = enabled[selectedIndex === -1 ? 0 : selectedIndex]?.value
+
+  /*
+   * 选中项被**外部**改掉时（例如对战页的确认弹窗：用户点了旧选项打开弹窗，
+   * 确认后 store 换了模式，弹窗关闭又把焦点还给那个旧选项），把焦点挪到新的
+   * 停靠点上。否则焦点停在一个 `tabIndex=-1` 的选项上，整组的 Tab 停靠点说
+   * 选中的是 A、焦点却在 B，下一次 Tab 会从 B 的 DOM 位置继续。
+   *
+   * 只在焦点本来就在组内时动手：页面其它地方改这个值不该抢用户的焦点。
+   */
+  useEffect(() => {
+    const group = groupRef.current
+    const active = document.activeElement
+    if (group === null || !(active instanceof HTMLElement) || !group.contains(active)) return
+    const stop = stopValue === undefined ? undefined : buttons.current.get(stopValue)
+    if (stop !== undefined && stop !== active && !stop.disabled) stop.focus()
+  }, [stopValue])
 
   /** 被否决时把焦点收回选中项——不让它停在 `aria-checked=false` 的选项上。 */
   function snapBackToSelection(): void {
@@ -127,6 +144,7 @@ export function Segmented<T extends string>({
 
   return (
     <div
+      ref={groupRef}
       role="radiogroup"
       aria-label={label}
       className="grid gap-1 rounded-lg bg-surface-2 p-1"

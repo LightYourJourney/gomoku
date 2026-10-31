@@ -168,4 +168,23 @@ describe('自动存档的写入频率', () => {
       spy.mockRestore()
     }
   })
+
+  it('写不进 localStorage 时把失败标到状态里，恢复后自动复原', () => {
+    bootstrapStore()
+    useGameStore.getState().setDifficulty('easy')
+    expect(useGameStore.getState().sessionSaveFailed).toBe(false)
+
+    const spy = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new Error('QuotaExceededError')
+    })
+    try {
+      useGameStore.getState().setDifficulty('hard')
+      expect(useGameStore.getState().sessionSaveFailed).toBe(true)
+    } finally {
+      spy.mockRestore()
+    }
+
+    useGameStore.getState().setDifficulty('expert')
+    expect(useGameStore.getState().sessionSaveFailed).toBe(false)
+  })
 })

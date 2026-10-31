@@ -245,6 +245,16 @@ export function DataManagementPanel({
       return
     }
 
+    // 棋谱段整笔失败（典型是配额）时，备份里后面的进度/偏好/会话/局面一律不动：
+    // 否则用户会得到「棋谱一条没进去，当前对局却已被存档覆盖」的半恢复状态。
+    // 单盘棋谱没有别的段，保留下面那张更具体的分项结果。
+    if (recordsResult.storage === 'failed' && pending.kind === 'backup') {
+      setPending(null)
+      fail('棋谱库写入失败（可能是空间不足）；为避免只导入一半，其余各段均未改动')
+      setBusy(false)
+      return
+    }
+
     let progress: SectionOutcome = 'absent'
     let preferences: SectionOutcome = 'absent'
     let session: SectionOutcome = 'absent'
@@ -374,7 +384,15 @@ export function DataManagementPanel({
     setError(null)
     setExportNotice(null)
     try {
-      const { records, skipped } = await storage.list()
+      const { records, skipped, degraded: recordsDegraded } = await storage.list()
+      // 降级时 records 来自内存兜底（通常是空的）：照常导出会得到一份「成功」的空备份，
+      // 而用户可能正是拿它当清数据前的保险。与局面库同一口径：拒绝，并说清楚原因。
+      if (recordsDegraded) {
+        fail(
+          '棋谱库当前不可用（浏览器不允许持久化或被其他标签页占用），无法导出棋谱；请恢复存储后重试',
+        )
+        return
+      }
       const { games, dropped } = exportableGames(records, skipped)
       if (games.length === 0) {
         fail(
@@ -398,7 +416,13 @@ export function DataManagementPanel({
     setError(null)
     setExportNotice(null)
     try {
-      const { records, skipped } = await storage.list()
+      const { records, skipped, degraded: recordsDegraded } = await storage.list()
+      if (recordsDegraded) {
+        fail(
+          '棋谱库当前不可用（浏览器不允许持久化或被其他标签页占用），无法生成完整备份；请恢复存储后重试',
+        )
+        return
+      }
       const progress = await services.loadProgress()
       const session = services.loadSession()
       const positionList = await positions.list()

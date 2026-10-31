@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { AiEngine } from '../ai/engine'
 import type { MoveSuggestion, SearchRequest, SearchResponse } from '../ai/types'
 import { idx } from '../core/board'
@@ -8,6 +8,7 @@ import { recordContentKey } from '../persist/recordIdentity'
 import { SCHEMA_VERSION, type PersistedSession } from '../persist/storage'
 import { createGame, resign } from '../core/game'
 import {
+  AI_RESPONSE_TIMEOUT_MS,
   canHumanPlay,
   canUndo,
   createGameStore,
@@ -1448,6 +1449,98 @@ describe('AI 返回非法着法', () => {
 
     expect(state().game.moves).toHaveLength(2)
     expect(state().aiError).toBeNull()
+  })
+})
+
+describe('恢复终局时说明是否已在棋谱库', () => {
+  const FINISHED = {
+    moves: [
+      { x: 3, y: 7 }, { x: 3, y: 9 }, { x: 4, y: 7 }, { x: 4, y: 9 },
+      { x: 5, y: 7 }, { x: 5, y: 9 }, { x: 6, y: 7 }, { x: 6, y: 9 },
+      { x: 7, y: 7 },
+    ],
+    firstPlayer: BLACK,
+    mode: 'pvp' as const,
+    humanColor: BLACK,
+    difficulty: 'easy' as const,
+    resignedBy: null,
+  }
+
+  function restoredWith(found: boolean | null) {
+    const findSavedGame = vi.fn(async () => found)
+    const local = createGameStore(new FakeEngine(), { findSavedGame })
+    local.getState().restore({ schemaVersion: SCHEMA_VERSION, ...FINISHED })
+    return { local, findSavedGame }
+  }
+
+  it('库里有这一局：显示「已存入」', async () => {
+    const { local } = restoredWith(true)
+    await flush()
+    expect(local.getState().recordSaveState).toBe('saved')
+  })
+
+  it('库里没有：明确说这局不在棋谱库，而不是沉默', async () => {
+    const { local } = restoredWith(false)
+    await flush()
+    expect(local.getState().recordSaveState).toBe('absent')
+  })
+
+  it('查不了（存储降级）时保持 idle，不猜', async () => {
+    const { local } = restoredWith(null)
+    await flush()
+    expect(local.getState().recordSaveState).toBe('idle')
+  })
+
+  it('恢复进行中的对局不会去查库', async () => {
+    const findSavedGame = vi.fn(async () => true)
+    const local = createGameStore(new FakeEngine(), { findSavedGame })
+    local.getState().restore({
+      schemaVersion: SCHEMA_VERSION,
+      ...FINISHED,
+      moves: [{ x: 7, y: 7 }],
+    })
+    await flush()
+    expect(findSavedGame).not.toHaveBeenCalled()
+    expect(local.getState().recordSaveState).toBe('idle')
+  })
+})
+
+describe('AI 响应超时', () => {
+  /*
+   * 引擎没有取消接口；正常路径一定会结算。这里模拟的是「Worker 静默死亡」——
+   * 不发响应也不发 error。没有兜底的话 `aiThinking` 会永远为 true。
+   */
+  it('引擎永不结算时，超时后复位思考态并提示重试', () => {
+    vi.useFakeTimers()
+    try {
+      state().playHuman({ x: 7, y: 7 })
+      expect(state().aiThinking).toBe(true)
+
+      vi.advanceTimersByTime(AI_RESPONSE_TIMEOUT_MS - 1)
+      expect(state().aiThinking).toBe(true)
+
+      vi.advanceTimersByTime(1)
+      expect(state().aiThinking).toBe(false)
+      expect(state().pendingRequestId).toBeNull()
+      expect(state().aiError).toContain('15 秒')
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('正常应答会清掉超时计时器，之后不会凭空报错', async () => {
+    vi.useFakeTimers()
+    try {
+      state().playHuman({ x: 7, y: 7 })
+      engine.reply({ x: 0, y: 0 })
+      await vi.advanceTimersByTimeAsync(0)
+      expect(state().aiThinking).toBe(false)
+
+      vi.advanceTimersByTime(AI_RESPONSE_TIMEOUT_MS)
+      expect(state().aiError).toBeNull()
+    } finally {
+      vi.useRealTimers()
+    }
   })
 })
 

@@ -113,6 +113,13 @@ describe('局面库 —— IndexedDB', () => {
     expect((await indexedDbPositions.list()).records).toHaveLength(0)
   })
 
+  it('删除不存在的 id 时 deleted 为 false，与内存实现同一语义', async () => {
+    // IDB 的 delete 对不存在的键同样「成功」；直接报 true 会让界面说「已删除」，
+    // 而内存实现（Map.delete）报 false。两套存储必须回答同一个问题。
+    expect(await indexedDbPositions.delete(999_999)).toEqual({ deleted: false, persisted: true })
+    expect(await memoryPositions().delete(999_999)).toEqual({ deleted: false, persisted: false })
+  })
+
   it('IDB 不可用时退回内存并如实报 persisted=false', async () => {
     const saved = Object.getOwnPropertyDescriptor(globalThis, 'indexedDB')
     Reflect.deleteProperty(globalThis, 'indexedDB')

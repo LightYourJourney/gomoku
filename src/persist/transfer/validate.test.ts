@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { BLACK, WHITE, type Point } from '../../core/types'
 import type { GameRecordInput } from '../gameRecords'
 import { toGameFile, toBackupFile } from './format'
-import { jsonDepth, MAX_IMPORT_BYTES, MAX_JSON_DEPTH, parseImportText } from './validate'
+import { jsonDepth, MAX_IMPORT_BYTES, MAX_JSON_DEPTH, MAX_WARNINGS, parseImportText } from './validate'
 
 const NINE_MOVES: readonly Point[] = [
   { x: 3, y: 7 }, { x: 3, y: 9 },
@@ -306,5 +306,79 @@ describe('严格导入 · 备份', () => {
     expect(result.ok).toBe(false)
     if (result.ok) return
     expect(result.errors[0]!.code).toBe('unsupported_version')
+  })
+})
+
+describe('严格导入 · 告警规模', () => {
+  it('未知字段再多也只产生上限条告警，并留下一条省略说明', () => {
+    const game = JSON.parse(JSON.stringify(toGameFile(winRecord()))) as Record<string, unknown>
+    for (let i = 0; i < 500; i++) game[`junk${i}`] = i
+
+    const result = parse(game)
+    expect(result.ok).toBe(true)
+    expect(result.warnings).toHaveLength(MAX_WARNINGS + 1)
+    expect(result.warnings[MAX_WARNINGS]!.message).toContain('其余已省略')
+  })
+
+  it('单局十万级未知键不会展开传参崩掉', () => {
+    // `warnings.push(...arr)` 在 V8 上约 12.5 万元素即 RangeError。
+    // 造 20 万个未知键，走的是「单局告警合并进总数组」那条路径。
+    const game = JSON.parse(JSON.stringify(toGameFile(winRecord()))) as Record<string, unknown>
+    for (let i = 0; i < 200_000; i++) game[`junk${i}`] = i
+    const backup = {
+      ...JSON.parse(JSON.stringify(toBackupFile({ games: [] }))),
+      games: [game],
+    }
+
+    const result = parse(backup)
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+    expect(result.warnings).toHaveLength(MAX_WARNINGS + 1)
+  })
+
+  it('分支来源游标越界时整段会话被拒绝', () => {
+    const cases = [
+      { sourceSeq: 1, cursor: -1, sourceMoves: 9 },
+      { sourceSeq: 1, cursor: 10, sourceMoves: 9 },
+      { sourceSeq: 0, cursor: 0, sourceMoves: 9 },
+      { sourceSeq: 1, cursor: 0, sourceMoves: 0 },
+      { sourceSeq: 1, cursor: 0, sourceMoves: 226 },
+    ]
+    for (const branch of cases) {
+      const backup = JSON.parse(JSON.stringify(toBackupFile({ games: [winRecord()] }))) as {
+        session?: unknown
+      }
+      backup.session = {
+        moves: NINE_MOVES.map((point) => ({ x: point.x, y: point.y })),
+        firstPlayer: BLACK,
+        mode: 'pve',
+        humanColor: BLACK,
+        difficulty: 'easy',
+        resignedBy: null,
+        branch: { ...branch, sourceContentKey: 'k' },
+      }
+      const result = parse(backup)
+      expect(result.ok).toBe(true)
+      if (!result.ok || result.kind !== 'backup') continue
+      expect(result.session).toBeNull()
+      expect(result.warnings.some((warning) => warning.path.includes('session'))).toBe(true)
+    }
+  })
+
+  it('分支来源在范围内时保留', () => {
+    const backup = JSON.parse(JSON.stringify(toBackupFile({ games: [] }))) as { session?: unknown }
+    backup.session = {
+      moves: NINE_MOVES.map((point) => ({ x: point.x, y: point.y })),
+      firstPlayer: BLACK,
+      mode: 'pve',
+      humanColor: BLACK,
+      difficulty: 'easy',
+      resignedBy: null,
+      branch: { sourceSeq: 1, sourceContentKey: 'k', cursor: 4, sourceMoves: 9 },
+    }
+    const result = parse(backup)
+    expect(result.ok).toBe(true)
+    if (!result.ok || result.kind !== 'backup') return
+    expect(result.session?.branch).toMatchObject({ cursor: 4, sourceMoves: 9 })
   })
 })

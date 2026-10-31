@@ -85,6 +85,17 @@ describe('Modal 的焦点管理', () => {
     expect(screen.getByRole('dialog').contains(document.activeElement)).toBe(true)
   })
 
+  it('刚打开时（焦点还在 dialog 根上）按 Shift+Tab 也留在弹窗里', () => {
+    // 首按 Shift+Tab 是最容易被漏掉的那一次：根节点不是 FOCUSABLE 里的成员。
+    render(<Harness />)
+    openModal()
+
+    fireEvent.keyDown(document, { key: 'Tab', shiftKey: true })
+
+    expect(activeText()).toBe('第二颗')
+    expect(screen.getByRole('dialog').contains(document.activeElement)).toBe(true)
+  })
+
   it('Shift+Tab 从第一个回到最后一个', () => {
     render(<Harness />)
     openModal()
