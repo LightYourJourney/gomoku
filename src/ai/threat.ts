@@ -1,4 +1,4 @@
-import { idx, opponentOf } from '../core/board'
+import { idx, opponentOf, samePoint } from '../core/board'
 import type { Board, Player, Point } from '../core/types'
 import { candidateMoves } from './candidates'
 import { countCall } from './metrics'
@@ -50,10 +50,6 @@ interface AttackResult {
 }
 
 const NO_WIN: AttackResult = { plies: 0, move: null }
-
-function samePoint(a: Point, b: Point): boolean {
-  return a.x === b.x && a.y === b.y
-}
 
 function timeUp(ctx: ThreatContext): boolean {
   if (!ctx.expired && ctx.options.now() >= ctx.options.deadline) ctx.expired = true

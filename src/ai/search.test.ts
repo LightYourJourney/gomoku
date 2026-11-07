@@ -371,6 +371,17 @@ describe('候选预筛开关', () => {
   }
   const clock = (): number => 0
 
+  /** 跑一次并带回计数器，省得每条用例各写一遍 start/try/finally。 */
+  function counters(options: typeof base & { prescreen?: { threshold: number; keepFactor: number } }) {
+    startAiCounters()
+    try {
+      searchBoard(MIDGAME, WHITE, options, clock)
+      return stopAiCounters()!
+    } finally {
+      stopAiCounters()
+    }
+  }
+
   it('默认关闭（不传 prescreen）时结果不受影响', () => {
     // 关掉预筛这件事本身不改变分数：开关缺省就是原路径
     const result = searchBoard(MIDGAME, WHITE, base, clock)
@@ -379,12 +390,6 @@ describe('候选预筛开关', () => {
   })
 
   it('打开后打分的候选数少于关闭时', () => {
-    const counters = (options: typeof base & { prescreen?: { threshold: number; keepFactor: number } }) => {
-      startAiCounters()
-      searchBoard(MIDGAME, WHITE, options, clock)
-      return stopAiCounters()!
-    }
-
     const plain = counters(base)
     const filtered = counters({ ...base, prescreen: { threshold: 1, keepFactor: 2 } })
 
@@ -420,14 +425,8 @@ describe('候选预筛开关', () => {
   })
 
   it('候选数不超过阈值时不启用预筛', () => {
-    const counters = startAiCounters()
-    try {
-      searchBoard(MIDGAME, WHITE, { ...base, prescreen: { threshold: 999, keepFactor: 2 } }, clock)
-      // 阈值高到不可能命中；「保留数」在未启用时必须严格为 0
-      expect(counters.prescreenKept).toBe(0)
-    } finally {
-      stopAiCounters()
-    }
+    // 阈值高到不可能命中；「保留数」在未启用时必须严格为 0
+    expect(counters({ ...base, prescreen: { threshold: 999, keepFactor: 2 } }).prescreenKept).toBe(0)
   })
 
   it('打开预筛也不会漏掉立即成五', () => {

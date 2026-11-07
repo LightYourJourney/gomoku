@@ -1,4 +1,4 @@
-import { idx, opponentOf } from '../../src/core/board'
+import { idx, opponentOf, samePoint } from '../../src/core/board'
 import { findWinLine, validateMove } from '../../src/core/rules'
 import type { Board, Player, Point } from '../../src/core/types'
 import type { Difficulty } from '../../src/ai/types'
@@ -103,10 +103,6 @@ function placeOnCopy(board: Board, point: Point, player: Player): Board {
   const next = board.slice()
   next[idx(point.x, point.y)] = player
   return next
-}
-
-function samePoint(left: Point, right: Point): boolean {
-  return left.x === right.x && left.y === right.y
 }
 
 /**

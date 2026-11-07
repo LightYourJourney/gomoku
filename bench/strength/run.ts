@@ -102,16 +102,23 @@ function specFromEnv(prefix: 'A' | 'B', difficulty: Difficulty): EngineSpec {
    */
   const prescreenThreshold = env(`STRENGTH_${prefix}_PRESCREEN_THRESHOLD`)
   const prescreenKeep = env(`STRENGTH_${prefix}_PRESCREEN_KEEP`)
-  if (prescreenThreshold !== undefined || prescreenKeep !== undefined) {
-    // 缺一个或给了非数字，都会让预筛静默失效（NaN 比较恒假），而 id 后缀看起来
-    // 一切正常——对照实验最不能出事的就是这里，所以直接拒绝而不是回落。
-    if (prescreenThreshold === undefined || prescreenKeep === undefined) {
-      throw new Error(`STRENGTH_${prefix}_PRESCREEN_THRESHOLD 与 _KEEP 必须同时给出`)
-    }
+  /*
+   * 两个变量必须**同时**给出，且都是正数：缺一个或给了非数字都会让预筛静默失效
+   * （NaN 比较恒假），而 id 后缀看起来一切正常——对照实验最不能出事的就是这里，
+   * 所以直接拒绝而不是回落。算一次的 `prescreen` 下面两处共用。
+   */
+  if ((prescreenThreshold === undefined) !== (prescreenKeep === undefined)) {
+    throw new Error(`STRENGTH_${prefix}_PRESCREEN_THRESHOLD 与 _KEEP 必须同时给出`)
+  }
+  if (prescreenThreshold !== undefined && prescreenKeep !== undefined) {
     if (!isPositiveNumber(prescreenThreshold) || !isPositiveNumber(prescreenKeep)) {
       throw new Error(`STRENGTH_${prefix}_PRESCREEN_* 必须是正数`)
     }
   }
+  const prescreen =
+    prescreenThreshold === undefined || prescreenKeep === undefined
+      ? undefined
+      : { threshold: Number(prescreenThreshold), keepFactor: Number(prescreenKeep) }
   const threatThrees = boolEnv(`STRENGTH_${prefix}_THREAT_THREES`)
 
   /*
@@ -124,9 +131,7 @@ function specFromEnv(prefix: 'A' | 'B', difficulty: Difficulty): EngineSpec {
   const suffix =
     (fixed === undefined ? '' : `-d${fixed}`) +
     (module_ === undefined ? '' : `@${basename(module_).replace(/\.mjs$/, '')}`) +
-    (prescreenThreshold === undefined || prescreenKeep === undefined
-      ? ''
-      : `+ps${prescreenThreshold}x${prescreenKeep}`)
+    (prescreen === undefined ? '' : `+ps${prescreen.threshold}x${prescreen.keepFactor}`)
 
   return {
     id: env(`STRENGTH_${prefix}_ID`) ?? `${difficulty}${suffix}`,
@@ -140,9 +145,7 @@ function specFromEnv(prefix: 'A' | 'B', difficulty: Difficulty): EngineSpec {
     ...(transposition === undefined ? {} : { transposition }),
     ...(threatThrees === undefined ? {} : { threatThrees }),
     ...(module_ === undefined ? {} : { module: module_ }),
-    ...(prescreenThreshold === undefined || prescreenKeep === undefined
-      ? {}
-      : { prescreen: { threshold: Number(prescreenThreshold), keepFactor: Number(prescreenKeep) } }),
+    ...(prescreen === undefined ? {} : { prescreen }),
   }
 }
 

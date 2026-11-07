@@ -1,6 +1,6 @@
-import { idx, opponentOf } from '../core/board'
+import { idx, opponentOf, samePoint } from '../core/board'
 import { BOARD_SIZE, type Board, type Player, type Point } from '../core/types'
-import { candidateMoves } from './candidates'
+import { candidateMoves, NEIGHBOR_RADIUS } from './candidates'
 import { countCall } from './metrics'
 import { DIFFICULTY_PARAMS, type DifficultyParams } from './difficulty'
 import { WIN_SCORE } from './evaluate'
@@ -175,7 +175,7 @@ function fromTableScore(score: number, ply: number): number {
 function recordKiller(ctx: SearchContext, ply: number, move: Point): void {
   const slot = ctx.killers[ply]
   if (slot === undefined) return
-  if (slot[0] !== null && slot[0].x === move.x && slot[0].y === move.y) return
+  if (slot[0] !== null && samePoint(slot[0], move)) return
   for (let i = slot.length - 1; i > 0; i--) slot[i] = slot[i - 1]
   slot[0] = move
 }
@@ -183,15 +183,7 @@ function recordKiller(ctx: SearchContext, ply: number, move: Point): void {
 function isKiller(ctx: SearchContext, ply: number, move: Point): boolean {
   const slot = ctx.killers[ply]
   if (slot === undefined) return false
-  return slot.some((killer) => killer !== null && killer.x === move.x && killer.y === move.y)
-}
-
-/**
- * 预筛是否启用。默认关闭；开启时只在候选数**超过**阈值才动手。
- */
-function shouldPrescreen(ctx: SearchContext, candidateCount: number): boolean {
-  const prescreen = ctx.options.prescreen
-  return prescreen !== undefined && candidateCount > prescreen.threshold
+  return slot.some((killer) => killer !== null && samePoint(killer, move))
 }
 
 /**
@@ -225,8 +217,11 @@ export function prescreenCandidates(
      * 它们会连同其余着法一起被截掉，而这正是 §3.2 明令禁止的情形。
      */
     if (
-      (tableMove !== null && point.x === tableMove.x && point.y === tableMove.y) ||
-      isKiller(ctx, ply, point)
+      (tableMove !== null && samePoint(point, tableMove)) ||
+      isKiller(ctx, ply, point) ||
+      // 立即成五同样**永不筛**：它比任何排序都重要，漏掉就是少赢一局。
+      // 放进豁免集后，下面的打分循环仍会在它上面命中 `winNow` —— 判成五只在这一处。
+      completesFive(board, point, player)
     ) {
       exempt.push(point)
       continue
@@ -235,9 +230,12 @@ export function prescreenCandidates(
   }
 
   scored.sort((a, b) => b.score - a.score)
-  const room = Math.max(0, keepTarget - exempt.length)
-  const kept = scored.length <= room ? scored : scored.slice(0, room)
-  return [...exempt, ...kept.map((entry) => entry.point)]
+  // `slice` 越界时就是全取，不需要先比长度。结果拼进同一个数组，避免多建两个。
+  const kept = exempt
+  for (const entry of scored.slice(0, Math.max(0, keepTarget - exempt.length))) {
+    kept.push(entry.point)
+  }
+  return kept
 }
 
 /**
@@ -251,20 +249,18 @@ export function prescreenCandidates(
  * 越近越可能是好点。真正的取舍由棋力 A/B 决定，这里只保证信号单调。
  */
 function roughScore(board: Board, point: Point, player: Player, opponent: Player): number {
-  let density = 0
   let nearest = BOARD_SIZE
   let mineNear = 0
   let theirsNear = 0
 
-  for (let dy = -2; dy <= 2; dy++) {
+  for (let dy = -NEIGHBOR_RADIUS; dy <= NEIGHBOR_RADIUS; dy++) {
     const y = point.y + dy
     if (y < 0 || y >= BOARD_SIZE) continue
-    for (let dx = -2; dx <= 2; dx++) {
+    for (let dx = -NEIGHBOR_RADIUS; dx <= NEIGHBOR_RADIUS; dx++) {
       const x = point.x + dx
       if (x < 0 || x >= BOARD_SIZE) continue
       const cell = board[y * BOARD_SIZE + x]
       if (cell === 0) continue
-      density++
       const distance = Math.max(Math.abs(dx), Math.abs(dy))
       if (distance < nearest) nearest = distance
       if (cell === player) mineNear++
@@ -272,9 +268,12 @@ function roughScore(board: Board, point: Point, player: Player, opponent: Player
     }
   }
 
-  // 「只在一边有子」多半是单边连接，价值低于两侧都有呼应
-  const balance = mineNear + theirsNear === 0 ? 0 : 2 * Math.min(mineNear, theirsNear)
-  return density * 4 + balance * 3 - nearest
+  /*
+   * 棋盘上只有空、己方、对方三种值，所以棋子总数就是 `mineNear + theirsNear`，
+   * 不必再单独数一遍。`Math.min` 在两个都为 0 时本来就是 0，不需要守卫。
+   * 「两侧都有子」多半比单边连接更有前途，所以给它额外权重。
+   */
+  return (mineNear + theirsNear) * 4 + Math.min(mineNear, theirsNear) * 6 - nearest
 }
 
 /**
@@ -297,19 +296,15 @@ function orderMoves(
   countCall('orderMoves')
 
   let order: readonly Point[] = candidates
-  if (shouldPrescreen(ctx, candidates.length)) {
-    /*
-     * 存在立即成五时**直接返回**：那一条比任何排序都重要，没必要再走后面的完整打分
-     * （§4.4a）。`completesFive` 比 `analyzeFast` 便宜，这一趟的代价小于它省下的。
-     */
-    const winning = candidates.find((point) => completesFive(board, point, player))
-    if (winning !== undefined) return { points: [], winNow: winning }
-
+  // 只在这里读一次开关；不另立谓词函数——那样同一个判断会写两遍，
+  // 还得在调用处补 `!` 来保住非空类型。
+  const prescreen = ctx.options.prescreen
+  if (prescreen !== undefined && candidates.length > prescreen.threshold) {
     order = prescreenCandidates(
       board,
       candidates,
       player,
-      width * ctx.options.prescreen!.keepFactor,
+      width * prescreen.keepFactor,
       ctx,
       ply,
       tableMove,

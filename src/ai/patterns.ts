@@ -155,43 +155,6 @@ function indexToPoint(point: Point, dir: Point, index: number): Point {
   return { x: point.x + dir.x * step, y: point.y + dir.y * step }
 }
 
-/**
- * 沿 `dir` 的窗口几何：还能走几格、落点索引、步长。
- *
- * 三个调用方（`scanDirection`、`completesFive`，以及数组版）都需要同一组量；
- * 各写一份时「forward 与 backward 的符号」这类错误只会在其中一份里出现。
- * 数值全部是**含落点所在格**的格数，用法见 `scanDirection` 的窗口循环。
- */
-interface DirectionGeometry {
-  readonly forwardSteps: number
-  readonly backwardSteps: number
-  readonly base: number
-  readonly stride: number
-}
-
-function directionGeometry(point: Point, dir: Point): DirectionGeometry {
-  const dx = dir.x
-  const dy = dir.y
-  return {
-    forwardSteps: Math.min(
-      dx > 0 ? BOARD_SIZE - 1 - point.x : dx < 0 ? point.x : BOARD_SIZE,
-      dy > 0 ? BOARD_SIZE - 1 - point.y : dy < 0 ? point.y : BOARD_SIZE,
-    ),
-    backwardSteps: Math.min(
-      dx > 0 ? point.x : dx < 0 ? BOARD_SIZE - 1 - point.x : BOARD_SIZE,
-      dy > 0 ? point.y : dy < 0 ? BOARD_SIZE - 1 - point.y : BOARD_SIZE,
-    ),
-    base: point.y * BOARD_SIZE + point.x,
-    stride: dy * BOARD_SIZE + dx,
-  }
-}
-
-/**
- * 一个方向上「有没有五 / 成五点在哪」。
- *
- * `winningSteps` 是**相对落点的步数**（-4..4），不是行内下标（0..8）——
- * 两个单位都只是裸 `number`，类型名与注释是唯一的区分手段。
- */
 interface DirectionScan {
   readonly five: boolean
   readonly winningSteps: readonly number[]
@@ -228,8 +191,25 @@ function scanDirection(
     }
   }
 
-  // 该方向上还能走几格；两个轴取较小者（与棋盘边界的距离，含落点所在格）。
-  const { forwardSteps, backwardSteps, base, stride } = directionGeometry(point, dir)
+  /*
+   * 该方向上还能走几格；两个轴取较小者（与棋盘边界的距离，含落点所在格）。
+   *
+   * 这里用四个局部变量而不是一个结构体：`scanDirection` 在 `analyzeFast` 的
+   * 必经路径上，每候选每方向各一次——按方向新建对象会变成每秒上亿次的短命分配，
+   * 那是**默认关闭也照付**的代价。
+   */
+  const dx = dir.x
+  const dy = dir.y
+  const forwardSteps = Math.min(
+    dx > 0 ? BOARD_SIZE - 1 - point.x : dx < 0 ? point.x : BOARD_SIZE,
+    dy > 0 ? BOARD_SIZE - 1 - point.y : dy < 0 ? point.y : BOARD_SIZE,
+  )
+  const backwardSteps = Math.min(
+    dx > 0 ? point.x : dx < 0 ? BOARD_SIZE - 1 - point.x : BOARD_SIZE,
+    dy > 0 ? point.y : dy < 0 ? BOARD_SIZE - 1 - point.y : BOARD_SIZE,
+  )
+  const base = point.y * BOARD_SIZE + point.x
+  const stride = dy * BOARD_SIZE + dx
   const winningSteps: number[] = []
 
   for (let start = -WINDOW_RADIUS; start <= 0; start++) {
@@ -336,44 +316,14 @@ export function analyzeDirection(
  */
 export function completesFive(board: Board, point: Point, player: Player): boolean {
   /*
-   * 界外落点退回数组版：`base + stride * step` 在 x 越界时仍会落在 0..224 里，
-   * 读到的是**无关行**的格子。生产调用点全在界内，但公开函数没有这条前置条件，
-   * 而它与 `analyzeFast` 的等价性是差分测试的判据——两条必须对同样的输入给同样的答案。
+   * 直接复用 `scanDirection`，不再自己枚举窗口。
+   *
+   * 第一版为了「便宜」把窗口循环抄了一遍，结果同一个语义有两份实现：
+   * 「落点视为己方」「界外作废」「命中即返」这三条必须永远同构，分叉了只能靠
+   * 差分测试兜底。而 `scanDirection` 本身已经是无物化的版本（不建 9 格缓冲），
+   * 它省下的正是这里想省的那部分——多写一份只是把同一段逻辑多维护一次。
    */
-  if (point.x < 0 || point.x >= BOARD_SIZE || point.y < 0 || point.y >= BOARD_SIZE) {
-    const line = new Int8Array(WINDOW_SIZE)
-    for (const dir of DIRECTIONS) {
-      buildLine(board, point, player, dir, line)
-      if (scanLine(line).five) return true
-    }
-    return false
-  }
-
-  for (const dir of DIRECTIONS) {
-    const { forwardSteps: forward, backwardSteps: backward, base, stride } = directionGeometry(point, dir)
-
-    // 与 `scanDirection` 同一套窗口：只枚举包含落点的五个五连窗口。
-    for (let start = -WINDOW_RADIUS; start <= 0; start++) {
-      if (start < -backward || start + WIN_LENGTH - 1 > forward) continue
-
-      let own = 0
-      for (let k = 0; k < WIN_LENGTH; k++) {
-        const step = start + k
-        if (step === 0) {
-          own++
-          continue
-        }
-        const cell = board[base + stride * step]
-        if (cell !== player) {
-          own = 0
-          break
-        }
-        own++
-      }
-      if (own === WIN_LENGTH) return true
-    }
-  }
-  return false
+  return DIRECTIONS.some((dir) => scanDirection(board, point, player, dir).five)
 }
 
 /**

@@ -48,6 +48,11 @@ export function opponentOf(player: Player): Player {
   return player === 1 ? 2 : 1
 }
 
+/** 两个坐标是不是同一个交叉点。调用方有三处（搜索、威胁搜索、评测），各写一份就得各改一次。 */
+export function samePoint(a: Point, b: Point): boolean {
+  return a.x === b.x && a.y === b.y
+}
+
 /**
  * 需要检查的四个连线方向：横、竖、主对角线（↘）、副对角线（↗）。
  *
