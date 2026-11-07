@@ -396,7 +396,11 @@ Negamax + Alpha-Beta，配合迭代加深：
    约 78% 的计算被丢掉；每个候选还要算两次 `analyzeFast`（我方 / 对方）。
    Phase 10C 已把每节点的排序成本压低（固定深度合计 2.27–2.30×），
    再往下压需要**候选预筛**——那会改变哪些候选进入搜索，是一次策略变更，
-   必须单独做棋力实验。见 [`ai-research/OPTIMIZATION_CANDIDATES.md`](ai-research/OPTIMIZATION_CANDIDATES.md)。
+   必须单独做棋力实验。**该实验已于 2026-11-07 完成并否决**：固定深度提速 19.9%，
+   但配对赛 standard 0/8、extended 2/32 告负，节点数反而上升——粗筛丢掉了关键着法。
+   开关保留在 `SearchOptions.prescreen`（默认关闭），结论见
+   [`superpowers/specs/2026-10-31-candidate-prescreen-design.md`](superpowers/specs/2026-10-31-candidate-prescreen-design.md) §8，
+   候选清单见 [`ai-research/OPTIMIZATION_CANDIDATES.md`](ai-research/OPTIMIZATION_CANDIDATES.md)。
 6. **提示的整轮棋型分析只值约 0.53 ms**（`buildSuggestions`，44 个候选点、攻防各一次；见上方实测表）。这一条原先写的是「比搜索贵得多」——那是错的，差了三四个数量级。单次 `analyzePoint` 与 `analyzeFast` 的比是约 3.4 倍。
 
 ## 测试锚点

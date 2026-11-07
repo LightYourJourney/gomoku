@@ -83,6 +83,11 @@ function difficultyEnv(name: string, fallback: Difficulty): Difficulty {
   return value
 }
 
+function isPositiveNumber(value: string): boolean {
+  const parsed = Number(value)
+  return Number.isFinite(parsed) && parsed > 0
+}
+
 function specFromEnv(prefix: 'A' | 'B', difficulty: Difficulty): EngineSpec {
   const fixed = env(`STRENGTH_${prefix}_FIXED`)
   const clock = fixed === undefined ? 'real' : 'fixed'
@@ -97,6 +102,16 @@ function specFromEnv(prefix: 'A' | 'B', difficulty: Difficulty): EngineSpec {
    */
   const prescreenThreshold = env(`STRENGTH_${prefix}_PRESCREEN_THRESHOLD`)
   const prescreenKeep = env(`STRENGTH_${prefix}_PRESCREEN_KEEP`)
+  if (prescreenThreshold !== undefined || prescreenKeep !== undefined) {
+    // 缺一个或给了非数字，都会让预筛静默失效（NaN 比较恒假），而 id 后缀看起来
+    // 一切正常——对照实验最不能出事的就是这里，所以直接拒绝而不是回落。
+    if (prescreenThreshold === undefined || prescreenKeep === undefined) {
+      throw new Error(`STRENGTH_${prefix}_PRESCREEN_THRESHOLD 与 _KEEP 必须同时给出`)
+    }
+    if (!isPositiveNumber(prescreenThreshold) || !isPositiveNumber(prescreenKeep)) {
+      throw new Error(`STRENGTH_${prefix}_PRESCREEN_* 必须是正数`)
+    }
+  }
   const threatThrees = boolEnv(`STRENGTH_${prefix}_THREAT_THREES`)
 
   /*

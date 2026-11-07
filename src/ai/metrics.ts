@@ -32,8 +32,7 @@ export interface AiCallCounters {
   ttStore: number
   /** `findForcedWin()` 的调用次数（每次搜索至多一次）。 */
   forcedWin: number
-  /** 预筛被调用的次数与保留下来的候选数（预筛关闭时恒为 0）。 */
-  prescreenCandidates: number
+  /** 预筛保留下来的**候选总数**（预筛关闭时恒为 0）。 */
   prescreenKept: number
 }
 
@@ -50,7 +49,6 @@ function empty(): AiCallCounters {
     ttProbe: 0,
     ttStore: 0,
     forcedWin: 0,
-    prescreenCandidates: 0,
     prescreenKept: 0,
   }
 }
@@ -69,8 +67,8 @@ export function stopAiCounters(): AiCallCounters | null {
   return counters
 }
 
-/** 热路径调用点用的自增。未开启时只花一次判空。 */
-export function countCall(name: keyof AiCallCounters): void {
+/** 热路径调用点用的自增。未开启时只花一次判空。`amount` 用于计数型指标（如保留数）。 */
+export function countCall(name: keyof AiCallCounters, amount = 1): void {
   const counters = aiCounters.current
-  if (counters !== null) counters[name]++
+  if (counters !== null) counters[name] += amount
 }

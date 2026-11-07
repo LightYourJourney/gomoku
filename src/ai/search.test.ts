@@ -4,7 +4,7 @@ import { BLACK, WHITE, type Board, type Player } from '../core/types'
 import { boardFromLines, nearlyFullBoard } from '../test/board-fixtures'
 import { startAiCounters, stopAiCounters } from './metrics'
 import { isWinningPoint } from './patterns'
-import { chooseMove, searchBoard } from './search'
+import { chooseMove, prescreenCandidates, searchBoard } from './search'
 import type { Difficulty, SearchRequest, SearchResponse } from './types'
 
 /** `purpose` 不在可覆盖之列：会被展开成 `RequestPurpose | undefined`，破坏必填性。 */
@@ -389,15 +389,42 @@ describe('候选预筛开关', () => {
     const filtered = counters({ ...base, prescreen: { threshold: 1, keepFactor: 2 } })
 
     expect(filtered.orderCandidates).toBeLessThan(plain.orderCandidates * 0.85)
-    expect(filtered.prescreenCandidates).toBeGreaterThan(0)
+    // 保留数是**候选总数**，不是调用次数：启用了几十次，总数必然远大于调用次数
+    expect(filtered.prescreenKept).toBeGreaterThan(1)
+  })
+
+  it('豁免着法（置换表/杀手）不会被保留数截掉', () => {
+    /*
+     * 规格 §3.2：这两类着法「永不参与预筛」。
+     * 直接测函数：keepTarget 压到 0 时，普通候选全被筛掉，豁免着法必须一个不少。
+     * 「打极大分再统一 slice」的写法会在这里留下 0 个——反向验证过的。
+     */
+    const exemptMove = { x: 3, y: 3 }
+    const tableMove = { x: 5, y: 5 }
+    const ctx = {
+      killers: [[exemptMove, null, null]],
+    } as unknown as Parameters<typeof prescreenCandidates>[4]
+    const candidates = [
+      exemptMove,
+      tableMove,
+      { x: 7, y: 7 },
+      { x: 9, y: 9 },
+      { x: 11, y: 11 },
+    ]
+
+    const kept = prescreenCandidates(MIDGAME, candidates, WHITE, 0, ctx, 0, tableMove)
+
+    expect(kept).toHaveLength(2)
+    expect(kept.some((p) => p.x === tableMove.x && p.y === tableMove.y)).toBe(true)
+    expect(kept.some((p) => p.x === exemptMove.x && p.y === exemptMove.y)).toBe(true)
   })
 
   it('候选数不超过阈值时不启用预筛', () => {
     const counters = startAiCounters()
     try {
       searchBoard(MIDGAME, WHITE, { ...base, prescreen: { threshold: 999, keepFactor: 2 } }, clock)
-      // 根节点候选远超 999 才会启用；这里阈值高到不可能命中
-      expect(counters.prescreenCandidates).toBe(0)
+      // 阈值高到不可能命中；「保留数」在未启用时必须严格为 0
+      expect(counters.prescreenKept).toBe(0)
     } finally {
       stopAiCounters()
     }

@@ -204,7 +204,7 @@ function shouldPrescreen(ctx: SearchContext, candidateCount: number): boolean {
  * 与 `analyzeFast` 的分数**不可比**：这里只用来决定谁进下一轮，候选集一旦定下，
  * 排序仍由完整棋型分决定。
  */
-function prescreenCandidates(
+export function prescreenCandidates(
   board: Board,
   candidates: readonly Point[],
   player: Player,
@@ -213,29 +213,39 @@ function prescreenCandidates(
   ply: number,
   tableMove: Point | null,
 ): readonly Point[] {
-  countCall('prescreenCandidates')
   const opponent = opponentOf(player)
+  const exempt: Point[] = []
   const scored: Array<{ point: Point; score: number }> = []
 
   for (const point of candidates) {
-    // 跨节点的着法：永不筛
+    /*
+     * 跨节点的着法：**永不筛**，直接单独收走。
+     *
+     * 不能靠「给个极大的分数再统一 slice」——豁免数超过 keepTarget 时，
+     * 它们会连同其余着法一起被截掉，而这正是 §3.2 明令禁止的情形。
+     */
     if (
       (tableMove !== null && point.x === tableMove.x && point.y === tableMove.y) ||
       isKiller(ctx, ply, point)
     ) {
-      scored.push({ point, score: Number.POSITIVE_INFINITY })
+      exempt.push(point)
       continue
     }
     scored.push({ point, score: roughScore(board, point, player, opponent) })
   }
 
   scored.sort((a, b) => b.score - a.score)
-  const kept = scored.length <= keepTarget ? scored : scored.slice(0, keepTarget)
-  return kept.map((entry) => entry.point)
+  const room = Math.max(0, keepTarget - exempt.length)
+  const kept = scored.length <= room ? scored : scored.slice(0, room)
+  return [...exempt, ...kept.map((entry) => entry.point)]
 }
 
 /**
- * 粗筛用的廉价几何分。三项都是局部读格，最多 25 + 4×6 次。
+ * 粗筛用的廉价几何分：一个 5×5 窗口（最多 25 次读格）加一次距离比较。
+ *
+ * 规格 §4.2 原本还写了「沿四方向各数 3 格」的第三信号；这一版用窗口内的
+ * **两侧平衡**顶替它——两者的意图相同（判断这一带有没有战场），而窗口版只
+ * 扫一遍。这个替换已记在方案 §8 里，不是悄悄改的。
  *
  * 权重不是调参结果，而是**排序意图的直译**：邻域越密越可能有战术，离已有棋子
  * 越近越可能是好点。真正的取舍由棋力 A/B 决定，这里只保证信号单调。
@@ -288,20 +298,23 @@ function orderMoves(
 
   let order: readonly Point[] = candidates
   if (shouldPrescreen(ctx, candidates.length)) {
-    // 存在立即成五时不必筛：那一条比任何排序都重要，原样走下面的完整打分。
-    if (!candidates.some((point) => completesFive(board, point, player))) {
-      order = prescreenCandidates(
-        board,
-        candidates,
-        player,
-        width * ctx.options.prescreen!.keepFactor,
-        ctx,
-        ply,
-        tableMove,
-      )
-      countCall('prescreenKept')
-      countCall('prescreenCandidates')
-    }
+    /*
+     * 存在立即成五时**直接返回**：那一条比任何排序都重要，没必要再走后面的完整打分
+     * （§4.4a）。`completesFive` 比 `analyzeFast` 便宜，这一趟的代价小于它省下的。
+     */
+    const winning = candidates.find((point) => completesFive(board, point, player))
+    if (winning !== undefined) return { points: [], winNow: winning }
+
+    order = prescreenCandidates(
+      board,
+      candidates,
+      player,
+      width * ctx.options.prescreen!.keepFactor,
+      ctx,
+      ply,
+      tableMove,
+    )
+    countCall('prescreenKept', order.length)
   }
 
   const opponent = opponentOf(player)

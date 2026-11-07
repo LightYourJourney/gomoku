@@ -392,8 +392,15 @@ describe('completesFive —— 独立成五检测', () => {
     expect(completesFive(board, { x: 4, y: 0 }, BLACK)).toBe(true)
   })
 
-  it('与 analyzeFast().five 在 5,000+ 局面 × 全部空点上逐点相等', () => {
-    const SEEDS = 25
+  it('与 analyzeFast().five 在 5,000+ 局面 × 全部点位上逐点相等', { timeout: 90_000 }, () => {
+    /*
+     * 规格 §4.3 要求 ≥5,000 个局面。100 种子 × 60 手 = 6,000 个局面，
+     * 每个局面扫全盘 225 点 × 2 方 ≈ 270 万次对比。
+     *
+     * 空载单跑约 11 秒；全量并发时机器慢会顶到默认 15 秒，所以显式放宽——
+     * 这条用例的**唯一价值**是覆盖量，缩规模等于自废判据。
+     */
+    const SEEDS = 100
     const MOVES = 60
 
     for (let seed = 1; seed <= SEEDS; seed++) {
@@ -408,9 +415,7 @@ describe('completesFive —— 独立成五检测', () => {
         empty.pop()
         board[cell] = random() < 0.5 ? BLACK : WHITE
 
-        // 每 4 手做一次全盘扫描：25 种子 × 15 次 = 375 个局面 × 225 点 × 2 方
-        // ≈ 168,750 次对比，覆盖空点与已占点两种输入。
-        if (move % 4 !== 3) continue
+        // 每一手都做一次全盘扫描（含已占点与空点两种输入）。
         for (let at = 0; at < CELL_COUNT; at++) {
           const point = { x: at % 15, y: Math.floor(at / 15) }
           for (const player of [BLACK, WHITE]) {
