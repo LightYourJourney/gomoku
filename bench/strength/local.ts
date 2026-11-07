@@ -36,6 +36,7 @@ function optionsFromSpec(spec: EngineSpec, params: DifficultyParams): SearchOpti
     ...(spec.transposition === undefined ? {} : { transposition: spec.transposition }),
     ...(spec.threatPlies === undefined ? {} : { threatPlies: spec.threatPlies }),
     ...(spec.threatThrees === undefined ? {} : { threatThrees: spec.threatThrees }),
+    ...(spec.prescreen === undefined ? {} : { prescreen: spec.prescreen }),
   }
 }
 

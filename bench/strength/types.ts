@@ -63,6 +63,11 @@ export interface EngineSpec {
   readonly threatThrees?: boolean
   readonly clock: 'real' | 'fixed'
   /**
+   * 候选预筛覆盖。只能用于**对照实验**：生产路径不传它，默认关闭。
+   * 见 `docs/superpowers/specs/2026-10-31-candidate-prescreen-design.md`。
+   */
+  readonly prescreen?: { readonly threshold: number; readonly keepFactor: number }
+  /**
    * 外部引擎包（`bench/strength/.engines/*.mjs`）。
    *
    * 给了它就从那个包加载引擎，用于与历史版本对照；不给就用当前源码。

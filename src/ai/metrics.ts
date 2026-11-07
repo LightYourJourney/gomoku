@@ -32,6 +32,9 @@ export interface AiCallCounters {
   ttStore: number
   /** `findForcedWin()` 的调用次数（每次搜索至多一次）。 */
   forcedWin: number
+  /** 预筛被调用的次数与保留下来的候选数（预筛关闭时恒为 0）。 */
+  prescreenCandidates: number
+  prescreenKept: number
 }
 
 const aiCounters: { current: AiCallCounters | null } = { current: null }
@@ -47,6 +50,8 @@ function empty(): AiCallCounters {
     ttProbe: 0,
     ttStore: 0,
     forcedWin: 0,
+    prescreenCandidates: 0,
+    prescreenKept: 0,
   }
 }
 

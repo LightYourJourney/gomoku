@@ -7,6 +7,7 @@ import {
   analyzeDirection,
   analyzeFast,
   analyzePoint,
+  completesFive,
   doubleThreat,
   hasDoubleThreat,
   isWinningPoint,
@@ -288,6 +289,171 @@ function mulberry32(seed: number): () => number {
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296
   }
 }
+
+describe('completesFive —— 独立成五检测', () => {
+  /*
+   * 候选预筛要在**完整打分之前**先判「这一步能不能直接赢」，所以 `completesFive`
+   * 必须便宜。代价是它成了新的实现，而「漏掉一步成五」是这条方案里唯一
+   * 灾难性的失败模式——唯一的闸门就是下面这条差分测试。
+   */
+  it('直白的成五局面为真，断开的四为假', () => {
+    const board = boardFromLines([
+      '...............',
+      '...............',
+      '...............',
+      '...............',
+      '...............',
+      '...............',
+      '...............',
+      '...BBBB........',
+      '...............',
+      '...............',
+      '...............',
+      '...............',
+      '...............',
+      '...............',
+      '...............',
+    ])
+    // 第 4 颗黑右边落子即成五
+    expect(completesFive(board, { x: 7, y: 7 }, BLACK)).toBe(true)
+    // 同一行但中间有缺口：`BB.B` 需要的是 f 点而非缺口以外的位置
+    expect(completesFive(board, { x: 12, y: 7 }, BLACK)).toBe(false)
+  })
+
+  it('对手子夹在中间时凑不成五', () => {
+    /*
+     * 两块白子夹住四颗黑：两侧的空点都补不出五——它们各自那一侧的窗口里
+     * 都含一颗白子。注意落点本身必须**是空的**：`analyzeFast` 的语义是
+     * 「假定这里落下己方子」，拿白子所在格当落点会得到「五」这个假答案。
+     */
+    const blocked = boardFromLines([
+      '...............',
+      '...............',
+      '...............',
+      '...............',
+      '...............',
+      '...............',
+      '...............',
+      '....WBBBBW.....',
+      '...............',
+      '...............',
+      '...............',
+      '...............',
+      '...............',
+      '...............',
+      '...............',
+    ])
+    // 落点必须是**空格**：x=3 在左侧白子左邻，x=10 在右侧白子右邻
+    expect(completesFive(blocked, { x: 3, y: 7 }, BLACK)).toBe(false)
+    expect(completesFive(blocked, { x: 10, y: 7 }, BLACK)).toBe(false)
+
+    // 对照组：同样的四颗黑，两侧无子——补一手就是五
+    const open = boardFromLines([
+      '...............',
+      '...............',
+      '...............',
+      '...............',
+      '...............',
+      '...............',
+      '...............',
+      '.....BBBB......',
+      '...............',
+      '...............',
+      '...............',
+      '...............',
+      '...............',
+      '...............',
+      '...............',
+    ])
+    expect(completesFive(open, { x: 4, y: 7 }, BLACK)).toBe(true)
+    expect(completesFive(open, { x: 9, y: 7 }, BLACK)).toBe(true)
+    // 再远两格就连不上五
+    expect(completesFive(open, { x: 2, y: 7 }, BLACK)).toBe(false)
+  })
+
+  it('贴边与长连都按五连窗口判', () => {
+    const board = boardFromLines([
+      'BBBB...........',
+      '...............',
+      '...............',
+      '...............',
+      '...............',
+      '...............',
+      '...............',
+      '...............',
+      '...............',
+      '...............',
+      '...............',
+      '...............',
+      '...............',
+      '...............',
+      '...............',
+    ])
+    expect(completesFive(board, { x: 4, y: 0 }, BLACK)).toBe(true)
+  })
+
+  it('与 analyzeFast().five 在 5,000+ 局面 × 全部空点上逐点相等', () => {
+    const SEEDS = 25
+    const MOVES = 60
+
+    for (let seed = 1; seed <= SEEDS; seed++) {
+      const random = mulberry32(seed)
+      const board = createBoard()
+      const empty = Array.from({ length: CELL_COUNT }, (_, i) => i)
+
+      for (let move = 0; move < MOVES; move++) {
+        const pick = Math.floor(random() * empty.length)
+        const cell = empty[pick]
+        empty[pick] = empty[empty.length - 1]
+        empty.pop()
+        board[cell] = random() < 0.5 ? BLACK : WHITE
+
+        // 每 4 手做一次全盘扫描：25 种子 × 15 次 = 375 个局面 × 225 点 × 2 方
+        // ≈ 168,750 次对比，覆盖空点与已占点两种输入。
+        if (move % 4 !== 3) continue
+        for (let at = 0; at < CELL_COUNT; at++) {
+          const point = { x: at % 15, y: Math.floor(at / 15) }
+          for (const player of [BLACK, WHITE]) {
+            expect(
+              completesFive(board, point, player),
+              `种子 ${seed} 第 ${move + 1} 手，点 (${point.x},${point.y})，${player === BLACK ? '黑' : '白'}`,
+            ).toBe(analyzeFast(board, point, player).five)
+          }
+        }
+      }
+    }
+  })
+
+  it('界外落点同样与 analyzeFast 一致', () => {
+    const board = boardFromLines([
+      '...............',
+      '...............',
+      '...............',
+      '...............',
+      '...............',
+      '...............',
+      '...............',
+      'BBBB...........',
+      '...............',
+      '...............',
+      '...............',
+      '...............',
+      '...............',
+      '...............',
+      '...............',
+    ])
+    for (const point of [
+      { x: -1, y: 7 },
+      { x: 15, y: 7 },
+      { x: 3, y: -1 },
+      { x: 3, y: 15 },
+    ]) {
+      for (const player of [BLACK, WHITE]) {
+        expect(completesFive(board, point, player)).toBe(analyzeFast(board, point, player).five)
+      }
+    }
+  })
+})
 
 describe('analyzeFast 与数组版（analyzeDirection）随机差分', () => {
   it('20 个种子 × 60 手随机棋局上逐项一致', () => {

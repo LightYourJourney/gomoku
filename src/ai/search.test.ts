@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { createBoard, idx, pointFromIdx } from '../core/board'
 import { BLACK, WHITE, type Board, type Player } from '../core/types'
 import { boardFromLines, nearlyFullBoard } from '../test/board-fixtures'
+import { startAiCounters, stopAiCounters } from './metrics'
 import { isWinningPoint } from './patterns'
 import { chooseMove, searchBoard } from './search'
 import type { Difficulty, SearchRequest, SearchResponse } from './types'
@@ -339,6 +340,80 @@ describe('searchBoard —— 置换表与注入时钟', () => {
       expect(result.move).not.toBeNull()
       expect(MIDGAME[result.move!.y * 15 + result.move!.x]).toBe(0)
     }
+  })
+})
+
+describe('候选预筛开关', () => {
+  /*
+   * 这是**策略变更**的入口，所以两条契约必须钉住：
+   * 关闭时必须与优化前逐位相同（等价测试另有四个固定深度快照兜底），
+   * 打开时必须真的少打分，否则它就只是白花了一趟粗筛。
+   */
+  const MIDGAME = boardFromLines([
+    '...............',
+    '...............',
+    '...............',
+    '...............',
+    '......WB.......',
+    '.....BWB.......',
+    '......BW.......',
+    '.......B.......',
+  ])
+  const base = {
+    width: 12,
+    maxDepth: 3,
+    budgetMs: 60_000,
+    transposition: true,
+    threatPlies: 0,
+    threatThrees: false,
+    attack: 1,
+    defense: 1,
+  }
+  const clock = (): number => 0
+
+  it('默认关闭（不传 prescreen）时结果不受影响', () => {
+    // 关掉预筛这件事本身不改变分数：开关缺省就是原路径
+    const result = searchBoard(MIDGAME, WHITE, base, clock)
+    expect(result.score).toBeGreaterThan(Number.NEGATIVE_INFINITY)
+    expect(result.move).not.toBeNull()
+  })
+
+  it('打开后打分的候选数少于关闭时', () => {
+    const counters = (options: typeof base & { prescreen?: { threshold: number; keepFactor: number } }) => {
+      startAiCounters()
+      searchBoard(MIDGAME, WHITE, options, clock)
+      return stopAiCounters()!
+    }
+
+    const plain = counters(base)
+    const filtered = counters({ ...base, prescreen: { threshold: 1, keepFactor: 2 } })
+
+    expect(filtered.orderCandidates).toBeLessThan(plain.orderCandidates * 0.85)
+    expect(filtered.prescreenCandidates).toBeGreaterThan(0)
+  })
+
+  it('候选数不超过阈值时不启用预筛', () => {
+    const counters = startAiCounters()
+    try {
+      searchBoard(MIDGAME, WHITE, { ...base, prescreen: { threshold: 999, keepFactor: 2 } }, clock)
+      // 根节点候选远超 999 才会启用；这里阈值高到不可能命中
+      expect(counters.prescreenCandidates).toBe(0)
+    } finally {
+      stopAiCounters()
+    }
+  })
+
+  it('打开预筛也不会漏掉立即成五', () => {
+    // 四连两端都能成五；keepFactor 极小也要能赢
+    const mustWin = boardFromLines(['...............', '...............', '...BBBB........'])
+    const result = searchBoard(
+      mustWin,
+      BLACK,
+      { ...base, maxDepth: 2, prescreen: { threshold: 1, keepFactor: 0.1 } },
+      clock,
+    )
+    expect(result.move).not.toBeNull()
+    expect(isWinningPoint(mustWin, result.move!, BLACK)).toBe(true)
   })
 })
 

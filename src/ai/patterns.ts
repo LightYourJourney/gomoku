@@ -156,6 +156,37 @@ function indexToPoint(point: Point, dir: Point, index: number): Point {
 }
 
 /**
+ * 沿 `dir` 的窗口几何：还能走几格、落点索引、步长。
+ *
+ * 三个调用方（`scanDirection`、`completesFive`，以及数组版）都需要同一组量；
+ * 各写一份时「forward 与 backward 的符号」这类错误只会在其中一份里出现。
+ * 数值全部是**含落点所在格**的格数，用法见 `scanDirection` 的窗口循环。
+ */
+interface DirectionGeometry {
+  readonly forwardSteps: number
+  readonly backwardSteps: number
+  readonly base: number
+  readonly stride: number
+}
+
+function directionGeometry(point: Point, dir: Point): DirectionGeometry {
+  const dx = dir.x
+  const dy = dir.y
+  return {
+    forwardSteps: Math.min(
+      dx > 0 ? BOARD_SIZE - 1 - point.x : dx < 0 ? point.x : BOARD_SIZE,
+      dy > 0 ? BOARD_SIZE - 1 - point.y : dy < 0 ? point.y : BOARD_SIZE,
+    ),
+    backwardSteps: Math.min(
+      dx > 0 ? point.x : dx < 0 ? BOARD_SIZE - 1 - point.x : BOARD_SIZE,
+      dy > 0 ? point.y : dy < 0 ? BOARD_SIZE - 1 - point.y : BOARD_SIZE,
+    ),
+    base: point.y * BOARD_SIZE + point.x,
+    stride: dy * BOARD_SIZE + dx,
+  }
+}
+
+/**
  * 一个方向上「有没有五 / 成五点在哪」。
  *
  * `winningSteps` 是**相对落点的步数**（-4..4），不是行内下标（0..8）——
@@ -197,19 +228,8 @@ function scanDirection(
     }
   }
 
-  const dx = dir.x
-  const dy = dir.y
   // 该方向上还能走几格；两个轴取较小者（与棋盘边界的距离，含落点所在格）。
-  const forwardSteps = Math.min(
-    dx > 0 ? BOARD_SIZE - 1 - point.x : dx < 0 ? point.x : BOARD_SIZE,
-    dy > 0 ? BOARD_SIZE - 1 - point.y : dy < 0 ? point.y : BOARD_SIZE,
-  )
-  const backwardSteps = Math.min(
-    dx > 0 ? point.x : dx < 0 ? BOARD_SIZE - 1 - point.x : BOARD_SIZE,
-    dy > 0 ? point.y : dy < 0 ? BOARD_SIZE - 1 - point.y : BOARD_SIZE,
-  )
-  const base = point.y * BOARD_SIZE + point.x
-  const stride = dy * BOARD_SIZE + dx
+  const { forwardSteps, backwardSteps, base, stride } = directionGeometry(point, dir)
   const winningSteps: number[] = []
 
   for (let start = -WINDOW_RADIUS; start <= 0; start++) {
@@ -301,6 +321,59 @@ export function analyzeDirection(
   if (hasOpenThree) return { kind: 'openThree', winningPoints: [] }
   if (hasThree) return { kind: 'three', winningPoints: [] }
   return { kind: 'none', winningPoints: [] }
+}
+
+/**
+ * 「在 `point` 落下 `player` 是否立刻成五」——**只判这一件事**。
+ *
+ * 与 `analyzeFast` 的区别：后者为了排序顺带算出全部成五点、活四与四，一次
+ * 单点约 4×9 格读加窗口枚举；这里只做四个方向的定长扫描，一发现成五就返回。
+ * 候选预筛要在完整打分**之前**跑一遍，所以它必须便宜，且必须与
+ * `analyzeFast(...).five` **逐点等价**（`patterns.test.ts` 用 5,000+ 局面差分钉住）。
+ *
+ * 语义与 `analyzeFast` 一致：落点无条件当成己方已落下，不检查该点是否已有棋子
+ * ——生产调用点（`candidateMoves`）只给空点，等价性测试对已占点也要求逐点相同。
+ */
+export function completesFive(board: Board, point: Point, player: Player): boolean {
+  /*
+   * 界外落点退回数组版：`base + stride * step` 在 x 越界时仍会落在 0..224 里，
+   * 读到的是**无关行**的格子。生产调用点全在界内，但公开函数没有这条前置条件，
+   * 而它与 `analyzeFast` 的等价性是差分测试的判据——两条必须对同样的输入给同样的答案。
+   */
+  if (point.x < 0 || point.x >= BOARD_SIZE || point.y < 0 || point.y >= BOARD_SIZE) {
+    const line = new Int8Array(WINDOW_SIZE)
+    for (const dir of DIRECTIONS) {
+      buildLine(board, point, player, dir, line)
+      if (scanLine(line).five) return true
+    }
+    return false
+  }
+
+  for (const dir of DIRECTIONS) {
+    const { forwardSteps: forward, backwardSteps: backward, base, stride } = directionGeometry(point, dir)
+
+    // 与 `scanDirection` 同一套窗口：只枚举包含落点的五个五连窗口。
+    for (let start = -WINDOW_RADIUS; start <= 0; start++) {
+      if (start < -backward || start + WIN_LENGTH - 1 > forward) continue
+
+      let own = 0
+      for (let k = 0; k < WIN_LENGTH; k++) {
+        const step = start + k
+        if (step === 0) {
+          own++
+          continue
+        }
+        const cell = board[base + stride * step]
+        if (cell !== player) {
+          own = 0
+          break
+        }
+        own++
+      }
+      if (own === WIN_LENGTH) return true
+    }
+  }
+  return false
 }
 
 /**

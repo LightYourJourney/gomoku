@@ -8,6 +8,7 @@ import { createIncrementalEvaluator, type IncrementalEvaluator } from './increme
 import {
   analyzeFast,
   analyzePoint,
+  completesFive,
   dominantThreat,
   isWinningPoint,
   shapeScore,
@@ -77,6 +78,22 @@ export interface SearchOptions extends Omit<DifficultyParams, 'depth'> {
    * 没必要算。
    */
   readonly diagnostics?: boolean
+  /**
+   * 候选预筛：先按便宜信号粗筛，再对保留下来的候选跑完整打分。
+   *
+   * **默认关闭**（`undefined`）。关闭时 `orderMoves` 走的路径与优化前逐字节相同，
+   * `search.equivalence.test.ts` 的固定深度快照一个数字都不变；打开时会改变
+   * 进入搜索的候选集合，属于**策略变更**——必须先过棋力 A/B（见
+   * `docs/superpowers/specs/2026-10-31-candidate-prescreen-design.md`）。
+   */
+  readonly prescreen?: PrescreenOptions
+}
+
+export interface PrescreenOptions {
+  /** 候选数**超过**它才启用；否则走原路径。 */
+  readonly threshold: number
+  /** 保留的候选数 = `width × keepFactor`。 */
+  readonly keepFactor: number
 }
 
 /**
@@ -170,6 +187,87 @@ function isKiller(ctx: SearchContext, ply: number, move: Point): boolean {
 }
 
 /**
+ * 预筛是否启用。默认关闭；开启时只在候选数**超过**阈值才动手。
+ */
+function shouldPrescreen(ctx: SearchContext, candidateCount: number): boolean {
+  const prescreen = ctx.options.prescreen
+  return prescreen !== undefined && candidateCount > prescreen.threshold
+}
+
+/**
+ * 粗筛：按「邻域密度 + 最近棋子距离 + 方向潜力」打分，保留 `keepTarget` 个。
+ *
+ * 信号全部是本节点的廉价几何量，**不调用 `analyzeFast`**——那正是要省掉的部分。
+ * 置换表着法与杀手着法无条件保留（它们带的是跨节点的信息），所以实际保留数会
+ * 略多于 `keepTarget`。
+ *
+ * 与 `analyzeFast` 的分数**不可比**：这里只用来决定谁进下一轮，候选集一旦定下，
+ * 排序仍由完整棋型分决定。
+ */
+function prescreenCandidates(
+  board: Board,
+  candidates: readonly Point[],
+  player: Player,
+  keepTarget: number,
+  ctx: SearchContext,
+  ply: number,
+  tableMove: Point | null,
+): readonly Point[] {
+  countCall('prescreenCandidates')
+  const opponent = opponentOf(player)
+  const scored: Array<{ point: Point; score: number }> = []
+
+  for (const point of candidates) {
+    // 跨节点的着法：永不筛
+    if (
+      (tableMove !== null && point.x === tableMove.x && point.y === tableMove.y) ||
+      isKiller(ctx, ply, point)
+    ) {
+      scored.push({ point, score: Number.POSITIVE_INFINITY })
+      continue
+    }
+    scored.push({ point, score: roughScore(board, point, player, opponent) })
+  }
+
+  scored.sort((a, b) => b.score - a.score)
+  const kept = scored.length <= keepTarget ? scored : scored.slice(0, keepTarget)
+  return kept.map((entry) => entry.point)
+}
+
+/**
+ * 粗筛用的廉价几何分。三项都是局部读格，最多 25 + 4×6 次。
+ *
+ * 权重不是调参结果，而是**排序意图的直译**：邻域越密越可能有战术，离已有棋子
+ * 越近越可能是好点。真正的取舍由棋力 A/B 决定，这里只保证信号单调。
+ */
+function roughScore(board: Board, point: Point, player: Player, opponent: Player): number {
+  let density = 0
+  let nearest = BOARD_SIZE
+  let mineNear = 0
+  let theirsNear = 0
+
+  for (let dy = -2; dy <= 2; dy++) {
+    const y = point.y + dy
+    if (y < 0 || y >= BOARD_SIZE) continue
+    for (let dx = -2; dx <= 2; dx++) {
+      const x = point.x + dx
+      if (x < 0 || x >= BOARD_SIZE) continue
+      const cell = board[y * BOARD_SIZE + x]
+      if (cell === 0) continue
+      density++
+      const distance = Math.max(Math.abs(dx), Math.abs(dy))
+      if (distance < nearest) nearest = distance
+      if (cell === player) mineNear++
+      else if (cell === opponent) theirsNear++
+    }
+  }
+
+  // 「只在一边有子」多半是单边连接，价值低于两侧都有呼应
+  const balance = mineNear + theirsNear === 0 ? 0 : 2 * Math.min(mineNear, theirsNear)
+  return density * 4 + balance * 3 - nearest
+}
+
+/**
  * 排序：置换表里的最佳着法最优先，其次是杀手着法，剩下的按攻防价值排。
  * alpha-beta 的剪枝效率几乎全靠着法排序。
  *
@@ -188,10 +286,28 @@ function orderMoves(
 ): OrderedMoves {
   countCall('orderMoves')
 
+  let order: readonly Point[] = candidates
+  if (shouldPrescreen(ctx, candidates.length)) {
+    // 存在立即成五时不必筛：那一条比任何排序都重要，原样走下面的完整打分。
+    if (!candidates.some((point) => completesFive(board, point, player))) {
+      order = prescreenCandidates(
+        board,
+        candidates,
+        player,
+        width * ctx.options.prescreen!.keepFactor,
+        ctx,
+        ply,
+        tableMove,
+      )
+      countCall('prescreenKept')
+      countCall('prescreenCandidates')
+    }
+  }
+
   const opponent = opponentOf(player)
   const scored: Array<{ point: Point; score: number }> = []
 
-  for (const point of candidates) {
+  for (const point of order) {
     countCall('orderCandidates')
     const mine = analyzeFast(board, point, player)
     if (mine.five) return { points: [], winNow: point }

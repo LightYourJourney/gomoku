@@ -91,6 +91,12 @@ function specFromEnv(prefix: 'A' | 'B', difficulty: Difficulty): EngineSpec {
   const width = env(`STRENGTH_${prefix}_WIDTH`)
   const threatPlies = env(`STRENGTH_${prefix}_THREAT_PLIES`)
   const transposition = boolEnv(`STRENGTH_${prefix}_TRANSPOSITION`)
+  /*
+   * 预筛覆盖只从环境变量来，且必须**两个一起给**：阈值与保留系数缺一个，
+   * 就会悄悄落回默认值——那正是对照实验里最不能出事的地方。
+   */
+  const prescreenThreshold = env(`STRENGTH_${prefix}_PRESCREEN_THRESHOLD`)
+  const prescreenKeep = env(`STRENGTH_${prefix}_PRESCREEN_KEEP`)
   const threatThrees = boolEnv(`STRENGTH_${prefix}_THREAT_THREES`)
 
   /*
@@ -102,7 +108,10 @@ function specFromEnv(prefix: 'A' | 'B', difficulty: Difficulty): EngineSpec {
    */
   const suffix =
     (fixed === undefined ? '' : `-d${fixed}`) +
-    (module_ === undefined ? '' : `@${basename(module_).replace(/\.mjs$/, '')}`)
+    (module_ === undefined ? '' : `@${basename(module_).replace(/\.mjs$/, '')}`) +
+    (prescreenThreshold === undefined || prescreenKeep === undefined
+      ? ''
+      : `+ps${prescreenThreshold}x${prescreenKeep}`)
 
   return {
     id: env(`STRENGTH_${prefix}_ID`) ?? `${difficulty}${suffix}`,
@@ -116,6 +125,9 @@ function specFromEnv(prefix: 'A' | 'B', difficulty: Difficulty): EngineSpec {
     ...(transposition === undefined ? {} : { transposition }),
     ...(threatThrees === undefined ? {} : { threatThrees }),
     ...(module_ === undefined ? {} : { module: module_ }),
+    ...(prescreenThreshold === undefined || prescreenKeep === undefined
+      ? {}
+      : { prescreen: { threshold: Number(prescreenThreshold), keepFactor: Number(prescreenKeep) } }),
   }
 }
 
@@ -164,6 +176,10 @@ function commandLine(mode: string, a: EngineSpec, b: EngineSpec, repeats: number
     if (spec.transposition !== undefined) parts.push(`STRENGTH_${prefix}_TRANSPOSITION=${spec.transposition ? 1 : 0}`)
     if (spec.threatThrees !== undefined) parts.push(`STRENGTH_${prefix}_THREAT_THREES=${spec.threatThrees ? 1 : 0}`)
     if (spec.module !== undefined) parts.push(`STRENGTH_${prefix}_MODULE=${spec.module}`)
+    if (spec.prescreen !== undefined) {
+      parts.push(`STRENGTH_${prefix}_PRESCREEN_THRESHOLD=${spec.prescreen.threshold}`)
+      parts.push(`STRENGTH_${prefix}_PRESCREEN_KEEP=${spec.prescreen.keepFactor}`)
+    }
     parts.push(`STRENGTH_${prefix}_ID=${spec.id}`)
     return parts
   }
