@@ -341,6 +341,37 @@ describe('searchBoard —— 置换表与注入时钟', () => {
       expect(MIDGAME[result.move!.y * 15 + result.move!.x]).toBe(0)
     }
   })
+
+  it('中途超时的那一层整层作废：交出的着法、分值与深度都来自上一层完整搜完的结果', () => {
+    // AI_ENGINE.md：超时时返回**最后一次完整迭代**的结论，没搜完的那一层不算数。
+    // 先量出「搜完第 1 层、刚进入第 2 层」要读几次时钟，再让时钟恰好在第 2 层里过期。
+    const depthOne = { ...options, maxDepth: 1, budgetMs: 1_000_000 }
+    let reads = 0
+    const counting = (): number => {
+      reads++
+      return 0
+    }
+    const reference = searchBoard(MIDGAME, WHITE, depthOne, counting)
+    const readsForDepthOne = reads
+    expect(reference.depth).toBe(1)
+
+    for (const extra of [1, 3, 10]) {
+      let ticks = 0
+      // 前 readsForDepthOne 次读数都在预算内（第 1 层完整搜完），之后多给 extra 次就过期——
+      // 过期点因此落在第 2 层的子树里。
+      const clock = (): number => {
+        ticks++
+        return ticks <= readsForDepthOne + extra ? 0 : 1_000_000
+      }
+
+      const result = searchBoard(MIDGAME, WHITE, { ...options, maxDepth: 4, budgetMs: 100 }, clock)
+
+      expect(result.reason, `extra=${extra}`).toBe('timeout')
+      expect(result.depth, `extra=${extra}`).toBe(1)
+      expect(result.move, `extra=${extra}`).toEqual(reference.move)
+      expect(result.score, `extra=${extra}`).toBe(reference.score)
+    }
+  })
 })
 
 describe('候选预筛开关', () => {
@@ -468,13 +499,47 @@ describe('searchBoard —— 提示用的候选与紧急度', () => {
     '.......B.......',
   ])
 
-  it('给出候选，按推荐度降序', () => {
+  it('给出候选：第一个是搜索选中的着法，其余按棋型分降序', () => {
     const result = searchBoard(MIDGAME, WHITE, base, clock)
 
     expect(result.candidates.length).toBeGreaterThan(0)
-    for (let i = 1; i < result.candidates.length; i++) {
+    expect(result.candidates[0]!.move).toEqual(result.move)
+    for (let i = 2; i < result.candidates.length; i++) {
       expect(result.candidates[i - 1]!.score).toBeGreaterThanOrEqual(result.candidates[i]!.score)
     }
+  })
+
+  it('「精确」说的是第一个候选：它必须就是搜索给出的着法', () => {
+    /*
+     * `confidence` 区分「搜索得出的精确结论」与「预算不足时的启发式建议」
+     * （AI_ENGINE.md）。候选曾经完全来自静态棋型排序、与搜索结果无关，界面却在
+     * 它们旁边写「结论：精确」——第一个候选可能根本不是搜索选的那一手。
+     * 这里扫一批随机中盘局面，逐个要求第一个候选 = 搜索着法，且候选不重复。
+     */
+    let state = 12345
+    const random = (): number => {
+      state = (state * 1103515245 + 12345) % 2147483648
+      return state / 2147483648
+    }
+    let compared = 0
+
+    for (let game = 0; game < 30; game++) {
+      const board = createBoard()
+      for (let move = 0; move < 12; move++) {
+        const x = 4 + Math.floor(random() * 7)
+        const y = 4 + Math.floor(random() * 7)
+        if (board[idx(x, y)] === 0) board[idx(x, y)] = move % 2 === 0 ? BLACK : WHITE
+      }
+      const result = searchBoard(board, BLACK, { ...base, threatPlies: 5 }, clock)
+      if (result.move === null) continue
+
+      compared += 1
+      expect(result.candidates[0]!.move, `第 ${game} 局`).toEqual(result.move)
+      const keys = result.candidates.map((c) => idx(c.move.x, c.move.y))
+      expect(new Set(keys).size, `第 ${game} 局`).toBe(keys.length)
+    }
+
+    expect(compared).toBeGreaterThan(20)
   })
 
   it('候选最多三个', () => {
@@ -755,7 +820,7 @@ describe('局面评分的视角', () => {
   /**
    * **`reason: 'win'` 不等于「棋盘上出现了五连」。**
    *
-   * 它有两个来源（`search.ts`）：`:463` 这一步直接成五；`:481` 的 `findForcedWin`
+   * 它有两个来源（`search.ts` 的 `runSearch`）：候选里这一步直接成五；`findForcedWin`
    * （算杀）返回的**取胜链首手**——首手不必成五。
    *
    * 这条断言是给界面看的：对战页的 AI 面板把 `win` 写成一句人话，

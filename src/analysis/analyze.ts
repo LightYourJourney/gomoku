@@ -1,5 +1,6 @@
 import { WIN_SCORE, type Confidence, type SearchPath, type SearchReason } from '../ai/types'
 import { ENGINE_VERSION } from '../ai/version'
+import { samePoint } from '../core/board'
 import type { Point } from '../core/types'
 import type { Difficulty } from '../ai/types'
 
@@ -60,7 +61,7 @@ export function buildVerdict(input: VerdictInput): MoveVerdict {
   // 引擎的必胜/必防/开局走的是捷径（±WIN_SCORE 量纲），而「走完之后」的
   // 评分来自真实评估——两者相减没有意义。真引擎实测过：同一手会算出
   // 「亏 98 万」，于是亏损榜上全是「与引擎一致」的行。
-  const sameMove = input.played.x === input.engineMove.x && input.played.y === input.engineMove.y
+  const sameMove = samePoint(input.played, input.engineMove)
   const raw = input.isWinningMove || sameMove ? 0 : input.engineScore - input.playedScore
   return {
     moveIndex: input.moveIndex,
@@ -95,19 +96,20 @@ export function buildSummary(verdicts: readonly MoveVerdict[]): AnalysisSummary 
  *    根本没有胜机（该防没防、局面直接崩）。声称「错过取胜」是编造一个
  *    并不存在的机会。
  *
- * 「分差约 N 子」是**粗略换算**：10_000 是 shapeScore 里「一档棋型」（活三）
- * 的量级，拿它当分母只给数量级感受，不是精确定义——评分不线性于子数，
+ * 「分差约 N 子」是**粗略换算**：10_000 是「一档棋型」（活三）的量级——排序表
+ * `shapeScore` 里活三 10_000、整盘评估 `ai/evaluate.ts` 的 `SHAPE_VALUES` 里 12_000，
+ * 分差来自后者。拿它当分母只给数量级感受，不是精确定义——评分不线性于子数，
  * 这是评估函数的固有局限。
  */
 export function verdictLabel(v: MoveVerdict): string {
-  if (v.move.x === v.engineMove.x && v.move.y === v.engineMove.y) return '与引擎一致'
+  if (samePoint(v.move, v.engineMove)) return '与引擎一致'
   if (v.loss === 0) return '与引擎首选相当'
   if (v.loss >= WIN_SCORE / 2) return '分差极大'
   /*
    * `Math.round(loss / 10_000)` 在 `0 < loss < 5_000` 时得 **0**，会写出
    * 「分差约 0 子」——而 `buildSummary` 只把 `loss > 0` 的手排进「亏损最多」，
    * 于是榜单上会出现一条「关键手：分差约 0 子」的自相矛盾。这不是极端情况：
-   * 一个活三在 `shapeScore` 里是 800，正好落在这个区间。
+   * 一个眠三在整盘评估（`SHAPE_VALUES.three`）里是 800，正好落在这个区间。
    * 半子以下不换算成子数，如实说「不足 1 子」。
    */
   if (v.loss < 5_000) return '分差很小（不足 1 子）'
@@ -153,8 +155,13 @@ export function pathSummary(path: SearchPath, confidence: Confidence): string {
 
 /**
  * 分析结论的缓存键。掺引擎版本（换 ENGINE_VERSION 必须重算）、档位与预算
- * （换任何一项结论都可能不同）；`v1` 是键自身的版本，键结构变了递增。
+ * （换任何一项结论都可能不同）；`v2` 是键自身的版本，键结构变了递增。
+ *
+ * **对局用内容键标识，不用 `seq`**（v1 用的是 seq）：seq 只在一个库里唯一，
+ * 内存兜底会从 1 重新编号，与库里已有的 1 号撞上，读到另一局的结论。
+ * 内容键由调用方用 `persist/recordIdentity.ts` 的 `recordContentKey` 算——
+ * 本层不依赖 persist。
  */
-export function cacheKey(seq: number, difficulty: Difficulty, budgetMs: number): string {
-  return `v1:${ENGINE_VERSION}:${seq}:${difficulty}:${budgetMs}`
+export function cacheKey(contentKey: string, difficulty: Difficulty, budgetMs: number): string {
+  return `v2:${ENGINE_VERSION}:${contentKey}:${difficulty}:${budgetMs}`
 }

@@ -127,20 +127,20 @@ describe('verdictLabel', () => {
 })
 
 describe('cacheKey', () => {
-  const base = cacheKey(1, 'easy', 400)
+  const base = cacheKey('a', 'easy', 400)
 
   it('换档位 / 预算 / 局面都产生不同的键', () => {
-    expect(cacheKey(1, 'medium', 400)).not.toBe(base)
-    expect(cacheKey(1, 'easy', 800)).not.toBe(base)
-    expect(cacheKey(2, 'easy', 400)).not.toBe(base)
+    expect(cacheKey('a', 'medium', 400)).not.toBe(base)
+    expect(cacheKey('a', 'easy', 800)).not.toBe(base)
+    expect(cacheKey('b', 'easy', 400)).not.toBe(base)
   })
 
   it('同参数幂等', () => {
-    expect(cacheKey(1, 'easy', 400)).toBe(base)
+    expect(cacheKey('a', 'easy', 400)).toBe(base)
   })
 
   it('键掺引擎版本——换 ENGINE_VERSION 必须重算', () => {
-    expect(base.startsWith(`v1:${ENGINE_VERSION}:`)).toBe(true)
+    expect(base.startsWith(`v2:${ENGINE_VERSION}:`)).toBe(true)
   })
 })
 

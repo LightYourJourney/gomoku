@@ -47,6 +47,8 @@ export interface ReviewScreenProps {
   readonly positions?: PositionStorage
   /** 生产由 App 注入 gameStore.startBranch；测试/未接线时不渲染分支入口。 */
   readonly onStartBranch?: (input: BranchStartInput) => BranchStartResult
+  /** 对战页是否有一局已落子、没下完（开始探索会替换它）。由 App 注入，理由同上。 */
+  readonly hasGameInProgress?: () => boolean
 }
 
 /**
@@ -55,7 +57,15 @@ export interface ReviewScreenProps {
  * 两个 store 用 ref 持有：它们是本页面的会话状态，离开页面即丢弃
  * （回放游标不持久化是有意的——它是浏览行为，不是进度）。
  */
-export function ReviewScreen({ storage, engine, stores, onRestoreSession, positions, onStartBranch }: ReviewScreenProps) {
+export function ReviewScreen({
+  storage,
+  engine,
+  stores,
+  onRestoreSession,
+  positions,
+  onStartBranch,
+  hasGameInProgress,
+}: ReviewScreenProps) {
   // 惰性单例：useState 的初始化函数只跑一次，且不会在渲染期读 ref。
   const [ownReplay] = useState(createReplayStore)
   const [ownAnalysis] = useState(createAnalysisStore)
@@ -239,6 +249,7 @@ export function ReviewScreen({ storage, engine, stores, onRestoreSession, positi
               record={replayRecord}
               cursor={branchCursor}
               error={branchError}
+              replacesGameInProgress={hasGameInProgress?.() ?? false}
               onCancel={() => {
                 setBranchCursor(null)
                 setBranchError(null)

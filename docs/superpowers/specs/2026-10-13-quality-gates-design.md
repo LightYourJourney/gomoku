@@ -1,7 +1,8 @@
 # 质量门禁（CI + 本地钩子）· 设计
 
 > **归档文件（2026-10-13 的设计稿）**：文末的「待实施」**已不成立**——门禁全部落地
-> （`quality/` 的四道闸门与两把棘轮、`.githooks/pre-push`、CI 的四个 job），落地记录见 `docs/TEST_REPORT.md`。
+> （落地时是四道闸门与两把棘轮、CI 四个 job；之后又加了包体积预算与两条多浏览器 job，
+> 现状是 `yarn gates` 五道、CI 六个 job——以 `package.json` 与 `.github/workflows/quality.yml` 为准），落地记录见 `docs/TEST_REPORT.md`。
 > 本文件保留的是**设计当时的取舍与理由**，不是待办清单。
 
 日期：2026-10-13 · 状态：已与用户确认（含一轮独立 builder 检查 + 一轮追问），待实施

@@ -2,7 +2,7 @@ import { replay } from '../core/game'
 import { inBounds, opponentOf } from '../core/board'
 import type { Player, Point } from '../core/types'
 import { isDifficulty } from '../ai/difficulty'
-import { openDatabaseWithSchema, withObjectStore } from './idb'
+import { openDatabaseWithSchema, resolveIdbFactory, storeRunner } from './idb'
 import { RECORDS_STORE } from './schema'
 import { recordContentKey } from './recordIdentity'
 import type { Difficulty } from '../ai/types'
@@ -298,17 +298,8 @@ export function __setGameRecordsIndexedDbFactory(next: IDBFactory | null): void 
  */
 let memoryFallback: GameRecordsStorage | null = null
 
-function resolveFactory(): IDBFactory | null {
-  if (factory !== null) return factory
-  try {
-    return typeof indexedDB === 'undefined' ? null : indexedDB
-  } catch {
-    return null
-  }
-}
-
 function openDatabase(): Promise<IDBDatabase> {
-  return openDatabaseWithSchema(resolveFactory(), {
+  return openDatabaseWithSchema(resolveIdbFactory(factory), {
     errorMessage: '打不开棋谱库',
     blockedMessage: '棋谱库被其他标签页占用',
   })
@@ -321,21 +312,10 @@ function fallbackToMemory(): GameRecordsStorage {
   return memoryFallback
 }
 
-function withStore<T>(
-  mode: IDBTransactionMode,
-  run: (store: IDBObjectStore) => IDBRequest<T>,
-): Promise<T> {
-  return openDatabase().then(
-    (db) =>
-      withObjectStore(db, STORE, mode, run, {
-        errorMessage: '棋谱库读写失败',
-        abortMessage: '棋谱库读写被中止',
-      }),
-    (error) => {
-      throw error
-    },
-  )
-}
+const withStore = storeRunner(openDatabase, STORE, {
+  errorMessage: '棋谱库读写失败',
+  abortMessage: '棋谱库读写被中止',
+})
 
 export const indexedDbGameRecords: GameRecordsStorage = {
   async list() {

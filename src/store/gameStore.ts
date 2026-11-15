@@ -136,7 +136,8 @@ export interface GameStore {
    * 从本地存档恢复。传 null 表示没有存档，保持当前状态。
    *
    * `resumeAi: false` 用于分享预览：恢复局面只为让返回应用后状态一致，
-   * 但**打开分享链接本身不能触发 AI 落子/入库**。离开分享页时显式续走。
+   * 但**打开分享链接本身不能触发 AI 落子/入库，也不打开棋谱库**（恢复终局时
+   * 不查「这局在不在库里」）。离开分享页时显式续走。
    */
   restore(
     session: PersistedSession | null,
@@ -554,8 +555,14 @@ export function createGameStore(
          * 只在状态没变（用户没在这期间开新局/落子）时写回；查不了就保持 idle。
          */
         const restored = get()
-        if (restored.game.status !== 'playing' && deps.findSavedGame !== undefined) {
-          const version = restored.game.version
+        // 分享预览通道（`resumeAi: false`）同样不查：查库要打开 IndexedDB（库不存在时
+        // 会新建，`list()` 还会补写内存兜底的记录），而预览阶段承诺不碰任何写入 API
+        // （`docs/sharing/SECURITY_MODEL.md` §3）。这时保持 idle——「查不了就不说」。
+        const preview = options.resumeAi === false
+        if (restored.game.status !== 'playing' && !preview && deps.findSavedGame !== undefined) {
+          // 用对局对象本身做配对，不用 version：version 等于手数，0 手认输局与刚开的
+          // 新局 version 都是 0。对局状态不可变，任何开新局/落子/悔棋都换一个新对象。
+          const restoredGame = restored.game
           void deps
             .findSavedGame({
               moves: restored.game.moves,
@@ -567,7 +574,7 @@ export function createGameStore(
             })
             .then((found) => {
               const now = get()
-              if (found === null || now.game.version !== version || now.recordSaveState !== 'idle') return
+              if (found === null || now.game !== restoredGame || now.recordSaveState !== 'idle') return
               set({ recordSaveState: found ? 'saved' : 'absent' })
             })
             .catch(() => {})
@@ -770,6 +777,17 @@ export function createGameStore(
 
         set({ hintThinking: true, hintError: null, pendingHintRequestId: requestId })
 
+        // 与落子请求同一条兜底（理由见 `requestAiMove`）：Worker 静默死亡时，
+        // 不复位的话「求提示」会一直停在思考中，而思考中又拒绝再求。
+        const timer = setTimeout(() => {
+          if (get().pendingHintRequestId !== requestId) return
+          set({
+            hintThinking: false,
+            pendingHintRequestId: null,
+            hintError: `AI 超过 ${AI_RESPONSE_TIMEOUT_MS / 1000} 秒没有响应，请重试`,
+          })
+        }, AI_RESPONSE_TIMEOUT_MS)
+
         void engine
           .search({
             requestId,
@@ -781,8 +799,12 @@ export function createGameStore(
             purpose: 'hint',
           })
           .then(
-            (response) => get().applyHintResponse(response),
+            (response) => {
+              clearTimeout(timer)
+              get().applyHintResponse(response)
+            },
             (error: unknown) => {
+              clearTimeout(timer)
               if (get().pendingHintRequestId !== requestId) return
               set({
                 hintThinking: false,

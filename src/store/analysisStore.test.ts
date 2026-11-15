@@ -271,6 +271,28 @@ describe('分析管线 —— 缓存复用', () => {
     expect(store.getState().verdicts.size).toBe(9)
     expect(store.getState().running).toBe(false)
   })
+
+  it('seq 相同但内容不同的两局不共用缓存', async () => {
+    /*
+     * seq 只在一个库里唯一：IndexedDB 暂时打不开时，内存兜底从 1 开始编号，
+     * 存储恢复后库里原本的 1 号是另一局。按 seq 当缓存键，打开那一局就会直接
+     * 读到上一局的结论——零请求、零提示，界面上看不出任何异样。
+     */
+    const first = threeWinRecord(1)
+    store.getState().start({ record: first, engine: spy.engine, difficulty: 'easy', budgetMs: 400 })
+    for (let i = 0; i < 9; i++) {
+      spy.settle(i, { x: 3, y: 7 }, 100)
+      await Promise.resolve()
+    }
+    expect(store.getState().running).toBe(false)
+
+    const other: GameRecord = { ...threeWinRecord(1), mode: 'pvp' }
+    const before = spy.requests.length
+    store.getState().start({ record: other, engine: spy.engine, difficulty: 'easy', budgetMs: 400 })
+
+    expect(spy.requests.length).toBeGreaterThan(before)
+    expect(store.getState().running).toBe(true)
+  })
 })
 
 // ── 共享请求号 ───────────────────────────────────────────────

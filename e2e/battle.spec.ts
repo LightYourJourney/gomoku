@@ -407,7 +407,7 @@ test.describe('防误触确认', () => {
     await expect(page.getByTestId(/^stone-/)).toHaveCount(1)
 
     await page.getByRole('button', { name: '认输' }).click()
-    await expect(page.getByRole('dialog')).toContainText('认输不能撤销')
+    await expect(page.getByRole('dialog')).toContainText('这一局会立刻结束，记为黑方获胜')
     await page.getByRole('button', { name: '取消' }).click()
 
     await expect(page.getByRole('dialog')).toBeHidden()

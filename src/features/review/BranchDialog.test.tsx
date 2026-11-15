@@ -66,6 +66,20 @@ describe('BranchDialog —— 分支确认', () => {
     })
   })
 
+  it('对战页有一局没下完时，明说开始探索会替换掉它', () => {
+    // 「开始探索」直接接管对战页：进行中的那局既不问、也不入库，就此消失。
+    // 这个对话框本身就是确认框，所以后果必须写在这里。
+    const { rerender } = render(
+      <BranchDialog record={record()} cursor={2} error={null} replacesGameInProgress onCancel={vi.fn()} onConfirm={vi.fn()} />,
+    )
+    expect(screen.getByTestId('branch-replaces-game')).toHaveTextContent('替换')
+
+    rerender(
+      <BranchDialog record={record()} cursor={2} error={null} replacesGameInProgress={false} onCancel={vi.fn()} onConfirm={vi.fn()} />,
+    )
+    expect(screen.queryByTestId('branch-replaces-game')).toBeNull()
+  })
+
   it('人机模式可切换执子与难度，并回传实际配置', () => {
     const onConfirm = vi.fn()
     render(

@@ -37,6 +37,23 @@ describe('encodeSession / decodeSession', () => {
     expect(decoded?.branch).toEqual(branch)
   })
 
+  it('分支来源的序号或游标越界时，与导入校验同一口径拒绝', () => {
+    // `transfer/validate.ts` 早已拒绝这些值；本地存档这一份只查「是不是整数」，
+    // 手改 localStorage 就能让横幅显示「从第 -5 手继续」。
+    const good = { sourceSeq: 7, sourceContentKey: 'key', cursor: 5, sourceMoves: 9 }
+    for (const bad of [
+      { ...good, cursor: -5 },
+      { ...good, cursor: 10 },
+      { ...good, sourceSeq: 0 },
+      { ...good, sourceMoves: 0, cursor: 0 },
+      { ...good, sourceMoves: 226 },
+    ]) {
+      expect(decodeSession(encodeSession({ ...sample, branch: bad })), JSON.stringify(bad)).toBeNull()
+    }
+    expect(decodeSession(encodeSession({ ...sample, branch: { ...good, cursor: 0 } }))?.branch?.cursor).toBe(0)
+    expect(decodeSession(encodeSession({ ...sample, branch: { ...good, cursor: 9 } }))?.branch?.cursor).toBe(9)
+  })
+
   it('空存档返回 null', () => {
     expect(decodeSession(null)).toBeNull()
     expect(decodeSession('')).toBeNull()

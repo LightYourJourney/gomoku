@@ -60,16 +60,19 @@ Phase D 只做**设计级影响分析**，不开发任何新功能。
   （同文件里 `verify.ts` 那个 `export const OK` 是**真**多余的导出，已修——`variable` 种类不在放行之列。）
 - `Board.tsx` 的 **681 行**（2026-10-19 复核；建单时 565 行，Phase 03–06 增加了
   标记字号解绑、最后一手反色点与胜利环）；225 个命中 `<rect>` 与每格一个 `onKeyDown`
-- **`.jscpd.json` 里那 6 个被豁免的文件**（`LearnScreen`/`PuzzleScreen`、`lessons`/`puzzles`、
-  `gameRecords`/`progress`）—— 2026-10-13 建立重复代码闸门时逐个看过，不是图省事：
+- **`.jscpd.json` 里被豁免的文件**——2026-10-13 建门禁时是 6 个，**2026-11-15 全仓审查后降到 2 个**：
   - `lessons.ts` ↔ `puzzles.ts`（两处各 21 行）：克隆的是**内容数据字面量的形状**
-    （`prompt:` + `board(BLANK, BLANK, …)`），不是逻辑。要消除它就得为数据造一层 DSL。
-  - `gameRecords.ts` ↔ `progress.ts`（33 行）：两个存储层共用的 **IndexedDB 工厂解析与内存回退样板**
-    （优先真 IDB，环境不支持时退到内存）。合并它等于把两个语义不同的存储层搅在一起。
-  - `LearnScreen.tsx` ↔ `PuzzleScreen.tsx`（13 行）：两个列表页共用的 store 取用与「渲染期恢复上次项」写法。
+    （`prompt:` + `board(BLANK, BLANK, …)`），不是逻辑。要消除它就得为数据造一层 DSL。**仍豁免。**
+  - ~~`gameRecords.ts` ↔ `progress.ts`（33 行）~~：克隆的其实只是「选 IndexedDB 工厂」与
+    「打开库 → 跑一次事务」这两段通用样板，与两个存储层的语义无关。去掉豁免实测还盖住了
+    `gameRecords.ts` ↔ `positions.ts` 两处**没登记**的新克隆。已收进 `persist/idb.ts`
+    （`resolveIdbFactory` / `storeRunner`），**豁免撤销**。
+  - ~~`LearnScreen.tsx` ↔ `PuzzleScreen.tsx`~~：去掉豁免实测 0 处克隆，**豁免撤销**。
 
   **这个数字只减不增**：再加豁免必须同时给出「为什么这两处不能合并」的一句判断，
   并且**加进这份清单**。加到覆盖了大半个 `features/` 时，这道闸门就只剩装饰作用了。
+  **豁免整个文件会连带放过它与任何其它文件之间的新克隆**——上面那两处就是这么溜过去的，
+  所以每次审查都要去掉豁免实跑一次，看豁免盖住的是不是仍只有登记过的那几处。
 - 教学/题库不拆出主包
 - `noUncheckedIndexedAccess` 未开
 - 两套棋型分值表、两种「三」的口径、`threatScoreWith` 里那次看似多余的 `analyzeRuns`
@@ -78,6 +81,30 @@ Phase D 只做**设计级影响分析**，不开发任何新功能。
   无 router 仍未变
 
 ---
+
+### 1.4 2026-11-15 全仓两轴审查：**仍在案上**的（已修的见 `TEST_REPORT.md`「〇之二四」）
+
+十个只读审查员（五块 × 标准 / 规格两轴）逐文件读过 HEAD `85eab63`，每条发现都由主控复核过。
+下面是**复核属实、但本轮没动**的，按「会不会骗用户」排序。没动的理由写在最后一列——
+大多是「改了要做真实浏览器目视复核或重跑基准，本轮不打包进来」，不是「不值得改」。
+
+| 债 | 位置 | 为什么本轮没动 |
+| --- | --- | --- |
+| 一屏多于一个 `primary`（违反 DESIGN_SYSTEM §6.1「≤ 1」） | 局面编辑器：选中的工具与「下一手」也画成 primary（`PositionEditor.tsx` 工具区）；空棋谱库：「导入文件」与「开始一局对战」；带演示的讲解页：「下一手」与「下一步」 | 选中态要换成分段控件那套视觉，属界面改动，需探针重拍 + 目视复核 |
+| 20px 间距（`p-5` / `mt-5` / `mb-5` / `py-5`）与行间 `space-y-0.5` 不在 4px 栅格白名单内 | `Modal.tsx`、`PageHeader.tsx`、`PageShell.tsx`、`MoveList.tsx` | 同上：动的是全站弹窗与页头的版式 |
+| 规范外的第三级阴影 `shadow-sm` / `shadow`、`bg-white` 写死 | `Segmented.tsx`（选中项）、`Switch.tsx`（滑块）、`AppHeader.tsx`（品牌标记） | 去掉后选中项与滑块的可辨识度要重新目视确认 |
+| 顶栏与遮罩用 `backdrop-blur`，接近 §1「不做玻璃拟态」 | `AppHeader.tsx`、`Modal.tsx` | 判断题，留给下一次界面迭代裁定 |
+| 原始异常消息直接进界面，可能露出英文 | `DataManagementPanel.tsx`、`PositionEditor.tsx`、`GameLibrary.tsx`、`ReviewScreen.tsx` 里的 `error.message` | 要先列出每条路径可能抛的错，再决定翻译表还是统一兜底文案 |
+| 复盘分析与编辑器分析没有响应超时兜底（落子与提示有） | `analysisStore.ts`、`editorStore.ts` | 用户可恢复（离开复盘页 / 再编辑一手即清空）；落子与提示这两条卡死不可恢复的已补 |
+| 置换表跨迭代的条目基本用不上（`probe` 深度不足即未命中，上一轮存的恰好少 1） | `transposition.ts` 的 `probe`、`search.ts` 内部节点的 `cached?.move` | 改了会动着法排序与节点数，按 AGENTS 要走 `yarn bench` + 固定深度 A/B，属引擎迭代 |
+| 判题只认冲四开路的杀（`allowThrees: false`），以活三开路的真杀会被判错 | `learn/verify.ts` 的 `forcedWin` | 实测现有 4 道算杀题在 VCT 口径下可接受着法集合不变；改成 VCT 最坏单次判题 1.2 s，与判题预算 2 s 太近。判错理由已改成如实说「没找到冲四取胜路线」 |
+| 分享链接内层 `v` 不符 / 顶层是数组时报 `invalid_data`，与 `LINK_FORMAT.md` §5 的分类不完全一致 | `sharing/link.ts` 解码 | 用户看到的都是「打不开」，分类差异只影响错误码；与文档一起裁定 |
+| 带 provenance 的近满盘局面（约第 223 手以后）分享会超过 12,000 字符 | `toPositionFile` + `link.ts` | 会体面失败并提示改用文件导出；`LINK_FORMAT.md` 只承诺整盘与自由局面 |
+| 局面文件的超大 / 过深 / 未来版本统一报 `invalid_field` | `persist/transfer/position.ts` | 与 `IMPORT_SECURITY_REPORT.md` 的错误码表不一致，界面文案已说清原因 |
+| 战术判据（`criterionOf` / `judgeMove`）没有自测 | `bench/strength/tactics.ts` | 评测器自身，按 AGENTS 应纳入 `yarn test`；本轮未补 |
+| 复盘 / 讲解等详情页的工具栏与侧栏前缀抄了 5–6 份，`order-2` / `order-3` 已不一致；黑白称呼映射内联 9 处 | `features/*` | 判断题（重复代码）；jscpd 看不见（改了标识符的复制） |
+| e2e 辅助函数重复（`playNineMoveWin` ×3、`holdAiInThinking` ×2） | `e2e/*.spec.ts` | `e2e/helpers/` 已存在，可以收；jscpd 不扫 `e2e/` |
+| 内容数据里两条完全重复的课程练习用例 | `learn/lessons.test.ts` 与 `content.test.ts`（后者已覆盖全部课程） | 删用例会动条数棘轮，需要显式下调基线并说明；留给下一次清理 |
 
 ## 第二部分 · 扩展性压力测试（Phase D）
 

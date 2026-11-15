@@ -444,8 +444,11 @@ test.describe('浏览器文字缩放', () => {
       await page.addStyleTag({ content: 'html { font-size: 32px }' })
 
       for (const nav of ['教学', '残局', '复盘'] as const) {
-        await page.getByRole('button', { name: nav, exact: true }).click()
-        await page.waitForTimeout(100)
+        const navButton = page.getByRole('button', { name: nav, exact: true })
+        await navButton.click()
+        // 等到切页真的提交了再量——固定等 100ms 在慢机器上会量到上一页，新页溢出也照样绿。
+        // 导航项的 aria-current 与页面内容在同一次提交里更新。
+        await expect(navButton).toHaveAttribute('aria-current', 'page')
 
         const overflow = await page.evaluate(
           () => document.documentElement.scrollWidth - document.documentElement.clientWidth,

@@ -1,7 +1,8 @@
 import { defineConfig, devices } from '@playwright/test'
 
 /** Firefox / WebKit 全量核心流程；触屏项目仍由 Chrome 的 mobile/tablet 项目覆盖。 */
-const PORT = 5183
+/** 独占端口；端口表见 `playwright.browsers.config.ts`（曾与 render 探针共用 5183）。 */
+const PORT = 5186
 const BASE_URL = `http://127.0.0.1:${PORT}`
 
 export default defineConfig({

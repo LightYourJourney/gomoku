@@ -42,8 +42,11 @@ const DEPTH = 4
  * 结论只取「奇数轮不可信」。详见 PHASE_10C.md 的「测量陷阱」。
  */
 const ROUNDS = 12
-/** 真实预算对局面的耗时随负载波动，取 3 轮的最快值；顺序仍然交替。 */
-const REAL_BUDGET_ROUNDS = 3
+/**
+ * 真实预算对局面的耗时随负载波动，取最快值；顺序仍然交替。
+ * **同样必须是偶数**（理由见 `ROUNDS`）——曾经写的是 3，先跑次数 2:1。
+ */
+const REAL_BUDGET_ROUNDS = 4
 const REAL_BUDGET_IDS = ['opening-adjacent', 'bench-midgame', 'bench-double-three'] as const
 
 function fixedSpec(id: string): EngineSpec {
@@ -81,6 +84,12 @@ function timePaired(
     const startedAt = performance.now()
     const result = run()
     into.push({ ms: performance.now() - startedAt, result })
+  }
+
+  // 奇数轮会让先跑的一方多跑一次，系统性偏差实测达 1.06–1.09x（见 `ROUNDS`）。
+  // 拒绝而不是悄悄 +1：调用方写错了轮数，应该被看见。
+  if (rounds < 2 || rounds % 2 !== 0) {
+    throw new RangeError(`A/B 的轮数必须是不小于 2 的偶数，收到 ${rounds}`)
   }
 
   for (let round = 0; round < rounds; round++) {

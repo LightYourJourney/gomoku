@@ -5,6 +5,7 @@ import { validateMove } from '../../core/rules'
 import { BOARD_SIZE, type Player, type Point } from '../../core/types'
 import { isThemePreference } from '../../lib/theme'
 import { isView } from '../progress'
+import { isBranchInRange } from '../storage'
 import { isFiniteInt, isObj, isPlayer, issue, type ImportErrorCode, type ImportIssue } from './guards'
 import type {
   BackupPosition,
@@ -733,18 +734,14 @@ function validateSession(
       errors.push(issue('bad_session', `${path}.branch`, '分支来源字段不合法'))
       return null
     }
-    /*
-     * 只校验「是不是整数」不够：负数与越界同样能进界面。
-     * `cursor` 是「看到第几手」，取值只能是 `0…sourceMoves`；来源手数不可能超过
-     * 棋盘上限；`sourceSeq` 是棋谱库里的序号，从 1 开始。
-     * 手改存档或导入别人的备份都能构造这些值，校验必须在这一层做完。
-     */
+    // 只校验「是不是整数」不够：负数与越界同样能进界面。范围规则与本地存档共用
+    // `isBranchInRange`（见 `persist/storage.ts`），手改存档或导入别人的备份都能构造这些值。
     if (
-      value.sourceSeq < 1 ||
-      value.sourceMoves < 1 ||
-      value.sourceMoves > MAX_MOVES ||
-      value.cursor < 0 ||
-      value.cursor > value.sourceMoves
+      !isBranchInRange({
+        sourceSeq: value.sourceSeq,
+        cursor: value.cursor,
+        sourceMoves: value.sourceMoves,
+      })
     ) {
       errors.push(issue('bad_session', `${path}.branch`, '分支来源的序号或游标越界'))
       return null

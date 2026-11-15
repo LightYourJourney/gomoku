@@ -14,6 +14,21 @@ import { DB_NAME, DB_VERSION, ensureSchema } from './schema'
  * 这两条原先在三处各写一遍，修一处忘两处只是时间问题。文案与「打开后做什么」
  * 由调用方给，其余不允许各写各的。
  */
+/**
+ * 选出要用的 IndexedDB 工厂：测试注入的优先，否则用全局的；环境不支持时返回 null。
+ *
+ * 读全局 `indexedDB` 本身就可能抛错（部分隐私模式/企业策略下），所以包在 try 里。
+ * 三个存储层原先各抄一份这 8 行——这正是本文件要收拢的那类样板。
+ */
+export function resolveIdbFactory(override: IDBFactory | null): IDBFactory | null {
+  if (override !== null) return override
+  try {
+    return typeof indexedDB === 'undefined' ? null : indexedDB
+  } catch {
+    return null
+  }
+}
+
 export interface OpenDatabaseOptions {
   /** `open` 失败时的用户可读原因。 */
   readonly errorMessage: string
@@ -85,7 +100,7 @@ export interface WithStoreOptions {
  *
  * 无论成功、失败还是同步抛错，连接都会被关闭。
  */
-export function withObjectStore<T>(
+function withObjectStore<T>(
   db: IDBDatabase,
   storeName: string,
   mode: IDBTransactionMode,
@@ -117,4 +132,16 @@ export function withObjectStore<T>(
       reject(new Error(options.abortMessage))
     }
   })
+}
+
+/**
+ * 一个存储层的「打开库 → 在一个事务里跑一次请求」入口：`openDatabaseWithSchema`
+ * 之后接 `withObjectStore` 的那一步，表名与文案在这里绑定一次。
+ */
+export function storeRunner(
+  open: () => Promise<IDBDatabase>,
+  storeName: string,
+  options: WithStoreOptions,
+): <T>(mode: IDBTransactionMode, run: (store: IDBObjectStore) => IDBRequest<T>) => Promise<T> {
+  return (mode, run) => open().then((db) => withObjectStore(db, storeName, mode, run, options))
 }

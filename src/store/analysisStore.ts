@@ -5,6 +5,7 @@ import type { AiEngine } from '../ai/engine'
 import type { Difficulty, SearchReason, SearchResponse } from '../ai/types'
 import { ENGINE_VERSION } from '../ai/version'
 import type { GameRecord } from '../persist/gameRecords'
+import { recordContentKey } from '../persist/recordIdentity'
 import { replay } from '../core/game'
 import { buildVerdict, cacheKey, type MoveVerdict } from '../analysis/analyze'
 import { nextRequestId } from './requestCounter'
@@ -211,7 +212,7 @@ export function createAnalysisStore(): UseBoundStore<StoreApi<AnalysisStore>> {
       if (pending.size > 0) return
 
       cache.set(
-        cacheKey(rec.seq, difficulty, budgetMs),
+        cacheKey(recordContentKey(rec), difficulty, budgetMs),
         [...get().verdicts.values()].sort((a, b) => a.moveIndex - b.moveIndex),
       )
       set({ running: false })
@@ -321,7 +322,7 @@ export function createAnalysisStore(): UseBoundStore<StoreApi<AnalysisStore>> {
         }
 
         // 缓存命中：零请求直接填充
-        const cached = cache.get(cacheKey(rec.seq, diff, budget))
+        const cached = cache.get(cacheKey(recordContentKey(rec), diff, budget))
         if (cached !== undefined) {
           const verdicts = new Map<number, MoveVerdict>()
           for (const verdict of cached) verdicts.set(verdict.moveIndex, verdict)

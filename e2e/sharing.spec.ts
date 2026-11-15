@@ -381,3 +381,46 @@ test('分享：损坏 Fragment 显示错误页，普通页面仍可使用', asyn
   await page.getByRole('button', { name: '← 返回应用' }).click()
   await expect(page.getByRole('navigation', { name: '主导航' })).toBeVisible()
 })
+
+test('分享：本地存档是一局已结束的棋时，打开链接同样不建库', async ({ page }) => {
+  // 恢复终局会查「这局在不在棋谱库」——那一查要打开 IndexedDB（库不存在时新建）。
+  // 上一条用例种的是进行中的 1 手会话，走不到这条路径；这里种一局认输结束的会话。
+  const token = createGameShare({
+    seq: 1,
+    schemaVersion: 1,
+    moves: MOVES,
+    firstPlayer: BLACK,
+    mode: 'pvp',
+    humanColor: BLACK,
+    difficulty: 'easy',
+    resignedBy: null,
+    winner: BLACK,
+  })
+  expect(token.ok).toBe(true)
+  if (!token.ok) return
+
+  await page.addInitScript(() => {
+    localStorage.setItem(
+      'gomoku-lab:session',
+      JSON.stringify({
+        schemaVersion: 2,
+        moves: [{ x: 7, y: 7 }],
+        firstPlayer: 1,
+        mode: 'pvp',
+        humanColor: 1,
+        difficulty: 'easy',
+        resignedBy: 2,
+      }),
+    )
+  })
+  await page.goto(`/#share=${token.token}`)
+  await expect(page.getByTestId('share-kind')).toContainText('单盘棋谱')
+
+  // 查库是异步发起的：给它一点时间真的发生，再断言库不存在。
+  await page.waitForTimeout(500)
+  expect(
+    await page.evaluate(async () =>
+      (await indexedDB.databases()).some((database) => database.name === 'gomoku-lab'),
+    ),
+  ).toBe(false)
+})

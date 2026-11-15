@@ -15,6 +15,8 @@ export interface BranchDialogProps {
   readonly record: GameRecord
   readonly cursor: number
   readonly error: string | null
+  /** 对战页上有一局已落子、没下完：开始探索会把它替换掉（不入库）。 */
+  readonly replacesGameInProgress?: boolean
   readonly onCancel: () => void
   readonly onConfirm: (config: BranchConfig) => void
 }
@@ -29,6 +31,7 @@ export function BranchDialog({
   record,
   cursor,
   error,
+  replacesGameInProgress = false,
   onCancel,
   onConfirm,
 }: BranchDialogProps) {
@@ -79,6 +82,11 @@ export function BranchDialog({
           </span>
         </div>
 
+        {replacesGameInProgress && (
+          <p data-testid="branch-replaces-game" className="text-sm text-warn">
+            对战页上那局还没下完。开始探索会替换掉它，那局不会存入棋谱库。
+          </p>
+        )}
         {blocked !== null && (
           <p role="alert" data-testid="branch-blocked" className="text-sm text-warn">
             {blocked}

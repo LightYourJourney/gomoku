@@ -2,6 +2,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { AiEngine } from '../../ai/engine'
 import type { SearchResponse } from '../../ai/types'
+import { ENGINE_VERSION } from '../../ai/version'
 import { BLACK } from '../../core/types'
 import { memoryGameRecords } from '../../persist/gameRecords'
 import { memoryPositions } from '../../persist/positions'
@@ -132,6 +133,8 @@ describe('PositionEditor —— 分析', () => {
     expect(panel).toHaveTextContent('42 ms')
     expect(panel).toHaveTextContent('精确')
     expect(panel).toHaveTextContent('H8')
+    // 分析结论必须注明引擎（AGENTS）；复盘页早就这么做，编辑器曾经漏了。
+    expect(panel).toHaveTextContent(`引擎 ${ENGINE_VERSION}`)
   })
 
   it('已有胜利连线时不调用引擎，给出原因', () => {

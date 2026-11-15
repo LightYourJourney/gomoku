@@ -116,6 +116,10 @@ export default function App() {
           engine={appEngine}
           onRestoreSession={(session) => useGameStore.getState().restore(session)}
           onStartBranch={(input) => useGameStore.getState().startBranch(input)}
+          hasGameInProgress={() => {
+            const { game } = useGameStore.getState()
+            return game.status === 'playing' && game.moves.length > 0
+          }}
         />
       )}
     </div>

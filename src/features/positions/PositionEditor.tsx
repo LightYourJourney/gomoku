@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useStore } from 'zustand'
 import type { AiEngine } from '../../ai/engine'
+import { ENGINE_VERSION } from '../../ai/version'
 import { AVAILABLE_DIFFICULTIES, DIFFICULTY_LABELS, DIFFICULTY_PARAMS, isDifficulty } from '../../ai/difficulty'
 import type { GameRecord, GameRecordsStorage } from '../../persist/gameRecords'
 import type { PositionStorage, SavedPosition } from '../../persist/positions'
@@ -92,7 +93,7 @@ export function PositionEditor({
     }
   }, [records, positions])
 
-  const report = analyzePosition(state.position)
+  const report = analyzePosition(state.position, state.provenance?.firstPlayer)
   const selectedSaved = saved.find((entry) => entry.id === savedId) ?? null
   const analysis = state.analysis
   const shownDifficulty = analysis.difficulty ?? state.difficulty
@@ -400,8 +401,9 @@ export function PositionEditor({
           )}
           {analysis.status === 'done' && analysis.response !== null && (
             <div data-testid="position-analysis" className="space-y-1 text-xs">
+              {/* AGENTS：分析结论必须注明引擎——引擎版本留在明面；预算按 EDITOR_DESIGN 收在「技术细节」。 */}
               <p className="text-faint">
-                引擎：{DIFFICULTY_LABELS[shownDifficulty]} · 深度 {analysis.response.depth} 层 ·
+                引擎 {ENGINE_VERSION}：{DIFFICULTY_LABELS[shownDifficulty]} · 深度 {analysis.response.depth} 层 ·
                 节点 {analysis.response.nodes} · {analysis.response.elapsedMs} ms · 结论{' '}
                 {analysis.response.confidence === 'exact' ? '精确' : '启发式'}
               </p>

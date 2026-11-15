@@ -397,11 +397,16 @@ describe('completesFive —— 独立成五检测', () => {
      * 规格 §4.3 要求 ≥5,000 个局面。100 种子 × 60 手 = 6,000 个局面，
      * 每个局面扫全盘 225 点 × 2 方 ≈ 270 万次对比。
      *
-     * 空载单跑约 11 秒；全量并发时机器慢会顶到默认 15 秒，所以显式放宽——
-     * 这条用例的**唯一价值**是覆盖量，缩规模等于自废判据。
+     * **对比在循环里做，`expect` 只在最后调一次。** 原先每次对比都调一次
+     * `expect(...).toBe(...)`：270 万次断言本身的开销把用例拖到空载 82 秒、
+     * 全量并发 149 秒（超过 90 秒上限，基线因此变红）。判据没变——每一处不一致
+     * 都会带着种子/手数/坐标/颜色被收集并报出来，只是不再为「相等」付断言的钱。
+     * 这条用例的**唯一价值**是覆盖量，缩规模等于自废判据，所以规模一点没减。
      */
     const SEEDS = 100
     const MOVES = 60
+    const mismatches: string[] = []
+    let comparisons = 0
 
     for (let seed = 1; seed <= SEEDS; seed++) {
       const random = mulberry32(seed)
@@ -419,14 +424,23 @@ describe('completesFive —— 独立成五检测', () => {
         for (let at = 0; at < CELL_COUNT; at++) {
           const point = { x: at % 15, y: Math.floor(at / 15) }
           for (const player of [BLACK, WHITE]) {
-            expect(
-              completesFive(board, point, player),
-              `种子 ${seed} 第 ${move + 1} 手，点 (${point.x},${point.y})，${player === BLACK ? '黑' : '白'}`,
-            ).toBe(analyzeFast(board, point, player).five)
+            comparisons += 1
+            const fast = completesFive(board, point, player)
+            const reference = analyzeFast(board, point, player).five
+            if (fast !== reference && mismatches.length < 20) {
+              mismatches.push(
+                `种子 ${seed} 第 ${move + 1} 手，点 (${point.x},${point.y})，${player === BLACK ? '黑' : '白'}：` +
+                  `completesFive=${fast}，analyzeFast=${reference}`,
+              )
+            }
           }
         }
       }
     }
+
+    // 先钉住覆盖量：循环若被改坏（例如跑了 0 次），下面那条「没有不一致」会空洞地成立。
+    expect(comparisons).toBe(SEEDS * MOVES * CELL_COUNT * 2)
+    expect(mismatches).toEqual([])
   })
 
   it('界外落点同样与 analyzeFast 一致', () => {

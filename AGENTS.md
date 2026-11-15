@@ -73,7 +73,7 @@ yarn lint && yarn typecheck && yarn test && yarn build && yarn e2e
 
 **绕过与调松都是违规，不是选项**：`git push --no-verify` 是明确接受的逃生门（代价自负），
 但**闸门自己的那几份文件**是 **review 必看项**：`knip.jsonc` / `.jscpd.json` /
-`bench/baseline.json` / `quality/*.baseline.json` / `.githooks/`，
+`bench/baseline.json` / `quality/*.baseline.json` / `quality/bundle-budget.mjs`（阈值写在脚本里）/ `.githooks/`，
 以及 **`.github/workflows/quality.yml`**——最后这个是决定「闸门跑不跑」的总开关
 （一个 `continue-on-error` 就能让它变成只打印不判红）。
 工具坏了或环境变了，正确动作是**更新钉住的版本并说明**，不是放宽配置。

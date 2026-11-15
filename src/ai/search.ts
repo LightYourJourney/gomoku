@@ -333,6 +333,18 @@ function orderMoves(
   return { points: scored.slice(0, width).map((entry) => entry.point), winNow: null }
 }
 
+/** 一个点的提示条目：攻防两边的棋型与静态分。 */
+function suggestionAt(board: Board, point: Point, player: Player): MoveSuggestion {
+  const attack = analyzePoint(board, point, player)
+  const defense = analyzePoint(board, point, opponentOf(player))
+  return {
+    move: point,
+    score: shapeScore(attack) + shapeScore(defense),
+    attack: dominantThreat(attack),
+    defense: dominantThreat(defense),
+  }
+}
+
 /**
  * 提示用的候选着法。
  *
@@ -340,21 +352,26 @@ function orderMoves(
  * 一次只算几十个点，换取更准的攻防标注是划算的。
  */
 function buildSuggestions(board: Board, player: Player, limit = 3): MoveSuggestion[] {
-  const opponent = opponentOf(player)
-
-  const scored = candidateMoves(board).map((point) => {
-    const attack = analyzePoint(board, point, player)
-    const defense = analyzePoint(board, point, opponent)
-    return {
-      move: point,
-      score: shapeScore(attack) + shapeScore(defense),
-      attack: dominantThreat(attack),
-      defense: dominantThreat(defense),
-    }
-  })
+  const scored = candidateMoves(board).map((point) => suggestionAt(board, point, player))
 
   scored.sort((a, b) => b.score - a.score)
   return scored.slice(0, limit)
+}
+
+/**
+ * 让提示的第一个候选**就是搜索选中的那一手**，其余仍按静态棋型分排。
+ *
+ * `confidence`（精确 / 启发式）说的是这次搜索的结论；候选若全来自静态排序，
+ * 界面在它们旁边写「精确」就是张冠李戴——第一个候选可能根本不是搜索选的那一手。
+ */
+function leadWithChosenMove(outcome: SearchOutcome, board: Board, player: Player): SearchOutcome {
+  const chosen = outcome.move
+  if (chosen === null) return outcome
+  const rest = outcome.candidates.filter((c) => !samePoint(c.move, chosen))
+  return {
+    ...outcome,
+    candidates: [suggestionAt(board, chosen, player), ...rest].slice(0, outcome.candidates.length || 1),
+  }
 }
 
 /** 当前局面对该走的一方的紧急程度。 */
@@ -572,6 +589,17 @@ function searchRoot(
  * 不必依赖真实时间，也不会因为机器快慢而 flaky。
  */
 export function searchBoard(
+  board: Board,
+  player: Player,
+  options: SearchOptions,
+  now: () => number,
+): SearchOutcome {
+  const outcome = runSearch(board, player, options, now)
+  // `runSearch` 不改传入的棋盘，所以这里拿到的仍是搜索前的局面。
+  return options.diagnostics === true ? leadWithChosenMove(outcome, board, player) : outcome
+}
+
+function runSearch(
   board: Board,
   player: Player,
   options: SearchOptions,

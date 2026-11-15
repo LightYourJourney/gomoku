@@ -63,8 +63,8 @@ try {
  * 逐个配置数用例。
  *
  * 只数默认配置是不够的：`e2e:prod`（7 条）、`e2e:browsers`（20 条）、
- * `e2e:browsers:full`（301 条）各有独立配置，删掉其中一整条用例或缩小
- * `grepInvert`，默认配置的 190 都不会变——安全网变小却全绿。
+ * `e2e:browsers:full` 各有独立配置（当前条数见 `tests.baseline.json`），删掉其中一整条用例或缩小
+ * `grepInvert`，默认配置的总数都不会变——安全网变小却全绿。
  */
 function listE2e(extraArgs) {
   try {
@@ -106,7 +106,14 @@ const browsersFullList = listE2e(['--config', 'playwright.browsers-full.config.t
  * 单测那边有 `numPendingTests` 兜着，e2e 这边没有等价的字段。
  * 所以这里直接扫 spec 文件里的 skip/fixme 标记，把「跳过」变成一个只许涨不许跌的数。
  */
-const SKIP_MARKER = /\b(test|describe|it)\.(skip|fixme)\b/
+/*
+ * 覆盖三种写法：
+ *   - 声明期：`test.skip(` / `test.fixme(` / `test.describe.skip(` / `it.skip(`；
+ *   - 运行期：`test.info().skip()` / `testInfo.skip()`——用例体内跳过，`--list` 照样数到它；
+ *   - `fail`（声明期与运行期）：把用例标成「预期会失败」，断言红了反而算绿，同样是在关判据。
+ */
+const SKIP_MARKER =
+  /\b(test|describe|it)\.(skip|fixme|fail)\b|\binfo\(\)\.(skip|fixme|fail)\b|\btestInfo\.(skip|fixme|fail)\b/
 const e2eSpecs = (await readdir(resolve(REPO, 'e2e'))).filter((f) => f.endsWith('.spec.ts'))
 const skipHits = []
 for (const f of e2eSpecs) {

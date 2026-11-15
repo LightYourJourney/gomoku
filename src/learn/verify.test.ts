@@ -146,6 +146,28 @@ describe('judgeMove —— 做出指定棋型', () => {
 
     expect(judgeMove(board, BLACK, { x: 4, y: 3 }, goal, NOW)).toEqual({ ok: true })
   })
+
+  it('目标是活二时只做出眠二，理由点名眠二而不是「无」', () => {
+    // (5,3) 的白子紧贴着堵住一端：补 (4,3) 做出的是一端封死的眠二。
+    // 曾经的反馈是「这一手做出的是无」——`dominantThreat` 不认二，判题却要教二。
+    const board = boardFromLines(['...............', '...............', '...............', '...B.W.........'])
+    const goal: PuzzleGoal = { kind: 'makeShape', shape: 'openTwo' }
+
+    const verdict = judgeMove(board, BLACK, { x: 4, y: 3 }, goal, NOW)
+
+    expect(verdict.ok).toBe(false)
+    expect(verdict.ok === false && verdict.reason).toMatch(/眠二/)
+    expect(verdict.ok === false && verdict.reason).not.toMatch(/是无/)
+  })
+
+  it('什么棋型都没做出时，直说没有成形', () => {
+    const goal: PuzzleGoal = { kind: 'makeShape', shape: 'openTwo' }
+
+    const verdict = judgeMove(createBoard(), BLACK, { x: 7, y: 7 }, goal, NOW)
+
+    expect(verdict.ok).toBe(false)
+    expect(verdict.ok === false && verdict.reason).toMatch(/没有做出/)
+  })
 })
 
 describe('judgeMove —— 双重威胁', () => {
@@ -260,6 +282,19 @@ describe('judgeMove —— 强制取胜', () => {
 
     expect(verdict.ok).toBe(false)
     expect(verdict.ok === false && verdict.reason).toMatch(/防住|强制/)
+  })
+
+  it('判题没算完（超时）时如实说没算完，不断言「对手能防住」', () => {
+    // 注入的时钟第一次读数之后就越过截止时间：算杀一开始就收手。
+    // 这时什么结论都没有，说「对手有办法防住」是在编造结论。
+    let calls = 0
+    const expired = () => (calls++ === 0 ? 0 : 1e12)
+
+    const verdict = judgeMove(LIVE_THREE, BLACK, { x: 2, y: 4 }, goal, expired)
+
+    expect(verdict.ok).toBe(false)
+    expect(verdict.ok === false && verdict.reason).toMatch(/没算完|超时/)
+    expect(verdict.ok === false && verdict.reason).not.toMatch(/防住/)
   })
 
   it('一步成五也满足强制取胜', () => {

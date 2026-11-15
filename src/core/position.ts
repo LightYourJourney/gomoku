@@ -43,7 +43,7 @@ export interface PositionReport {
   readonly whiteWin: boolean
   readonly bothWin: boolean
   readonly full: boolean
-  /** 黑白数量与 nextPlayer 是否符合「黑先、轮流落子」的必要条件。 */
+  /** 黑白数量与 nextPlayer 是否符合「`firstPlayer` 先、轮流落子」的必要条件（默认黑先）。 */
   readonly parity: 'ok' | 'mismatch'
   readonly ended: boolean
   /** 只有结构合法、未结束、奇偶一致时才允许交给引擎。 */
@@ -113,7 +113,15 @@ export function findWins(board: Board): PositionWin[] {
   return wins
 }
 
-export function analyzePosition(position: Position): PositionReport {
+/**
+ * 静态检查一个局面。
+ *
+ * `firstPlayer` 只影响奇偶判据：先手方落子后两边数量才会出现「先手多一子」。
+ * 自由摆盘没有先手方可言，按「黑先」约定判（默认值）；从棋谱载入的快照
+ * 要传 `provenance.firstPlayer`——导入文件允许白先，按黑先判会把一个能完整
+ * 重放的局面报成「棋子数与下一手不符」。
+ */
+export function analyzePosition(position: Position, firstPlayer: Player = 1): PositionReport {
   const issues: string[] = []
   let structural = position.board.length === CELL_COUNT
   let black = 0
@@ -132,8 +140,12 @@ export function analyzePosition(position: Position): PositionReport {
   const whiteWin = wins.some((win) => win.player === 2)
   const bothWin = blackWin && whiteWin
   const full = black + white === CELL_COUNT
+  const first = firstPlayer === 1 ? black : white
+  const second = firstPlayer === 1 ? white : black
   const parity: PositionReport['parity'] =
-    position.nextPlayer === 1 ? (black === white ? 'ok' : 'mismatch') : black === white + 1 ? 'ok' : 'mismatch'
+    position.nextPlayer === firstPlayer
+      ? first === second ? 'ok' : 'mismatch'
+      : first === second + 1 ? 'ok' : 'mismatch'
 
   if (bothWin) issues.push('黑白双方同时五连，局面不合法')
   else if (blackWin) issues.push('黑棋已有五连，局面已结束')

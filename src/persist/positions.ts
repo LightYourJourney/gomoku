@@ -2,7 +2,7 @@ import { isReplayConsistent, type Position, type PositionProvenance } from '../c
 import type { Player } from '../core/types'
 import { positionContentKey } from './positionKey'
 export { positionContentKey } from './positionKey'
-import { openDatabaseWithSchema, withObjectStore } from './idb'
+import { openDatabaseWithSchema, resolveIdbFactory, storeRunner } from './idb'
 import { POSITIONS_CONTENT_INDEX, POSITIONS_STORE } from './schema'
 
 const POSITION_SCHEMA_VERSION = 2
@@ -256,17 +256,8 @@ export function __setPositionsIndexedDbFactory(next: IDBFactory | null): void {
   backfillPending = null
 }
 
-function resolveFactory(): IDBFactory | null {
-  if (factory !== null) return factory
-  try {
-    return typeof indexedDB === 'undefined' ? null : indexedDB
-  } catch {
-    return null
-  }
-}
-
 function openDatabase(): Promise<IDBDatabase> {
-  return openDatabaseWithSchema(resolveFactory(), {
+  return openDatabaseWithSchema(resolveIdbFactory(factory), {
     errorMessage: '打不开局面库',
     blockedMessage: '局面库被其他标签页占用',
     // 每个会话最多扫一次：`openDatabase` 会被 list/get/save 反复调用，
@@ -280,21 +271,10 @@ function fallbackToMemory(): PositionStorage {
   return memoryFallback
 }
 
-function withStore<T>(
-  mode: IDBTransactionMode,
-  run: (store: IDBObjectStore) => IDBRequest<T>,
-): Promise<T> {
-  return openDatabase().then(
-    (db) =>
-      withObjectStore(db, STORE, mode, run, {
-        errorMessage: '局面库读写失败',
-        abortMessage: '局面库读写被中止',
-      }),
-    (error) => {
-      throw error
-    },
-  )
-}
+const withStore = storeRunner(openDatabase, STORE, {
+  errorMessage: '局面库读写失败',
+  abortMessage: '局面库读写被中止',
+})
 
 function readPosition(
   db: IDBDatabase,
@@ -354,7 +334,12 @@ async function backfillContentKeys(db: IDBDatabase): Promise<void> {
         const update = cursor.update({ ...cursor.value, contentKey: record.contentKey })
         // IDB 的约束错误是**异步**的：不 preventDefault 会中止整笔回填事务，
         // 把其余记录也一起回滚。单条冲突只跳过该条，读取侧仍按规范化键展示。
-        update.onerror = (event) => event.preventDefault()
+        // 还必须 stopPropagation：preventDefault 只防住中止，错误事件照样冒泡到
+        // `tx.onerror`，那样这次已经正常收尾的回填会被记成失败、下次打开再整表重扫。
+        update.onerror = (event) => {
+          event.preventDefault()
+          event.stopPropagation()
+        }
       }
       cursor.continue()
     }

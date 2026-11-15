@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { idx } from './board'
 import { BLACK, WHITE, type Point } from './types'
 import {
   applyEdit,
@@ -46,7 +47,7 @@ describe('Position —— 与 GameState 分离的盘面快照', () => {
   it('覆盖已有棋子是明确的替换，不是落子', () => {
     let position = applyEdit(createPosition(), { x: 7, y: 7 }, 'black')
     position = applyEdit(position, { x: 7, y: 7 }, 'white')
-    expect(position.board[7 * 15 + 7]).toBe(WHITE)
+    expect(position.board[idx(7, 7)]).toBe(WHITE)
   })
 
   it('设置下一手颜色', () => {
@@ -177,6 +178,20 @@ describe('Position —— 已知手顺与合法性分级', () => {
       ply: 6,
     }
     expect(isReplayConsistent(loaded.position, truncated)).toBe(false)
+  })
+
+  it('白先棋谱载入的快照按白先判奇偶，可以交给引擎', () => {
+    // 导入文件允许 firstPlayer: 2；这样的棋谱载入编辑器后，奇偶必须按它自己的先手方判，
+    // 否则一个 isReplayConsistent 为真的局面会被报成「棋子数与下一手不符」而拒绝分析。
+    const loaded = positionFromReplay([{ x: 7, y: 7 }], WHITE, 1)
+    expect(isReplayConsistent(loaded.position, loaded.provenance)).toBe(true)
+
+    const report = analyzePosition(loaded.position, loaded.provenance.firstPlayer)
+    expect(report.parity).toBe('ok')
+    expect(report.searchable).toBe(true)
+
+    // 不给先手方时仍按「黑先」的自由摆盘约定判——白一子、轮到黑，不符合黑先。
+    expect(analyzePosition(loaded.position).parity).toBe('mismatch')
   })
 
   it('clonePosition 不会共享 Uint8Array', () => {

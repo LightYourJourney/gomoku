@@ -1431,6 +1431,14 @@ const only = args.filter(
   (value, index) => !value.startsWith('-') && args[index - 1] !== '--out',
 )
 
+// 指名的状态有任何一个不存在（多半是打错字）就响亮地失败——在起 dev server 之前。
+// 否则一个都没量到也会印「✓ 七条量化判据全部通过（本次 0 条量测）」并退出 0。
+const unknownStates = only.filter((id) => !STATES.some((state) => state.id === id))
+if (unknownStates.length > 0) {
+  console.error(`✗ 没有这些状态：${unknownStates.join('、')}。可用的状态：${STATES.map((s) => s.id).join('、')}`)
+  process.exit(2)
+}
+
 const server = startDevServer()
 let browser
 const measurements = []

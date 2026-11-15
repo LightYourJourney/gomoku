@@ -1,7 +1,7 @@
 # 候选预筛（Candidate Pre-screen）· 设计与实验方案
 
 **日期**：2026-10-31
-**状态**：**§4.3 与 §4.1/4.2 已实现并接入（默认关闭）**，棋力 A/B 进行中；未拿到证据不合入生产
+**状态**：**已实现、默认关闭；棋力 A/B 已完成，结论否决，不合入生产**（见 §8.5）
 **依据**：[OPTIMIZATION_CANDIDATES.md](../../ai-research/OPTIMIZATION_CANDIDATES.md) §1、[CPU_PROFILE.md](../../ai-research/CPU_PROFILE.md)、[SEARCH_OPTIMIZATION.md](../../ai-research/SEARCH_OPTIMIZATION.md)
 
 ## 1. 要解决的问题

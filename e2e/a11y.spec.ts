@@ -108,11 +108,16 @@ async function tabUntil(
   for (let tabs = 1; tabs <= limit; tabs += 1) {
     await page.keyboard.press('Tab')
     const focus = await page.evaluate(() => ({
+      // 焦点落回 <body> 就是「没落在任何控件上」。body 的 textContent 是整页文字，
+      // 拿它去 `includes('下一步')` 必然命中——本机 Chrome 156 在点掉一个随即被卸载的
+      // 卡片之后，第一下 Tab 恰好落在 body 上，用例于是在第 1 步就「找到」了按钮，
+      // 回车按在 body 上什么都不发生。
+      onBody: document.activeElement === null || document.activeElement === document.body,
       text: (document.activeElement?.textContent ?? '').trim(),
       // 没有 activeElement 时也要给 `null`，不能漏成 `undefined`——签名里只有两种值
       role: document.activeElement?.getAttribute('role') ?? null,
     }))
-    if (hit(focus)) return tabs
+    if (!focus.onBody && hit(focus)) return tabs
   }
   return limit + 1
 }

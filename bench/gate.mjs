@@ -84,9 +84,11 @@ for (const [k, b] of baseRows) {
     // 注意措辞：**跳过与否由基线里冻结的 gated 决定**，与本次耗时无关。
     // 下面那个百分比是**本次**的实测（基线行里没有耗时字段），用来看这台机器此刻有多紧。
     const pct = ((c.elapsedMs / b.budgetMs) * 100).toFixed(0)
+    // 「为什么不断言」说的是**冻结基线时**的事实（那时这一行超过了断言线），
+    // 不是本次：快机器上本次占比可能早已低于断言线，那句话不能套在本次的数字上。
     skipped.push(
-      `${k}：未被断言（基线的 gated=false）——本次耗时占预算 ${pct}%，` +
-        `超过 ${baseline.maxBudgetRatio * 100}% 的断言线，跨机器断言会变成假红`,
+      `${k}：未被断言（基线的 gated=false：冻结基线时它的耗时超过预算的 ` +
+        `${baseline.maxBudgetRatio * 100}%，跨机器断言会变成假红）——本次耗时占预算 ${pct}%`,
     )
     continue
   }

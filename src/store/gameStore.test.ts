@@ -1503,6 +1503,35 @@ describe('恢复终局时说明是否已在棋谱库', () => {
     expect(findSavedGame).not.toHaveBeenCalled()
     expect(local.getState().recordSaveState).toBe('idle')
   })
+
+  it('查库期间开了新局：迟到的结论不写到新局上（哪怕两局的 version 都是 0）', async () => {
+    // version 等于手数：一局 0 手认输的终局与一局刚开的新局 version 相同，
+    // 拿 version 判「局面没变」会把旧局的查库结论写到新局上。
+    let settle!: (found: boolean) => void
+    const findSavedGame = vi.fn(() => new Promise<boolean>((resolve) => { settle = resolve }))
+    const local = createGameStore(new FakeEngine(), { findSavedGame })
+    local.getState().restore({ schemaVersion: SCHEMA_VERSION, ...FINISHED, moves: [], resignedBy: BLACK })
+    expect(findSavedGame).toHaveBeenCalledTimes(1)
+
+    local.getState().newGame()
+    expect(local.getState().game.version).toBe(0)
+    settle(false)
+    await flush()
+
+    expect(local.getState().recordSaveState).toBe('idle')
+  })
+
+  it('分享预览通道（resumeAi: false）恢复终局时不查库', async () => {
+    // 查库要打开 IndexedDB（库不存在时会新建，还会顺手补写内存兜底的记录）。
+    // `docs/sharing/SECURITY_MODEL.md` 承诺「预览阶段不调用任何写入 API」——
+    // 本地存档恰好是一局已结束的棋时，打开分享链接曾经会走到这里。
+    const findSavedGame = vi.fn(async () => true)
+    const local = createGameStore(new FakeEngine(), { findSavedGame })
+    local.getState().restore({ schemaVersion: SCHEMA_VERSION, ...FINISHED }, { resumeAi: false })
+    await flush()
+    expect(findSavedGame).not.toHaveBeenCalled()
+    expect(local.getState().recordSaveState).toBe('idle')
+  })
 })
 
 describe('AI 响应超时', () => {
@@ -1524,6 +1553,26 @@ describe('AI 响应超时', () => {
       expect(state().pendingRequestId).toBeNull()
       // 文案由常量推导，改预算不会让这句话变成谎话
       expect(state().aiError).toContain(`${AI_RESPONSE_TIMEOUT_MS / 1000} 秒`)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('提示请求也有同样的兜底：引擎永不结算时超时复位，并允许再求一次', () => {
+    // 没有兜底时 `hintThinking` 会一直为 true，而 `requestHint` 在思考中直接拒绝——
+    // 「求提示」从此按不动，只有落一手才能把它清掉。
+    vi.useFakeTimers()
+    try {
+      state().requestHint()
+      expect(state().hintThinking).toBe(true)
+
+      vi.advanceTimersByTime(AI_RESPONSE_TIMEOUT_MS)
+      expect(state().hintThinking).toBe(false)
+      expect(state().pendingHintRequestId).toBeNull()
+      expect(state().hintError).toContain(`${AI_RESPONSE_TIMEOUT_MS / 1000} 秒`)
+
+      state().requestHint()
+      expect(state().hintThinking).toBe(true)
     } finally {
       vi.useRealTimers()
     }

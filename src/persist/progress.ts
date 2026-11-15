@@ -1,4 +1,4 @@
-import { openDatabaseWithSchema } from './idb'
+import { openDatabaseWithSchema, resolveIdbFactory } from './idb'
 import { PROGRESS_STORE as STORE } from './schema'
 
 /**
@@ -138,17 +138,8 @@ export function __setIndexedDbFactory(next: IDBFactory | null): void {
  */
 let memoryFallback: LearningProgress | null = null
 
-function resolveFactory(): IDBFactory | null {
-  if (factory !== null) return factory
-  try {
-    return typeof indexedDB === 'undefined' ? null : indexedDB
-  } catch {
-    return null
-  }
-}
-
 function openDatabase(): Promise<IDBDatabase> {
-  return openDatabaseWithSchema(resolveFactory(), {
+  return openDatabaseWithSchema(resolveIdbFactory(factory), {
     errorMessage: '打不开进度库',
     blockedMessage: '进度库被其他标签页占用',
   })

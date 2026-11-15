@@ -246,6 +246,36 @@ describe('局面库 —— 校验与迁移', () => {
       req.onerror = () => reject(req.error)
     })
     expect(keys[913]).toBe(keyB)
+
+    /*
+     * 回填必须**收尾**：跳过的冲突不能让这次回填记成失败。曾经的写法里，
+     * `preventDefault` 只防住了事务中止，错误事件照样冒泡到 `tx.onerror`，
+     * Promise 被 reject，`backfillDone` 永远是 false——之后每次打开库都整表重扫一遍。
+     * 判据：把 913 的键再弄脏、再读一次；回填若已收尾，它就不会被再写回。
+     */
+    await new Promise<void>((resolve, reject) => {
+      const req = indexedDB.open(DB_NAME, DB_VERSION)
+      req.onsuccess = () => {
+        const db = req.result
+        const tx = db.transaction(POSITIONS_STORE, 'readwrite')
+        tx.objectStore(POSITIONS_STORE).put({ ...base, id: 913, title: '后续', cells: cellsB, contentKey: 'stale-again' })
+        tx.oncomplete = () => { db.close(); resolve() }
+        tx.onerror = () => reject(tx.error)
+      }
+      req.onerror = () => reject(req.error)
+    })
+    await indexedDbPositions.list()
+    const after = await new Promise<string>((resolve, reject) => {
+      const req = indexedDB.open(DB_NAME, DB_VERSION)
+      req.onsuccess = () => {
+        const db = req.result
+        const get = db.transaction(POSITIONS_STORE, 'readonly').objectStore(POSITIONS_STORE).get(913)
+        get.onsuccess = () => { db.close(); resolve((get.result as { contentKey: string }).contentKey) }
+        get.onerror = () => reject(get.error)
+      }
+      req.onerror = () => reject(req.error)
+    })
+    expect(after).toBe('stale-again')
   })
 
   it('旧记录缺内容键时按读取规范化回填一次，坏 provenance 不产生不一致键', async () => {

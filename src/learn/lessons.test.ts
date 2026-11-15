@@ -63,7 +63,7 @@ describe('课程结构', () => {
     }
   })
 
-  it('棋盘演示的手顺都在棋盘内，且第一步属于先行方', () => {
+  it('棋盘演示的手顺都在棋盘内，且没有重复落子', () => {
     for (const lesson of LESSONS) {
       for (const step of lesson.steps) {
         if (step.sequence === undefined) continue

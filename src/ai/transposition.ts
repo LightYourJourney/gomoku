@@ -115,8 +115,9 @@ export interface TranspositionTable {
  * 十万级条目下 32 位主键会撞上个位数次，`lo` 校验把它们挡掉。相比用字符串
  * 拼两个分量做键，这样快得多；相比只用 32 位，又安全得多。
  *
- * 替换策略：同一主键冲突时保留深度更大的条目——浅层结果的价值低，
- * 丢掉它比丢掉深层结果划算。
+ * 替换策略：**同一局面**（`hi`、`lo` 都相同）再次写入时保留深度更大的条目——浅层结果
+ * 价值低，丢掉它比丢掉深层结果划算。**不同局面撞上同一个 `hi`** 时后来者直接覆盖：
+ * 这种真碰撞每次搜索只有个位数次，不值得为它维护两路组。
  */
 export function createTranspositionTable(): TranspositionTable {
   const slots = new Map<number, TtEntry>()

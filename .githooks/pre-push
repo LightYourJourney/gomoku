@@ -26,4 +26,16 @@ command -v yarn >/dev/null 2>&1 || {
   exit 1
 }
 
+# 门禁跑的是**工作区**，推出去的是**提交**。工作区里有没提交的改动时两者不是一回事：
+# 一处只在工作区里的修复会让门禁变绿，推出去的提交却是红的。所以有改动就拒绝，
+# 让人先提交或 `git stash`，而不是在一个与推送内容不同的树上给出绿灯。
+# （未跟踪文件不算：它们不在任何提交里，也基本不进构建；新建源文件却忘了 `git add`
+#  的情况由 CI 兜底。）
+if [ -n "$(git status --porcelain --untracked-files=no)" ]; then
+  echo "✗ pre-push: 工作区有未提交的改动 —— 门禁会测到它们，而推出去的提交里没有。" >&2
+  echo "  先提交或 git stash，再推送。" >&2
+  git status --short --untracked-files=no >&2
+  exit 1
+fi
+
 yarn lint && yarn typecheck && yarn test && yarn build && yarn gates

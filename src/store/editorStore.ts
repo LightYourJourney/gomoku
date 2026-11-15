@@ -194,7 +194,8 @@ export function createEditorStore(engine: AiEngine) {
         const current = get()
         if (current.analysis.status === 'running') return
 
-        const report = analyzePosition(current.position)
+        // 白先棋谱载入的快照带着自己的先手方；自由摆盘按黑先判（provenance 为 null）。
+        const report = analyzePosition(current.position, current.provenance?.firstPlayer)
         if (!report.searchable) {
           set({
             analysis: {

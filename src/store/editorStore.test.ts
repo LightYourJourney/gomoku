@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import type { AiEngine } from '../ai/engine'
 import type { SearchResponse } from '../ai/types'
+import { positionFromReplay } from '../core/position'
 import { BLACK, WHITE } from '../core/types'
 import { createEditorStore } from './editorStore'
 import { createGameStore } from './gameStore'
@@ -161,6 +162,18 @@ describe('editorStore —— AI 分析', () => {
     expect(engine.search).not.toHaveBeenCalled()
     expect(store.getState().analysis.status).toBe('error')
     expect(store.getState().analysis.error).toContain('下一手')
+  })
+
+  it('白先棋谱载入的快照可以分析（按它自己的先手方判奇偶）', () => {
+    const { engine } = deferredEngine()
+    const store = createEditorStore(engine)
+    const loaded = positionFromReplay([{ x: 7, y: 7 }], WHITE, 1)
+    store.getState().load(loaded.position, loaded.provenance)
+
+    store.getState().analyze()
+
+    expect(store.getState().analysis.error ?? null).toBeNull()
+    expect(engine.search).toHaveBeenCalledTimes(1)
   })
 
   it('分析请求携带编辑器版本；继续摆棋后旧响应失效', async () => {

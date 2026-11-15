@@ -24,7 +24,7 @@ bench/strength/results/
 bench/strength/.engines/
 
 # 探针在 CI 里的输出。注意 `--out` 是相对 docs/ui-redesign/screenshots/ 解析的：
-# `--out ci` → docs/ui-redesign/screenshots/ci/（172 张 PNG + 一份 measurements.json）
+# `--out ci` → docs/ui-redesign/screenshots/ci/（每个状态×尺寸一张 PNG + 一份 measurements.json）
 docs/ui-redesign/screenshots/ci/
 
 # 测试与调试产物

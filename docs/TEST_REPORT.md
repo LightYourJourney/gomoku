@@ -1,6 +1,6 @@
 # 测试报告
 
-**日期**：2026-11-01
+**日期**：2026-11-15（全仓两轴审查整改，见「〇之二三」；单测 **1,475**、E2E **193**）
 **0.6.0 已发布（2026-10-30）**：备份 v2（含局面）、DB v4 内容唯一索引、session v3 分支来源、
 进度失败顶部提示、严格读取、positions v1 真实浏览器用例、Firefox/WebKit 全量核心 E2E。
 本地单测 **1,418 / 1,418**，E2E **190 / 190**；发布验收见 DEPLOYMENT_RECORD。
@@ -38,8 +38,8 @@ Phase 07 的最终门禁、探针对照与基准在 `ui-redesign/FINAL_TEST_REPO
 
 | 项 | 数量 |
 | --- | --- |
-| 单元 / 组件用例 | **1447**（90 个文件） |
-| 端到端用例 | **192**（桌面 168 + 移动触屏 14 + 平板 10，共 14 个 spec 文件，另有 `prod.spec.ts` 走独立配置），另有生产构建冒烟 7 条（`yarn e2e:prod`）、Firefox/WebKit 编辑器专项 20 条与全量核心 301 条 |
+| 单元 / 组件用例 | **1475**（90 个文件） |
+| 端到端用例 | **193**（桌面 169 + 移动触屏 14 + 平板 10，共 14 个 spec 文件，另有 `prod.spec.ts` 走独立配置），另有生产构建冒烟 7 条（`yarn e2e:prod`）、Firefox/WebKit 编辑器专项 20 条与全量核心 307 条 |
 | 界面基线与量测 | `yarn ui:probe`：38 个受控状态 × 视口矩阵 = 308 张截图 + 308 条 DOM 量测，逐张可对照（Phase 05 是 34 / 276，Phase 04 是 29 / 236，Phase 03 是 27 / 220，Phase 02 是 21 / 172） |
 | 质量门禁 | 本地 pre-push 快档（5 条命令，热跑 30–45 秒，看机器负载）+ CI 全档（6 个 job）+ 五道防退化闸门 + 两把覆盖棘轮，见「〇之十一」 |
 | 基准脚本 | `yarn bench`（引擎，结果见 `docs/AI_ENGINE.md` 的「实测」一节）；`yarn bench:render`（首屏、落子，以及 Phase 06 之后新增的**回放拖动**——200 手棋谱下中位 1.60–2.90 ms，Phase 07 复跑 **2.20 ms**；前两者的历史结果见本文「〇之四、Phase 5 摘要 · 性能实测」与 `ui-redesign/FINAL_TEST_REPORT.md` §5） |
@@ -199,12 +199,12 @@ e2e 162 / e2e:prod 5 不受影响（本阶段未改产品代码路径）。
 
 | | 跑什么 | 在哪跑 |
 | --- | --- | --- |
-| **快档** | `lint` / `typecheck` / `test` / `build` / `yarn gates`（四道闸门） | 本地 `git push` 自动拦（`.githooks/pre-push`）+ CI 的 `fast` job |
+| **快档** | `lint` / `typecheck` / `test` / `build` / `yarn gates`（五道闸门，第五道包体积预算是后加的） | 本地 `git push` 自动拦（`.githooks/pre-push`）+ CI 的 `fast` job |
 | **全档** | 上面 + `e2e` + `e2e:prod` + 探针 + 覆盖棘轮 + `bench:check` | 只有 CI |
 
 四道防退化闸门（`yarn gates`）：循环依赖（madge，当前扫描 **149 个文件**、零环）、
 死代码（knip，`knip.jsonc` 里按**符号种类**放行「只被签名引用」那一类并写明理由）、
-重复代码（jscpd，`src/` 排除测试、**阈值 0**、6 个文件显式豁免）、测试条数棘轮。
+重复代码（jscpd，`src/` 排除测试、**阈值 0**、文件豁免见 TECH_DEBT §1.3）、测试条数棘轮。
 
 两把覆盖棘轮（**这一半才是用户真正担心的**）：探针扫到的状态/控件/棋盘（`quality/coverage.baseline.json`，172 条 / 21 状态）
 与测试条数（`quality/tests.baseline.json`，**1060 / 0 / 0 / 162**——2026-10-19 把
@@ -2289,3 +2289,80 @@ session v1、progress v1、records v1（含旧 winner）、positions v1、game/b
 `TEST_REPORT.md`（六个 job、总数）、`docs/positions/EDITOR_DESIGN.md`、
 `docs/ai-research/KNOWN_LIMITATIONS.md`、`docs/audit/DATA_COMPATIBILITY_REPORT.md`、
 `docs/audit/TECH_DEBT.md`、`docs/ui-redesign/KNOWN_ISSUES.md`、`docs/audit/POST_UI_REDESIGN_AUDIT.md`。
+
+---
+
+## 〇之二三、全仓两轴代码审查（2026-11-15，`/code-review high --fix`）
+
+**范围**：HEAD `85eab63` 上的**全部现有实现**，不是某段 diff。仓库切成五块（`core/learn/analysis`、`ai`、
+`store/persist/sharing/lib`、界面层、工具链与测试设施），每块各派一个**标准轴**（AGENTS 硬约束 + Fowler
+坏味道基线）与一个**规格轴**（RULES / ARCHITECTURE / AI_ENGINE / 数据格式 / USAGE / 闸门设计）审查员，
+共十个只读子代理并行。**每一条发现都由主控对着代码复核过**（读码、临时探针、或先写失败测试），
+子代理给的行号与数字只当线索。
+
+**基线**：`lint` / `typecheck` / `build` / `gates` 通过；`test` **1460/1461**——`ai/patterns.test.ts`
+「5,000+ 局面逐点相等」那条超时（并发下 149 s，上限 90 s；空载单跑也要 82 s，注释写的却是「约 11 秒」）。
+
+### 修复（每条行为修复都先写失败测试、确认红，再改代码）
+
+| 发现 | 轴 | 修复 | 判据 |
+| --- | --- | --- | --- |
+| 白先棋谱载入编辑器后无法分析：奇偶判据写死黑先 | 两轴 | `analyzePosition(position, firstPlayer = 黑)`，编辑器传 `provenance?.firstPlayer` | `positionFromReplay([...], 白, 1)` 可搜索；撤掉修复后编辑器用例红 |
+| 判题超时被说成「对手有办法防住」；判错理由写「这一手做出的是无」 | 两轴 | 超时如实说「没算完」；二与「没有成形」单列；算杀判错只说到「没找到冲四取胜路线」为止 | 3 条新用例（注入过期时钟 / 眠二 / 空盘） |
+| 三道题的文案与盘面不符（堵竖四说成「下方空、上方顶边」，实际相反；斜四一端是黑子不是棋盘边；冲四连击把横竖说反） | 规格 | 改文案；先用求解器核对正解（(5,1)、(8,6)、(7,7) 竖冲四 + 横跳活三） | 求解器输出 |
+| 提示面板写「结论：精确」，候选却全来自静态棋型排序、与搜索无关 | 规格 | 提示的第一个候选就是搜索选中的着法，其余按棋型分补齐 | 30 个随机中盘局面逐个比对（修复前第 1 局就不一致） |
+| 提示请求没有超时兜底：Worker 静默死亡后「求提示」永远按不动 | 标准 | 与落子同一条 15 s 兜底 | 假引擎不结算 → 超时复位且可再求 |
+| 复盘分析缓存按 `seq` 当键：内存兜底从 1 重新编号，会读到另一局的结论 | 标准 | 缓存键改用对局内容键（`v2`） | seq 相同内容不同的两局不共用缓存 |
+| 本地存档的分支来源只查「是不是整数」，横幅可显示「从第 -5 手继续」 | 两轴 | 抽出 `isBranchInRange`，本地存档与导入校验共用 | 5 组越界输入被拒，边界值 0 / sourceMoves 通过 |
+| 本地存档是一局已结束的棋时，打开分享链接会打开（甚至新建）IndexedDB | 规格 | 分享预览通道恢复终局时不查库 | 单测 + 新 e2e（`indexedDB.databases()` 里没有库） |
+| 局面库内容键回填遇到一次冲突就永远不算完成，此后每次打开都整表重扫 | 规格 | 冲突请求除 `preventDefault` 外再 `stopPropagation` | fake-indexeddb：回填收尾后弄脏的键不再被写回 |
+| 恢复 0 手认输局后立刻开新局：查库结论被写到新局上（两局 version 都是 0） | 标准 | 用对局对象本身配对，不用 version | 延迟结算的查库在新局上不生效 |
+| 「开始探索」静默替换对战页上没下完的那局 | 规格 | 确认框里写明「会替换掉它，那局不会存入棋谱库」 | 组件用例 |
+| 认输确认框写「认输不能撤销」，而终局可悔棋（Phase 1 起刻意保留）——那句话是假的 | 规格 | 删掉那句；e2e 改断言获胜方文案 | — |
+| 局面编辑器的分析结论没注明引擎版本 | 标准 | 明面写「引擎 search-1」，预算仍按 EDITOR_DESIGN 收在技术细节 | 撤掉修复后组件用例红 |
+| `ProgressPersistBanner` 用裸 `rounded` 与手写裸按钮（DESIGN_SYSTEM 声称已清零） | 标准 | 走 `danger-soft` 与 `Button ghost sm` | — |
+
+### 门禁与工具链
+
+| 发现 | 修复 |
+| --- | --- |
+| 覆盖基线停在 Phase 02（21 状态 / 172 条），之后新增的 17 个状态从未受保护 | 在当前 HEAD 重拍探针、重建基线：**38 状态 / 308 条 / 6,536 条控件与标题**；先核对新基线覆盖旧基线的每一项（0 处丢失），再删掉一个状态确认会红 |
+| jscpd 的整文件豁免盖住了 `gameRecords` ↔ `positions` 两处**没登记**的新克隆；`LearnScreen`/`PuzzleScreen` 豁免早已无克隆可豁免 | 工厂解析与「打开库→跑事务」收进 `persist/idb.ts`（`resolveIdbFactory` / `storeRunner`），**豁免 6 → 2** |
+| 条数棘轮的 `e2eBrowsersFullTotal` 停在 301，实际 305 | 上调到 307（+2 新用例） |
+| 跳过标记扫描漏了运行期跳过与 `.fail` | 正则覆盖 `test.info().skip()` / `testInfo.skip()` / `.fail` |
+| `e2e:browsers` 与 `e2e:prod` 同用 5182、`e2e:browsers:full` 与 render 探针同用 5183；本地 `reuseExistingServer` 会复用错的服务 | 改为独占的 5185 / 5186，配置里写端口表 |
+| 探针指名的状态打错字时量 0 条、印 ✓、退出 0 | 起服务前校验状态名，未知即退出 2（已实测） |
+| `pre-push` 测的是工作区，推出去的是提交 | 有未提交改动时拒绝推送 |
+| 真实预算 A/B 用了 3 轮（先跑次数 2:1，违反 AGENTS「轮数必须是偶数」） | 改 4 轮，`timePaired` 对奇数轮直接抛错 |
+| e2e：侧栏「不并排」断言可能循环 0 次；换页后固定等 100 ms 再量 | 先断言数量 > 0；改等导航项 `aria-current` |
+| CI 的覆盖棘轮与本地两份路径；Node 钉在浮动的 `'26'`；`tsconfig.bench` 漏了 `vitest.tactics.config.ts` | CI 改用 `yarn check:coverage`；钉 `26.13.1`；补进类型检查 |
+| `patterns.test.ts` 那条红灯 | 循环里比对、最后断言一次，**规模不减**（6,000 局面 × 225 点 × 2 方），并先断言比对次数；临时注入一处不一致确认会红 |
+| 超时整层作废、置换表真碰撞替换都没有测试 | 各补一条（前者用「先量第 1 层读几次时钟」的注入时钟，篡改返回深度后确认会红） |
+
+### 文档与实现对齐
+
+`AI_ENGINE.md`（`evaluateBoard` 已不在生产路径、置换表替换策略、叶子不判成五、权重的真实作用面、
+`threat.ts` 行号、提示首候选）；`ARCHITECTURE.md`（core 清单补 `position.ts`）；`RULES.md` 与
+`POSITION_MODEL.md`（白先）；`USAGE.md`（探索会替换进行中对局、提示标签只在面板、存档状态四种、
+分段控件取消后的焦点）；`SCHEMA_MIGRATION.md`、`IMPORT_SECURITY_REPORT.md`、`BENCHMARK_PROTOCOL.md`
+（`environment-error`）、候选预筛方案的状态行、`README.md`（线上提交号、闸门道数、条数）、`TECH_DEBT.md`
+（豁免 6→2、**§1.4 新增：复核属实但本轮没动的 15 项与理由**）。
+
+### 门禁读数（本次整改后，本机）
+
+| 命令 | 结果 |
+| --- | --- |
+| `yarn lint` / `yarn typecheck` / `yarn build` | 通过 |
+| `yarn test` | **1,475 / 1,475**（+14） |
+| `yarn gates` | 五道全过：零环、knip 干净、**0 克隆（豁免只剩 2 个内容文件）**、条数棘轮、入口 gzip 130,417 B ≤ 135,000 B |
+| `yarn ui:probe --out ci` + `yarn check:coverage` | 38 状态 / 308 张；七条判据全过；覆盖棘轮 308 条 / 6,536 项 |
+| `yarn e2e` | **193 条：192 过 / 1 红**，红的那条在**未改动的 HEAD 上同样红**（见下） |
+| `yarn e2e:prod` | **7 / 7** |
+| `yarn bench:check` | 断言行 19/19 一致 / 跳过 6 / 不变量 29 项一致 |
+| `yarn e2e:browsers` | **本机没跑成**：Firefox / WebKit 未安装（`browserType.launch: Executable doesn't exist`），以 CI 的 `browsers` / `browsers-full` job 为准 |
+
+**那条本机红灯**（`a11y.spec.ts`「Tab 就能走到『下一步』」）：在 `85eab63` 上 `git stash` 后同样 2/2 红，CI 上却是绿的。
+临时探针打出焦点序列，第一下 Tab 落在 `<body>`——本机 Chrome 156 在点掉一个随即被卸载的课程卡片之后从 body 开始走。
+`tabUntil` 拿 `textContent.includes('下一步')` 判命中，而 body 的 textContent 是整页文字，于是**第 1 步就「找到」**，
+回车按在 body 上什么都不发生。修法是让 `tabUntil` 把落在 body 上的焦点当作「没落在控件上」——判据只变严，
+`a11y.spec.ts` 14 / 14 通过。同一个函数的另外四处 `includes` / `startsWith` 用法因此一起被堵上。

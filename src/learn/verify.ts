@@ -1,5 +1,5 @@
 import { candidateMoves } from '../ai/candidates'
-import { analyzePoint, dominantThreat, hasDoubleThreat, isWinningPoint } from '../ai/patterns'
+import { analyzePoint, dominantThreat, hasDoubleThreat, isWinningPoint, type ShapeCount } from '../ai/patterns'
 import { isForcedWinStart } from '../ai/threat'
 import { idx, opponentOf, pointFromIdx } from '../core/board'
 import { findWinLine, validateMove } from '../core/rules'
@@ -51,6 +51,21 @@ function pointList(points: readonly Point[]): string {
 }
 
 /**
+ * 「这一手做出的是 X」里的 X。
+ *
+ * `dominantThreat` 是给引擎的威胁判断用的，它不认二（二不构成威胁）；可教学要教二——
+ * 直接拿它的 `'none'` 去说话，学习者会读到「这一手做出的是无」。所以威胁档之下再看二，
+ * 真什么都没做出时直说「没有做出成形的棋型」。
+ */
+function madeShape(counts: ShapeCount): string {
+  const threat = dominantThreat(counts)
+  if (threat !== 'none') return `做出的是${threatLabel(threat)}`
+  if (counts.openTwo > 0) return `做出的是${SHAPE_LABELS.openTwo}`
+  if (counts.two > 0) return `做出的是${SHAPE_LABELS.two}`
+  return '没有做出成形的棋型'
+}
+
+/**
  * 判一手棋有没有达成目标，并且**在没达成时说清为什么**。
  *
  * 只说「不对」等于没教。每种目标都有一条专门的解释，而且是算出来的
@@ -93,7 +108,7 @@ export function judgeMove(
       if (counts[goal.shape] > 0) return OK
 
       return fail(
-        `这一手做出的是${threatLabel(dominantThreat(counts))}，题目要求${SHAPE_LABELS[goal.shape]}。`,
+        `这一手${madeShape(counts)}，题目要求${SHAPE_LABELS[goal.shape]}。`,
       )
     }
 
@@ -102,23 +117,30 @@ export function judgeMove(
       if (counts.openFour > 0) return OK
       if (hasDoubleThreat(counts)) return OK
 
-      return fail(`这一手做出的是${threatLabel(dominantThreat(counts))}，还没有形成双重威胁。`)
+      return fail(`这一手${madeShape(counts)}，还没有形成双重威胁。`)
     }
 
     case 'forcedWin': {
       // **必须在落子前的盘面上判**，并要求玩家这一手就是取胜链的第一步。
       // 拿落子后的盘面去调 findForcedWin 是错的：那个函数假定「传进来的盘面
       // 轮到攻方走」，而玩家落子之后轮到的是对手——等于白送一手，把输棋判成赢棋。
+      const deadline = now() + JUDGE_THREAT_BUDGET_MS
       const starts = isForcedWinStart(board, player, move, {
         maxPlies: goal.maxPlies,
         allowThrees: false,
-        deadline: now() + JUDGE_THREAT_BUDGET_MS,
+        deadline,
         now,
       })
+      if (starts) return OK
 
-      return starts
-        ? OK
-        : fail('这一手之后引擎找不到强制取胜的路线——对手有办法防住。')
+      // 没找到有两种完全不同的原因：算完了确实没有，或者预算用光、根本没算完。
+      // 后者什么结论都没有，不能说成「对手能防住」——那是在编造结论。
+      if (now() >= deadline) {
+        return fail('这一手的取胜路线没算完（判题超时），没法确认对错。再落一次试试。')
+      }
+      // 判题只认「以冲四开路」的取胜链（allowThrees: false，与 `solveMove` 同一口径）。
+      // 话要说到这个范围为止：以活三开路的杀，判题器本来就不找。
+      return fail('这一手之后，引擎没找到一条靠连续冲四强制取胜的路线。')
     }
   }
 }

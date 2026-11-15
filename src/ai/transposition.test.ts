@@ -133,7 +133,7 @@ describe('置换表', () => {
     expect(table.probe(key, 1)?.lo).toBe(key.lo)
   })
 
-  it('同一主键冲突时保留深度更大的条目', () => {
+  it('同一局面再次写入时保留深度更大的条目', () => {
     const table = createTranspositionTable()
     const key = computeKey(createBoard(), BLACK)
 
@@ -141,6 +141,20 @@ describe('置换表', () => {
     table.store(key, entry({ lo: key.lo, depth: 2, score: 200 }))
 
     expect(table.probe(key, 1)?.score).toBe(600)
+  })
+
+  it('不同局面撞上同一个 hi 时后来者覆盖，旧局面随之查不到', () => {
+    // 上一条用的是同一个 key（同一局面），测不到真碰撞。这里 hi 相同、lo 不同：
+    // 替换策略对真碰撞是 always-replace，哪怕旧条目更深。
+    const table = createTranspositionTable()
+    const older = { hi: 42, lo: 1 }
+    const newer = { hi: 42, lo: 2 }
+
+    table.store(older, entry({ lo: older.lo, depth: 6, score: 600 }))
+    table.store(newer, entry({ lo: newer.lo, depth: 2, score: 200 }))
+
+    expect(table.probe(newer, 1)?.score).toBe(200)
+    expect(table.probe(older, 1)).toBeNull()
   })
 
   it('深度相同时后来者覆盖', () => {

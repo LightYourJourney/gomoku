@@ -191,6 +191,9 @@ test.describe('平板竖屏（768×1024）', () => {
 
     // 堆叠：两侧面板整块落在棋盘的上方或下方，不再与它并排
     const asides = page.locator('main > aside')
+    // 先钉住「真的有侧栏可比」：选择器一旦失配（外面多包一层），下面的循环跑 0 次，
+    // 「不并排」就空洞地成立。
+    expect(await asides.count()).toBeGreaterThan(0)
     for (const aside of await asides.all()) {
       const panel = await aside.boundingBox()
       expect(panel).not.toBeNull()

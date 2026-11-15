@@ -514,9 +514,12 @@ const CONFIRM: Record<
     title: '认输？',
     label: '确认认输',
     tone: 'danger',
-    // 认输的是谁由 `resignerFor` 判（与 store 同源），赢家是它的对手
+    // 认输的是谁由 `resignerFor` 判（与 store 同源），赢家是它的对手。
+    // **不写「认输不能撤销」**：终局可悔棋是 Phase 1 起保留的既有行为
+    // （`gameStore.test.ts`「恢复认输存档后可以悔棋回到进行中」），认输后悔棋会回到
+    // 进行中——那句话是假的。
     describe: (facts) =>
-      `这一局会立刻结束，记为${playerName(opponentOf(facts.resigner), facts.mode, facts.humanColor)}获胜。认输不能撤销。`,
+      `这一局会立刻结束，记为${playerName(opponentOf(facts.resigner), facts.mode, facts.humanColor)}获胜。`,
   },
   mode: {
     title: '切换对战模式？',

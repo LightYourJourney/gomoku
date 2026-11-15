@@ -1,7 +1,7 @@
 import { isDifficulty } from '../ai/difficulty'
 import type { Difficulty } from '../ai/types'
 import { inBounds } from '../core/board'
-import type { Player, Point } from '../core/types'
+import { CELL_COUNT, type Player, type Point } from '../core/types'
 
 /** 存档格式版本。字段含义发生变化时递增，旧存档会被安全丢弃。 */
 export const SCHEMA_VERSION = 3
@@ -59,6 +59,23 @@ function migratedResignedBy(value: unknown, version: number): Player | null | un
   return isPlayer(value) ? value : undefined
 }
 
+/**
+ * 分支来源的取值范围：`cursor` 是「看到第几手」，只能是 `0…sourceMoves`；来源手数
+ * 不可能超过棋盘格数；`sourceSeq` 是棋谱库序号，从 1 开始。
+ *
+ * **本地存档与导入校验（`transfer/validate.ts`）共用这一条**——两份各写一遍时，
+ * 只有导入那份补上了范围检查，手改 localStorage 就能让横幅显示「从第 -5 手继续」。
+ */
+export function isBranchInRange(branch: Omit<PersistedBranch, 'sourceContentKey'>): boolean {
+  return (
+    branch.sourceSeq >= 1 &&
+    branch.sourceMoves >= 1 &&
+    branch.sourceMoves <= CELL_COUNT &&
+    branch.cursor >= 0 &&
+    branch.cursor <= branch.sourceMoves
+  )
+}
+
 function parseBranch(value: unknown, version: number): PersistedBranch | null | undefined {
   if (version < 3 || value === null || value === undefined) return null
   if (typeof value !== 'object') return undefined
@@ -74,6 +91,12 @@ function parseBranch(value: unknown, version: number): PersistedBranch | null | 
   ) {
     return undefined
   }
+  const branch = {
+    sourceSeq: raw.sourceSeq,
+    cursor: raw.cursor,
+    sourceMoves: raw.sourceMoves,
+  }
+  if (!isBranchInRange(branch)) return undefined
   return {
     sourceSeq: raw.sourceSeq,
     sourceContentKey: raw.sourceContentKey,
