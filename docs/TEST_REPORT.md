@@ -2359,7 +2359,7 @@ session v1、progress v1、records v1（含旧 winner）、positions v1、game/b
 | `yarn e2e` | **193 条：192 过 / 1 红**，红的那条在**未改动的 HEAD 上同样红**（见下） |
 | `yarn e2e:prod` | **7 / 7** |
 | `yarn bench:check` | 断言行 19/19 一致 / 跳过 6 / 不变量 29 项一致 |
-| `yarn e2e:browsers` | **本机没跑成**：Firefox / WebKit 未安装（`browserType.launch: Executable doesn't exist`），以 CI 的 `browsers` / `browsers-full` job 为准 |
+| `yarn e2e:browsers` / `e2e:browsers:full` | **20 / 20**；全量核心 **307 / 307**（Firefox 154 + WebKit 153）。首轮 WebKit 红了 47 条，全是环境：跑到一半 `~/Library/Caches/ms-playwright` 被本机别的进程整个删掉（43 条 `Executable doesn't exist`、4 条 `browser has been closed`）；重装后单独重跑 WebKit 153 / 153 |
 
 **那条本机红灯**（`a11y.spec.ts`「Tab 就能走到『下一步』」）：在 `85eab63` 上 `git stash` 后同样 2/2 红，CI 上却是绿的。
 临时探针打出焦点序列，第一下 Tab 落在 `<body>`——本机 Chrome 156 在点掉一个随即被卸载的课程卡片之后从 body 开始走。
