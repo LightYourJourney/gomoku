@@ -55,7 +55,7 @@ analysis   learn        ← 分析结论与教学内容（两条互不依赖的�
 **共用局面为什么值得单独抽一个文件**：同一个局面会被讲解、练习和题库一起引用（`FOUR_THREE` 就被 5 处用），抄几遍的话改一处必漏几处。但它同时是个陷阱——**两道题共用同一块盘面时，题面很容易照着「我以为的差别」写，而盘面其实一模一样**。第四轮审查抓到过一次，见 `docs/TEST_REPORT.md` 的「二之六」。抽常量之后仍要逐题核对题面描述与盘面是否相符。
 
 **`analysis/`** —— 复盘的纯逻辑。
-`analyze.ts` 定义单手结论（`MoveVerdict`：分差 + 可靠度 + 引擎出处，含显式路径 `reason` / `SearchPath`）、结论文案与缓存键。**只做纯函数，不发请求**——请求编排在 store 层。结论里没有「最佳 / 失误」这类固定档位：把连续的分差压进几个标签等于替玩家下结论，而且阈值一拍脑袋就会把「稍有出入」说成「失误」。
+`analyze.ts` 定义单手结论（`MoveVerdict`：同视界分差（不可比时为空）+ 引擎出处，含引擎首选的 `reason`）、分差口径 `horizonLoss`、结论文案与缓存键。口径的理由与实测见 `AI_ENGINE.md` 的「复盘分差的口径」。**只做纯函数，不发请求**——请求编排在 store 层。结论里没有「最佳 / 失误」这类固定档位：把连续的分差压进几个标签等于替玩家下结论，而且阈值一拍脑袋就会把「稍有出入」说成「失误」。
 
 **`store/`** —— 状态编排。
 `gameStore.ts` 是对局与 AI 请求的状态机（工厂函数 `createGameStore(engine)`，可注入假引擎测试）；`useGameStore.ts` 组装真实引擎与存档，是应用唯一的单例入口；`learnStore.ts` 是学习进度与当前视图（工厂函数 `createLearnStore(storage)`，可注入假存储测试）；写入走串行 latest-wins 队列，`flush()` 只等队列排空，**不承诺已落盘**；`settingsStore.ts` 是主题、坐标、音效等偏好；`replayStore.ts` 是回放器（棋谱 + 游标 + 派生局面 + 自动播放 + 播放速度）——**回放位置只有这一个游标**，时间轴、步进按钮、跳到开局/终局、点分析结论跳转全都只经它走，界面上不存在第二份「当前第几手」；`analysisStore.ts` 是分析管线（逐局面排队、请求共享、会话内缓存）；`editorStore.ts` 是局面编辑器的局部快照历史、工具与只读分析状态（`version` 闸门；不碰 gameStore）；`gameStore.ts` 的 `startBranch` 是棋谱探索分支的唯一接管入口——只用合法前缀经 `replay()` 构建，清空旧 AI/提示/保存状态，并在 AI 回合立即续走；`requestCounter.ts` 是**全局唯一**的请求号计数器——对局、提示、分析、编辑器请求共用它。
@@ -140,11 +140,12 @@ recordSaveState: saving → saved / failed —— 结果弹窗如实显示
    ↓
 position = replay(moves.slice(0, cursor))（纯派生，游标是唯一可变状态）
    ↓
-点「开始分析」→ analysisStore 逐局面排队（每手 1 个请求，相邻手共享后续局面）
+点「开始分析」→ analysisStore 逐局面排队（每手 1 个请求，相邻手共享后续局面；
+                 着法与引擎首选不同的手，另插 1 个对照请求：走完引擎首选之后的局面）
    ↓
 AiEngine.search（purpose: 'analyze'，与对局共用同一个 Worker 与全局请求号）
    ↓
-响应按 moveIndex 配对 → buildVerdict（loss = engineScore − (−对手评分)）
+响应按 moveIndex 配对 → buildVerdict（loss = 两种走法之后的对手评分之差；不可比时为空）
    ↓
 面板按分差排序列出前 3 手，标注引擎版本 · 档位 · 预算
 ```
@@ -184,7 +185,7 @@ type PuzzleGoal =
 
 **存档必须能还原「结果」。** 手顺能还原出胜负与和棋——最后一手就在手顺里。唯独认输还原不出来，所以 `PersistedSession` 单独存一个 `resignedBy`（由 `winner` 反推）。少了它，认输后刷新页面会让这局复活成进行中，AI 还会接着往下走。
 
-**分析与对局共用同一个 Worker，但绝不改变棋局。** 分析请求 `purpose: 'analyze'`、`gameVersion: 0`：它的过期校验走**三重闸门**——响应必须属于当前这一次分析（`runId`，每次 `start` 递增）、是当前在飞的那一个（`inflightIndex`）、且手序号与局面版本对得上（`moveIndex` / `gameVersion`）。只比手序号是不够的：每一次分析的序号都从 0 开始，上一局的迟到响应会被下一局当成自己的。三类请求（落子 / 提示 / 分析）的 `requestId` 全部来自 `requestCounter.ts` 的同一个计数器——分成多个计数器迟早撞号，撞号意味着迟到的分析响应可能被当成对局请求去兑现。分析只在复盘页发起，串行排队、同一时刻最多 1 个在飞，400ms 预算有界，不会长时间占住 Worker。
+**分析与对局共用同一个 Worker，但绝不改变棋局。** 分析请求 `purpose: 'analyze'`、`gameVersion: 0`：它的过期校验走**三重闸门**——响应必须属于当前这一次分析（`runId`，每次 `start` 递增）、是当前在飞的那一个（`inflight`，局面请求或对照请求）、且手序号与局面版本对得上（`moveIndex` / `gameVersion`）。只比手序号是不够的：每一次分析的序号都从 0 开始，上一局的迟到响应会被下一局当成自己的。三类请求（落子 / 提示 / 分析）的 `requestId` 全部来自 `requestCounter.ts` 的同一个计数器——分成多个计数器迟早撞号，撞号意味着迟到的分析响应可能被当成对局请求去兑现。分析只在复盘页发起，串行排队、同一时刻最多 1 个在飞，400ms 预算有界，不会长时间占住 Worker。
 
 **提示请求与落子请求必须彻底隔离。** 两者走同一条引擎、同一套过期校验，但分别记在 `pendingHintRequestId` 与 `pendingRequestId` 上：**提示在飞时玩家照常落子**（`canHumanPlay` 不看提示状态）。（请求号仍来自同一个只增不减的计数器——分成两个计数器迟早会撞号，撞号意味着迟到的提示响应会去兑现落子请求。）
 
