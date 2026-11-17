@@ -208,6 +208,8 @@ export function createAnalysisStore(): UseBoundStore<StoreApi<AnalysisStore>> {
         isWinningMove: entry.playedIsWinning,
         afterPlayed: entry.reply ?? null,
         afterEngine: entry.alternative ?? null,
+        followPlayed: null,
+        followEngine: null,
         reason: pos.reason,
         engineDepth: pos.depth,
         engineNodes: pos.nodes,

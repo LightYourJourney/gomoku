@@ -50,6 +50,10 @@ export interface VerdictInput {
   readonly afterPlayed: AfterMove | null
   /** 走完引擎首选之后的局面（对手视角）；`'ended'` = 引擎首选当场成五。 */
   readonly afterEngine: AfterMove | 'ended' | null
+  /** 实际着法一边的二级评估（对手应了一手之后，自己视角）；没有续搜时传 `null`。 */
+  readonly followPlayed: AfterMove | null
+  /** 引擎首选一边的二级评估；没有续搜时传 `null`。 */
+  readonly followEngine: AfterMove | null
   readonly reason: SearchReason
   readonly engineDepth: number
   readonly engineNodes: number
@@ -61,39 +65,123 @@ export interface AfterMove {
   readonly reason: SearchReason
 }
 
+/** 二级评估：对手应了一手之后，由走这一手的一方搜出来的结论（自己视角）。 */
+export interface FollowUps {
+  readonly played: AfterMove | null
+  readonly engine: AfterMove | null
+}
+
 /**
- * 对手视角的可比分值；`null` = 这个分数不能拿去和别的相减。
+ * 一条走法折成「走这一手的一方」视角的值。`proven` = 成五 / 必胜，不随搜索视界变。
  *
  * 只有两类结论在同一把尺子上（`AI_ENGINE.md` 的量纲表）：`search`（搜满档位深度的
  * negamax 值）与 `win`（成五 / 算杀，与前者同量纲）。`block` 的分数是贪心量级、
  * 符号不可信；`timeout` 的两边可能停在不同层；`opening` / `no_move` 恒为 0。
  */
-function comparableScore(after: AfterMove | 'ended' | null): number | null {
-  if (after === null) return null
-  // 引擎首选当场成五：对手已经输了
-  if (after === 'ended') return -WIN_SCORE
-  return after.reason === 'search' || after.reason === 'win' ? after.score : null
+interface LineValue {
+  readonly value: number
+  readonly proven: boolean
 }
 
+/** 一级：走完这一手之后、对手搜的结论（取负换成自己视角）。 */
+function firstLevel(after: AfterMove | 'ended' | null): LineValue | null {
+  if (after === null) return null
+  // 这一手当场成五：对手已经输了
+  if (after === 'ended') return { value: WIN_SCORE, proven: true }
+  if (after.reason === 'win') return { value: -after.score, proven: true }
+  return after.reason === 'search' ? { value: -after.score, proven: false } : null
+}
+
+/** 二级：对手应了一手之后、自己搜的结论（本来就是自己视角）。 */
+function secondLevel(follow: AfterMove | null): LineValue | null {
+  if (follow === null) return null
+  if (follow.reason === 'win') return { value: follow.score, proven: true }
+  return follow.reason === 'search' ? { value: follow.score, proven: false } : null
+}
+
+const provenOf = (first: LineValue | null, second: LineValue | null): number | null =>
+  first?.proven === true ? first.value : second?.proven === true ? second.value : null
+
+/** 没有已证明值的那一边：有一级搜索值用一级，否则用二级。 */
+const searchedOf = (first: LineValue | null, second: LineValue | null): number | null =>
+  first !== null && !first.proven ? first.value : second !== null && !second.proven ? second.value : null
+
 /**
- * 同视界分差：实际着法之后的对手评分 − 引擎首选之后的对手评分，负数钳到 0。
- * 任一边不可比或缺失 → `null`（没有算，不是「没有亏损」）。
+ * 同视界分差：引擎首选的值 − 实际着法的值（都是走这一手的一方视角），负数钳到 0。
+ * 两边不可比或缺失 → `null`（没有算，不是「没有亏损」）。
+ *
+ * 每条走法最多两级评估：一级是「走完这一手之后」由对手搜（`after*`），二级是「对手应了
+ * 一手之后」由自己搜（`follow`，只在一级是必防捷径时才有，见 `linesToFollow`）。
+ * 按顺序取第一条成立的：
+ *
+ * 1. 两边都有一级值 → 用一级值；
+ * 2. 两边都有已证明的值（任一级）→ 用它们；
+ * 3. 一边有已证明的值，另一边有搜索值（有一级用一级，否则二级）→ 用它们；
+ * 4. 两边都有二级搜索值 → 用它们；
+ * 5. 否则不算。
+ *
+ * 要点：**已证明的值跨级可比**（成五就是成五）；**两个搜索值只在同一级内可比**。
  *
  * **为什么不直接用「局面 i 的评分 − (−局面 i+1 的评分)」**：那两个数不在同一个搜索视界上。
  * 局面 i 搜 d 层，最后一手是对手下的；局面 i+1 再搜 d 层，等于从局面 i 看了 d+1 层，
  * 最后一手换成自己下。评估函数不含行棋方，「谁下最后一手谁占便宜」就原样进了差值，
  * 而且方向固定——实测引擎走自己的首选时 135 手里 134 手为负、|偏差| 中位数 14,200
- * （`yarn bench:review-loss` 第一项），真实亏损因此被钳成 0。
- * 这里比的两个局面都是「走完一手之后、轮到对手、搜同样的层数」，偏差相消。
+ * （`yarn bench:review-loss` 第一项），真实亏损因此被钳成 0。跨级拿两个搜索值相减是同一个毛病。
  */
 export function horizonLoss(
   afterPlayed: AfterMove | null,
   afterEngine: AfterMove | 'ended' | null,
+  follow: FollowUps = { played: null, engine: null },
 ): number | null {
-  const played = comparableScore(afterPlayed)
-  const engine = comparableScore(afterEngine)
-  if (played === null || engine === null) return null
-  return Math.max(0, played - engine)
+  const p1 = firstLevel(afterPlayed)
+  const e1 = firstLevel(afterEngine)
+  const p2 = secondLevel(follow.played)
+  const e2 = secondLevel(follow.engine)
+
+  const pair = ((): readonly [played: number, engine: number] | null => {
+    if (p1 !== null && e1 !== null) return [p1.value, e1.value]
+    const playedProven = provenOf(p1, p2)
+    const engineProven = provenOf(e1, e2)
+    if (playedProven !== null && engineProven !== null) return [playedProven, engineProven]
+    if (engineProven !== null) {
+      const played = searchedOf(p1, p2)
+      return played === null ? null : [played, engineProven]
+    }
+    if (playedProven !== null) {
+      const engine = searchedOf(e1, e2)
+      return engine === null ? null : [playedProven, engine]
+    }
+    // 走到这里两边都没有已证明的值，二级只可能是搜索值
+    return p2 !== null && e2 !== null ? [p2.value, e2.value] : null
+  })()
+
+  return pair === null ? null : Math.max(0, pair[1] - pair[0])
+}
+
+/** 一级结论能沿着它续搜一层的：有一手明确的应着可跟。超时不跟（设计决定 P6）。 */
+const followable = (after: AfterMove | 'ended' | null): boolean =>
+  after !== null && after !== 'ended' && (after.reason === 'block' || after.reason === 'search')
+
+/**
+ * 两条走法里哪几条需要续搜（对手应一手之后由自己再搜一层）。
+ *
+ * 一级两边已经可比 → 都不续。否则，没有已证明值的那一边需要续；只要有一边需要却续不了
+ * （一级缺失、超时、无棋可走……），**两边都不续**——续了也比不上。
+ * 已证明的一边不续：成五就是成五，不随视界变。
+ */
+export function linesToFollow(
+  afterPlayed: AfterMove | null,
+  afterEngine: AfterMove | 'ended' | null,
+): { readonly played: boolean; readonly engine: boolean } {
+  const neither = { played: false, engine: false }
+  const p1 = firstLevel(afterPlayed)
+  const e1 = firstLevel(afterEngine)
+  if (p1 !== null && e1 !== null) return neither
+
+  const played = p1?.proven !== true
+  const engine = e1?.proven !== true
+  if ((played && !followable(afterPlayed)) || (engine && !followable(afterEngine))) return neither
+  return { played, engine }
 }
 
 export function buildVerdict(input: VerdictInput): MoveVerdict {
@@ -104,7 +192,13 @@ export function buildVerdict(input: VerdictInput): MoveVerdict {
     moveIndex: input.moveIndex,
     move: input.played,
     engineMove: input.engineMove,
-    loss: input.isWinningMove || sameMove ? 0 : horizonLoss(input.afterPlayed, input.afterEngine),
+    loss:
+      input.isWinningMove || sameMove
+        ? 0
+        : horizonLoss(input.afterPlayed, input.afterEngine, {
+            played: input.followPlayed,
+            engine: input.followEngine,
+          }),
     reason: input.reason,
     engineDepth: input.engineDepth,
     engineNodes: input.engineNodes,

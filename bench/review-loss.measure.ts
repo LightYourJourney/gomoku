@@ -157,6 +157,8 @@ function tally(
           isWinningMove: false,
           afterPlayed,
           afterEngine,
+          followPlayed: null,
+          followEngine: null,
           reason: here.reason,
           engineDepth: here.depth,
           engineNodes: here.nodes,

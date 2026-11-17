@@ -7,6 +7,7 @@ import {
   buildVerdict,
   cacheKey,
   horizonLoss,
+  linesToFollow,
   verdictLabel,
   type AfterMove,
   type MoveVerdict,
@@ -25,6 +26,8 @@ function verdict(overrides: Partial<Parameters<typeof buildVerdict>[0]> = {}): M
     isWinningMove: false,
     afterPlayed: null,
     afterEngine: null,
+    followPlayed: null,
+    followEngine: null,
     reason: 'search',
     engineDepth: 2,
     engineNodes: 100,
@@ -246,3 +249,79 @@ describe('horizonLoss —— 同视界分差', () => {
     expect(horizonLoss(searched(0), null)).toBeNull()
   })
 })
+
+describe('horizonLoss —— 必防续搜（两级评估）', () => {
+  /** 必防捷径：分数是贪心量级，符号不可信。 */
+  const blocked: AfterMove = { score: 1_000_000, reason: 'block' }
+  const proven: AfterMove = { score: WIN_SCORE, reason: 'win' }
+
+  it('两边一级都可比时，二级评估不参与（哪怕二级有已证明值）', () => {
+    expect(horizonLoss(searched(800), searched(300), { played: searched(-99_999), engine: proven })).toBe(500)
+  })
+
+  it('实际着法之后是必防：两边都用二级值（自己视角，同一级才比）', () => {
+    expect(horizonLoss(blocked, searched(300), { played: searched(-200), engine: searched(500) })).toBe(700)
+  })
+
+  it('二级里实际着法更好：钳到 0', () => {
+    expect(horizonLoss(blocked, searched(300), { played: searched(500), engine: searched(-200) })).toBe(0)
+  })
+
+  it('漏走五连：引擎首选当场成五，实际着法续搜后只是常规局面', () => {
+    expect(horizonLoss(blocked, 'ended', { played: searched(12_000), engine: null })).toBe(WIN_SCORE - 12_000)
+  })
+
+  it('漏走五连但下一手仍然必胜（活四）：按引擎的判断不亏', () => {
+    expect(horizonLoss(blocked, 'ended', { played: proven, engine: null })).toBe(0)
+  })
+
+  it('已证明的一级值与对方的二级搜索值可比', () => {
+    expect(horizonLoss(proven, blocked, { played: null, engine: searched(300) })).toBe(WIN_SCORE + 300)
+  })
+
+  it('已证明的二级值与对方的一级搜索值可比', () => {
+    expect(horizonLoss(searched(300), blocked, { played: blocked, engine: proven })).toBe(WIN_SCORE + 300)
+  })
+
+  it('两个搜索值不许跨级比：一边只有一级、另一边只有二级', () => {
+    expect(horizonLoss(searched(300), blocked, { played: null, engine: searched(500) })).toBeNull()
+  })
+
+  it.each([
+    ['必防', { score: 1_000_000, reason: 'block' }],
+    ['超时', { score: 1, reason: 'timeout' }],
+  ] as const)('二级结论还是%s：不算', (_, follow) => {
+    expect(horizonLoss(blocked, searched(300), { played: follow, engine: searched(500) })).toBeNull()
+  })
+
+  it('不给二级评估时与阶段 A 一致', () => {
+    expect(horizonLoss(blocked, searched(0))).toBeNull()
+  })
+})
+
+describe('linesToFollow —— 哪条走法要续搜', () => {
+  const blocked: AfterMove = { score: 1_000_000, reason: 'block' }
+  const proven: AfterMove = { score: WIN_SCORE, reason: 'win' }
+  const timedOut: AfterMove = { score: 1, reason: 'timeout' }
+  const noMove: AfterMove = { score: 0, reason: 'no_move' }
+  const both = { played: true, engine: true }
+  const neither = { played: false, engine: false }
+
+  it.each([
+    ['search / search（一级已可比）', searched(1), searched(2), neither],
+    ['win / search（一级已可比）', proven, searched(2), neither],
+    ['search / 当场成五（一级已可比）', searched(1), 'ended' as const, neither],
+    ['block / search', blocked, searched(2), both],
+    ['search / block', searched(1), blocked, both],
+    ['block / block', blocked, blocked, both],
+    ['block / 当场成五：只续实际着法', blocked, 'ended' as const, { played: true, engine: false }],
+    ['win / block：只续引擎首选', proven, blocked, { played: false, engine: true }],
+    ['block / timeout：超时的一边不跟', blocked, timedOut, neither],
+    ['timeout / block：超时的一边不跟', timedOut, blocked, neither],
+    ['block / 缺失', blocked, null, neither],
+    ['block / no_move', blocked, noMove, neither],
+  ] as const)('%s', (_, afterPlayed, afterEngine, expected) => {
+    expect(linesToFollow(afterPlayed, afterEngine)).toEqual(expected)
+  })
+})
+
