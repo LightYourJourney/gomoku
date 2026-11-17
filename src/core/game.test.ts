@@ -1,7 +1,17 @@
 import { describe, expect, it } from 'vitest'
 import { idx } from './board'
-import { applyMove, createGame, replay, resign, resignerOf, undo, type GameState } from './game'
-import { BOARD_SIZE, type Point } from './types'
+import {
+  applyMove,
+  createGame,
+  replay,
+  replayStrict,
+  resign,
+  resignerOf,
+  undo,
+  withResignation,
+  type GameState,
+} from './game'
+import { BLACK, BOARD_SIZE, WHITE, type Point } from './types'
 
 /** 连续落子，任一手非法就直接失败（用于铺局面）。 */
 function mustMove(state: GameState, ...points: readonly Point[]): GameState {
@@ -460,5 +470,69 @@ describe('replay', () => {
     expect(state.board).toEqual(createGame().board)
     expect(state.status).toBe('playing')
     expect(state.current).toBe(1)
+  })
+})
+
+/** 黑棋第 9 手在第 7 行连成五子。 */
+const FIVE: readonly Point[] = [
+  { x: 3, y: 7 },
+  { x: 3, y: 9 },
+  { x: 4, y: 7 },
+  { x: 4, y: 9 },
+  { x: 5, y: 7 },
+  { x: 5, y: 9 },
+  { x: 6, y: 7 },
+  { x: 6, y: 9 },
+  { x: 7, y: 7 },
+]
+
+describe('replayStrict —— 要么整条重放成功，要么说清第几手、为什么失败', () => {
+  it('整条合法：与 replay 的结果逐字段相同', () => {
+    const result = replayStrict(FIVE, WHITE)
+    expect(result.ok).toBe(true)
+    expect(result.ok && result.state).toEqual(replay(FIVE, WHITE))
+  })
+
+  it('空手顺：成功，就是开局', () => {
+    const result = replayStrict([])
+    expect(result.ok && result.state).toEqual(createGame(BLACK))
+  })
+
+  it('落在已有子上：指出第几手、原因是 occupied', () => {
+    expect(replayStrict([{ x: 7, y: 7 }, { x: 8, y: 8 }, { x: 7, y: 7 }])).toEqual({
+      ok: false,
+      failedAt: 2,
+      error: 'occupied',
+    })
+  })
+
+  it('出界：原因是 out_of_bounds', () => {
+    expect(replayStrict([{ x: 7, y: 7 }, { x: BOARD_SIZE, y: 0 }])).toEqual({
+      ok: false,
+      failedAt: 1,
+      error: 'out_of_bounds',
+    })
+  })
+
+  it('成五之后还有手：失败在成五之后那一手，原因是 game_over', () => {
+    expect(replayStrict([...FIVE, { x: 0, y: 0 }])).toEqual({ ok: false, failedAt: 9, error: 'game_over' })
+  })
+})
+
+describe('withResignation —— 棋谱记录的认输方叠加到重放出的局面上', () => {
+  it('没有认输方：原样返回同一个对象', () => {
+    const state = replay([{ x: 7, y: 7 }])
+    expect(withResignation(state, null)).toBe(state)
+  })
+
+  it('对局中认输：判给对手', () => {
+    const state = withResignation(replay([{ x: 7, y: 7 }]), WHITE)
+    expect(state.status).toBe('resigned')
+    expect(state.winner).toBe(BLACK)
+  })
+
+  it('已经终局：与 resign 一样原样返回', () => {
+    const won = replay(FIVE)
+    expect(withResignation(won, BLACK)).toBe(won)
   })
 })

@@ -1,7 +1,6 @@
 import { isDifficulty } from '../../ai/difficulty'
 import { opponentOf } from '../../core/board'
-import { replay, type GameState } from '../../core/game'
-import { validateMove } from '../../core/rules'
+import { replayStrict, type GameState } from '../../core/game'
 import { BOARD_SIZE, type Player, type Point } from '../../core/types'
 import { isThemePreference } from '../../lib/theme'
 import { isView } from '../progress'
@@ -261,10 +260,9 @@ function validateMoveObjects(
   return moves
 }
 
-interface SequenceResult {
-  readonly state: GameState
-  readonly errors: readonly ImportIssue[]
-}
+type SequenceResult =
+  | { readonly ok: true; readonly state: GameState }
+  | { readonly ok: false; readonly errors: readonly ImportIssue[] }
 
 /**
  * 严格手顺校验。**不接受 `replay()` 的截断结果**：它遇到非法/终局后的手会停下，
@@ -277,32 +275,23 @@ function validateSequence(
   path: string,
 ): SequenceResult {
   /*
-   * **只 replay 一次。** `replay()` 会在第一个非法手/终局后手处停下，返回的
-   * `state.moves.length` 正好是第一个坏手的位置——不需要逐手 `applyMove`
-   * （那会让每手都从头重放，225 手 × 2000 局把 10 MiB 上限变成几十秒的主线程
-   * 卡顿）。停下之后只用 `validateMove` 判一次错误类型，规则仍来自 core。
+   * **只重放一次。** 严格重放在第一个非法手/终局后手处停下并报出位置与原因——
+   * 不需要逐手 `applyMove`（那会让每手都从头重放，225 手 × 2000 局把 10 MiB 上限
+   * 变成几十秒的主线程卡顿）。规则仍来自 core。
    */
-  const state = replay(moves, firstPlayer)
-  if (state.moves.length === moves.length) return { state, errors: [] }
+  const replayed = replayStrict(moves, firstPlayer)
+  if (replayed.ok) return replayed
 
-  const i = state.moves.length
-  if (state.status !== 'playing') {
-    return {
-      state,
-      errors: [issue('move_after_end', `${path}[${i}]`, '对局已经结束，不能再落子')],
-    }
+  const at = `${path}[${replayed.failedAt}]`
+  if (replayed.error === 'game_over') {
+    return { ok: false, errors: [issue('move_after_end', at, '对局已经结束，不能再落子')] }
   }
-
-  const error = validateMove(state.board, moves[i]!)
-  const code: ImportErrorCode = error === 'occupied' ? 'duplicate_move' : 'bad_coordinate'
   return {
-    state,
+    ok: false,
     errors: [
-      issue(
-        code,
-        `${path}[${i}]`,
-        error === 'occupied' ? '该交叉点已有棋子（重复落子）' : '落子非法',
-      ),
+      replayed.error === 'occupied'
+        ? issue('duplicate_move', at, '该交叉点已有棋子（重复落子）')
+        : issue('bad_coordinate', at, '落子非法'),
     ],
   }
 }
@@ -429,7 +418,7 @@ function validateGamePayload(
   }
 
   const sequence = validateSequence(moves, firstPlayer, `${path}.moves`)
-  if (sequence.errors.length > 0) {
+  if (!sequence.ok) {
     return { ok: false, errors: [...errors, ...sequence.errors], warnings }
   }
 
@@ -623,16 +612,16 @@ function validateBackupPosition(
         if (!isFiniteInt(p.ply) || p.ply !== moves.length) {
           errors.push(issue('invalid_field', `${path}.provenance.ply`, 'ply 必须等于手顺长度'))
         } else if (isPlayer(p.firstPlayer)) {
-          const state = replay(moves, p.firstPlayer)
-          if (state.moves.length !== moves.length) {
+          const replayed = replayStrict(moves, p.firstPlayer)
+          if (!replayed.ok) {
             errors.push(issue('invalid_field', `${path}.provenance.moves`, '手顺包含非法落子'))
           } else if (
             Array.isArray(raw.cells) &&
             raw.cells.length === BOARD_SIZE * BOARD_SIZE &&
-            raw.cells.some((cell, i) => cell !== state.board[i])
+            raw.cells.some((cell, i) => cell !== replayed.state.board[i])
           ) {
             errors.push(issue('invalid_field', `${path}.provenance`, '手顺重建出的盘面与 cells 不一致'))
-          } else if (state.current !== raw.nextPlayer) {
+          } else if (replayed.state.current !== raw.nextPlayer) {
             errors.push(issue('invalid_field', `${path}.provenance`, '手顺的下一手与 nextPlayer 不一致'))
           }
         }
@@ -708,7 +697,7 @@ function validateSession(
   const moves = validateMoveObjects(raw.moves, `${path}.moves`, errors, warnings)
   if (moves === null) return null
   const sequence = validateSequence(moves, firstPlayer, `${path}.moves`)
-  if (sequence.errors.length > 0) return null
+  if (!sequence.ok) return null
 
   if (resignedBy !== null && sequence.state.status !== 'playing') {
     return null

@@ -1,0 +1,130 @@
+#!/usr/bin/env node
+/*
+ * 依赖方向门禁：分层规则由机器守，不再靠每轮审计手工 grep。
+ *
+ * 规则出处是 `AGENTS.md` 的「代码约定」与 `docs/ARCHITECTURE.md` 的「依赖方向」。
+ * **改下面的允许表就是改分层**——先改 `ARCHITECTURE.md`，再改这里，提交信息写明。
+ *
+ * 两条判据：
+ *   1. 跨层 import 必须在允许表里（键可以依赖值里的层；同层随意）。
+ *      `src` 下不在表里的顶层目录或根文件一律红——新目录要显式归类，不能悄悄逃出门禁。
+ *   2. 纯逻辑层（core / ai / analysis / learn）的生产文件，直接或**间接**都不得引入
+ *      react / react-dom / zustand。间接也要查：`learn → lib` 合法，但 `lib` 里有 React hook。
+ *      纯逻辑层也不许有 `.tsx`：自动 JSX 运行时引入的 React 不是写出来的 import，图里看不见。
+ *
+ * 不查的：测试文件与 `src/test/`（组装场景时跨层是常态；被排除的文件连同指向它们的边都不进图，
+ * 所以生产代码若 import 了 `src/test/` 下的东西，这里也看不见——那由 knip 与审查兜着）；
+ * DOM 全局（`window`、`localStorage`……不是 import，照旧靠审查）。
+ *
+ * 解析交给 madge（`check:cycles` 用的同一个解析器，含仅类型的 import）。madge 解析不了的
+ * import 会进 `skipped`、在图里看不见——除了下面 `SKIPPABLE` 写明的两类，一律**失败关闭**。
+ * 图是空的（madge 没扫到文件）同样失败关闭：一个什么都没查的门禁不能报绿。
+ *
+ * 用法：`yarn check:layers`（在 `yarn gates` 里）。
+ */
+
+import { createRequire } from 'node:module'
+import { dirname, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+const HERE = dirname(fileURLToPath(import.meta.url))
+const REPO = resolve(HERE, '..')
+const madge = createRequire(import.meta.url)('madge')
+
+/** 键可以依赖值里的层。根（`App.tsx` / `main.tsx`）是组装点，可以依赖一切。 */
+const ALLOWED = {
+  core: [],
+  ai: ['core'],
+  analysis: ['core', 'ai'],
+  learn: ['core', 'ai', 'lib'],
+  lib: ['core', 'ai'],
+  persist: ['core', 'ai', 'lib'],
+  sharing: ['core', 'persist'],
+  store: ['core', 'ai', 'analysis', 'persist', 'lib'],
+  components: ['core', 'ai', 'learn', 'lib'],
+  features: ['core', 'ai', 'analysis', 'learn', 'lib', 'persist', 'sharing', 'store', 'components'],
+}
+const ROOT_FILES = new Set(['App.tsx', 'main.tsx'])
+const PURE = ['core', 'ai', 'analysis', 'learn']
+const FORBIDDEN_IN_PURE = /node_modules\/(?:@types\/)?(?:react|react-dom|zustand)\//
+
+/**
+ * madge 解析不了的 import 不进图。只放过两种，其余一律失败关闭：
+ * `?raw`（Vite 把文件当字符串读进来，不是模块依赖——只有测试在用）与
+ * `index.css` 里的 `@import 'tailwindcss'`（样式，不是代码）。
+ */
+const SKIPPABLE = [/\?raw$/, /^tailwindcss$/]
+
+const result = await madge(resolve(REPO, 'src'), {
+  fileExtensions: ['ts', 'tsx'],
+  includeNpm: true,
+  tsConfig: resolve(REPO, 'tsconfig.app.json'),
+  excludeRegExp: [/\.test\.tsx?$/, /^test\//, /\.css$/],
+})
+const graph = result.obj()
+const problems = []
+if (Object.keys(graph).length === 0) problems.push('依赖图是空的：madge 没扫到任何生产文件（路径或配置坏了），门禁失败关闭')
+
+const unresolved = result.warnings().skipped.filter((spec) => !SKIPPABLE.some((re) => re.test(spec)))
+for (const spec of unresolved) problems.push(`解析不了的 import：${spec}（图里看不见它，门禁失败关闭）`)
+
+/** `src` 下相对路径 → 层名；根文件 → 'root'；不认识 → null。 */
+function layerOf(file) {
+  if (ROOT_FILES.has(file)) return 'root'
+  const top = file.split('/')[0]
+  return file.includes('/') && top in ALLOWED ? top : null
+}
+
+let crossEdges = 0
+for (const [file, deps] of Object.entries(graph)) {
+  const from = layerOf(file)
+  if (from === null) {
+    problems.push(`未归类：${file}（src 下的新顶层目录或根文件要在 quality/layers.mjs 里显式归类）`)
+    continue
+  }
+  if (PURE.includes(from) && file.endsWith('.tsx')) {
+    problems.push(`纯逻辑层不许有 .tsx：${file}（自动 JSX 运行时会引入 React，而图里看不见）`)
+  }
+  for (const dep of deps) {
+    if (dep.startsWith('..')) continue // npm 包：判据 2 管
+    const to = layerOf(dep)
+    if (to === null || to === from) continue // 未归类的会在它自己那一行报
+    crossEdges += 1
+    if (from !== 'root' && !ALLOWED[from].includes(to)) {
+      problems.push(`越层：${file} → ${dep}（${from} 不得依赖 ${to}）`)
+    }
+  }
+}
+
+// 判据 2：从每个纯逻辑文件出发做可达性搜索，记下第一条通到禁用包的路径
+for (const start of Object.keys(graph)) {
+  if (!PURE.includes(layerOf(start))) continue
+  const seen = new Map([[start, null]])
+  const queue = [start]
+  let hit = null
+  while (queue.length > 0 && hit === null) {
+    const file = queue.shift()
+    for (const dep of graph[file] ?? []) {
+      if (seen.has(dep)) continue
+      seen.set(dep, file)
+      if (FORBIDDEN_IN_PURE.test(dep)) {
+        hit = dep
+        break
+      }
+      if (!dep.startsWith('..')) queue.push(dep)
+    }
+  }
+  if (hit !== null) {
+    const path = []
+    for (let at = hit; at !== null; at = seen.get(at)) path.unshift(at)
+    problems.push(`纯逻辑层引入了 React / Zustand：${path.join(' → ')}`)
+  }
+}
+
+if (problems.length > 0) {
+  console.error(`✗ 依赖方向：${problems.length} 处违规`)
+  for (const line of problems) console.error(`  - ${line}`)
+  console.error('  规则见 AGENTS.md 与 docs/ARCHITECTURE.md「依赖方向」；允许表在 quality/layers.mjs。')
+  process.exit(1)
+}
+console.log(`✓ 依赖方向：${Object.keys(graph).length} 个生产文件、${crossEdges} 条跨层 import，均在允许表内；纯逻辑层不引入 React / Zustand`)

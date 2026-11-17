@@ -1,58 +1,32 @@
 import { create, type StoreApi, type UseBoundStore } from 'zustand'
-import { opponentOf } from '../core/board'
 import { buildBranchGame } from '../core/branch'
 import {
   applyMove,
   createGame,
+  moverAt,
   replay,
   resign as resignGame,
   resignerOf,
   undo,
+  withResignation,
   type GameState,
 } from '../core/game'
-import { BLACK, type Player, type Point } from '../core/types'
+import { BLACK, type GameMode, type Player, type Point } from '../core/types'
 import type { AiEngine } from '../ai/engine'
+import { HINT_BUDGET_MS } from '../ai/difficulty'
 import type {
+  AiInfo,
   Confidence,
   Difficulty,
   MoveSuggestion,
-  SearchReason,
   SearchResponse,
   Urgency,
 } from '../ai/types'
 import type { GameRecord } from '../persist/gameRecords'
 import { recordContentKey, type RecordIdentity } from '../persist/recordIdentity'
 import type { PersistedSession } from '../persist/storage'
+import type { RecordSaveState } from '../lib/record-save'
 import { nextRequestId } from './requestCounter'
-
-export type GameMode = 'pve' | 'pvp'
-
-export interface AiInfo {
-  readonly depth: number
-  readonly nodes: number
-  readonly elapsedMs: number
-  readonly score: number
-  readonly confidence: Confidence
-  readonly reason: SearchReason
-  /**
-   * AI 落在哪。默认层要把它写成「落点 H8」——
-   * 任务书 §七 给玩家视图举的例就是「推荐落点：H8」。
-   *
-   * **类型是 `Point`，不是 `Point | null`**：引擎确实会在 `no_move`（棋盘已满）时
-   * 返回 `move: null`，但 `requestAiMove` 在**写 `aiInfo` 之前**就把这一档挡掉了
-   * （`aiThinking` 归零后直接返回，整个 `aiInfo` 保持原样）。所以这里永远拿得到坐标，
-   * 面板不必编一个、也不必防一个不会发生的 null。钉住这条不变量的用例在
-   * `gameStore.test.ts` 的「引擎给出 move: null……不写 aiInfo」——闸门一旦被删，
-   * 那里会红，而不是等到界面上多出一个假坐标。
-   *
-   * **为什么存一份快照、而不是让面板去读 `game.lastMove`**：两者**会分叉**——
-   * `playHuman` 不清 `aiInfo`，所以玩家一落子，`game.lastMove` 就是玩家那一手，
-   * 而这份分析说的仍是 AI 的那一手；照着 `lastMove` 渲染，面板会给 AI 的分析
-   * 贴上玩家的坐标。AI 欠着一手、玩家刚悔棋之类的时刻也一样。
-   * 一个字段换掉这层耦合，值这个价。
-   */
-  readonly move: Point
-}
 
 /** 一次探索分支的来源。只保存回指所需的最小元数据，不复制原棋谱。 */
 export interface BranchOrigin {
@@ -167,28 +141,12 @@ export interface GameStore {
 }
 
 /**
- * 提示能用的时间预算。
- *
- * 比正式走子短得多：玩家求提示是在等一个建议，不是在等一场深算。
- * 它同样只读，不会挤占落子请求的预算。
- */
-export const HINT_BUDGET_MS = 800
-
-/**
  * 等 AI 响应的硬上限。
  *
  * 不是搜索预算：搜索自己会在 2600ms 内收手。这一条只防「Worker 静默死亡后
  * 永不结算」——预算的 5 倍以上，正常机器不可能触发。
  */
 export const AI_RESPONSE_TIMEOUT_MS = 15_000
-
-/**
- * 终局入库的进度，供对局结束时的界面显示。
- *
- * `absent` 只出现在「恢复了一局已经结束的存档」：那不是刚刚入库，而是查过库之后
- * 确认不在里面。`idle` 表示既没有动作、也没有结论（进行中，或查不了）。
- */
-export type RecordSaveState = 'idle' | 'saving' | 'saved' | 'failed' | 'absent'
 
 /** 局面一变就要把提示整体清掉。 */
 const HINT_CLEARED = {
@@ -209,11 +167,6 @@ const TRANSIENT_RESET = {
   pendingRequestId: null,
   ...HINT_CLEARED,
 } as const
-
-/** 第 index 手（0-based）由谁落子。 */
-export function moverAt(index: number, firstPlayer: Player): Player {
-  return index % 2 === 0 ? firstPlayer : opponentOf(firstPlayer)
-}
 
 /**
  * 悔一手应当撤销几手。
@@ -538,8 +491,7 @@ export function createGameStore(
         // 终局会沿用上一局的「已存入」状态。
         notifier.reset()
         set({
-          game:
-            session.resignedBy === null ? replayed : resignGame(replayed, session.resignedBy),
+          game: withResignation(replayed, session.resignedBy),
           mode: session.mode,
           humanColor: session.humanColor,
           difficulty: session.difficulty,

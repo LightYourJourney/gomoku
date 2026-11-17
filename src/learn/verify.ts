@@ -5,7 +5,7 @@ import { idx, opponentOf, pointFromIdx } from '../core/board'
 import { findWinLine, validateMove } from '../core/rules'
 import type { Board, Player, Point } from '../core/types'
 import { formatPoint } from '../lib/coords'
-import { SHAPE_LABELS, threatLabel } from '../lib/shape-labels'
+import { SHAPE_LABELS, threatLabel } from './shape-labels'
 import type { PuzzleGoal } from './types'
 
 export type Verdict = { readonly ok: true } | { readonly ok: false; readonly reason: string }

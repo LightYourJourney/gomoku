@@ -1,6 +1,16 @@
+import type { Player } from '../../core/types'
 import { cx } from '../../lib/cx'
-import type { GameStatusDescriptor, StatusTone } from '../../features/battle/status'
 import { StoneDot } from './StoneDot'
+
+/** 状态胶囊的三种色调；描述由 `features/battle/status.ts` 推导，组件只管画。 */
+export type StatusTone = 'playing' | 'thinking' | 'result'
+
+export interface GameStatusDescriptor {
+  readonly tone: StatusTone
+  readonly label: string
+  /** 该状态对应的棋子颜色；和棋等无归属的情形为 null。 */
+  readonly player: Player | null
+}
 
 const TONE_CLASS: Record<StatusTone, string> = {
   playing: 'border-border bg-surface text-fg',

@@ -1,6 +1,6 @@
-import { replay } from '../core/game'
+import { replay, replayStrict } from '../core/game'
 import { inBounds, opponentOf } from '../core/board'
-import type { Player, Point } from '../core/types'
+import type { GameMode, Player, Point } from '../core/types'
 import { isDifficulty } from '../ai/difficulty'
 import { openDatabaseWithSchema, resolveIdbFactory, storeRunner } from './idb'
 import { RECORDS_STORE } from './schema'
@@ -26,8 +26,7 @@ export interface GameRecord {
   readonly schemaVersion: number
   readonly moves: readonly Point[]
   readonly firstPlayer: Player
-  /** 与 `gameStore` 的 `GameMode` 同义：'pve' | 'pvp'。定义在 persist 层，避免反向依赖 store。 */
-  readonly mode: 'pve' | 'pvp'
+  readonly mode: GameMode
   readonly humanColor: Player
   readonly difficulty: Difficulty
   /** 认输的一方，null 表示这局没有认输（五连 / 和棋结束）。 */
@@ -143,11 +142,11 @@ function parseRecord(value: unknown): GameRecord | null {
     moves.push({ x: point.x, y: point.y })
   }
 
-  const state = replay(moves, raw.firstPlayer)
+  const replayed = replayStrict(moves, raw.firstPlayer)
   // 读到库里就必须是完整合法手顺：非法/重复/终局后落子都整条拒绝，
   // 不能把截断后的前 35 手当成一局棋展示或再导出。
-  if (state.moves.length !== moves.length) return null
-  if (resignedBy !== null && state.status !== 'playing') return null
+  if (!replayed.ok) return null
+  if (resignedBy !== null && replayed.state.status !== 'playing') return null
 
   return {
     seq: raw.seq,

@@ -3,9 +3,8 @@ import type { Difficulty } from '../../ai/types'
 import { StoneDot } from '../../components/panels/StoneDot'
 import { StatusPill } from '../../components/panels/StatusPill'
 import type { GameState } from '../../core/game'
-import { BLACK, WHITE, type Player } from '../../core/types'
+import { BLACK, WHITE, type GameMode, type Player } from '../../core/types'
 import { cx } from '../../lib/cx'
-import type { GameMode } from '../../store/gameStore'
 import { describeStatus, playerName } from './status'
 
 export interface MatchBarProps {

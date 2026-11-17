@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { applyMove, createGame } from '../core/game'
-import { BLACK, WHITE, type GameStatus, type Player, type Point } from '../core/types'
+import { applyMove, createGame, moverAt } from '../core/game'
+import { BLACK, type GameStatus, type Player, type Point } from '../core/types'
 import { DIFFICULTY_PARAMS } from './difficulty'
 import { searchBoard, searchOptionsFor } from './search'
 import type { Difficulty } from './types'
@@ -31,16 +31,6 @@ const MAX_DEPTH = 3
  * `status === 'playing'` 上，于是「走完一整局」这条断言根本断言不到东西。
  */
 const MAX_MOVES = 120
-
-/**
- * 第 `index` 手（0-based）由谁落子。
- *
- * 刻意不 import store 里的 `moverAt`：`ai` 不得依赖 `store`，测试也不例外。
- * 自对弈的开局方恒为黑，两行就够。
- */
-function moverAt(index: number): Player {
-  return index % 2 === 0 ? BLACK : WHITE
-}
 
 interface GameOutcome {
   readonly status: GameStatus
@@ -147,7 +137,7 @@ describe('引擎自对弈', () => {
       if (game.winner === null) continue
 
       decided++
-      expect(game.winner).toBe(moverAt(game.moves.length - 1))
+      expect(game.winner).toBe(moverAt(game.moves.length - 1, BLACK))
     }
 
     // 防止上面整段空转（全都没分胜负时它就成了一条永远绿的用例）

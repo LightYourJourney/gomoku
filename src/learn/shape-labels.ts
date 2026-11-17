@@ -1,5 +1,5 @@
 import type { ThreatKind } from '../ai/patterns'
-import type { ShapeKind } from '../learn/types'
+import type { ShapeKind } from './types'
 
 /**
  * 棋型的中文名。

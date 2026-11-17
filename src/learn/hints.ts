@@ -1,7 +1,7 @@
 import { candidateMoves } from '../ai/candidates'
 import { findForcedWin } from '../ai/threat'
 import type { Board, Player, Point } from '../core/types'
-import { SHAPE_LABELS } from '../lib/shape-labels'
+import { SHAPE_LABELS } from './shape-labels'
 import type { PuzzleGoal } from './types'
 import { judgeMove } from './verify'
 

@@ -1,11 +1,12 @@
 import type { GameState } from '../../core/game'
+import type { GameMode } from '../../core/types'
 import { formatPoint } from '../../lib/coords'
 import { describeStatus } from './status'
 
 export interface BoardAnnouncerProps {
   readonly game: GameState
   readonly aiThinking: boolean
-  readonly mode: 'pve' | 'pvp'
+  readonly mode: GameMode
   readonly humanColor: 1 | 2
 }
 
@@ -28,7 +29,7 @@ export function BoardAnnouncer({ game, aiThinking, mode, humanColor }: BoardAnno
 function describe(
   game: GameState,
   aiThinking: boolean,
-  mode: 'pve' | 'pvp',
+  mode: GameMode,
   humanColor: 1 | 2,
 ): string {
   // 终局复用可见状态条的措辞：同一个屏幕上，「你认输了」和「白棋获胜」

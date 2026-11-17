@@ -1,12 +1,12 @@
 import { create, type StoreApi, type UseBoundStore } from 'zustand'
-import { opponentOf, samePoint } from '../core/board'
+import { samePoint } from '../core/board'
 import type { Point } from '../core/types'
 import type { AiEngine } from '../ai/engine'
 import type { Difficulty, SearchReason, SearchResponse } from '../ai/types'
 import { ENGINE_VERSION } from '../ai/version'
 import type { GameRecord } from '../persist/gameRecords'
 import { recordContentKey } from '../persist/recordIdentity'
-import { applyMove, replay, type GameState } from '../core/game'
+import { applyMove, moverAt, replay, type GameState } from '../core/game'
 import {
   buildVerdict,
   cacheKey,
@@ -311,12 +311,7 @@ export function createAnalysisStore(): UseBoundStore<StoreApi<AnalysisStore>> {
           requestId: nextRequestId(),
           gameVersion: 0,
           board: job.kind === 'position' ? boardAt(index) : job.state.board,
-          player:
-            job.kind === 'position'
-              ? index % 2 === 0
-                ? rec.firstPlayer
-                : opponentOf(rec.firstPlayer)
-              : job.state.current,
+          player: job.kind === 'position' ? moverAt(index, rec.firstPlayer) : job.state.current,
           difficulty,
           budgetMs,
           purpose: 'analyze',

@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { cx } from '../../lib/cx'
 import { formatPoint } from '../../lib/coords'
-import { moverAt } from '../../store/gameStore'
+import { moverAt } from '../../core/game'
 import { BLACK, type Player, type Point } from '../../core/types'
 
 export interface MoveListProps {

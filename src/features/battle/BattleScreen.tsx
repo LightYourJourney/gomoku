@@ -10,19 +10,13 @@ import { SettingsPanel } from '../../components/panels/SettingsPanel'
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog'
 import { Panel } from '../../components/ui/Panel'
 import { opponentOf } from '../../core/board'
-import type { Player } from '../../core/types'
+import { moverAt } from '../../core/game'
+import type { GameMode, Player } from '../../core/types'
 import { cx } from '../../lib/cx'
 import { createStoneSound, type StoneSound } from '../../lib/sound'
 import { useFocusOnMount } from '../../lib/useFocusOnMount'
 import { useMediaQuery } from '../../lib/useMediaQuery'
-import {
-  canHumanPlay,
-  canUndo,
-  moverAt,
-  resignerFor,
-  shouldAiMove,
-  type GameMode,
-} from '../../store/gameStore'
+import { canHumanPlay, canUndo, resignerFor, shouldAiMove } from '../../store/gameStore'
 import { useSettingsStore } from '../../store/settingsStore'
 import { useGameStore } from '../../store/useGameStore'
 import { AppHeader } from '../shell/AppHeader'

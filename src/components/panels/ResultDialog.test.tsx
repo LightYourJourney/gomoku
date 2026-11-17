@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import { ResultDialog } from './ResultDialog'
-import type { GameStatusDescriptor } from '../../features/battle/status'
+import type { GameStatusDescriptor } from './StatusPill'
 
 const WIN: GameStatusDescriptor = { label: '黑棋获胜', player: 1, tone: 'result' }
 

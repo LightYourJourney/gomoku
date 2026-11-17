@@ -1,5 +1,5 @@
 import { create, type StoreApi, type UseBoundStore } from 'zustand'
-import { replay, resign as resignGame, type GameState } from '../core/game'
+import { replay, withResignation, type GameState } from '../core/game'
 import { BLACK } from '../core/types'
 import type { GameRecord } from '../persist/gameRecords'
 
@@ -69,10 +69,7 @@ export interface ReplayStore {
 /** position 是纯派生：由 record + cursor 算出，绝不增量维护。 */
 function derivePosition(record: ReplayRecord, cursor: number): GameState {
   const replayed = replay(record.moves.slice(0, cursor), record.firstPlayer)
-  if (cursor === record.moves.length && record.resignedBy !== null) {
-    return resignGame(replayed, record.resignedBy)
-  }
-  return replayed
+  return withResignation(replayed, cursor === record.moves.length ? record.resignedBy : null)
 }
 
 function deriveState(

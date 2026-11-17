@@ -1,5 +1,5 @@
 import { createBoard, DIRECTIONS, idx, inBounds } from './board'
-import { replay } from './game'
+import { replayStrict } from './game'
 import { BOARD_SIZE, CELL_COUNT, type Board, type Player, type Point } from './types'
 
 /**
@@ -190,12 +190,12 @@ export function positionFromReplay(
     throw new RangeError(`回放位置必须是 0–${moves.length} 的整数`)
   }
   const prefix = moves.slice(0, ply)
-  const state = replay(prefix, firstPlayer)
-  // replay 遇到非法/重复手会提前停下。前缀本身就是坏的时候，宁可报错，
-  // 也不要把「重放到一半的盘面」当成第 ply 手交出去。
-  if (state.moves.length !== prefix.length) {
+  const replayed = replayStrict(prefix, firstPlayer)
+  // 前缀本身就是坏的时候，宁可报错，也不要把「重放到一半的盘面」当成第 ply 手交出去。
+  if (!replayed.ok) {
     throw new RangeError('回放前缀包含非法落子')
   }
+  const { state } = replayed
   return {
     position: {
       board: new Uint8Array(state.board),
@@ -223,8 +223,9 @@ export function isReplayConsistent(
 ): boolean {
   if (provenance === null) return false
   if (provenance.ply !== provenance.moves.length) return false
-  const state = replay(provenance.moves, provenance.firstPlayer)
-  // 非法/重复手顺会让 replay 提前截断；盘面碰巧相同也不能算「完整重放」。
-  if (state.moves.length !== provenance.moves.length) return false
+  const replayed = replayStrict(provenance.moves, provenance.firstPlayer)
+  // 非法/重复手顺：盘面碰巧相同也不能算「完整重放」。
+  if (!replayed.ok) return false
+  const { state } = replayed
   return boardsEqual(state.board, position.board) && state.current === position.nextPlayer
 }

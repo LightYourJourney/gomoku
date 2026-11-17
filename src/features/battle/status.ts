@@ -1,16 +1,7 @@
 import { opponentOf } from '../../core/board'
 import type { GameState } from '../../core/game'
-import { BLACK, type Player } from '../../core/types'
-import type { GameMode } from '../../store/gameStore'
-
-export type StatusTone = 'playing' | 'thinking' | 'result'
-
-export interface GameStatusDescriptor {
-  readonly tone: StatusTone
-  readonly label: string
-  /** 该状态对应的棋子颜色；和棋等无归属的情形为 null。 */
-  readonly player: Player | null
-}
+import type { GameStatusDescriptor } from '../../components/panels/StatusPill'
+import { BLACK, type GameMode, type Player } from '../../core/types'
 
 export interface StatusInput {
   readonly game: GameState

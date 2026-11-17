@@ -81,6 +81,33 @@ export function replay(moves: readonly Point[], firstPlayer: Player = BLACK): Ga
   }
 }
 
+export type StrictReplay =
+  | { readonly ok: true; readonly state: GameState }
+  | { readonly ok: false; readonly failedAt: number; readonly error: MoveError }
+
+/**
+ * 严格重放：整条手顺都合法才算成功；否则说清**第几手**（0-based）、**为什么**不行。
+ *
+ * `replay` 遇到非法手会停下并丢掉其余——那是给恢复本地存档用的宽松语义。导入、棋谱库、
+ * 分支、局面来源这些地方要的是相反的语义：截断了就是坏数据。它们以前各自写
+ * `state.moves.length !== moves.length`，现在都用这一个。
+ *
+ * 用 `replay` 实现，不另写一遍重放循环：两者对「哪一手合法」永远是同一个答案。
+ */
+export function replayStrict(moves: readonly Point[], firstPlayer: Player = BLACK): StrictReplay {
+  const state = replay(moves, firstPlayer)
+  const failedAt = state.moves.length
+  if (failedAt === moves.length) return { ok: true, state }
+  if (state.status !== 'playing') return { ok: false, failedAt, error: 'game_over' }
+  // replay 只在两种情况下停：对局已结束（上一行）或这一手落不下去——所以这里必然有错误
+  return { ok: false, failedAt, error: validateMove(state.board, moves[failedAt]!)! }
+}
+
+/** 棋谱记着的认输方叠加到重放出的局面上；`null` 原样返回。已终局的局面不受影响（同 `resign`）。 */
+export function withResignation(state: GameState, resignedBy: Player | null): GameState {
+  return resignedBy === null ? state : resign(state, resignedBy)
+}
+
 export function createGame(firstPlayer: Player = BLACK): GameState {
   return replay([], firstPlayer)
 }
@@ -121,4 +148,9 @@ export function resign(state: GameState, player: Player): GameState {
  */
 export function resignerOf(game: GameState): Player | null {
   return game.status === 'resigned' && game.winner !== null ? opponentOf(game.winner) : null
+}
+
+/** 第 index 手（0-based）由谁落子。 */
+export function moverAt(index: number, firstPlayer: Player): Player {
+  return index % 2 === 0 ? firstPlayer : opponentOf(firstPlayer)
 }

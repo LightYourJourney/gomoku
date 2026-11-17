@@ -26,5 +26,8 @@ export type GameStatus = 'playing' | 'won' | 'draw' | 'resigned'
 
 export type MoveError = 'out_of_bounds' | 'occupied' | 'game_over'
 
+/** 人机对战 / 本地双人。 */
+export type GameMode = 'pve' | 'pvp'
+
 export const BLACK: Player = 1
 export const WHITE: Player = 2

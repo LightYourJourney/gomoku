@@ -1,5 +1,5 @@
 import type { Difficulty } from '../ai/types'
-import type { Player, Point } from '../core/types'
+import type { GameMode, Player, Point } from '../core/types'
 
 /**
  * 一局棋的**内容身份**。
@@ -12,7 +12,7 @@ import type { Player, Point } from '../core/types'
 export interface RecordIdentity {
   readonly firstPlayer: Player
   readonly moves: readonly Point[]
-  readonly mode: 'pve' | 'pvp'
+  readonly mode: GameMode
   readonly humanColor: Player
   readonly difficulty: Difficulty
   readonly resignedBy: Player | null

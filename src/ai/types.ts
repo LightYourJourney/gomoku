@@ -129,3 +129,31 @@ export interface SearchResponse {
   /** `purpose` 为 `play` 时为 `normal`。 */
   readonly urgency: Urgency
 }
+
+/** 最近一手 AI 落子的搜索信息，供 AI 面板显示。 */
+export interface AiInfo {
+  readonly depth: number
+  readonly nodes: number
+  readonly elapsedMs: number
+  readonly score: number
+  readonly confidence: Confidence
+  readonly reason: SearchReason
+  /**
+   * AI 落在哪。默认层要把它写成「落点 H8」——
+   * 任务书 §七 给玩家视图举的例就是「推荐落点：H8」。
+   *
+   * **类型是 `Point`，不是 `Point | null`**：引擎确实会在 `no_move`（棋盘已满）时
+   * 返回 `move: null`，但 `store/gameStore` 的 `requestAiMove` 在**写 `aiInfo` 之前**就把这一档挡掉了
+   * （`aiThinking` 归零后直接返回，整个 `aiInfo` 保持原样）。所以这里永远拿得到坐标，
+   * 面板不必编一个、也不必防一个不会发生的 null。钉住这条不变量的用例在
+   * `store/gameStore.test.ts` 的「引擎给出 move: null……不写 aiInfo」——闸门一旦被删，
+   * 那里会红，而不是等到界面上多出一个假坐标。
+   *
+   * **为什么存一份快照、而不是让面板去读 `game.lastMove`**：两者**会分叉**——
+   * `playHuman` 不清 `aiInfo`，所以玩家一落子，`game.lastMove` 就是玩家那一手，
+   * 而这份分析说的仍是 AI 的那一手；照着 `lastMove` 渲染，面板会给 AI 的分析
+   * 贴上玩家的坐标。AI 欠着一手、玩家刚悔棋之类的时刻也一样。
+   * 一个字段换掉这层耦合，值这个价。
+   */
+  readonly move: Point
+}

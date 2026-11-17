@@ -1,11 +1,11 @@
 import { createBrowserAiEngine } from '../ai/browserEngine'
 import { resignerOf, type GameState } from '../core/game'
 import type { Difficulty } from '../ai/types'
-import type { Player } from '../core/types'
+import type { GameMode, Player } from '../core/types'
 import { indexedDbGameRecords, saveGameReplacing } from '../persist/gameRecords'
 import { recordContentKey } from '../persist/recordIdentity'
 import { loadSessionResult, saveSession } from '../persist/storage'
-import { createGameStore, type BranchOrigin, type GameMode } from './gameStore'
+import { createGameStore, type BranchOrigin } from './gameStore'
 
 /**
  * 应用唯一的 AI 引擎实例。

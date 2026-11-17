@@ -1,7 +1,7 @@
 import { ENGINE_VERSION } from '../../ai/version'
 import { opponentOf } from '../../core/board'
 import { replay } from '../../core/game'
-import { BOARD_SIZE, type Player, type Point } from '../../core/types'
+import { BOARD_SIZE, type GameMode, type Player, type Point } from '../../core/types'
 import type { Difficulty } from '../../ai/types'
 import type { ThemePreference } from '../../lib/theme'
 import type { GameRecord, GameRecordInput } from '../gameRecords'
@@ -36,7 +36,7 @@ export interface SourceMeta {
 export interface GamePayload {
   readonly firstPlayer: Player
   readonly moves: readonly Point[]
-  readonly mode: 'pve' | 'pvp'
+  readonly mode: GameMode
   readonly humanColor: Player
   readonly difficulty: Difficulty
   readonly ending: GameEnding
@@ -66,7 +66,7 @@ export interface BackupPreferences {
 export interface BackupSession {
   readonly moves: readonly Point[]
   readonly firstPlayer: Player
-  readonly mode: 'pve' | 'pvp'
+  readonly mode: GameMode
   readonly humanColor: Player
   readonly difficulty: Difficulty
   readonly resignedBy: Player | null

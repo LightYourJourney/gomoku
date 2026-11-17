@@ -385,6 +385,39 @@ describe('严格导入 · 告警规模', () => {
     expect(result.warnings).toHaveLength(MAX_WARNINGS + 1)
   })
 
+  it('局面来源的手顺含非法落子：这个局面被拒绝并点名，不按截断的手顺接受', () => {
+    // 第 3 手落回 (7,7)：宽松重放会停在 2 手，盘面恰好也与 cells 一致——必须靠严格重放拒绝
+    const cells = Array(225).fill(0)
+    cells[7 * 15 + 7] = BLACK
+    cells[8 * 15 + 8] = 2
+    const position = {
+      title: '来源手顺坏了的局面',
+      cells,
+      nextPlayer: BLACK,
+      provenance: {
+        kind: 'replay',
+        firstPlayer: BLACK,
+        ply: 3,
+        moves: [
+          { x: 7, y: 7 },
+          { x: 8, y: 8 },
+          { x: 7, y: 7 },
+        ],
+      },
+    }
+    const backup = {
+      ...JSON.parse(JSON.stringify(toBackupFile({ games: [] }))),
+      positions: [position],
+    }
+
+    const result = parse(backup)
+    expect(result.ok).toBe(true)
+    if (!result.ok || result.kind !== 'backup') return
+    expect(result.positions).toHaveLength(0)
+    expect(result.positionErrors).toHaveLength(1)
+    expect(result.positionErrors[0]!.errors.map((error) => error.message)).toContain('手顺包含非法落子')
+  })
+
   it('导入时认不出的 lastView 回落到对战页，不整段丢弃进度', () => {
     const backup = JSON.parse(JSON.stringify(toBackupFile({ games: [winRecord()] }))) as {
       progress?: Record<string, unknown>

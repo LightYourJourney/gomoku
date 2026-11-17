@@ -1,9 +1,9 @@
 import type { RefObject } from 'react'
-import type { GameStatusDescriptor } from '../../features/battle/status'
-import type { RecordSaveState } from '../../store/gameStore'
+import type { RecordSaveState } from '../../lib/record-save'
 import { Button } from '../ui/Button'
 import { Modal } from '../ui/Modal'
 import { StoneDot } from './StoneDot'
+import type { GameStatusDescriptor } from './StatusPill'
 
 export interface ResultDialogProps {
   open: boolean

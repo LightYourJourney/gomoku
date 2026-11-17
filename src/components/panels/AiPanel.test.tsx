@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import { FALLBACK_WARNING } from '../../lib/confidence-labels'
-import type { AiInfo } from '../../store/gameStore'
+import type { AiInfo } from '../../ai/types'
 import { AiPanel, type AiPanelProps } from './AiPanel'
 
 const INFO: AiInfo = {

@@ -1,7 +1,7 @@
 import { isDifficulty } from '../ai/difficulty'
 import type { Difficulty } from '../ai/types'
 import { inBounds } from '../core/board'
-import { CELL_COUNT, type Player, type Point } from '../core/types'
+import { CELL_COUNT, type GameMode, type Player, type Point } from '../core/types'
 
 /** 存档格式版本。字段含义发生变化时递增，旧存档会被安全丢弃。 */
 export const SCHEMA_VERSION = 3
@@ -19,7 +19,7 @@ export interface PersistedSession {
   readonly schemaVersion: number
   readonly moves: readonly Point[]
   readonly firstPlayer: Player
-  readonly mode: 'pve' | 'pvp'
+  readonly mode: GameMode
   readonly humanColor: Player
   readonly difficulty: Difficulty
   /**

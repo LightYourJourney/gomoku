@@ -34,11 +34,12 @@
     "check:deadcode": "knip --reporter compact",
     "check:dupes": "jscpd --config .jscpd.json",
     "bench:check": "yarn bench && node bench/gate.mjs",
-    "gates": "yarn check:cycles && yarn check:deadcode && yarn check:dupes && yarn check:tests && yarn check:bundle",
+    "gates": "yarn check:cycles && yarn check:deadcode && yarn check:dupes && yarn check:tests && yarn check:bundle && yarn check:layers",
     "prepare": "git config core.hooksPath .githooks",
     "check:coverage": "node quality/coverage.ratchet.mjs --current docs/ui-redesign/screenshots/ci/measurements.json",
     "check:tests": "node quality/tests.ratchet.mjs",
     "check:bundle": "node quality/bundle-budget.mjs",
+    "check:layers": "node quality/layers.mjs",
     "e2e:browsers:full": "playwright test --config playwright.browsers-full.config.ts"
   },
   "dependencies": {

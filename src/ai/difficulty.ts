@@ -102,3 +102,11 @@ export const DIFFICULTY_LABELS: Record<Difficulty, string> = {
   hard: '高级',
   expert: '专家',
 }
+
+/**
+ * 提示能用的时间预算。
+ *
+ * 比正式走子短得多：玩家求提示是在等一个建议，不是在等一场深算。
+ * 提示请求只读，不会挤占落子请求的预算。用的是 `store/gameStore` 的求提示与 `HintPanel` 的说明文字。
+ */
+export const HINT_BUDGET_MS = 800

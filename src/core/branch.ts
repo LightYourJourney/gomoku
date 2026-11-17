@@ -1,4 +1,4 @@
-import { replay, type GameState } from './game'
+import { replayStrict, type GameState } from './game'
 import type { Player, Point } from './types'
 
 /**
@@ -40,16 +40,15 @@ export function buildBranchGame(source: BranchSource, cursor: number): BranchBui
   }
 
   // 先验证**整条**来源手顺：损坏的尾段即使不在前缀内，也说明这不是一条可信棋谱。
-  const full = replay(source.moves, source.firstPlayer)
-  if (full.moves.length !== source.moves.length) {
+  if (!replayStrict(source.moves, source.firstPlayer).ok) {
     return { ok: false, error: '棋谱手顺无法完整重放，不能创建分支' }
   }
 
-  const prefix = source.moves.slice(0, cursor)
-  const game = replay(prefix, source.firstPlayer)
-  if (game.moves.length !== prefix.length) {
+  const prefix = replayStrict(source.moves.slice(0, cursor), source.firstPlayer)
+  if (!prefix.ok) {
     return { ok: false, error: '棋谱手顺无法完整重放，不能创建分支' }
   }
+  const game = prefix.state
   if (game.status === 'won') {
     return { ok: false, error: `第 ${cursor} 手已有五连终局，请回到终局之前` }
   }
