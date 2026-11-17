@@ -27,22 +27,22 @@
 
 加粗的是越层：`components → store`（`GameMode`、`AiInfo`、`RecordSaveState` 三个类型，`moverAt`、`HINT_BUDGET_MS` 两个值）、
 `components → features`（`GameStatusDescriptor`、`StatusTone` 两个类型）、`lib ↔ learn`（层级互相引用）。
-`persist` 里 `'pve' | 'pvp'` 手写了三遍（`storage.ts` 1 处、`transfer/format.ts` 2 处），就是因为 `GameMode` 住在 `store`。
+`'pve' | 'pvp'` 在 `persist` 里手写了五遍（`storage.ts`、`recordIdentity.ts`、`gameRecords.ts` 各 1 处，`transfer/format.ts` 2 处；`gameRecords.ts` 那处的注释直说「避免反向依赖 store」），`features/battle/BoardAnnouncer.tsx` 里还有 2 遍——都是因为 `GameMode` 住在 `store`。
 
 ## 设计决定
 
 | # | 决定 | 理由 |
 | --- | --- | --- |
 | D1 | **允许表**（键可以依赖值里的层；同层随意；表外一律红）：`core: []`、`ai: [core]`、`analysis: [core, ai]`、`learn: [core, ai, lib]`、`lib: [core, ai]`、`persist: [core, ai, lib]`、`sharing: [core, persist]`、`store: [core, ai, analysis, persist, lib]`、`components: [core, ai, learn, lib]`、`features: [除根以外全部]`、根：全部 | 就是「现状去掉加粗」，外加 `components → learn` 一条新边（D5）。`store` 不依赖 `learn` 是 `AGENTS.md` 的明文规则，表里照写。新的合法边要改表——那是一次显式的、会出现在 diff 里的决定 |
-| D2 | **纯逻辑层不得（直接或间接）引入 `react` / `react-dom` / `zustand`**：从 `core` / `ai` / `analysis` / `learn` 的每个生产文件出发沿依赖图走，碰到这三个包就红 | `AGENTS.md` 第 14 行的规则。要查**传递**的：`learn → lib` 是合法边，但 `lib` 里有 React hook，`learn` 若 import 了 `lib/useMediaQuery` 就该红。DOM 全局（`window`、`localStorage`……）不是 import，**本门禁不管**，照旧靠审查——写进脚本头注释，不假装覆盖 |
+| D2 | **纯逻辑层不得（直接或间接）引入 `react` / `react-dom` / `zustand`**：从 `core` / `ai` / `analysis` / `learn` 的每个生产文件出发沿依赖图走，碰到这三个包就红。madge 带 `tsConfig` 时包依赖显示成解析后的路径（`../node_modules/@types/react/index.d.ts`、`../node_modules/zustand/index.d.ts`），所以按 `node_modules/(@types/)?(react\|react-dom\|zustand)/` 匹配，**不按裸包名**；`..` 开头的目标不参与层归类 | `AGENTS.md` 第 14 行的规则。要查**传递**的：`learn → lib` 是合法边，但 `lib` 里有 React hook，`learn` 若 import 了 `lib/useMediaQuery` 就该红。DOM 全局（`window`、`localStorage`……）不是 import，**本门禁不管**，照旧靠审查——写进脚本头注释，不假装覆盖 |
 | D3 | 解析交给 **madge**（已是开发依赖，`check:cycles` 在用），用它的 Node API 取依赖图（`includeNpm: true` 拿到包依赖），不自己写正则解析 import | 不加依赖、不改 `package.json` 的依赖版本；与环检测同一个解析器，两道门对「谁 import 了谁」的看法一致。已实测 madge 的图包含仅类型的 import（`lib/shape-labels.ts → learn/types.ts` 在图里） |
-| D4 | 只查生产代码：排除 `*.test.ts(x)` 与 `src/test/**`。`src` 下出现不在表里的顶层目录或根文件 → 红（要求显式归类） | 测试为了组装场景可以跨层（组件测试用 store 是常态）。未归类即红，是为了新目录不会悄悄逃出门禁 |
+| D4 | 只查生产代码：madge 的 `excludeRegExp` 排除 `*.test.ts(x)`、`test/` 与 `*.css`（`index.css` 是样式，不是代码）。图里出现不在表里的顶层目录或根文件 → 红（要求显式归类）。madge 的 `skipped` 是全局的、不随排除消失，现状固定为两个测试里的 `?raw` 与 `index.css` 的 `@import 'tailwindcss'`——只放过 `?raw`（Vite 当字符串读，不是模块依赖）与 `tailwindcss`，其余 skipped 一律红（失败关闭） | 测试为了组装场景可以跨层（组件测试用 store 是常态）。未归类即红，是为了新目录不会悄悄逃出门禁 |
 | D5 | `lib/shape-labels.ts` 挪进 `learn/`（`learn/shape-labels.ts`） | 它给 `learn` 的棋形与 `ai` 的威胁起中文名，`learn` 的两个模块是主要使用者；挪过去后 `lib → learn` 消失。代价是 `HintPanel` 从 `learn` 取 `threatLabel`——`components → learn` 是向下依赖，合法 |
 | D6 | 去处：`GameMode` → `core/types.ts`；`moverAt` → `core/game.ts`；`AiInfo` → `ai/types.ts`；`HINT_BUDGET_MS` → `ai/difficulty.ts`（与五档的 `budgetMs` 同住，都是搜索预算）；`RecordSaveState` → 新文件 `lib/record-save.ts`；`GameStatusDescriptor` / `StatusTone` → `components/panels/StatusPill.tsx`（组件的 props 契约跟组件住，`features/battle/status.ts` 从组件取） | `RecordSaveState` 是「这局有没有存进棋谱库」的界面状态，`store` 与 `components` 都要用；`components → persist` 不在允许表里（组件不该碰存储层），先例是 `lib/theme.ts`——`ThemePreference` 也是 `store` / `components` / `persist` 共用的小词表。**不留转发**：旧位置删掉、调用方全改，不在 `gameStore` 里 `export { moverAt } from …`（那是 Middle Man，越层 import 也就没真正消失） |
-| D7 | `persist` 的三处 `'pve' \| 'pvp'` 改成 `GameMode`；`validate.ts` / `storage.ts` 里 `mode !== 'pve' && mode !== 'pvp'` 这类**值检查不动** | 类型统一是本项的目的；值检查是运行期的格式校验，改成别的写法是行为面的事，不在零变更范围内 |
+| D7 | 七处 `'pve' \| 'pvp'`（`persist` 五处、`BoardAnnouncer` 两处）改成 `GameMode`，`gameRecords.ts` 那句过时的注释删掉；`validate.ts` / `storage.ts` 里 `mode !== 'pve' && mode !== 'pvp'` 这类**值检查不动** | 类型统一是本项的目的；值检查是运行期的格式校验，改成别的写法是行为面的事，不在零变更范围内 |
 | D8 | `analysisStore` 里手写的 `index % 2 === 0 ? first : opponentOf(first)` 换成 `moverAt` | 同一条规则的第二份；`moverAt` 下沉后它可以直接用。只此一处（全仓 grep `% 2 === 0` 的生产代码只有这两处） |
-| D9 | **严格重放**：`replayStrict(moves, firstPlayer = BLACK)` 返回 `{ ok: true; state } \| { ok: false; failedAt; error: MoveError }`，实现为「调 `replay`，长度不等时再判原因」——**不复制重放循环** | 报告 §5.3 要的就是「成功的状态，或在第几手、因为什么失败」。复用 `replay` 保证两者对「哪一手合法」永远同一个答案。`failedAt` / `error` 现有调用方不用（报错文案都是各自写死的），留着是因为原语的契约就该说清失败在哪，测试覆盖它们 |
-| D10 | **认输叠加**：`withResignation(state, resignedBy)`（`null` → 原样；否则 `resign`），替换 `gameStore.restore` 与 `replayStore.derivePosition` 两处 | 两处逐字同一个三元式 |
+| D9 | **严格重放**：`replayStrict(moves, firstPlayer = BLACK)` 返回 `{ ok: true; state } \| { ok: false; failedAt; error: MoveError }`，实现为「调 `replay`，长度不等时再判原因」——**不复制重放循环** | 报告 §5.3 要的就是「成功的状态，或在第几手、因为什么失败」。复用 `replay` 保证两者对「哪一手合法」永远同一个答案。**`transfer/validate.ts` 的 `validateSequence` 就是这个原语的手写原版**（终审发现，第 7 处）：它用 `failedAt` 与 `error` 生成导入报错，改用原语后两份同逻辑合一。它的失败分支原来顺带返回截断的 `state`，两个调用方都不用——返回类型改成判别联合（`ok`），调用方按 `ok` 分支 |
+| D10 | **认输叠加**：`withResignation(state, resignedBy)`（`null` → 原样；否则 `resign`），替换 `gameStore.restore` 与 `replayStore.derivePosition` 两处 | 前者逐字是这个三元式；后者多一个「游标在最后一手」的条件，写成 `withResignation(replayed, cursor === record.moves.length ? record.resignedBy : null)`，条件留在调用方 |
 | D11 | **`gameRecords.deriveWinner` 不动** | 它在「已终局却带认输方」时判认输方的对手赢，而 `resign` 对已终局的局面原样返回——两者在这个（解析时已拒绝、构造时不可达的）组合上答案不同。换成 `withResignation` 就不是严格的零行为变更。报告把它列为「第三种写法」，如实记为有意不收 |
 | D12 | 次序：**先写门禁、看它在现状上红，再下沉**；严格重放独立在后 | 门禁先红一次，证明它抓得住真实的漂移（等价于「先写失败测试」） |
 
@@ -69,7 +69,7 @@
   (c) `learn/hints.ts` import `lib/useMediaQuery`（只取类型也算）→ 红，打印出经由 `lib/useMediaQuery.ts` 到 `react` 的路径（D2，传递）；
   (d) 新建 `src/scratch/x.ts` → 红（D4，未归类）；
   (e) 测试文件里的越层 import 不红（D4）。
-- [ ] **Step 5：文档** —— `AGENTS.md` 第 14–15 行后加一句「由 `yarn check:layers` 机器守，允许表在 `quality/layers.mjs`」；`ARCHITECTURE.md` 第 17 行的箭头改成**依赖方向**的写法（「`features` 依赖 `components` 与 `store`」），与第 82 行 `PageShell` 段一致，并贴允许表；`quality-gates` 设计文档若有门禁清单，补一行。
+- [ ] **Step 5：文档** —— `AGENTS.md` 第 15 行的 `learn/` 纯逻辑文件清单加上 `shape-labels.ts`、「棋盘的字符画解析器」那句不动；第 14–15 行后加一句「由 `yarn check:layers` 机器守，允许表在 `quality/layers.mjs`」；`ARCHITECTURE.md` 第 17 行的箭头改成**依赖方向**的写法（「`features` 依赖 `components` 与 `store`」），与第 82 行 `PageShell` 段一致，并贴允许表；`quality-gates` 设计文档若有门禁清单，补一行。
 - [ ] **Step 6：提交** —— `chore(gates): 依赖方向门禁；领域类型与常量下沉到下层`，提交信息写明 `gates` 多了一道（收紧）。
 
 ## Task 3：严格重放原语
@@ -78,7 +78,7 @@
   `replayStrict`：完整合法 → `ok` 且 `state` 与 `replay` 逐字段相等；第 k 手落在已有子上 → `{ ok: false, failedAt: k, error: 'occupied' }`；出界 → `'out_of_bounds'`；成五之后还有手 → `'game_over'`，`failedAt` 是成五之后那一手；空手顺 → `ok`。
   `withResignation`：`null` → 返回同一个对象；对局中 → `resigned`、赢家是对手；已终局 → 原样（与 `resign` 一致）。
 - [ ] **Step 2：实现**（D9、D10），跑 Step 1 变绿。
-- [ ] **Step 3：替换 6 + 2 处**。每处保持原来的返回值与报错文案：`position.ts` ×2（`throw RangeError` / `return false`）、`branch.ts` ×2（`{ ok: false, error }`）、`gameRecords.ts`（`return null`）、`transfer/validate.ts`（`errors.push`，后续 `cells` / `nextPlayer` 比对用 `ok` 分支里的 `state`）；`gameStore.restore`、`replayStore.derivePosition` 换 `withResignation`。
+- [ ] **Step 3：替换 7 + 2 处**。每处保持原来的返回值与报错文案：`transfer/validate.ts` 的 `validateSequence`（错误码与文案映射不变，返回改判别联合，两个调用方跟着改）、`position.ts` ×2（`throw RangeError` / `return false`）、`branch.ts` ×2（`{ ok: false, error }`）、`gameRecords.ts`（`return null`）、`transfer/validate.ts`（`errors.push`，后续 `cells` / `nextPlayer` 比对用 `ok` 分支里的 `state`）；`gameStore.restore`、`replayStore.derivePosition` 换 `withResignation`。
 - [ ] **Step 4：反向验证** —— `replayStrict` 临时恒返回 `ok`（`state` 用截断后的）→ 六处的既有用例里应有红的（记下是哪些文件的哪几条；**某一处没有用例变红就补一条**，那说明它的严格检查原本就没被测到）。恢复。
 - [ ] **Step 5：五条命令 + `gates`**；`e2e` 全量（存档恢复、棋谱库、分享、导入都走这些路径）。
 - [ ] **Step 6：提交** —— `refactor(core): 严格重放原语，替换六处手写检查与两处认输叠加`。
@@ -92,7 +92,7 @@
 
 1. `yarn gates` 含依赖方向，且在故意引入越层 import / 纯逻辑层引入 React（含传递）/ 未归类目录时都会红（反向验证 a–d）。
 2. `src` 生产代码里不再有 `components → store`、`components → features`、`lib → learn`。
-3. 六处手写长度检查与两处认输三元式不复存在；既有测试断言未改且全绿；单测条数只增。
+3. 七处手写长度检查（含 `validateSequence`）与两处认输叠加不复存在；既有测试断言未改且全绿；单测条数只增。
 4. 五条命令与 `gates` 全绿；入口 gzip 不涨超过几十字节（纯搬家）。
 
 ## 自审
@@ -113,6 +113,21 @@
 9. 动态 `import()`：madge（detective-typescript）会收；`App.tsx` 若将来按页 `lazy(() => import(...))`，边仍在图里。不在本阶段验证范围，阶段 C 拆包时复核一次。
 10. 允许表若写成「键可以依赖值」但实现时方向弄反，Step 3 的红单会完全不同——这正是 Step 3「多一条少一条都停下来」要抓的。
 
-## 独立终审
+## 独立终审（另一个代理，只读；用 madge 的 API 与 /tmp 小工程实测）
 
-（待填。）
+七条意见，逐条核实后**全部采纳**（其中前三条我在等终审时试跑门禁草稿也撞上了，草稿已按同样的方式处理）。
+
+| # | 类别 | 发现 | 处理 |
+| --- | --- | --- | --- |
+| 1 | 会破坏 | 按裸包名找 `react` 会全漏：带 `tsConfig` 时包依赖是 `../node_modules/@types/react/index.d.ts` 这样的路径；`..` 若被当成一层，还会多出一堆假红 | D2 改为按 `node_modules/…` 路径匹配，`..` 目标不参与层归类 |
+| 2 | 会破坏 | 「skipped 非空即红」在现状就恒红：skipped 是全局的，固定含两个测试的 `?raw` 与 `tailwindcss` | D4 只放过这两类，其余失败关闭 |
+| 3 | 会破坏 | `main.tsx → index.css` 在图里，`index.css` 不在根文件表里 | D4 排除 `*.css` |
+| 4 | 边界 | `transfer/validate.ts` 的 `validateSequence` 是第 7 处手写检查，而且正是「第几手、因为什么失败」的原版 | D9 收它；验收标准改「七处」 |
+| 5 | 边界 | `'pve' \| 'pvp'` 在 `persist` 里是五处不是三处，`BoardAnnouncer` 还有两处 | D7 改七处，删过时注释 |
+| 6 | 边界 | `replayStore` 那处多一个「游标在最后一手」的条件，不是逐字同一个三元式 | D10 写明条件留在调用方 |
+| 7 | 约定 | `AGENTS.md` 第 15 行列举了 `learn/` 的纯逻辑文件，挪进 `shape-labels.ts` 要更新 | Task 2 Step 5 补上 |
+
+终审确认没有问题的：现状表与红单（5 + 2 + 1 个文件）与真实依赖图一致，纯逻辑四层目前没有通到 React / Zustand 的路径；
+madge 8 收 `import type`、`export … from`、动态 `import()`；允许表不会让现有合法边红；下沉去处不引新越层或循环，
+`StatusPill.tsx` 导出类型不触发 lint（`only-export-components` 是 warn 级且不管类型），knip 对类型放行；
+D9 的失败原因判定正确、各替换点语义等价；D11 不动 `deriveWinner` 的理由成立（两个生产者都到不了「终局 + 认输」）。
