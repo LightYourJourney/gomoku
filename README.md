@@ -43,6 +43,11 @@ yarn dev          # 开发服务器
 | `yarn bench:render` | 首屏与落子成本的浏览器实测，数字见 [docs/TEST_REPORT.md](docs/TEST_REPORT.md) |
 | `yarn bench:learn` | 教学/残局判题与求解的纯函数耗时（CPU 最小值最慢 9.08 ms 求解 / 4.32 ms 判题；空载 wall 4.81–5.15 / 2.39–2.97 ms），写 `bench/learn-last-run.json` |
 | `yarn bench:blocking` | 真实浏览器页内耗时探针：提示点击 → DOM 变更（需先 `yarn preview --port 5192`；数字随机器负载变化） |
+| `yarn bench:queue` | AI 请求在 Worker 里的**排队时间**探针：思考中悔棋再落子、连续悔棋堆积、求提示后落子，以及 Worker 重建代价（需先 `yarn build && yarn preview --port 5192`）。不改产品代码，只在页面里给 Worker 的收发打时间戳 |
+| `yarn bench:library` | 棋谱库**规模**探针：库里有 0 / 200 / 1000 / 5000 条时的入库耗时、打开复盘页耗时、DOM 节点数与长任务（需先起 5192 的预览服务；`SIZES=…` 可自定规模） |
+| `yarn bench:navigation` | 导航行为探针：点进子页面后按浏览器后退落在哪里；停在复盘页刷新时先渲染哪一页（需先起 5192 的预览服务） |
+| `yarn bench:review-loss` | 复盘「分差」口径的两项测量：引擎走自己首选时的自洽性偏差、随机着法下的亏损检出率。结果是确定的，与机器负载无关 |
+| `yarn bench:split` | 按页拆包能省多少的**估算**（各页面独占的应用代码体积）。不是门禁口径，真拆包后以 `yarn check:bundle` 为准 |
 | `yarn strength` | **AI 棋力评测**：配对赛 + 置信区间 + 搜索指标。`STRENGTH_MODE=smoke/standard/extended`、`STRENGTH_A/B=<难度>`；报告写 `bench/strength/results/` |
 | `yarn profile` | **搜索热点剖析**：V8 采样（固定深度 / 真实预算）、热点单价、增量评估生命周期；结果解读见 [CPU_PROFILE](docs/ai-research/CPU_PROFILE.md) |
 | `yarn strength:bundle` | 把任意源码树（含 `git worktree`）的引擎打成独立包，用于**版本对照** |
