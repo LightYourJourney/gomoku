@@ -293,18 +293,6 @@ describe('分析管线 —— 同视界分差', () => {
     expect(store.getState().running).toBe(false)
   })
 
-  it('后续局面走的是必防捷径：分数不在同一把尺子上，不算分差', async () => {
-    start()
-    spy.settle(0, { x: 7, y: 7 }, 100)
-    await Promise.resolve()
-    spy.settle(1, { x: 0, y: 0 }, 300)
-    await Promise.resolve()
-    spy.settle(2, NINE_WIN_MOVES[1]!, 1_000_000, 0, { reason: 'block' })
-    await Promise.resolve()
-
-    expect(store.getState().verdicts.has(0)).toBe(true)
-    expect(store.getState().verdicts.get(0)?.loss).toBeNull()
-  })
 
   it('引擎首选落在已有棋子上：不发对照请求，该手不算分差，分析照常跑完', async () => {
     start()
@@ -658,3 +646,184 @@ describe('分析管线 —— 错误的生命周期', () => {
     expect(store.getState().error).toBeNull()
   })
 })
+
+describe('分析管线 —— 必防续搜', () => {
+  const start = (record: GameRecord = threeWinRecord()): void =>
+    store.getState().start({ record, engine: spy.engine, difficulty: 'easy', budgetMs: 400 })
+  const flush = () => Promise.resolve()
+
+  /**
+   * 手 0：实际 (3,7)、引擎首选 (7,7)；对照（走完 (7,7)）回一个常规搜索，
+   * 局面 1（走完 (3,7)）回必防捷径，白棋的应着是 (5,5)。
+   * 走完这三步后，第 4 个请求（序号 3）就是实际着法一边的续搜。
+   */
+  async function reachFollowUps(alternative: Partial<SearchResponse> = {}): Promise<void> {
+    start()
+    spy.settle(0, { x: 7, y: 7 }, 100)
+    await flush()
+    spy.settle(1, { x: 0, y: 0 }, 300, 2, alternative)
+    await flush()
+    spy.settle(2, { x: 5, y: 5 }, 1_000_000, 0, { reason: 'block' })
+    await flush()
+  }
+
+  it('实际着法之后是必防：两边各续搜一层，盘面是各自再走一手应着之后、轮到走这一手的一方', async () => {
+    await reachFollowUps()
+
+    // 实际着法一边先发
+    const played = spy.requests[3]!
+    expect(played.moveIndex).toBe(0)
+    expect(played.player).toBe(BLACK)
+    expect(stonesOn(played)).toBe(2)
+    expect(played.board[7 * 15 + 3]).toBe(BLACK)
+    expect(played.board[5 * 15 + 5]).toBe(WHITE)
+    expect(store.getState().verdicts.has(0)).toBe(false)
+
+    spy.settle(3, { x: 1, y: 1 }, -200)
+    await flush()
+    const engineSide = spy.requests[4]!
+    expect(engineSide.moveIndex).toBe(0)
+    expect(engineSide.player).toBe(BLACK)
+    expect(stonesOn(engineSide)).toBe(2)
+    expect(engineSide.board[7 * 15 + 7]).toBe(BLACK)
+    expect(engineSide.board[0]).toBe(WHITE)
+    // 一边回来了，另一边还在飞：不出结论
+    expect(store.getState().verdicts.has(0)).toBe(false)
+
+    spy.settle(4, { x: 1, y: 1 }, 500)
+    await flush()
+    expect(store.getState().verdicts.get(0)?.loss).toBe(700)
+    // 续搜只排了一次：接下来是手 1 的对照（手序号 1），不是又一对手 0 的续搜
+    expect(spy.requests[5]?.moveIndex).toBe(1)
+  })
+
+  it('漏走五连（冲四）：引擎首选当场成五，只续搜实际着法一边', async () => {
+    start(missedWinRecord())
+    for (let i = 0; i < 8; i++) {
+      spy.settle(i, NINE_WIN_MOVES[i]!, 0)
+      await flush()
+    }
+    spy.settle(8, { x: 7, y: 7 }, WIN_SCORE, 0, { reason: 'win' })
+    await flush()
+    spy.settle(9, { x: 2, y: 7 }, 1_000_000, 0, { reason: 'block' }) // 白棋堵上
+    await flush()
+
+    expect(spy.requests).toHaveLength(11)
+    const follow = spy.requests[10]!
+    expect(follow.moveIndex).toBe(8)
+    expect(follow.player).toBe(BLACK)
+    expect(stonesOn(follow)).toBe(10)
+
+    spy.settle(10, { x: 0, y: 0 }, 12_000)
+    await flush()
+    expect(store.getState().verdicts.get(8)?.loss).toBe(WIN_SCORE - 12_000)
+    expect(store.getState().running).toBe(false)
+  })
+
+  it('漏走五连但下一手仍然必胜（活四）：按引擎的判断不亏', async () => {
+    start(missedWinRecord())
+    for (let i = 0; i < 8; i++) {
+      spy.settle(i, NINE_WIN_MOVES[i]!, 0)
+      await flush()
+    }
+    spy.settle(8, { x: 7, y: 7 }, WIN_SCORE, 0, { reason: 'win' })
+    await flush()
+    spy.settle(9, { x: 2, y: 7 }, 1_000_000, 0, { reason: 'block' })
+    await flush()
+    spy.settle(10, { x: 7, y: 7 }, WIN_SCORE, 0, { reason: 'win' })
+    await flush()
+
+    expect(store.getState().verdicts.get(8)?.loss).toBe(0)
+  })
+
+  it('续搜之后还是必防：两条都回来之后不算，分析照常推进', async () => {
+    await reachFollowUps()
+    spy.settle(3, { x: 1, y: 1 }, 1_000_000, 0, { reason: 'block' })
+    await flush()
+    spy.settle(4, { x: 1, y: 1 }, 500)
+    await flush()
+
+    expect(store.getState().verdicts.has(0)).toBe(true)
+    expect(store.getState().verdicts.get(0)?.loss).toBeNull()
+    expect(spy.requests[5]?.moveIndex).toBe(1)
+  })
+
+  it('一边二级已证明、另一边只有一级搜索值：可比', async () => {
+    start()
+    spy.settle(0, { x: 7, y: 7 }, 100)
+    await flush()
+    spy.settle(1, { x: 0, y: 0 }, 1_000_000, 0, { reason: 'block' }) // 对照：必防
+    await flush()
+    spy.settle(2, { x: 5, y: 5 }, 300) // 局面 1：常规搜索
+    await flush()
+    spy.settle(3, { x: 1, y: 1 }, 1_000_000, 0, { reason: 'block' }) // 实际一边续搜：还是必防
+    await flush()
+    spy.settle(4, { x: 1, y: 1 }, WIN_SCORE, 0, { reason: 'win' }) // 引擎一边续搜：必胜
+    await flush()
+
+    // 成五就是成五，不随视界变：拿它比实际着法一边的一级搜索值
+    expect(store.getState().verdicts.get(0)?.loss).toBe(WIN_SCORE + 300)
+  })
+
+  it('应着落不下去：两边都不续搜，这一手不算，分析照常收尾', async () => {
+    start()
+    spy.settle(0, { x: 7, y: 7 }, 100)
+    await flush()
+    spy.settle(1, { x: 0, y: 0 }, 300)
+    await flush()
+    spy.settle(2, { x: 3, y: 7 }, 1_000_000, 0, { reason: 'block' }) // (3,7) 上已经有子
+    await flush()
+
+    // 引擎首选一边本来要续（block / search 两边都续），但实际着法一边续不了——一个都不发
+    expect(spy.requests).toHaveLength(4)
+    expect(spy.requests[3]?.moveIndex).toBe(2)
+    expect(stonesOn(spy.requests[3])).toBe(2)
+    expect(store.getState().verdicts.get(0)?.loss).toBeNull()
+
+    for (let guard = 0; guard < 30 && store.getState().running; guard++) {
+      const order = spy.requests.length - 1
+      spy.settle(order, NINE_WIN_MOVES[spy.requests[order]!.moveIndex!] ?? { x: 14, y: 14 }, 0)
+      await flush()
+    }
+    expect(store.getState().running).toBe(false)
+    expect(store.getState().verdicts.size).toBe(9)
+  })
+
+  it('换局后，上一局续搜请求的迟到响应不写进新一局', async () => {
+    await reachFollowUps() // A 的续搜在飞（请求 3）
+    start(threeWinRecord(2))
+    expect(spy.requests).toHaveLength(5) // B 的局面 0 在飞
+
+    spy.settle(3, { x: 1, y: 1 }, -200)
+    await flush()
+
+    expect(store.getState().verdicts.size).toBe(0)
+    expect(spy.requests).toHaveLength(5)
+    expect(store.getState().running).toBe(true)
+  })
+
+  it('续搜请求失败：以错误收尾，不停在「分析中」', async () => {
+    await reachFollowUps()
+    spy.reject(3, '引擎挂了')
+    await flush()
+    await flush()
+
+    expect(store.getState().error).toBe('引擎挂了')
+    expect(store.getState().running).toBe(false)
+  })
+
+  it('后续局面超时：不发续搜，请求数与阶段 A 相同', async () => {
+    start()
+    spy.settle(0, { x: 7, y: 7 }, 100)
+    await flush()
+    spy.settle(1, { x: 0, y: 0 }, 300)
+    await flush()
+    spy.settle(2, NINE_WIN_MOVES[1]!, 800, 1, { reason: 'timeout' })
+    await flush()
+
+    expect(store.getState().verdicts.get(0)?.loss).toBeNull()
+    expect(spy.requests).toHaveLength(4)
+    expect(spy.requests[3]?.moveIndex).toBe(2) // 直接是局面 2
+  })
+})
+

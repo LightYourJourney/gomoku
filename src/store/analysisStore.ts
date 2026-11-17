@@ -7,7 +7,7 @@ import { ENGINE_VERSION } from '../ai/version'
 import type { GameRecord } from '../persist/gameRecords'
 import { recordContentKey } from '../persist/recordIdentity'
 import { applyMove, replay, type GameState } from '../core/game'
-import { buildVerdict, cacheKey, type AfterMove, type MoveVerdict } from '../analysis/analyze'
+import { buildVerdict, cacheKey, linesToFollow, type AfterMove, type MoveVerdict } from '../analysis/analyze'
 import { nextRequestId } from './requestCounter'
 
 /**
@@ -46,10 +46,20 @@ export interface AnalysisStore {
  *   也是「第 i−1 手走完之后」的评分，相邻两手共享。
  * - `alternative`：第 i 手的**对照**——走完引擎首选之后的局面。只有着法与引擎
  *   首选不同的手才需要它；分差比的就是它与局面 i+1（同视界，见 `horizonLoss`）。
+ * - `follow`：第 i 手某一条走法的**续搜**——一级结论是必防捷径时，沿对手那一手应着
+ *   再走一步、由走这一手的一方再搜一层（见 `linesToFollow`）。
  */
+type Side = 'played' | 'engine'
+
 type Job =
   | { readonly kind: 'position'; readonly index: number }
   | { readonly kind: 'alternative'; readonly index: number; readonly state: GameState }
+  | { readonly kind: 'follow'; readonly index: number; readonly side: Side; readonly state: GameState }
+
+/** 一级结论，外加对手选的那一手应着（续搜要沿着它走）。 */
+interface Reached extends AfterMove {
+  readonly move: Point | null
+}
 
 /** 需要的应答都到齐后才能拼出结论。 */
 interface PendingVerdict {
@@ -71,13 +81,21 @@ interface PendingVerdict {
     compare: boolean
   }
   /** 走完实际着法之后：局面 i+1 的响应（对手视角；终局手与着法相同的手不需要）。 */
-  reply?: AfterMove
+  reply?: Reached
   /**
    * 走完引擎首选之后（对手视角）。**四态，别把两个「没有」混成一个**：
    * `undefined` = 还没判定或请求还没回来（继续等）；`null` = 已判定不可比
    * （引擎首选落不下去）；`'ended'` = 引擎首选当场成五；其余是对照请求的响应。
    */
-  alternative?: AfterMove | 'ended' | null
+  alternative?: Reached | 'ended' | null
+  /** 对照的局面（走完引擎首选之后）。续搜引擎首选一边时要从它往下走。 */
+  alternativeState?: GameState
+  /**
+   * 续搜。**对象存在 = 已经判过要不要续**——不能拿里面的字段是不是 `undefined` 来推：
+   * 那和「请求发出了、还没回来」分不开，`tryEmit` 每被调用一次就会再排一对续搜。
+   * 字段：`undefined` = 等响应；`null` = 不需要或做不了；其余是续搜的结论。
+   */
+  follow?: { played: AfterMove | null | undefined; engine: AfterMove | null | undefined }
 }
 
 export function createAnalysisStore(): UseBoundStore<StoreApi<AnalysisStore>> {
@@ -161,6 +179,7 @@ export function createAnalysisStore(): UseBoundStore<StoreApi<AnalysisStore>> {
       } else if (outcome.state.status === 'won') {
         entry.alternative = 'ended'
       } else {
+        entry.alternativeState = outcome.state
         queue.unshift({ kind: 'alternative', index, state: outcome.state })
       }
     }
@@ -170,7 +189,49 @@ export function createAnalysisStore(): UseBoundStore<StoreApi<AnalysisStore>> {
       const entry = pending.get(index)
       if (entry === undefined) return
 
-      entry.alternative = { score: response.score, reason: response.reason }
+      entry.alternative = { score: response.score, reason: response.reason, move: response.move }
+      tryEmit(index)
+    }
+
+    /** 从一级局面沿对手的应着再走一步；走不了、或走完不再是对局中 → `null`。 */
+    function stepAfter(state: GameState | undefined, reached: Reached | 'ended' | null | undefined) {
+      if (state === undefined || reached === undefined || reached === null || reached === 'ended') return null
+      if (reached.move === null) return null
+      const outcome = applyMove(state, reached.move)
+      return outcome.ok && outcome.state.status === 'playing' ? outcome.state : null
+    }
+
+    /**
+     * 一级两边都就位之后，判一次要不要续搜，并把需要的续搜排上。
+     *
+     * 先把需要续的每一边的续搜局面都算出来：**只要有一边算不出**（应着为空、落不下去、
+     * 走完不再是对局中——真实引擎不可达），两边都不续，这一手不算；不发一个注定没用的请求。
+     * 都算得出就插到队首：先插引擎首选一边、后插实际着法一边，于是实际着法一边先发。
+     */
+    function planFollow(index: number, entry: PendingVerdict) {
+      const lines = linesToFollow(entry.reply ?? null, entry.alternative ?? null)
+      const rec = record
+      const playedState =
+        lines.played && rec !== null
+          ? stepAfter(replay(rec.moves.slice(0, index + 1), rec.firstPlayer), entry.reply)
+          : null
+      const engineState = lines.engine ? stepAfter(entry.alternativeState, entry.alternative) : null
+
+      if ((lines.played && playedState === null) || (lines.engine && engineState === null)) {
+        entry.follow = { played: null, engine: null }
+        return
+      }
+      entry.follow = { played: lines.played ? undefined : null, engine: lines.engine ? undefined : null }
+      if (engineState !== null) queue.unshift({ kind: 'follow', index, side: 'engine', state: engineState })
+      if (playedState !== null) queue.unshift({ kind: 'follow', index, side: 'played', state: playedState })
+    }
+
+    /** 续搜请求完成：记下这一边的二级结论。 */
+    function onFollowResponse(index: number, side: Side, response: SearchResponse) {
+      const entry = pending.get(index)
+      if (entry?.follow === undefined) return
+
+      entry.follow[side] = { score: response.score, reason: response.reason }
       tryEmit(index)
     }
 
@@ -185,7 +246,7 @@ export function createAnalysisStore(): UseBoundStore<StoreApi<AnalysisStore>> {
 
       const prev = pending.get(index - 1)
       if (prev !== undefined && !prev.playedIsWinning) {
-        prev.reply = { score: response.score, reason: response.reason }
+        prev.reply = { score: response.score, reason: response.reason, move: response.move }
       }
     }
 
@@ -198,8 +259,14 @@ export function createAnalysisStore(): UseBoundStore<StoreApi<AnalysisStore>> {
       if (pos === undefined) return
 
       // 终局手与着法相同的手不需要任何后续评分——局面响应一到就出结论。
-      // 其余的要等两种走法之后的评分都就位（对照的「不可比」也算就位）。
-      if (pos.compare && (entry.reply === undefined || entry.alternative === undefined)) return
+      // 其余的要等两种走法之后的评分都就位（对照的「不可比」也算就位），
+      // 再判一次要不要续搜，并等续搜回来。
+      if (pos.compare) {
+        if (entry.reply === undefined || entry.alternative === undefined) return
+        if (entry.follow === undefined) planFollow(index, entry)
+        const follow = entry.follow!
+        if (follow.played === undefined || follow.engine === undefined) return
+      }
 
       const verdict = buildVerdict({
         moveIndex: index,
@@ -208,8 +275,8 @@ export function createAnalysisStore(): UseBoundStore<StoreApi<AnalysisStore>> {
         isWinningMove: entry.playedIsWinning,
         afterPlayed: entry.reply ?? null,
         afterEngine: entry.alternative ?? null,
-        followPlayed: null,
-        followEngine: null,
+        followPlayed: entry.follow?.played ?? null,
+        followEngine: entry.follow?.engine ?? null,
         reason: pos.reason,
         engineDepth: pos.depth,
         engineNodes: pos.nodes,
@@ -290,11 +357,18 @@ export function createAnalysisStore(): UseBoundStore<StoreApi<AnalysisStore>> {
             }
 
             inflight = null
-            if (job.kind === 'position') {
-              fillReply(index, response)
-              onPositionResponse(index, response)
-            } else {
-              onAlternativeResponse(index, response)
+            // 三支，按任务种类分发。漏一支的话，那种响应会静默写进别的字段——结论错而管线不报错。
+            switch (job.kind) {
+              case 'position':
+                fillReply(index, response)
+                onPositionResponse(index, response)
+                break
+              case 'alternative':
+                onAlternativeResponse(index, response)
+                break
+              case 'follow':
+                onFollowResponse(index, job.side, response)
+                break
             }
             // **每条响应处理完都要判一次收尾**，不能只在「出了结论」时判：
             // 着法相同的手在自己的局面响应到达时就出了结论，最后一个局面回来时
