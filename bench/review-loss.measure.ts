@@ -19,6 +19,9 @@
  *   3. **亏损检出（入门档自对弈）**：同上，但着法来自入门档引擎——更接近真实对局里
  *      「大部分手与引擎一致、少数手不同」的分布。
  *
+ * 2、3 走的是完整的两级流程：一级是必防捷径的手沿应着续搜一层（`linesToFollow`），
+ * 与 `analysisStore` 同一套规则；另报「靠续搜算出」「漏走五连」与一二级的量级差。
+ *
  * 结果是**确定的**（固定开局、固定种子、预算给足所以不受时钟影响），与机器负载无关；
  * 引擎的搜索或评估变了，数字才会变。
  *
@@ -32,7 +35,7 @@ import { test } from 'vitest'
 import { candidateMoves } from '../src/ai/candidates'
 import { DIFFICULTY_PARAMS } from '../src/ai/difficulty'
 import { searchBoard, searchOptionsFor } from '../src/ai/search'
-import { buildVerdict, type AfterMove } from '../src/analysis/analyze'
+import { buildVerdict, linesToFollow, type AfterMove } from '../src/analysis/analyze'
 import { samePoint } from '../src/core/board'
 import { applyMove, replay, type GameState } from '../src/core/game'
 import type { Point } from '../src/core/types'
@@ -96,25 +99,47 @@ test('旧公式的自洽性：引擎走自己的首选时，score(i) − (−sco
   console.log(`|偏差| ≥ 10000 的：${magnitudes.filter((v) => v >= 10_000).length} 手`)
 })
 
+/** 搜索结论，外加这一方选的那一手（续搜要沿着它走）。 */
+interface Reached extends AfterMove {
+  readonly move: Point | null
+}
+
 /** 轮到 `state.current` 走的局面，由这一方搜出来的结论。 */
-function searchState(state: GameState): AfterMove {
+function searchState(state: GameState): Reached {
   const reply = searchBoard(state.board, state.current, OPTIONS, now)
-  return { score: reply.score, reason: reply.reason }
+  return { score: reply.score, reason: reply.reason, move: reply.move }
 }
 
-/** 「走完这一手之后」由对手一方搜出来的结论；`'ended'` = 这一手当场成五。 */
-function searchAfter(game: GameState, move: Point): AfterMove | 'ended' | null {
+/** 「走完这一手之后」的局面与对手搜出来的结论；`'ended'` = 这一手当场成五。 */
+function searchAfter(game: GameState, move: Point): { after: Reached | 'ended' | null; state: GameState | null } {
   const next = applyMove(game, move)
-  if (!next.ok) return null
-  if (next.state.status === 'won') return 'ended'
-  return next.state.status === 'playing' ? searchState(next.state) : null
+  if (!next.ok) return { after: null, state: null }
+  if (next.state.status === 'won') return { after: 'ended', state: null }
+  return next.state.status === 'playing'
+    ? { after: searchState(next.state), state: next.state }
+    : { after: null, state: null }
 }
 
-const describeSide = (after: AfterMove | 'ended' | null): string =>
-  after === null ? '无' : after === 'ended' ? '终局' : after.reason
+/** 沿对手的应着再走一步，得到续搜的局面；走不了或走完不再是对局中 → `null`（与 `analysisStore` 同一规则）。 */
+function stepAfter(state: GameState | null, reached: Reached | 'ended' | null): GameState | null {
+  if (state === null || reached === null || reached === 'ended' || reached.move === null) return null
+  const next = applyMove(state, reached.move)
+  return next.ok && next.state.status === 'playing' ? next.state : null
+}
+
+const describeSide = (after: AfterMove | 'ended' | null, follow?: AfterMove | null): string => {
+  const first = after === null ? '无' : after === 'ended' ? '终局' : after.reason
+  return follow === undefined ? first : `${first}→${follow === null ? '无' : follow.reason}`
+}
+
+const median = (values: readonly number[]): number | null => {
+  if (values.length === 0) return null
+  const sorted = [...values].sort((a, b) => a - b)
+  return sorted[Math.floor(sorted.length / 2)]!
+}
 
 /**
- * 沿一局棋逐手统计**生产口径**（`buildVerdict`，与复盘页同一个函数）给出的结论。
+ * 沿一局棋逐手统计**生产口径**（`linesToFollow` + `buildVerdict`，与复盘页同一套函数）给出的结论。
  *
  * `pick` 决定「玩家」这一手走哪；`follow` 决定对局沿谁的着法往下走。
  * 只统计着法与引擎首选不同、且不是终局手的手——其余的分差按定义为 0。
@@ -124,10 +149,29 @@ function tally(
   pick: (game: GameState, engineMove: Point) => Point | undefined,
   follow: 'engine' | 'played',
 ): void {
-  const count = { moves: 0, same: 0, winning: 0, different: 0, positive: 0, notable: 0, zero: 0, uncomputed: 0 }
+  const count = {
+    moves: 0,
+    same: 0,
+    winning: 0,
+    different: 0,
+    positive: 0,
+    notable: 0,
+    zero: 0,
+    uncomputed: 0,
+    byFollow: 0,
+    followSearches: 0,
+  }
   /** 旧口径 `max(0, score(i) − (−score(i+1)))` 在同一批手上报出多少个零，留作对照。 */
   let legacyZero = 0
   const uncomputedBy = new Map<string, number>()
+  /** 引擎首选当场成五、实际着法没走的手：它们的分差（`null` = 没算出来）。 */
+  const missedFive: (number | null)[] = []
+  /**
+   * 一二级的量级差。**选样写死**：一级两边都是 `search` 的手（生产上它们不续搜），
+   * 另外让两边各续搜一层，两边二级也都是 `search` 时记「二级分差 − 一级分差」（不钳 0）。
+   * 只为统计，不进结论。
+   */
+  const levelGap: number[] = []
 
   for (const opening of OPENINGS) {
     let game = replay([...opening])
@@ -148,8 +192,20 @@ function tally(
       } else {
         count.different += 1
         // 这一支里实际着法已经确定没有成五
-        const afterPlayed = playedNext.state.status === 'playing' ? searchState(playedNext.state) : null
-        const afterEngine = searchAfter(game, engineMove)
+        const playedState = playedNext.state.status === 'playing' ? playedNext.state : null
+        const afterPlayed = playedState === null ? null : searchState(playedState)
+        const engineLine = searchAfter(game, engineMove)
+        const afterEngine = engineLine.after
+
+        const lines = linesToFollow(afterPlayed, afterEngine)
+        const playedFollowState = lines.played ? stepAfter(playedState, afterPlayed) : null
+        const engineFollowState = lines.engine ? stepAfter(engineLine.state, afterEngine) : null
+        const followable =
+          (!lines.played || playedFollowState !== null) && (!lines.engine || engineFollowState !== null)
+        const followPlayed = followable && playedFollowState !== null ? searchState(playedFollowState) : null
+        const followEngine = followable && engineFollowState !== null ? searchState(engineFollowState) : null
+        count.followSearches += (followPlayed === null ? 0 : 1) + (followEngine === null ? 0 : 1)
+
         const verdict = buildVerdict({
           moveIndex: game.moves.length,
           played,
@@ -157,24 +213,46 @@ function tally(
           isWinningMove: false,
           afterPlayed,
           afterEngine,
-          followPlayed: null,
-          followEngine: null,
+          followPlayed,
+          followEngine,
           reason: here.reason,
           engineDepth: here.depth,
           engineNodes: here.nodes,
         })
+        const followed = lines.played || lines.engine
         if (verdict.loss === null) {
           count.uncomputed += 1
-          const key = `实际着法之后 ${describeSide(afterPlayed)} / 引擎首选之后 ${describeSide(afterEngine)}`
+          const key =
+            `实际着法之后 ${describeSide(afterPlayed, followed ? followPlayed : undefined)}` +
+            ` / 引擎首选之后 ${describeSide(afterEngine, followed ? followEngine : undefined)}`
           uncomputedBy.set(key, (uncomputedBy.get(key) ?? 0) + 1)
-        } else if (verdict.loss === 0) {
-          count.zero += 1
         } else {
-          count.positive += 1
-          if (verdict.loss >= NOTABLE) count.notable += 1
+          if (followed) count.byFollow += 1
+          if (verdict.loss === 0) {
+            count.zero += 1
+          } else {
+            count.positive += 1
+            if (verdict.loss >= NOTABLE) count.notable += 1
+          }
         }
+        if (afterEngine === 'ended') missedFive.push(verdict.loss)
         if (afterPlayed !== null && here.score - -afterPlayed.score <= 0) {
           legacyZero += 1
+        }
+
+        if (
+          afterPlayed?.reason === 'search' &&
+          afterEngine !== null &&
+          afterEngine !== 'ended' &&
+          afterEngine.reason === 'search'
+        ) {
+          const p2State = stepAfter(playedState, afterPlayed)
+          const e2State = stepAfter(engineLine.state, afterEngine)
+          const p2 = p2State === null ? null : searchState(p2State)
+          const e2 = e2State === null ? null : searchState(e2State)
+          if (p2?.reason === 'search' && e2?.reason === 'search') {
+            levelGap.push(e2.score - p2.score - (-afterEngine.score - -afterPlayed.score))
+          }
         }
       }
 
@@ -192,9 +270,20 @@ function tally(
     `着法不同的 ${count.different} 手里：有亏损 ${count.positive}（其中 ≥ ${NOTABLE} 的 ${count.notable}）` +
       `、零亏损 ${count.zero}、未算分差 ${count.uncomputed}`,
   )
+  console.log(`其中靠续搜算出的 ${count.byFollow} 手；多发的续搜 ${count.followSearches} 次`)
   for (const [key, n] of [...uncomputedBy].sort((a, b) => b[1] - a[1])) {
     console.log(`  未算：${key} —— ${n} 手`)
   }
+  const missedLosses = missedFive.filter((loss): loss is number => loss !== null)
+  console.log(
+    `漏走五连（引擎首选当场成五）${missedFive.length} 手：算出 ${missedLosses.length} 手` +
+      (missedLosses.length > 0 ? `，分差 ${Math.min(...missedLosses)}–${Math.max(...missedLosses)}` : ''),
+  )
+  console.log(
+    `一二级量级差（一级两边都是 search 的 ${levelGap.length} 手，二级分差 − 一级分差）：` +
+      `负 ${levelGap.filter((v) => v < 0).length} / 零 ${levelGap.filter((v) => v === 0).length}` +
+      ` / 正 ${levelGap.filter((v) => v > 0).length}；中位 ${median(levelGap) ?? '—'}`,
+  )
   console.log(`对照：旧口径在这 ${count.different} 手上报「零亏损」${legacyZero} 手`)
 }
 
