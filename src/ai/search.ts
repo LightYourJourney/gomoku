@@ -119,7 +119,7 @@ export function searchOptionsFor(
 export interface SearchOutcome {
   readonly move: Point | null
   readonly score: number
-  /** 实际完整搜完的深度。0 表示只用了启发式兜底。 */
+  /** 实际完整搜完的深度。0 表示没有任何一层搜完（捷径，或一步贪心兜底）。 */
   readonly depth: number
   readonly nodes: number
   /** 置换表命中次数，用于判断置换表是否真的在起作用。 */

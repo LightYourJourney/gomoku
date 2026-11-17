@@ -63,6 +63,12 @@ interface PendingVerdict {
     nodes: number
     /** 引擎给出首选着法时走的路径，原样带进结论供界面分类。 */
     reason: SearchReason
+    /**
+     * 这一手要不要比「两种走法之后」的评分：着法与引擎首选不同、且不是终局手。
+     * **只在局面响应到达时判一次**——排对照与等对照用的必须是同一个答案，
+     * 两处各判各的，一旦不一致就是「排了没人等」或「等一个没排的」（后者会卡在「分析中」）。
+     */
+    compare: boolean
   }
   /** 走完实际着法之后：局面 i+1 的响应（对手视角；终局手与着法相同的手不需要）。 */
   reply?: AfterMove
@@ -122,15 +128,15 @@ export function createAnalysisStore(): UseBoundStore<StoreApi<AnalysisStore>> {
       const entry = pending.get(index)
 
       if (entry !== undefined) {
+        const compare = !entry.playedIsWinning && !samePoint(entry.played, response.move)
         entry.position = {
           move: response.move,
           depth: response.depth,
           nodes: response.nodes,
           reason: response.reason,
+          compare,
         }
-        if (!entry.playedIsWinning && !samePoint(entry.played, response.move)) {
-          planAlternative(index, entry, response.move)
-        }
+        if (compare) planAlternative(index, entry, response.move)
       }
 
       tryEmit(index)
@@ -146,10 +152,11 @@ export function createAnalysisStore(): UseBoundStore<StoreApi<AnalysisStore>> {
      */
     function planAlternative(index: number, entry: PendingVerdict, engineMove: Point) {
       const rec = record
-      if (rec === null) return
-
-      const outcome = applyMove(replay(rec.moves.slice(0, index), rec.firstPlayer), engineMove)
-      if (!outcome.ok) {
+      // 走到这里时 record 必然在（响应已过三道闸门）；万一不在，也按「没法比」记，
+      // 不留一个永远等不到的 undefined。
+      const outcome =
+        rec === null ? null : applyMove(replay(rec.moves.slice(0, index), rec.firstPlayer), engineMove)
+      if (outcome === null || !outcome.ok) {
         entry.alternative = null
       } else if (outcome.state.status === 'won') {
         entry.alternative = 'ended'
@@ -192,8 +199,7 @@ export function createAnalysisStore(): UseBoundStore<StoreApi<AnalysisStore>> {
 
       // 终局手与着法相同的手不需要任何后续评分——局面响应一到就出结论。
       // 其余的要等两种走法之后的评分都就位（对照的「不可比」也算就位）。
-      const needsComparison = !entry.playedIsWinning && !samePoint(entry.played, pos.move)
-      if (needsComparison && (entry.reply === undefined || entry.alternative === undefined)) return
+      if (pos.compare && (entry.reply === undefined || entry.alternative === undefined)) return
 
       const verdict = buildVerdict({
         moveIndex: index,

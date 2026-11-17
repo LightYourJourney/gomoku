@@ -607,6 +607,20 @@ describe('分析结论列表：只列真有亏损的手', () => {
   })
 })
 
+describe('分析结论列表：空榜说明只在跑完之后出现', () => {
+  it('分析进行中不说「没有算出亏损的手」——还没跑完，谈不上有没有', async () => {
+    const storage = memoryGameRecords()
+    await storage.put(threeMoveRecord())
+
+    render(<ReviewScreen storage={storage} engine={idleEngine()} />)
+    fireEvent.click((await screen.findAllByTestId(/^record-/))[0]!)
+    fireEvent.click(await screen.findByRole('button', { name: '开始分析' }))
+
+    expect(screen.getByTestId('analysis-progress')).toHaveTextContent('0 / 3')
+    expect(screen.queryByTestId('analysis-no-loss')).not.toBeInTheDocument()
+  })
+})
+
 /**
  * 分析管线对「着法与引擎首选不同」的手会多发一个**对照请求**（走完引擎首选之后的局面），
  * 它与局面请求的 `moveIndex` 相同。区分办法：局面 i 盘上有 i 颗子，对照有 i + 1 颗。
@@ -860,8 +874,9 @@ function shortcutEngine(): AiEngine {
         moveIndex: index,
         move: index === 1 ? { x: 9, y: 9 } : played,
         score: index === 1 ? 500 : 1_000_000,
-        depth: 0,
-        nodes: 0,
+        // 只有 1 号局面是捷径（深度 0）；其余是搜满一层的常规搜索，夹具要与 `confidenceOf` 自洽
+        depth: index === 1 ? 0 : 1,
+        nodes: index === 1 ? 0 : 1,
         elapsedMs: 1,
         confidence: index === 1 ? ('shortcut' as const) : ('complete' as const),
         reason: index === 1 ? ('win' as const) : ('search' as const),

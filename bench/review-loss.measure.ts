@@ -96,14 +96,18 @@ test('旧公式的自洽性：引擎走自己的首选时，score(i) − (−sco
   console.log(`|偏差| ≥ 10000 的：${magnitudes.filter((v) => v >= 10_000).length} 手`)
 })
 
+/** 轮到 `state.current` 走的局面，由这一方搜出来的结论。 */
+function searchState(state: GameState): AfterMove {
+  const reply = searchBoard(state.board, state.current, OPTIONS, now)
+  return { score: reply.score, reason: reply.reason }
+}
+
 /** 「走完这一手之后」由对手一方搜出来的结论；`'ended'` = 这一手当场成五。 */
 function searchAfter(game: GameState, move: Point): AfterMove | 'ended' | null {
   const next = applyMove(game, move)
   if (!next.ok) return null
   if (next.state.status === 'won') return 'ended'
-  if (next.state.status !== 'playing') return null
-  const reply = searchBoard(next.state.board, next.state.current, OPTIONS, now)
-  return { score: reply.score, reason: reply.reason }
+  return next.state.status === 'playing' ? searchState(next.state) : null
 }
 
 const describeSide = (after: AfterMove | 'ended' | null): string =>
@@ -143,14 +147,15 @@ function tally(
         count.same += 1
       } else {
         count.different += 1
-        const afterPlayed = searchAfter(game, played)
+        // 这一支里实际着法已经确定没有成五
+        const afterPlayed = playedNext.state.status === 'playing' ? searchState(playedNext.state) : null
         const afterEngine = searchAfter(game, engineMove)
         const verdict = buildVerdict({
           moveIndex: game.moves.length,
           played,
           engineMove,
           isWinningMove: false,
-          afterPlayed: afterPlayed === 'ended' ? null : afterPlayed,
+          afterPlayed,
           afterEngine,
           reason: here.reason,
           engineDepth: here.depth,
@@ -166,7 +171,7 @@ function tally(
           count.positive += 1
           if (verdict.loss >= NOTABLE) count.notable += 1
         }
-        if (afterPlayed !== null && afterPlayed !== 'ended' && here.score - -afterPlayed.score <= 0) {
+        if (afterPlayed !== null && here.score - -afterPlayed.score <= 0) {
           legacyZero += 1
         }
       }

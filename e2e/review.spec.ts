@@ -143,7 +143,7 @@ test('分析：逐手跑完并给出结论，标注引擎出处', async ({ page 
 
   await page.getByRole('button', { name: '开始分析' }).click()
 
-  // 9 手局 = 9 个局面请求，串行跑完
+  // 9 手局 = 9 个局面请求，外加着法与引擎首选不同的手各一个对照请求，串行跑完
   await expect(page.getByTestId('analysis-progress')).toContainText('9 / 9', { timeout: 60_000 })
   // 给出结论，且带引擎推荐坐标：白棋第 8 手漏防冲四，引擎要它堵 H8
   const verdict = page.getByTestId(/^verdict-/).first()

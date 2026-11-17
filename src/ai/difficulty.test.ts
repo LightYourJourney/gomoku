@@ -92,6 +92,9 @@ describe('难度差异是真实的行为差异', () => {
 
     expect(easy.reason).toBe('search')
     expect(medium.reason).toBe('win')
+    // 算杀真的展开过节点，但它仍是「快速路径判定」——可靠度只看 reason 与 depth，不看 nodes
+    expect(medium.nodes).toBeGreaterThan(0)
+    expect(medium.depth).toBe(0)
     expect(medium.confidence).toBe('shortcut')
   })
 

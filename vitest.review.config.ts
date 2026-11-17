@@ -4,7 +4,7 @@ import { defineConfig } from 'vitest/config'
  * 复盘「分差」口径的测量。
  *
  * 与 `vitest.bench.config.ts` 分开：那份是引擎基准（写 `bench/last-run.json`、
- * 被 `bench:check` 用来做数值门禁）；这份只输出两张统计表，不做断言、不进 CI 门禁。
+ * 被 `bench:check` 用来做数值门禁）；这份只输出三项统计，不做断言、不进 CI 门禁。
  *
  *   yarn bench:review-loss
  */

@@ -161,12 +161,19 @@ describe('分析管线 —— 排队', () => {
   it('终局手 loss 恒 0', async () => {
     store.getState().start({ record: threeWinRecord(), engine: spy.engine, difficulty: 'easy', budgetMs: 400 })
 
-    for (let i = 0; i < 9; i++) {
-      spy.settle(i, NINE_WIN_MOVES[i]!, 999_999) // 每个局面都回实际着法：不产生对照请求
+    for (let i = 0; i < 8; i++) {
+      spy.settle(i, NINE_WIN_MOVES[i]!, 0)
       await Promise.resolve()
     }
+    // 局面 8：引擎要走四连的**另一头** (2,7)，实际走的是 (7,7)。着法不同——
+    // 这一手得 0 靠的只能是「它是终局手」，不是「与引擎一致」。
+    spy.settle(8, { x: 2, y: 7 }, 999_999)
+    await Promise.resolve()
 
     expect(store.getState().verdicts.get(8)?.loss).toBe(0)
+    // 赢棋不需要任何对照：没有多发请求，分析就此收尾
+    expect(spy.requests).toHaveLength(9)
+    expect(store.getState().running).toBe(false)
   })
 
   it('把引擎的 reason 原样带进结论——不靠 depth / nodes 反推路径', async () => {
@@ -527,7 +534,7 @@ describe('requestCounter —— 全局唯一', () => {
 describe('分析管线 —— 跨 run 的迟到响应', () => {
   it('上一局的迟到响应不会被下一局当成自己的：B 仍能跑完 9/9', async () => {
     // 真实路径：分析 A 到一半切走（stop）→ 打开 B 开始分析 →
-    // A 的响应回来。旧闸门只比 inflightIndex，而每个 run 的局面号都从 0
+    // A 的响应回来。旧闸门只比在飞的局面号，而每个 run 的局面号都从 0
     // 开始，于是 A 的响应被 B 接受，B 自己的响应随后全被丢弃——
     // 分析永久卡在「分析中 0/9」，缓存也永不写入。
     const a = threeWinRecord(1)
@@ -603,7 +610,7 @@ describe('分析管线 —— 响应与请求对不上', () => {
    * 第三道闸门（手序号 / 局面版本）与前两道**性质不同**：
    * 前两道是「这一轮已经不是我的了」，什么都不该动；
    * 这一道是「这一轮是我的，但这条响应是坏的」——直接 return 会让
-   * `inflightIndex` 永远占着、队列再也不 pump，面板停在「分析中 N-1 / N」。
+   * `inflight` 永远占着、队列再也不 pump，面板停在「分析中 N-1 / N」。
    *
    * 真实引擎下不可达（`search.ts:569` 原样回显 request 的 moveIndex），
    * 所以这里用假引擎直接造一条对不上的响应。
