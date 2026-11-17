@@ -713,6 +713,7 @@ describe('分析管线 —— 必防续搜', () => {
     expect(follow.moveIndex).toBe(8)
     expect(follow.player).toBe(BLACK)
     expect(stonesOn(follow)).toBe(10)
+    expect(follow.board[7 * 15 + 2]).toBe(WHITE) // 白棋堵的那一手
 
     spy.settle(10, { x: 0, y: 0 }, 12_000)
     await flush()

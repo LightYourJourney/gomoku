@@ -7,7 +7,14 @@ import { ENGINE_VERSION } from '../ai/version'
 import type { GameRecord } from '../persist/gameRecords'
 import { recordContentKey } from '../persist/recordIdentity'
 import { applyMove, replay, type GameState } from '../core/game'
-import { buildVerdict, cacheKey, linesToFollow, type AfterMove, type MoveVerdict } from '../analysis/analyze'
+import {
+  buildVerdict,
+  cacheKey,
+  followUpStates,
+  type AfterMove,
+  type MoveVerdict,
+  type Reached,
+} from '../analysis/analyze'
 import { nextRequestId } from './requestCounter'
 
 /**
@@ -46,20 +53,15 @@ export interface AnalysisStore {
  *   也是「第 i−1 手走完之后」的评分，相邻两手共享。
  * - `alternative`：第 i 手的**对照**——走完引擎首选之后的局面。只有着法与引擎
  *   首选不同的手才需要它；分差比的就是它与局面 i+1（同视界，见 `horizonLoss`）。
- * - `follow`：第 i 手某一条走法的**续搜**——一级结论是必防捷径时，沿对手那一手应着
- *   再走一步、由走这一手的一方再搜一层（见 `linesToFollow`）。
+ * - `follow`：第 i 手某一条走法的**续搜**——这一手有一边的一级结论是必防捷径时，
+ *   沿对手那一手应着再走一步、由走这一手的一方再搜一层（见 `linesToFollow`）。
  */
-type Side = 'played' | 'engine'
-
 type Job =
   | { readonly kind: 'position'; readonly index: number }
   | { readonly kind: 'alternative'; readonly index: number; readonly state: GameState }
   | { readonly kind: 'follow'; readonly index: number; readonly side: Side; readonly state: GameState }
 
-/** 一级结论，外加对手选的那一手应着（续搜要沿着它走）。 */
-interface Reached extends AfterMove {
-  readonly move: Point | null
-}
+type Side = 'played' | 'engine'
 
 /** 需要的应答都到齐后才能拼出结论。 */
 interface PendingVerdict {
@@ -193,37 +195,26 @@ export function createAnalysisStore(): UseBoundStore<StoreApi<AnalysisStore>> {
       tryEmit(index)
     }
 
-    /** 从一级局面沿对手的应着再走一步；走不了、或走完不再是对局中 → `null`。 */
-    function stepAfter(state: GameState | undefined, reached: Reached | 'ended' | null | undefined) {
-      if (state === undefined || reached === undefined || reached === null || reached === 'ended') return null
-      if (reached.move === null) return null
-      const outcome = applyMove(state, reached.move)
-      return outcome.ok && outcome.state.status === 'playing' ? outcome.state : null
-    }
-
     /**
-     * 一级两边都就位之后，判一次要不要续搜，并把需要的续搜排上。
-     *
-     * 先把需要续的每一边的续搜局面都算出来：**只要有一边算不出**（应着为空、落不下去、
-     * 走完不再是对局中——真实引擎不可达），两边都不续，这一手不算；不发一个注定没用的请求。
-     * 都算得出就插到队首：先插引擎首选一边、后插实际着法一边，于是实际着法一边先发。
+     * 一级两边都就位之后，判一次要不要续搜，并把需要的续搜排上（哪边要续、
+     * 有一边续不了就都不续，规则在 `followUpStates`）。
+     * 插到队首：先插引擎首选一边、后插实际着法一边，于是实际着法一边先发。
      */
     function planFollow(index: number, entry: PendingVerdict) {
-      const lines = linesToFollow(entry.reply ?? null, entry.alternative ?? null)
       const rec = record
-      const playedState =
-        lines.played && rec !== null
-          ? stepAfter(replay(rec.moves.slice(0, index + 1), rec.firstPlayer), entry.reply)
-          : null
-      const engineState = lines.engine ? stepAfter(entry.alternativeState, entry.alternative) : null
-
-      if ((lines.played && playedState === null) || (lines.engine && engineState === null)) {
-        entry.follow = { played: null, engine: null }
-        return
+      const states = followUpStates(
+        {
+          state: rec === null ? null : replay(rec.moves.slice(0, index + 1), rec.firstPlayer),
+          after: entry.reply ?? null,
+        },
+        { state: entry.alternativeState ?? null, after: entry.alternative ?? null },
+      )
+      entry.follow = {
+        played: states.played === null ? null : undefined,
+        engine: states.engine === null ? null : undefined,
       }
-      entry.follow = { played: lines.played ? undefined : null, engine: lines.engine ? undefined : null }
-      if (engineState !== null) queue.unshift({ kind: 'follow', index, side: 'engine', state: engineState })
-      if (playedState !== null) queue.unshift({ kind: 'follow', index, side: 'played', state: playedState })
+      if (states.engine !== null) queue.unshift({ kind: 'follow', index, side: 'engine', state: states.engine })
+      if (states.played !== null) queue.unshift({ kind: 'follow', index, side: 'played', state: states.played })
     }
 
     /** 续搜请求完成：记下这一边的二级结论。 */
@@ -275,8 +266,7 @@ export function createAnalysisStore(): UseBoundStore<StoreApi<AnalysisStore>> {
         isWinningMove: entry.playedIsWinning,
         afterPlayed: entry.reply ?? null,
         afterEngine: entry.alternative ?? null,
-        followPlayed: entry.follow?.played ?? null,
-        followEngine: entry.follow?.engine ?? null,
+        follow: { played: entry.follow?.played ?? null, engine: entry.follow?.engine ?? null },
         reason: pos.reason,
         engineDepth: pos.depth,
         engineNodes: pos.nodes,

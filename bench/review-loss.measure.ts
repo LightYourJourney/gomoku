@@ -35,7 +35,14 @@ import { test } from 'vitest'
 import { candidateMoves } from '../src/ai/candidates'
 import { DIFFICULTY_PARAMS } from '../src/ai/difficulty'
 import { searchBoard, searchOptionsFor } from '../src/ai/search'
-import { buildVerdict, linesToFollow, type AfterMove } from '../src/analysis/analyze'
+import {
+  buildVerdict,
+  followUpState,
+  followUpStates,
+  linesToFollow,
+  type AfterMove,
+  type Reached,
+} from '../src/analysis/analyze'
 import { samePoint } from '../src/core/board'
 import { applyMove, replay, type GameState } from '../src/core/game'
 import type { Point } from '../src/core/types'
@@ -99,11 +106,6 @@ test('旧公式的自洽性：引擎走自己的首选时，score(i) − (−sco
   console.log(`|偏差| ≥ 10000 的：${magnitudes.filter((v) => v >= 10_000).length} 手`)
 })
 
-/** 搜索结论，外加这一方选的那一手（续搜要沿着它走）。 */
-interface Reached extends AfterMove {
-  readonly move: Point | null
-}
-
 /** 轮到 `state.current` 走的局面，由这一方搜出来的结论。 */
 function searchState(state: GameState): Reached {
   const reply = searchBoard(state.board, state.current, OPTIONS, now)
@@ -120,13 +122,6 @@ function searchAfter(game: GameState, move: Point): { after: Reached | 'ended' |
     : { after: null, state: null }
 }
 
-/** 沿对手的应着再走一步，得到续搜的局面；走不了或走完不再是对局中 → `null`（与 `analysisStore` 同一规则）。 */
-function stepAfter(state: GameState | null, reached: Reached | 'ended' | null): GameState | null {
-  if (state === null || reached === null || reached === 'ended' || reached.move === null) return null
-  const next = applyMove(state, reached.move)
-  return next.ok && next.state.status === 'playing' ? next.state : null
-}
-
 const describeSide = (after: AfterMove | 'ended' | null, follow?: AfterMove | null): string => {
   const first = after === null ? '无' : after === 'ended' ? '终局' : after.reason
   return follow === undefined ? first : `${first}→${follow === null ? '无' : follow.reason}`
@@ -141,13 +136,13 @@ const median = (values: readonly number[]): number | null => {
 /**
  * 沿一局棋逐手统计**生产口径**（`linesToFollow` + `buildVerdict`，与复盘页同一套函数）给出的结论。
  *
- * `pick` 决定「玩家」这一手走哪；`follow` 决定对局沿谁的着法往下走。
+ * `pick` 决定「玩家」这一手走哪；`advance` 决定对局沿谁的着法往下走。
  * 只统计着法与引擎首选不同、且不是终局手的手——其余的分差按定义为 0。
  */
 function tally(
   label: string,
   pick: (game: GameState, engineMove: Point) => Point | undefined,
-  follow: 'engine' | 'played',
+  advance: 'engine' | 'played',
 ): void {
   const count = {
     moves: 0,
@@ -198,12 +193,12 @@ function tally(
         const afterEngine = engineLine.after
 
         const lines = linesToFollow(afterPlayed, afterEngine)
-        const playedFollowState = lines.played ? stepAfter(playedState, afterPlayed) : null
-        const engineFollowState = lines.engine ? stepAfter(engineLine.state, afterEngine) : null
-        const followable =
-          (!lines.played || playedFollowState !== null) && (!lines.engine || engineFollowState !== null)
-        const followPlayed = followable && playedFollowState !== null ? searchState(playedFollowState) : null
-        const followEngine = followable && engineFollowState !== null ? searchState(engineFollowState) : null
+        const states = followUpStates(
+          { state: playedState, after: afterPlayed },
+          { state: engineLine.state, after: afterEngine },
+        )
+        const followPlayed = states.played === null ? null : searchState(states.played)
+        const followEngine = states.engine === null ? null : searchState(states.engine)
         count.followSearches += (followPlayed === null ? 0 : 1) + (followEngine === null ? 0 : 1)
 
         const verdict = buildVerdict({
@@ -213,8 +208,7 @@ function tally(
           isWinningMove: false,
           afterPlayed,
           afterEngine,
-          followPlayed,
-          followEngine,
+          follow: { played: followPlayed, engine: followEngine },
           reason: here.reason,
           engineDepth: here.depth,
           engineNodes: here.nodes,
@@ -246,8 +240,8 @@ function tally(
           afterEngine !== 'ended' &&
           afterEngine.reason === 'search'
         ) {
-          const p2State = stepAfter(playedState, afterPlayed)
-          const e2State = stepAfter(engineLine.state, afterEngine)
+          const p2State = followUpState(playedState, afterPlayed)
+          const e2State = followUpState(engineLine.state, afterEngine)
           const p2 = p2State === null ? null : searchState(p2State)
           const e2 = e2State === null ? null : searchState(e2State)
           if (p2?.reason === 'search' && e2?.reason === 'search') {
@@ -256,7 +250,7 @@ function tally(
         }
       }
 
-      const next = follow === 'engine' ? applyMove(game, engineMove) : playedNext
+      const next = advance === 'engine' ? applyMove(game, engineMove) : playedNext
       if (!next.ok) break
       game = next.state
     }

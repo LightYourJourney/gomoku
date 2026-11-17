@@ -1,6 +1,7 @@
 import { WIN_SCORE, type SearchReason } from '../ai/types'
 import { ENGINE_VERSION } from '../ai/version'
 import { samePoint } from '../core/board'
+import { applyMove, type GameState } from '../core/game'
 import type { Point } from '../core/types'
 import type { Difficulty } from '../ai/types'
 
@@ -50,10 +51,8 @@ export interface VerdictInput {
   readonly afterPlayed: AfterMove | null
   /** 走完引擎首选之后的局面（对手视角）；`'ended'` = 引擎首选当场成五。 */
   readonly afterEngine: AfterMove | 'ended' | null
-  /** 实际着法一边的二级评估（对手应了一手之后，自己视角）；没有续搜时传 `null`。 */
-  readonly followPlayed: AfterMove | null
-  /** 引擎首选一边的二级评估；没有续搜时传 `null`。 */
-  readonly followEngine: AfterMove | null
+  /** 两条走法的二级评估（对手应了一手之后，自己视角）；没有续搜的一边是 `null`。 */
+  readonly follow: FollowUps
   readonly reason: SearchReason
   readonly engineDepth: number
   readonly engineNodes: number
@@ -111,7 +110,8 @@ const searchedOf = (first: LineValue | null, second: LineValue | null): number |
  * 两边不可比或缺失 → `null`（没有算，不是「没有亏损」）。
  *
  * 每条走法最多两级评估：一级是「走完这一手之后」由对手搜（`after*`），二级是「对手应了
- * 一手之后」由自己搜（`follow`，只在一级是必防捷径时才有，见 `linesToFollow`）。
+ * 一手之后」由自己搜（`follow`）。一手里只要有一边的一级是必防捷径，两边就都可能续搜
+ * （已证明的一边不续），见 `linesToFollow`。
  * 按顺序取第一条成立的：
  *
  * 1. 两边都有一级值 → 用一级值；
@@ -184,6 +184,42 @@ export function linesToFollow(
   return { played, engine }
 }
 
+/** 一级结论，外加对手选的那一手应着（续搜要沿着它走）。 */
+export interface Reached extends AfterMove {
+  readonly move: Point | null
+}
+
+/**
+ * 续搜的局面：从一级局面沿对手的应着再走一步。应着为空、落不下去、或走完不再是对局中
+ * → `null`（真实引擎不可达）。
+ */
+export function followUpState(state: GameState | null, reached: Reached | 'ended' | null | undefined): GameState | null {
+  if (state === null || reached === undefined || reached === null || reached === 'ended' || reached.move === null) {
+    return null
+  }
+  const next = applyMove(state, reached.move)
+  return next.ok && next.state.status === 'playing' ? next.state : null
+}
+
+/**
+ * 一手要续搜的局面：不需要续的一边是 `null`。**只要有一边需要却算不出，两边都是 `null`**——
+ * 续了也比不上，不发一个注定没用的请求。分析管线与 `yarn bench:review-loss` 共用这一条规则。
+ *
+ * `state` 是一级局面（走完这一手之后），`after` 是在那个局面上搜出的一级结论。
+ */
+export function followUpStates(
+  played: { readonly state: GameState | null; readonly after: Reached | null },
+  engine: { readonly state: GameState | null; readonly after: Reached | 'ended' | null },
+): { readonly played: GameState | null; readonly engine: GameState | null } {
+  const lines = linesToFollow(played.after, engine.after)
+  const playedNext = lines.played ? followUpState(played.state, played.after) : null
+  const engineNext = lines.engine ? followUpState(engine.state, engine.after) : null
+  if ((lines.played && playedNext === null) || (lines.engine && engineNext === null)) {
+    return { played: null, engine: null }
+  }
+  return { played: playedNext, engine: engineNext }
+}
+
 export function buildVerdict(input: VerdictInput): MoveVerdict {
   // 着法与引擎首选相同 → 没有亏损，**不看任何评分**：两种走法是同一个局面。
   // 这条判断先于评分，所以「与引擎一致」的手永远不会因为某个评分不可比而变成「未算」。
@@ -195,10 +231,7 @@ export function buildVerdict(input: VerdictInput): MoveVerdict {
     loss:
       input.isWinningMove || sameMove
         ? 0
-        : horizonLoss(input.afterPlayed, input.afterEngine, {
-            played: input.followPlayed,
-            engine: input.followEngine,
-          }),
+        : horizonLoss(input.afterPlayed, input.afterEngine, input.follow),
     reason: input.reason,
     engineDepth: input.engineDepth,
     engineNodes: input.engineNodes,
