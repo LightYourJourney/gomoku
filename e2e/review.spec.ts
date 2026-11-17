@@ -26,13 +26,30 @@ test.beforeEach(async ({ page }) => {
   })
 })
 
+type Moves = ReadonlyArray<readonly [number, number]>
+
+/** 黑白各走一横排，黑棋第 9 手五连。 */
+const NINE_MOVE_WIN: Moves = [
+  [3, 7], [3, 9], [4, 7], [4, 9], [5, 7], [5, 9], [6, 7], [6, 9], [7, 7],
+]
+
+/**
+ * 同为 9 手、黑棋五连，但**有一手引擎算得出亏损**：黑棋第 7 手冲四
+ * （左端 C8 已被白棋堵住），白棋第 8 手没去防 H8。
+ *
+ * 分析类用例必须用它。上面那一局在同视界口径下**一张亏损卡片都没有**：
+ * 黑棋做成的是活四，白棋堵哪头都输，引擎首选与实际着法的后续评分相同
+ *（那一局以前显示的两张「分差极大」是量纲不同造成的假象，见
+ * `docs/research/PHASE_A_PLAN.md` 的 D9）。
+ */
+const MISSED_BLOCK: Moves = [
+  [3, 7], [2, 7], [4, 7], [3, 9], [5, 7], [4, 9], [6, 7], [5, 9], [7, 7],
+]
+
 /** 在本地双人模式下把一局下到黑棋五连终局。 */
-async function playNineMoveWin(page: Page): Promise<void> {
+async function playNineMoveWin(page: Page, moves: Moves = NINE_MOVE_WIN): Promise<void> {
   await page.getByRole('radio', { name: '本地双人' }).click()
 
-  const moves: Array<[number, number]> = [
-    [3, 7], [3, 9], [4, 7], [4, 9], [5, 7], [5, 9], [6, 7], [6, 9], [7, 7],
-  ]
   for (const [x, y] of moves) {
     await page.getByTestId(`intersection-${x}-${y}`).click()
   }
@@ -115,7 +132,7 @@ test('刷新后棋谱仍在（IndexedDB 持久）', async ({ page }) => {
 test('分析：逐手跑完并给出结论，标注引擎出处', async ({ page }) => {
   test.setTimeout(90_000)
   await page.goto('/')
-  await playNineMoveWin(page)
+  await playNineMoveWin(page, MISSED_BLOCK)
   await page.getByRole('button', { name: '看看棋盘' }).click()
   await gotoReview(page)
   await page.getByTestId(/^record-/).first().click()
@@ -128,8 +145,10 @@ test('分析：逐手跑完并给出结论，标注引擎出处', async ({ page 
 
   // 9 手局 = 9 个局面请求，串行跑完
   await expect(page.getByTestId('analysis-progress')).toContainText('9 / 9', { timeout: 60_000 })
-  // 至少给出一条结论，且带引擎推荐坐标
-  await expect(page.getByTestId(/^verdict-/).first()).toContainText('引擎推荐')
+  // 给出结论，且带引擎推荐坐标：白棋第 8 手漏防冲四，引擎要它堵 H8
+  const verdict = page.getByTestId(/^verdict-/).first()
+  await expect(verdict).toContainText('第 8 手')
+  await expect(verdict).toContainText('引擎推荐 H8')
 })
 
 test('空状态那颗「开始一局对战」真的切到对战页', async ({ page }) => {
@@ -146,9 +165,9 @@ test('空状态那颗「开始一局对战」真的切到对战页', async ({ pa
 })
 
 /** 开一局、打完、进复盘、点开第一条。四条新用例开头都是这套，抽出来。 */
-async function openFirstRecord(page: Page): Promise<void> {
+async function openFirstRecord(page: Page, moves: Moves = NINE_MOVE_WIN): Promise<void> {
   await page.goto('/')
-  await playNineMoveWin(page)
+  await playNineMoveWin(page, moves)
   await page.getByRole('button', { name: '看看棋盘' }).click()
   await gotoReview(page)
   await page.getByTestId(/^record-/).first().click()
@@ -218,7 +237,7 @@ test('播放速度：切到快速后，按新间隔走完', async ({ page }) => 
 
 test('点分析结论里的关键手：棋盘跳到那一手，卡片高亮', async ({ page }) => {
   test.setTimeout(90_000)
-  await openFirstRecord(page)
+  await openFirstRecord(page, MISSED_BLOCK)
 
   await page.getByRole('button', { name: '开始分析' }).click()
   await expect(page.getByTestId('analysis-progress')).toContainText('9 / 9', { timeout: 60_000 })

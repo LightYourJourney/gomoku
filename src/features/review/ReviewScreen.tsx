@@ -6,7 +6,7 @@ import type { GameRecord, GameRecordsStorage } from '../../persist/gameRecords'
 import { DIFFICULTY_LABELS } from '../../ai/difficulty'
 import { ENGINE_VERSION } from '../../ai/version'
 import { formatPoint } from '../../lib/coords'
-import { buildSummary, pathSummary, verdictLabel } from '../../analysis/analyze'
+import { buildSummary, pathLabel, verdictLabel } from '../../analysis/analyze'
 import { searchPathOf } from '../../ai/types'
 import { cx } from '../../lib/cx'
 import { Button } from '../../components/ui/Button'
@@ -342,10 +342,11 @@ function AnalysisPanel({ store, engine, replay }: AnalysisPanelProps) {
         任务书 §八 的「技术与来源信息」里点名要有**「分数的含义和局限」**。
         没有这句，「分差约 3 子」会被当成精确值——而它只是棋型评分的粗略换算
         （`analyze.ts` 的 `verdictLabel` 注释写了同一件事，但那是代码注释，
-        用户看不到）。预算内没搜完的手连这个都只能算启发式。
+        用户看不到）。分差比的是「两种走法之后」的两个评分；它们不在同一把尺子上
+        （一边是必防捷径、或预算内没搜满）时不相减——那样的手写「未算分差」。
       */}
       <p data-testid="analysis-caveat" className="text-xs text-faint">
-        分差按棋型评分粗算，不是精确子数；标「启发式」的手没搜完，结论更粗。
+        分差按棋型评分粗算，不是精确子数；两种走法之后的评分没法用同一把尺子比时，不算分差。
       </p>
       {state.error !== null && state.running === false ? (
         /*
@@ -404,11 +405,17 @@ function AnalysisPanel({ store, engine, replay }: AnalysisPanelProps) {
                 两种都该如实说——原先这里一律说成「与引擎一致，没有亏损」，
                 store 拒绝编造，界面替它编了。
               */}
-              {currentVerdict === undefined
-                ? '没有分析结果。'
-                : `${verdictLabel(currentVerdict)}${
-                    currentVerdict.confidence === 'exact' ? '' : '（启发式）'
-                  }`}
+              {currentVerdict === undefined ? '没有分析结果。' : verdictLabel(currentVerdict)}
+            </p>
+          )}
+
+          {/*
+            空榜要说出来。同视界口径下它比以前常见（不可比的手不进榜，捷径量纲造出来的
+            假亏损也没了）；跑完了却一片空白，看起来像分析坏了。
+          */}
+          {topLosses.length === 0 && (
+            <p data-testid="analysis-no-loss" className="text-xs text-faint">
+              这一局没有算出亏损的手。
             </p>
           )}
 
@@ -452,7 +459,7 @@ function AnalysisPanel({ store, engine, replay }: AnalysisPanelProps) {
                 </div>
                 <div className="mt-1 text-xs text-faint">
                   深度 {verdict.engineDepth} · 节点 {verdict.engineNodes} ·{' '}
-                  {pathSummary(searchPathOf(verdict.reason), verdict.confidence)}
+                  {pathLabel(searchPathOf(verdict.reason))}
                 </div>
               </button>
             )

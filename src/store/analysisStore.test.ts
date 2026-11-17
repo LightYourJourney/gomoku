@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest'
-import { BLACK, type Point } from '../core/types'
+import { BLACK, WHITE, type Point } from '../core/types'
 import { nextRequestId } from './requestCounter'
 import { createAnalysisStore } from './analysisStore'
 import type { UseBoundStore, StoreApi } from 'zustand'
@@ -7,7 +7,7 @@ import type { AnalysisStore } from './analysisStore'
 import { createGameStore } from './gameStore'
 import type { AiEngine } from '../ai/engine'
 import type { GameRecord } from '../persist/gameRecords'
-import type { SearchRequest, SearchResponse } from '../ai/types'
+import { WIN_SCORE, type SearchRequest, type SearchResponse } from '../ai/types'
 
 // ── 测试脚手架 ───────────────────────────────────────────────
 
@@ -131,11 +131,18 @@ describe('分析管线 —— 排队', () => {
     expect(spy.requests).toHaveLength(2)
     expect(spy.requests[1]?.moveIndex).toBe(1)
 
-    // 局面 1 的响应
+    // 局面 1 的响应：引擎首选 (4,7) 与实际着法 (3,9) 不同 →
+    // 下一个请求是**手 1 的对照**（走完引擎首选之后的局面），手序号仍是 1
     spy.settle(1, { x: 4, y: 7 }, -50)
     await Promise.resolve()
     expect(spy.requests).toHaveLength(3)
-    expect(spy.requests[2]?.moveIndex).toBe(2)
+    expect(spy.requests[2]?.moveIndex).toBe(1)
+
+    // 对照回来之后才轮到局面 2
+    spy.settle(2, { x: 0, y: 0 }, 0)
+    await Promise.resolve()
+    expect(spy.requests).toHaveLength(4)
+    expect(spy.requests[3]?.moveIndex).toBe(2)
   })
 
   it('请求共享：9 手终局局总共 9 个请求（局面 0..8，不是 18 个）', async () => {
@@ -151,22 +158,15 @@ describe('分析管线 —— 排队', () => {
     expect(store.getState().verdicts.size).toBe(9)
   })
 
-  it('终局手 loss 恒 0；中间手的 loss = engineScore − (−后续局面评分)', async () => {
+  it('终局手 loss 恒 0', async () => {
     store.getState().start({ record: threeWinRecord(), engine: spy.engine, difficulty: 'easy', budgetMs: 400 })
 
-    // 9 手局。scores[i] = 局面 i 的评分（下一手方视角）。
-    // 手 i 的 engineScore = scores[i]，playedScore = −scores[i+1]，loss = max(0, 差)。
-    // 手 0：100 − (−(−100)) = 0；手 2：50 − (−20) = 70；手 8 终局 → 0。
-    const scores = [100, -100, 50, 20, 0, 0, 0, 0, 999_999]
     for (let i = 0; i < 9; i++) {
-      spy.settle(i, { x: 3, y: 7 }, scores[i]!)
+      spy.settle(i, NINE_WIN_MOVES[i]!, 999_999) // 每个局面都回实际着法：不产生对照请求
       await Promise.resolve()
     }
 
-    const verdicts = store.getState().verdicts
-    expect(verdicts.get(0)?.loss).toBe(0)
-    expect(verdicts.get(2)?.loss).toBe(70)
-    expect(verdicts.get(8)?.loss).toBe(0) // 终局手
+    expect(store.getState().verdicts.get(8)?.loss).toBe(0)
   })
 
   it('把引擎的 reason 原样带进结论——不靠 depth / nodes 反推路径', async () => {
@@ -181,18 +181,209 @@ describe('分析管线 —— 排队', () => {
     expect(store.getState().verdicts.get(0)?.reason).toBe('win')
   })
 
-  it('一手横跨两次搜索：任一半没搜完，这一手就标启发式', async () => {
+  it('后续局面预算内没搜满：两边可能停在不同层，这一手不算分差', async () => {
     store.getState().start({ record: threeWinRecord(), engine: spy.engine, difficulty: 'easy', budgetMs: 400 })
 
-    // 局面 0 搜索完整；局面 1（同时是手 0 的 reply 半边）预算内没搜完。
-    spy.settle(0, { x: 3, y: 7 }, 100)
+    spy.settle(0, { x: 7, y: 7 }, 100) // 引擎首选与实际着法 (3,7) 不同
     await Promise.resolve()
-    spy.settle(1, { x: 4, y: 7 }, -50, 4, { confidence: 'heuristic' })
+    spy.settle(1, { x: 0, y: 0 }, 300) // 手 0 的对照：搜满
+    await Promise.resolve()
+    spy.settle(2, NINE_WIN_MOVES[1]!, 800, 1, { reason: 'timeout' }) // 局面 1：超时
     await Promise.resolve()
 
-    // 手 0 的 loss 一半来自局面 0、一半来自局面 1。只报局面 0 的 confidence
-    // 会把「exact + heuristic」标成「搜索完成」——界面等于在说谎。
-    expect(store.getState().verdicts.get(0)?.confidence).toBe('heuristic')
+    // 拿一个超时的分数去减一个搜满的分数，正是这条口径要避免的事
+    expect(store.getState().verdicts.get(0)?.loss).toBeNull()
+  })
+})
+
+// ── 同视界分差 ───────────────────────────────────────────────
+
+/** 盘面上的棋子数。 */
+const stonesOn = (request: SearchRequest | undefined): number =>
+  request === undefined ? -1 : request.board.reduce((count, cell) => (cell === 0 ? count : count + 1), 0)
+
+/** 第 8 手之前黑棋已有四连；黑棋第 9 手没去成五，走了别处。 */
+function missedWinRecord(): GameRecord {
+  return {
+    ...threeWinRecord(5),
+    moves: [...NINE_WIN_MOVES.slice(0, 8), { x: 10, y: 10 }],
+    winner: null,
+    resignedBy: BLACK,
+  }
+}
+
+describe('分析管线 —— 同视界分差', () => {
+  const start = (record: GameRecord = threeWinRecord()): void =>
+    store.getState().start({ record, engine: spy.engine, difficulty: 'easy', budgetMs: 400 })
+
+  it('着法与引擎首选不同：紧接着发对照请求，盘面是走完引擎首选之后、轮到对手', async () => {
+    start()
+    spy.settle(0, { x: 7, y: 7 }, 100) // 实际着法是 (3,7)
+    await Promise.resolve()
+
+    expect(spy.requests).toHaveLength(2)
+    const alternative = spy.requests[1]!
+    expect(alternative.moveIndex).toBe(0)
+    expect(alternative.purpose).toBe('analyze')
+    expect(alternative.gameVersion).toBe(0)
+    expect(alternative.budgetMs).toBe(400)
+    expect(alternative.player).toBe(WHITE)
+    expect(stonesOn(alternative)).toBe(1)
+    expect(alternative.board[7 * 15 + 7]).toBe(BLACK)
+    // 对照还没回来：这一手还不能出结论（「还没回来」不等于「不可比」）
+    expect(store.getState().verdicts.has(0)).toBe(false)
+  })
+
+  it.each([
+    { afterEngine: 300, afterPlayed: 800, loss: 500 },
+    { afterEngine: 800, afterPlayed: 300, loss: 0 },
+  ])(
+    '分差 = 实际着法之后的对手评分 $afterPlayed − 引擎首选之后的对手评分 $afterEngine，负数钳到 0',
+    async ({ afterEngine, afterPlayed, loss }) => {
+      start()
+      spy.settle(0, { x: 7, y: 7 }, 100)
+      await Promise.resolve()
+      spy.settle(1, { x: 0, y: 0 }, afterEngine) // 对照
+      await Promise.resolve()
+      expect(store.getState().verdicts.has(0)).toBe(false) // 还差后续局面
+      spy.settle(2, NINE_WIN_MOVES[1]!, afterPlayed) // 局面 1
+      await Promise.resolve()
+
+      expect(store.getState().verdicts.get(0)?.loss).toBe(loss)
+    },
+  )
+
+  it('着法相同：不发对照请求，局面响应一到就出结论', async () => {
+    start()
+    spy.settle(0, NINE_WIN_MOVES[0]!, 100)
+    await Promise.resolve()
+
+    expect(store.getState().verdicts.get(0)?.loss).toBe(0)
+    expect(spy.requests).toHaveLength(2)
+    expect(spy.requests[1]?.moveIndex).toBe(1)
+    expect(stonesOn(spy.requests[1])).toBe(1) // 是局面 1，不是对照
+    expect(spy.requests[1]?.board[7 * 15 + 3]).toBe(BLACK)
+  })
+
+  it('引擎首选当场成五：不发对照请求，按对手已输计', async () => {
+    start(missedWinRecord())
+    for (let i = 0; i < 8; i++) {
+      spy.settle(i, NINE_WIN_MOVES[i]!, 0)
+      await Promise.resolve()
+    }
+    spy.settle(8, { x: 7, y: 7 }, WIN_SCORE, 0, { reason: 'win' }) // 局面 8：引擎要成五
+    await Promise.resolve()
+
+    // 走完 (7,7) 棋就下完了——没有可搜的局面，下一个请求直接是局面 9
+    expect(spy.requests).toHaveLength(10)
+    expect(spy.requests[9]?.moveIndex).toBe(9)
+    expect(stonesOn(spy.requests[9])).toBe(9)
+
+    spy.settle(9, { x: 0, y: 0 }, 100)
+    await Promise.resolve()
+
+    expect(store.getState().verdicts.get(8)?.loss).toBe(WIN_SCORE + 100)
+    expect(store.getState().running).toBe(false)
+  })
+
+  it('后续局面走的是必防捷径：分数不在同一把尺子上，不算分差', async () => {
+    start()
+    spy.settle(0, { x: 7, y: 7 }, 100)
+    await Promise.resolve()
+    spy.settle(1, { x: 0, y: 0 }, 300)
+    await Promise.resolve()
+    spy.settle(2, NINE_WIN_MOVES[1]!, 1_000_000, 0, { reason: 'block' })
+    await Promise.resolve()
+
+    expect(store.getState().verdicts.has(0)).toBe(true)
+    expect(store.getState().verdicts.get(0)?.loss).toBeNull()
+  })
+
+  it('引擎首选落在已有棋子上：不发对照请求，该手不算分差，分析照常跑完', async () => {
+    start()
+    for (let i = 0; i < 9; i++) {
+      spy.settle(i, { x: 3, y: 7 }, 100) // 局面 1 起 (3,7) 上已经有子
+      await Promise.resolve()
+    }
+
+    expect(spy.requests).toHaveLength(9)
+    expect(store.getState().running).toBe(false)
+    expect(store.getState().verdicts.size).toBe(9)
+    expect(store.getState().verdicts.get(1)?.loss).toBeNull()
+  })
+
+  it('对照请求失败：以错误收尾，不停在「分析中」', async () => {
+    start()
+    spy.settle(0, { x: 7, y: 7 }, 100)
+    await Promise.resolve()
+    spy.reject(1, '引擎挂了')
+    await Promise.resolve()
+    await Promise.resolve()
+
+    expect(store.getState().error).toBe('引擎挂了')
+    expect(store.getState().running).toBe(false)
+  })
+
+  it('换局后，上一局对照请求的迟到响应不写进新一局', async () => {
+    start(threeWinRecord(1))
+    spy.settle(0, { x: 7, y: 7 }, 100)
+    await Promise.resolve()
+    expect(spy.requests).toHaveLength(2) // A 的对照在飞
+
+    start(threeWinRecord(2))
+    expect(spy.requests).toHaveLength(3) // B 的局面 0 在飞
+
+    spy.settle(1, { x: 0, y: 0 }, 300) // A 的对照姗姗来迟
+    await Promise.resolve()
+
+    expect(store.getState().verdicts.size).toBe(0)
+    expect(spy.requests).toHaveLength(3) // 没有被它推着往下走
+    expect(store.getState().running).toBe(true)
+  })
+
+  it('缓存命中的结论里有没算出分差的手：照常填充，零新请求', async () => {
+    const record = threeWinRecord()
+    start(record)
+    for (let i = 0; i < 9; i++) {
+      spy.settle(i, { x: 3, y: 7 }, 100)
+      await Promise.resolve()
+    }
+    const before = spy.requests.length
+
+    start(record)
+
+    expect(spy.requests).toHaveLength(before)
+    expect(store.getState().running).toBe(false)
+    expect(store.getState().verdicts.size).toBe(9)
+    expect(store.getState().verdicts.get(1)?.loss).toBeNull()
+  })
+
+  it('9 手局、前 8 手都与引擎不同：请求数 = 9 个局面 + 8 个对照', async () => {
+    start()
+    for (let guard = 0; guard < 40 && store.getState().running; guard++) {
+      spy.settle(guard, { x: 14, y: 14 }, 0) // 一个始终空着、与每一手都不同的点
+      await Promise.resolve()
+    }
+
+    expect(store.getState().running).toBe(false)
+    expect(spy.requests).toHaveLength(17)
+    expect(store.getState().verdicts.size).toBe(9)
+  })
+
+  it('最后一手没分出胜负、且与引擎首选相同：最后一个局面回来后照常收尾', async () => {
+    const moves = NINE_WIN_MOVES.slice(0, 3)
+    start({ ...threeWinRecord(6), moves: [...moves], winner: null, resignedBy: BLACK })
+
+    for (let i = 0; i < 3; i++) {
+      spy.settle(i, moves[i]!, 0)
+      await Promise.resolve()
+    }
+    expect(store.getState().verdicts.size).toBe(3) // 三手都已出结论
+    spy.settle(3, { x: 0, y: 0 }, 0) // 局面 3：没有哪一手还在等它
+    await Promise.resolve()
+
+    expect(store.getState().running).toBe(false)
+    expect(store.getState().verdicts.size).toBe(3)
   })
 })
 
@@ -237,16 +428,16 @@ describe('分析管线 —— 取消与错误', () => {
   it('engine.search reject → error 置位、running false、已完成 verdicts 保留', async () => {
     store.getState().start({ record: threeWinRecord(), engine: spy.engine, difficulty: 'easy', budgetMs: 400 })
 
-    spy.settle(0, { x: 3, y: 7 }, 100) // 局面 0 到达（手 0 还差 reply 半边）
+    spy.settle(0, { x: 3, y: 7 }, 100) // 局面 0 到达：与实际着法相同，手 0 当场出结论
     await Promise.resolve()
-    spy.reject(1, '引擎挂了') // 局面 1 失败 → 手 0 永远拼不出来
+    spy.reject(1, '引擎挂了') // 局面 1 失败
     await Promise.resolve()
 
     const state = store.getState()
     expect(state.error).toBe('引擎挂了')
     expect(state.running).toBe(false)
-    // 半途失败：没有任何一手拼出完整结论——这是如实状态，不是丢失
-    expect(state.verdicts.size).toBe(0)
+    // 半途失败：已经出了的那一条留着，不因为后面失败而丢
+    expect(state.verdicts.size).toBe(1)
   })
 })
 

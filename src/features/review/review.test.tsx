@@ -6,6 +6,7 @@ import { createReplayStore, REPLAY_STEP_MS, type ReplayStore } from '../../store
 import { createAnalysisStore } from '../../store/analysisStore'
 import { memoryGameRecords, type GameRecord, type GameRecordsStorage } from '../../persist/gameRecords'
 import type { AiEngine } from '../../ai/engine'
+import type { SearchRequest } from '../../ai/types'
 import { GameLibrary } from './GameLibrary'
 import { CURRENT_STEP_RADIUS, PLAIN_STEP_RADIUS, ReplayBoard } from './ReplayBoard'
 import { ReviewScreen } from './ReviewScreen'
@@ -262,7 +263,7 @@ describe('ReviewScreen 三段流转', () => {
     // §八 点名要有「分数的含义和局限」：没有这句，「分差约 3 子」会被当成精确值
     const caveat = screen.getByTestId('analysis-caveat')
     expect(caveat).toHaveTextContent('不是精确子数')
-    expect(caveat).toHaveTextContent('启发式')
+    expect(caveat).toHaveTextContent('不算分差')
   })
 
   it('点「开始分析」后进入分析中状态，进度可见', async () => {
@@ -391,7 +392,7 @@ describe('分析面板 —— 没结论的手不能被说成有结论', () => {
     expect(current).not.toHaveTextContent('与引擎一致，没有亏损。')
   })
 
-  it('当前手是启发式的就标出来——caveat 指的标签每一处都要有', async () => {
+  it('后续局面没搜满的手：当前手一行说「未算分差」，榜单里没有它', async () => {
     const storage = memoryGameRecords()
     await storage.put(nineMoveRecord())
 
@@ -400,7 +401,7 @@ describe('分析面板 —— 没结论的手不能被说成有结论', () => {
     render(
       <ReviewScreen
         storage={storage}
-        engine={scriptedEngine([1])}
+        engine={scriptedEngine([2])}
         stores={{ replay: injectedReplay, analysis: injectedAnalysis }}
       />,
     )
@@ -409,23 +410,20 @@ describe('分析面板 —— 没结论的手不能被说成有结论', () => {
     await waitFor(() => expect(injectedAnalysis.getState().running).toBe(false))
 
     /*
-     * 手 1 的局面请求（局面 1）没搜完。原先 `emit` 只报这一半的 confidence，
-     * 而 loss 的另一半来自局面 2——现在取两者较差，这一手整体算启发式。
-     * 同时钉住 loss=500 不再说成「分差约 0 子」。
+     * 手 1 的着法与引擎不同，它的分差要比「走完实际着法之后」（局面 2）与
+     * 「走完引擎首选之后」（对照）两个评分。局面 2 预算内没搜满——两边可能停在
+     * 不同层，相减没有意义。原先这里算出一个数再标「（启发式）」；现在如实说没算。
      */
     fireEvent.change(screen.getByRole('slider', { name: '回放手数' }), {
       target: { value: '2' },
     })
     const current = screen.getByTestId('analysis-current')
-    expect(current).toHaveTextContent('（启发式）')
-    expect(current).toHaveTextContent('不足 1 子')
+    expect(current).toHaveTextContent('当前第 2 手')
+    expect(current).toHaveTextContent('未算分差')
+    expect(current).not.toHaveTextContent('启发式')
 
-    /*
-     * 同一张卡片上没有第二种说法：这手的首选（pos）搜索完成，但后续一手超时，
-     * 结论整体是启发式。只写路径会显示「搜索完成」，与上面的「（启发式）」矛盾。
-     */
-    const card = screen.getByTestId('verdict-1')
-    expect(card).toHaveTextContent('搜索完成 · 结论为启发式')
+    // 没算出分差的手不是「亏损最多的几手」
+    expect(screen.queryByTestId('verdict-1')).not.toBeInTheDocument()
   })
 })
 
@@ -578,11 +576,78 @@ describe('分析结论列表：只列真有亏损的手', () => {
     // 只有手 1 真有亏损，榜单应当只有它。
     expect(rows).toHaveLength(1)
     expect(rows[0]).toHaveAttribute('data-testid', 'verdict-1')
+    // 手 1 的同视界分差是 500：半子以下不说成「分差约 0 子」
+    expect(rows[0]).toHaveTextContent('不足 1 子')
+    expect(screen.queryByTestId('analysis-no-loss')).not.toBeInTheDocument()
+  })
+
+  it('分析跑完、榜单为空：说一句没有算出亏损的手，不留一片空白', async () => {
+    const storage = memoryGameRecords()
+    await storage.put(threeMoveRecord())
+
+    const injectedAnalysis = createAnalysisStore()
+    render(
+      <ReviewScreen
+        storage={storage}
+        engine={echoEngine()}
+        stores={{ replay: createReplayStore(), analysis: injectedAnalysis }}
+      />,
+    )
+    fireEvent.click((await screen.findAllByTestId(/^record-/))[0]!)
+    // 还没分析：没有榜单可言，也就没有「空榜」
+    expect(screen.queryByTestId('analysis-no-loss')).not.toBeInTheDocument()
+
+    fireEvent.click(await screen.findByRole('button', { name: '开始分析' }))
+    await waitFor(() => expect(injectedAnalysis.getState().running).toBe(false))
+
+    expect(screen.queryAllByTestId(/^verdict-/)).toHaveLength(0)
+    expect(screen.getByTestId('analysis-no-loss')).toHaveTextContent('这一局没有算出亏损的手。')
   })
 })
 
-/** 按 moveIndex 给出脚本化响应的引擎：手 0 与引擎首选相同，手 1 走亏。 */
-function scriptedEngine(heuristicAt: readonly number[] = []): AiEngine {
+/**
+ * 分析管线对「着法与引擎首选不同」的手会多发一个**对照请求**（走完引擎首选之后的局面），
+ * 它与局面请求的 `moveIndex` 相同。区分办法：局面 i 盘上有 i 颗子，对照有 i + 1 颗。
+ */
+function isAlternative(request: SearchRequest): boolean {
+  const stones = request.board.reduce((count, cell) => (cell === 0 ? count : count + 1), 0)
+  return stones === (request.moveIndex ?? 0) + 1
+}
+
+/** 每个局面都回棋谱里实际走的那一手：没有任何一手与引擎不同。 */
+function echoEngine(): AiEngine {
+  return {
+    search(request) {
+      const index = request.moveIndex ?? 0
+      return Promise.resolve({
+        requestId: request.requestId,
+        gameVersion: request.gameVersion,
+        moveIndex: index,
+        move: NINE_MOVES[index] ?? { x: 13, y: 13 },
+        score: 0,
+        depth: 1,
+        nodes: 1,
+        elapsedMs: 1,
+        confidence: 'exact' as const,
+        reason: 'search' as const,
+        candidates: [],
+        urgency: 'normal' as const,
+      })
+    },
+    handleResponse() {},
+    handleError() {},
+    dispose() {},
+  }
+}
+
+/**
+ * 按 moveIndex 给出脚本化响应的引擎：手 0 与引擎首选相同，手 1 走亏。
+ * `timeoutAt` 里的**局面**答「预算内没搜满」。
+ *
+ * 手 1 的分差 = 局面 2 的评分 (0) − 手 1 对照的评分 (−500) = 500。
+ * **对照的分数必须按手给**：别的手若也回负数，它们会一起进亏损榜。
+ */
+function scriptedEngine(timeoutAt: readonly number[] = []): AiEngine {
   return {
     search(request) {
       const index = request.moveIndex ?? 0
@@ -591,7 +656,11 @@ function scriptedEngine(heuristicAt: readonly number[] = []): AiEngine {
         1: { move: { x: 9, y: 9 }, score: 500 }, // 引擎要下 (9,9)，玩家下了别的
         2: { move: { x: 2, y: 2 }, score: 0 },
       }
-      const picked = replies[index] ?? { move: { x: 2, y: 2 }, score: 0 }
+      const alternative = isAlternative(request)
+      const picked = alternative
+        ? { move: { x: 13, y: 13 }, score: index === 1 ? -500 : 0 }
+        : (replies[index] ?? { move: { x: 2, y: 2 }, score: 0 })
+      const timedOut = !alternative && timeoutAt.includes(index)
       return Promise.resolve({
         requestId: request.requestId,
         gameVersion: request.gameVersion,
@@ -601,8 +670,8 @@ function scriptedEngine(heuristicAt: readonly number[] = []): AiEngine {
         depth: 1,
         nodes: 1,
         elapsedMs: 1,
-        confidence: heuristicAt.includes(index) ? ('heuristic' as const) : ('exact' as const),
-        reason: 'search' as const,
+        confidence: 'exact' as const,
+        reason: timedOut ? ('timeout' as const) : ('search' as const),
         candidates: [],
         urgency: 'normal' as const,
       })

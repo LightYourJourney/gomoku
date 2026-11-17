@@ -1,21 +1,21 @@
 import { create, type StoreApi, type UseBoundStore } from 'zustand'
-import { opponentOf } from '../core/board'
+import { opponentOf, samePoint } from '../core/board'
 import type { Point } from '../core/types'
 import type { AiEngine } from '../ai/engine'
 import type { Difficulty, SearchReason, SearchResponse } from '../ai/types'
 import { ENGINE_VERSION } from '../ai/version'
 import type { GameRecord } from '../persist/gameRecords'
 import { recordContentKey } from '../persist/recordIdentity'
-import { replay } from '../core/game'
-import { buildVerdict, cacheKey, type MoveVerdict } from '../analysis/analyze'
+import { applyMove, replay, type GameState } from '../core/game'
+import { buildVerdict, cacheKey, type AfterMove, type MoveVerdict } from '../analysis/analyze'
 import { nextRequestId } from './requestCounter'
 
 /**
  * 单手分析的时间预算。
  *
- * 一局几十手、每手一个请求，串行跑：预算给太长整体就拖沓，给太短结论
- * 全落成 heuristic。400ms 在入门~中级档一般能搜完；高档位结论的
- * 可靠度会如实降级为 heuristic，界面照常显示。
+ * 一局几十手、每手一到两个请求，串行跑：预算给太长整体就拖沓，给太短后续局面
+ * 搜不满——那样的手不算分差（见 `analysis/analyze.ts` 的 `horizonLoss`）。
+ * 400ms 在入门~中级档一般能搜满；高档位会有更多手落进「未算分差」。
  */
 export const ANALYSIS_BUDGET_MS = 400
 
@@ -39,23 +39,39 @@ export interface AnalysisStore {
   stop(): void
 }
 
-/** 一次「局面」请求的应答都到齐后才能拼出结论。 */
+/**
+ * 一个要发给引擎的请求。
+ *
+ * - `position`：局面 i（走了 i 手之后）。它的响应既是「第 i 手的引擎首选」，
+ *   也是「第 i−1 手走完之后」的评分，相邻两手共享。
+ * - `alternative`：第 i 手的**对照**——走完引擎首选之后的局面。只有着法与引擎
+ *   首选不同的手才需要它；分差比的就是它与局面 i+1（同视界，见 `horizonLoss`）。
+ */
+type Job =
+  | { readonly kind: 'position'; readonly index: number }
+  | { readonly kind: 'alternative'; readonly index: number; readonly state: GameState }
+
+/** 需要的应答都到齐后才能拼出结论。 */
 interface PendingVerdict {
   readonly moveIndex: number
   readonly played: Point
   readonly playedIsWinning: boolean
-  /** 局面 i 的响应（引擎首选 + 评分）。 */
+  /** 局面 i 的响应（引擎首选）。 */
   position?: {
     move: Point
-    score: number
     depth: number
     nodes: number
-    confidence: 'exact' | 'heuristic'
     /** 引擎给出首选着法时走的路径，原样带进结论供界面分类。 */
     reason: SearchReason
   }
-  /** 局面 i+1 的响应（对手视角评分；终局手不需要）。 */
-  reply?: { score: number; depth: number; nodes: number; confidence: 'exact' | 'heuristic' }
+  /** 走完实际着法之后：局面 i+1 的响应（对手视角；终局手与着法相同的手不需要）。 */
+  reply?: AfterMove
+  /**
+   * 走完引擎首选之后（对手视角）。**四态，别把两个「没有」混成一个**：
+   * `undefined` = 还没判定或请求还没回来（继续等）；`null` = 已判定不可比
+   * （引擎首选落不下去）；`'ended'` = 引擎首选当场成五；其余是对照请求的响应。
+   */
+  alternative?: AfterMove | 'ended' | null
 }
 
 export function createAnalysisStore(): UseBoundStore<StoreApi<AnalysisStore>> {
@@ -70,13 +86,13 @@ export function createAnalysisStore(): UseBoundStore<StoreApi<AnalysisStore>> {
 
     /** 待拼装的结论，按 moveIndex。 */
     const pending = new Map<number, PendingVerdict>()
-    /** 等待请求的局面序号（0-based 局面 = moveIndex；终局手没有局面 N）。 */
-    let queue: number[] = []
-    let inflightIndex: number | null = null
+    /** 等待发出的请求（局面号 0-based = moveIndex；终局手没有局面 N）。 */
+    let queue: Job[] = []
+    let inflight: Job | null = null
     /**
      * 本次分析的标识，每次 `start` 递增。
      *
-     * 光比 `inflightIndex` 不够：每个 run 的局面号都从 0 开始，上一局的
+     * 光比 `inflight` 不够：每个 run 的局面号都从 0 开始，上一局的
      * 迟到响应会被下一局当成自己的（局面号恰好相同），于是 B 的响应全被
      * 丢弃、分析永久卡死。响应必须连同 run 一起核对。
      */
@@ -85,18 +101,13 @@ export function createAnalysisStore(): UseBoundStore<StoreApi<AnalysisStore>> {
     function reset() {
       pending.clear()
       queue = []
-      inflightIndex = null
+      inflight = null
       runId++ // 让所有在飞响应作废
     }
 
-    /** 一个局面请求完成后：填入挂起结论、可能直接拼出 verdict、推进队列。 */
+    /** 一个局面请求完成后：填入挂起结论、判定要不要对照、可能直接拼出 verdict。 */
     function onPositionResponse(index: number, response: SearchResponse) {
-      const rec = record
-      if (rec === null || engine === null) return
-
-      // 无棋可走（满盘和棋的末局）：这一手没有「引擎首选」可比，
-      // 拼不出结论，但**必须继续收尾**——直接 return 会让队列停在这里，
-      // 面板永远停在「分析中 N-1 / N」。
+      // 无棋可走（满盘和棋的末局）：这一手没有「引擎首选」可比，拼不出结论。
       if (response.move === null) {
         pending.delete(index)
         // 上一手无法评估（没有「走完之后」的引擎判断）——直接跳过它，
@@ -104,8 +115,6 @@ export function createAnalysisStore(): UseBoundStore<StoreApi<AnalysisStore>> {
         if (pending.delete(index - 1)) {
           set({ total: Math.max(0, get().total - 1) })
         }
-        finishIfDone()
-        pump()
         return
       }
 
@@ -115,80 +124,84 @@ export function createAnalysisStore(): UseBoundStore<StoreApi<AnalysisStore>> {
       if (entry !== undefined) {
         entry.position = {
           move: response.move,
-          score: response.score,
           depth: response.depth,
           nodes: response.nodes,
-          confidence: response.confidence,
           reason: response.reason,
+        }
+        if (!entry.playedIsWinning && !samePoint(entry.played, response.move)) {
+          planAlternative(index, entry, response.move)
         }
       }
 
       tryEmit(index)
       tryEmit(index - 1) // 局面 i 的响应同时是手 i-1 的 reply 半边——补上后重试拼装
-      pump()
+    }
+
+    /**
+     * 着法与引擎首选不同：需要「走完引擎首选之后」的评分来比。
+     *
+     * 三种结局只有最后一种发请求：引擎首选落不下去（真实引擎不可达——那就没法比，
+     * 不为它另开错误路径）；引擎首选当场成五（棋下完了，没有可搜的局面）；
+     * 其余把对照**插到队首**，让结论按手序依次出来，进度不会最后才一起跳。
+     */
+    function planAlternative(index: number, entry: PendingVerdict, engineMove: Point) {
+      const rec = record
+      if (rec === null) return
+
+      const outcome = applyMove(replay(rec.moves.slice(0, index), rec.firstPlayer), engineMove)
+      if (!outcome.ok) {
+        entry.alternative = null
+      } else if (outcome.state.status === 'won') {
+        entry.alternative = 'ended'
+      } else {
+        queue.unshift({ kind: 'alternative', index, state: outcome.state })
+      }
+    }
+
+    /** 对照请求完成：记下评分。`move === null`（满盘）时 reason 是 `no_move`，自然不可比。 */
+    function onAlternativeResponse(index: number, response: SearchResponse) {
+      const entry = pending.get(index)
+      if (entry === undefined) return
+
+      entry.alternative = { score: response.score, reason: response.reason }
+      tryEmit(index)
     }
 
     /**
      * 局面 i 也是「第 i-1 手的后续局面」：补上 reply 半边。
      *
      * `move === null`（满盘，无棋可走）时**不补**：这个局面没有引擎判断，
-     * 强行拿 `score: 0` 当「走完这手之后的评分」会算出一个凭空的巨额亏损。
+     * 那一手由 `onPositionResponse` 整个跳过。
      */
     function fillReply(index: number, response: SearchResponse) {
       if (response.move === null) return
 
       const prev = pending.get(index - 1)
       if (prev !== undefined && !prev.playedIsWinning) {
-        prev.reply = {
-          score: response.score,
-          depth: response.depth,
-          nodes: response.nodes,
-          confidence: response.confidence,
-        }
+        prev.reply = { score: response.score, reason: response.reason }
       }
     }
 
-    /** 两半都齐就 buildVerdict 并写入 verdicts。 */
+    /** 需要的几半都齐了就 buildVerdict 并写入 verdicts。 */
     function tryEmit(index: number) {
-      const rec = record
       const entry = pending.get(index)
-      if (rec === null || entry === undefined) return
+      if (entry === undefined) return
 
       const pos = entry.position
       if (pos === undefined) return
 
-      if (entry.playedIsWinning) {
-        emit(index, entry, pos)
-        return
-      }
-
-      const reply = entry.reply
-      if (reply === undefined) return
-
-      // negamax：对手视角评分取负 = 我方走完这手后的评分
-      emit(index, entry, pos)
-    }
-
-    function emit(index: number, entry: PendingVerdict, pos: NonNullable<PendingVerdict['position']>) {
-      /*
-       * 一手的 loss 横跨**两次搜索**：局面 i 的评分（`pos.score`）和「走完这手
-       * 之后」局面 i+1 的评分（`reply.score`）。任一半没搜完，这一手的结论就
-       * 只是启发式的——只报 `pos.confidence` 会把「exact + heuristic」标成
-       * 「搜索完成」，界面等于在说谎，而 §八 要求的正是「不得把有限预算的
-       * 分析称为绝对正确」。所以取两者中较差的那个。
-       * `playedIsWinning` 时没有 reply 半边（只需要引擎那一半），照旧取 pos。
-       */
-      const confidence =
-        entry.reply?.confidence === 'heuristic' ? 'heuristic' : pos.confidence
+      // 终局手与着法相同的手不需要任何后续评分——局面响应一到就出结论。
+      // 其余的要等两种走法之后的评分都就位（对照的「不可比」也算就位）。
+      const needsComparison = !entry.playedIsWinning && !samePoint(entry.played, pos.move)
+      if (needsComparison && (entry.reply === undefined || entry.alternative === undefined)) return
 
       const verdict = buildVerdict({
         moveIndex: index,
         played: entry.played,
         engineMove: pos.move,
-        engineScore: pos.score,
-        playedScore: entry.playedIsWinning ? 0 : -(entry.reply?.score ?? 0), // 与上面的 playedScore 同一口径
         isWinningMove: entry.playedIsWinning,
-        confidence,
+        afterPlayed: entry.reply ?? null,
+        afterEngine: entry.alternative ?? null,
         reason: pos.reason,
         engineDepth: pos.depth,
         engineNodes: pos.nodes,
@@ -200,15 +213,13 @@ export function createAnalysisStore(): UseBoundStore<StoreApi<AnalysisStore>> {
       pending.delete(index)
 
       set({ verdicts })
-
-      finishIfDone()
     }
 
     /** 队列排空且没有再挂起的结论 → 写缓存、收尾。 */
     function finishIfDone() {
       const rec = record
       if (rec === null || !get().running) return
-      if (queue.length > 0 || inflightIndex !== null) return
+      if (queue.length > 0 || inflight !== null) return
       if (pending.size > 0) return
 
       cache.set(
@@ -221,20 +232,26 @@ export function createAnalysisStore(): UseBoundStore<StoreApi<AnalysisStore>> {
     function pump() {
       const rec = record
       if (rec === null || engine === null) return
-      if (inflightIndex !== null) return
-      if (queue.length === 0) return
+      if (inflight !== null) return
 
-      const index = queue.shift()!
-      inflightIndex = index
+      const job = queue.shift()
+      if (job === undefined) return
+      inflight = job
       const run = runId
+      const { index } = job
 
       // 分析不碰对局，但过期闸门照用：gameVersion 恒 0，配对走 moveIndex。
       void engine
         .search({
           requestId: nextRequestId(),
           gameVersion: 0,
-          board: boardAt(index),
-          player: index % 2 === 0 ? rec.firstPlayer : opponentOf(rec.firstPlayer),
+          board: job.kind === 'position' ? boardAt(index) : job.state.board,
+          player:
+            job.kind === 'position'
+              ? index % 2 === 0
+                ? rec.firstPlayer
+                : opponentOf(rec.firstPlayer)
+              : job.state.current,
           difficulty,
           budgetMs,
           purpose: 'analyze',
@@ -245,32 +262,41 @@ export function createAnalysisStore(): UseBoundStore<StoreApi<AnalysisStore>> {
             // 三道闸门：属于当前这一次分析（run）、是当前在飞的那一个、
             // 响应自带的手序号与局面版本对得上。
             //
-            // **前两道**不过就整体丢弃，而且**不许动 `inflightIndex`**——那是当前
+            // **前两道**不过就整体丢弃，而且**不许动 `inflight`**——那是当前
             // run 的状态，上一局的迟到响应没有资格改写它。第三道**不在此列**，
             // 理由见下：那一道判的不是「这一轮是不是我的」。
             if (run !== runId) return
-            if (get().target === null || inflightIndex !== index) return
+            if (get().target === null || inflight !== job) return
 
             // 第三道闸门：响应自带的手序号/局面版本对不上。真实引擎下不可达
-            // （`search.ts` 原样回显 request 的 moveIndex），但**不能像前两道
+            // （`chooseMove` 原样回显 request 的 moveIndex），但**不能像前两道
             // 那样直接 return**：前两道是「这一轮已经不是我的了」，什么都不该动；
             // 这一道是「这一轮是我的，但这条响应是坏的」——直接 return 会让
-            // `inflightIndex` 永远占着、队列再也不 pump，面板停在「分析中 N-1 / N」。
+            // `inflight` 永远占着、队列再也不 pump，面板停在「分析中 N-1 / N」。
             // 以错误收尾是唯一如实的选择：既不能拿坏数据凑结论，也不能假装还在跑。
             if (response.moveIndex !== index || response.gameVersion !== 0) {
-              inflightIndex = null
+              inflight = null
               set({ running: false, error: '分析响应与请求对不上，这一轮已中止' })
               reset()
               return
             }
 
-            inflightIndex = null
-            fillReply(index, response)
-            onPositionResponse(index, response)
+            inflight = null
+            if (job.kind === 'position') {
+              fillReply(index, response)
+              onPositionResponse(index, response)
+            } else {
+              onAlternativeResponse(index, response)
+            }
+            // **每条响应处理完都要判一次收尾**，不能只在「出了结论」时判：
+            // 着法相同的手在自己的局面响应到达时就出了结论，最后一个局面回来时
+            // 可能已经没有任何一手在等它——只靠出结论来触发，面板会永远停在「分析中」。
+            finishIfDone()
+            pump()
           },
           (error: unknown) => {
             if (run !== runId) return
-            inflightIndex = null
+            inflight = null
             if (get().target === null) return
             set({
               running: false,
@@ -344,19 +370,21 @@ export function createAnalysisStore(): UseBoundStore<StoreApi<AnalysisStore>> {
         // 每个局面入队一次。局面总数 = 手数 + 1（局面 0..N，N = 手数）：
         // 非终局的最后一手也需要「局面 N」来算后续评分——
         // 终局手（成五）是唯一没有后续局面的特例。
-        queue = []
+        // 对照请求不在这里排：要等局面的响应回来才知道哪几手需要（`planAlternative`）。
+        const positions: number[] = []
         for (let i = 0; i < rec.moves.length; i++) {
           const entry = pending.get(i)
           if (entry === undefined) continue
           if (!entry.playedIsWinning) {
             // 手 i 需要：局面 i（引擎首选）+ 局面 i+1（后续评分）
-            if (!queue.includes(i)) queue.push(i)
-            if (!queue.includes(i + 1)) queue.push(i + 1)
-          } else if (!queue.includes(i)) {
+            if (!positions.includes(i)) positions.push(i)
+            if (!positions.includes(i + 1)) positions.push(i + 1)
+          } else if (!positions.includes(i)) {
             // 终局手只需要局面 i
-            queue.push(i)
+            positions.push(i)
           }
         }
+        queue = positions.map((index) => ({ kind: 'position', index }))
 
         pump()
       },
