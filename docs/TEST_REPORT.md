@@ -1,6 +1,6 @@
 # 测试报告
 
-**日期**：2026-11-17（阶段 A：复盘分差同视界 + 可靠度四类，见「〇之二四」；A+ 必防续搜，见「〇之二五」；单测 **1,550**、E2E **193**）
+**日期**：2026-11-18（阶段 A：复盘分差同视界 + 可靠度四类，见「〇之二四」；A+ 必防续搜，见「〇之二五」；阶段 E 前两项，见「〇之二六」；单测 **1,559**、E2E **193**）
 **2026-11-15**：全仓两轴审查整改，见「〇之二三」；单测 **1,475**、E2E **193**。
 **0.6.0 已发布（2026-10-30）**：备份 v2（含局面）、DB v4 内容唯一索引、session v3 分支来源、
 进度失败顶部提示、严格读取、positions v1 真实浏览器用例、Firefox/WebKit 全量核心 E2E。
@@ -2585,4 +2585,88 @@ session v1、progress v1、records v1（含旧 winner）、positions v1、game/b
 | 5 | `ROADMAP.md` 改了后续阶段顺序、本文记了基线修复——不属于 A+ 的规格 | 不改：前者是评估报告 §14.1 裁定 11 的落实，后者是阶段 A 推送的善后，各有出处 |
 
 审查后重跑：`lint` / `typecheck` / `test`（1,550）/ `build` / `gates` 全绿（入口 gzip 131,293 B，比审查前 +43 B），`e2e/review.spec.ts` 全绿，`bench:review-loss` 两组输出与上面的表逐字一致。
+
+## 〇之二六、阶段 E 前两项：依赖方向门禁 + 领域类型下沉；`core` 严格重放原语（2026-11-18）
+
+出处：评估报告 §5.2、§5.3、§10「阶段 E」第 1、2 项，§14.1 裁定 11 排定的第 2 位。计划、三轮自审与独立终审
+（七条全部采纳）见 `docs/research/PHASE_E_GUARDS_PLAN.md`。**零行为变更**：既有断言一个字没改，只改了 import 路径。
+
+### 依赖方向门禁（`yarn check:layers`，进了 `yarn gates`）
+
+`quality/layers.mjs` 用 madge（`check:cycles` 同一个解析器，含仅类型的 import）取生产代码的依赖图，查两条：
+跨层 import 必须在允许表内（表在 `ARCHITECTURE.md`「依赖方向」）；`core` / `ai` / `analysis` / `learn`
+直接或间接都不得引入 React / Zustand。未归类的顶层目录、madge 解析不了的 import 都失败关闭。
+
+**先红后绿**：加门禁时在原有代码上跑，红单正好是评估报告 §5.2 列的那些——`components → store` 5 个文件、
+`components → features` 2 个文件、`lib → learn` 1 个文件，不多不少。下沉之后变绿：110 个生产文件、331 条跨层 import。
+
+| 下沉了什么 | 从 | 到 |
+| --- | --- | --- |
+| `GameMode` | `store/gameStore` | `core/types`（`persist` 里手写的五处、`BoardAnnouncer` 两处 `'pve' \| 'pvp'` 一并换成它） |
+| `moverAt` | `store/gameStore` | `core/game`（`analysisStore` 手写的同一条规则一并换成它） |
+| `AiInfo` | `store/gameStore` | `ai/types` |
+| `HINT_BUDGET_MS` | `store/gameStore` | `ai/difficulty`（与五档的搜索预算同住） |
+| `RecordSaveState` | `store/gameStore` | `lib/record-save`（先例：`lib/theme` 的 `ThemePreference`） |
+| `GameStatusDescriptor` / `StatusTone` | `features/battle/status` | `components/panels/StatusPill`（组件的 props 契约跟组件住） |
+| `shape-labels.ts` | `lib/` | `learn/`（消掉 `lib ↔ learn`；`HintPanel` 从 `learn` 取，向下依赖） |
+
+反向验证（每项各自恢复；**先提交了快照再做**——第一次做时用 `git checkout -- src` 恢复，把还没提交的下沉改动一起抹掉了，
+重做了一遍。教训：反向验证之前先提交）：
+
+| 故意引入 | 结果 |
+| --- | --- |
+| `HintPanel` import `store/gameStore` | 红，点名这条边 |
+| `core/types.ts` 加 `import type {} from 'react'` | 红，列出每个纯逻辑文件经 `core/types.ts` 到 react 的路径 |
+| `learn/hints.ts` import `lib/useMediaQuery`（只取类型） | 红：`learn/hints.ts → lib/useMediaQuery.ts → react`（传递） |
+| 新建 `src/scratch/x.ts` 并被 `main.tsx` 引用 | 红：未归类 |
+| 测试文件 import `store/gameStore` | 绿（测试不查，有意） |
+
+### 严格重放原语
+
+`core/game.ts` 新增 `replayStrict`（整条合法才 `ok`，否则给出第几手、什么原因）与 `withResignation`（棋谱的认输方叠加到局面上）。
+`replayStrict` 用 `replay` 实现，不复制重放循环。替换了 **7 处**手写的 `state.moves.length !== moves.length`
+（`position.ts` ×2、`branch.ts` ×2、`gameRecords.ts`、`transfer/validate.ts` ×2——其中 `validateSequence`
+本来就是这个原语的手写原版，终审指出）与 **2 处**认输叠加（`gameStore.restore`、`replayStore.derivePosition`）。
+`gameRecords.deriveWinner` 有意不动（在「终局 + 认输方」这个不可达组合上答案与 `resign` 不同，换掉就不是严格零变更）。
+
+反向验证：`replayStrict` 临时恒返回成功 → 13 条红，覆盖 7 处中的 6 处（`branch` 2、`position` 2、`gameRecords` 1、
+`validateSequence` 经 `validate` / `format` / `DataManagementPanel` 共 5 条，外加新用例 3 条）。**`transfer/validate.ts`
+里「局面来源的手顺」那一处没有任何用例变红**——它的严格检查原本就没被测到。补了一条：第 3 手落回已有子的位置，
+宽松重放停在 2 手、盘面恰好也与 `cells` 一致，只有严格重放能拒绝；再撤原语，它变红。
+`withResignation` 临时忽略认输方 → `gameStore` 3 条、`replayStore` 2 条、新用例 1 条红，两处替换点都有用例钉着。
+
+### 门禁读数（本机）
+
+| 命令 | 结果 |
+| --- | --- |
+| `yarn lint` / `typecheck` / `build` | 通过 |
+| `yarn test` | **1,559 / 1,559**（+9：`replayStrict` 5、`withResignation` 3、局面来源手顺 1） |
+| `yarn e2e` | **193 / 193** |
+| `yarn e2e:prod` | **7 / 7** |
+| `yarn gates` | 零环、knip 干净、0 克隆、条数棘轮、入口 gzip **131,502 B** ≤ 135,000 B（比 A+ 审查后 +209 B，见下）、依赖方向通过 |
+
+入口包多了 209 B：计划估「纯搬家，不涨超过几十字节」，实际超了。没有新逻辑进入口包（`replayStrict` / `withResignation`
+共十几行，加上模块间的搬动改变了打包顺序与压缩上下文）；余量 3,498 B，阶段 C 拆包时会整体重排。
+
+### 两轴审查（`25f09db...HEAD`）
+
+两个只读代理并行（标准轴：`AGENTS.md`、`CLAUDE.md` + 代码异味基线；规格轴：`PHASE_E_GUARDS_PLAN.md` 含终审七条），
+每条对照代码核实。两轴都没有发现会出错的实现；规格轴在 /tmp 副本里独立复做了门禁的直接 / 传递 / 未归类三项反向验证。
+
+| 轴 | 发现 | 处置 |
+| --- | --- | --- |
+| 标准 | `AGENTS.md` 的「review 必看」门禁文件清单没有 `quality/layers.mjs`——它的允许表一放宽，门禁就跟着放松 | **改**：加进清单 |
+| 标准 | `selfplay.test.ts` 那份本地 `moverAt` 当初是因为「ai 不得依赖 store」才写的，理由已不存在 | **改**：用 `core/game` 的 |
+| 标准 | `game.test.ts` 新用例把同一局九手棋抄了两遍；文件末多一个空行 | **改**：提到模块顶层共用 |
+| 标准 | `gameStore.restore` 里 `game:` 后换行是三元式的排版残留 | **改** |
+| 标准 | `AiInfo` 搬到 `ai/types` 后注释里的 `requestAiMove` / `gameStore.test.ts` 没写所在路径；`HINT_BUDGET_MS` 注释的「同样」失去指代 | **改** |
+| 标准 | 门禁在 madge 返回空图时会打出「✓ 0 个文件」并通过；头注释写死了 `AGENTS.md` 的行号 | **改**：空图失败关闭；行号改成节名 |
+| 规格 | `ARCHITECTURE.md` 的 `PageShell` 段仍引用旧箭头「`components → features → store`」，按新的「箭头读作依赖」意思正好反了 | **改** |
+| 规格 | 门禁头注释仍写「有 skipped 即红」，与代码（只放过 `?raw` 与 `tailwindcss`）不符 | **改** |
+| 规格 | 被排除的 `src/test/` 连同指向它的边都不进图；纯逻辑层若出现 `.tsx`，自动 JSX 运行时引入的 React 看不见（存疑，规格外） | **改**：纯逻辑层出现 `.tsx` 即红（实测会红）；前者写进头注释，由 knip 与审查兜着 |
+| 规格 | 计划第 2 步提到的质量门禁设计文档（2026-10-13）里有一张闸门表，没补 | 不改：那是历史快照，`check:bundle` 当初也没补进去 |
+| 规格 | 验收标准 4（入口 gzip 只涨几十字节）没达到，实际 +209 B | 已在上文如实记录，不改 |
+| 规格 | 报告抬头日期仍是 11-17 | **改** |
+
+审查后重跑：`lint` / `typecheck` / `test`（1,559）/ `build` / `gates` 全绿，入口 gzip 131,502 B 不变。
 

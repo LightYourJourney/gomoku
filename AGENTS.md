@@ -12,7 +12,8 @@ Gomoku Lab 的开发约定。通用工程原则（想清楚再写、保持简单
 
 - **不使用 `enum`**。`tsconfig.app.json` 开了 `erasableSyntaxOnly`，一律用 `as const` 对象加联合类型。
 - **`core` / `ai` / `learn` 的算法部分不得引入 React、DOM、Zustand、localStorage、IndexedDB、Worker**。引擎逻辑本身（`patterns` / `evaluate` / `candidates` / `difficulty` / `search`）与全部 `core` 模块必须是能脱离浏览器直接单测的纯逻辑。
-  - `learn/` 是教学内容层：`types.ts` / `verify.ts` / `hints.ts` / `lessons.ts` / `puzzles.ts` 全是纯逻辑，依赖方向 `features → learn → ai → core` 单向，**不得被 `ai`/`core` 反向依赖**。`store` 不依赖 `learn`、`features`、`components`；它从 `core` / `persist` / `ai` / `analysis` / `lib` 取纯逻辑（`settingsStore` 用 `lib/theme`、`analysisStore` 用 `analysis`，都是不碰 DOM 的纯模块）。棋盘的字符画解析器住在 `lib/board-lines.ts`（内容与测试共用）。
+  - `learn/` 是教学内容层：`types.ts` / `verify.ts` / `hints.ts` / `lessons.ts` / `puzzles.ts` / `shape-labels.ts` 全是纯逻辑，依赖方向 `features → learn → ai → core` 单向，**不得被 `ai`/`core` 反向依赖**。`store` 不依赖 `learn`、`features`、`components`；它从 `core` / `persist` / `ai` / `analysis` / `lib` 取纯逻辑（`settingsStore` 用 `lib/theme`、`analysisStore` 用 `analysis`，都是不碰 DOM 的纯模块）。棋盘的字符画解析器住在 `lib/board-lines.ts`（内容与测试共用）。
+  - **这些方向由 `yarn check:layers` 机器守**（在 `yarn gates` 里）：跨层 import 必须在允许表内，`core` / `ai` / `analysis` / `learn` 直接或间接都不得引入 React / Zustand。允许表在 `quality/layers.mjs`；改它就是改分层，先改 `docs/ARCHITECTURE.md`。它只看 import，DOM 全局（`window`、`localStorage`……）仍靠审查。
   - **例外**：`ai/worker.ts` 与 `ai/browserEngine.ts`。前者是 Worker 的入口，后者负责创建 Worker——只有这两个文件允许触碰 Worker，且只做消息收发，不含任何搜索逻辑。`ai/engine.ts` 虽然也住在 `ai/` 下，但它连 Worker 都不碰（发送函数是注入进来的），仍是可单测的纯状态机。
 - **时钟一律可注入。** `Date.now()` 的**调用**只允许出现在 `ai/search.ts` 的时间预算里，
   且超时行为必须仍然可以通过 `budgetMs` 参数在测试里强制触发——不要把它改成不可覆盖的常量。
@@ -73,7 +74,7 @@ yarn lint && yarn typecheck && yarn test && yarn build && yarn e2e
 
 **绕过与调松都是违规，不是选项**：`git push --no-verify` 是明确接受的逃生门（代价自负），
 但**闸门自己的那几份文件**是 **review 必看项**：`knip.jsonc` / `.jscpd.json` /
-`bench/baseline.json` / `quality/*.baseline.json` / `quality/bundle-budget.mjs`（阈值写在脚本里）/ `.githooks/`，
+`bench/baseline.json` / `quality/*.baseline.json` / `quality/bundle-budget.mjs`（阈值写在脚本里）/ `quality/layers.mjs`（允许表写在脚本里）/ `.githooks/`，
 以及 **`.github/workflows/quality.yml`**——最后这个是决定「闸门跑不跑」的总开关
 （一个 `continue-on-error` 就能让它变成只打印不判红）。
 工具坏了或环境变了，正确动作是**更新钉住的版本并说明**，不是放宽配置。

@@ -14,7 +14,27 @@ analysis   learn        ← 分析结论与教学内容（两条互不依赖的�
      browser APIs       ← Worker / localStorage / IndexedDB / WebAudio
 ```
 
-**依赖方向严格单向**：`components → features → store`；`store` 向下依赖 `analysis` / `ai` / `core` / `persist` / `lib`；`sharing → core` + `persist/transfer`（分享内容复用文件校验器，不反向依赖 features/store）；`analysis → ai → core`，`learn → ai → core`，两条支线互不依赖。`core` 不依赖任何其他层，也不碰 React、DOM、时间与随机数。这条约束让规则与引擎可以脱离浏览器直接单测。
+**依赖方向严格单向**（箭头读作「依赖」）：`features` 依赖 `components` 与 `store`，`components` 不依赖 `features` / `store`；`store` 向下依赖 `analysis` / `ai` / `core` / `persist` / `lib`；`sharing → core` + `persist/transfer`（分享内容复用文件校验器，不反向依赖 features/store）；`analysis → ai → core`，`learn → ai → core`，两条支线互不依赖。`core` 不依赖任何其他层，也不碰 React、DOM、时间与随机数。这条约束让规则与引擎可以脱离浏览器直接单测。
+
+由 `yarn check:layers`（`quality/layers.mjs`，在 `yarn gates` 里）机器守。允许表（键可以依赖值里的层；同层随意；`App.tsx` / `main.tsx` 是组装点，可以依赖一切）：
+
+| 层 | 可以依赖 |
+| --- | --- |
+| `core` | — |
+| `ai` | `core` |
+| `analysis` | `core`、`ai` |
+| `learn` | `core`、`ai`、`lib` |
+| `lib` | `core`、`ai` |
+| `persist` | `core`、`ai`、`lib` |
+| `sharing` | `core`、`persist` |
+| `store` | `core`、`ai`、`analysis`、`persist`、`lib` |
+| `components` | `core`、`ai`、`learn`、`lib` |
+| `features` | 以上全部 |
+
+另一条：`core` / `ai` / `analysis` / `learn` 的生产文件**直接或间接**都不得引入 React / Zustand（`learn → lib` 合法，但 `lib` 里有 React hook）。
+下层要用的领域概念住在下层：`GameMode` 在 `core/types`、`moverAt` 在 `core/game`、`AiInfo` 在 `ai/types`、
+`HINT_BUDGET_MS` 在 `ai/difficulty`、`RecordSaveState` 在 `lib/record-save`；`StatusPill` 的 props 契约
+（`GameStatusDescriptor`）跟组件住，由 `features/battle/status.ts` 推导。
 
 ## 各层职责
 
@@ -79,7 +99,7 @@ analysis   learn        ← 分析结论与教学内容（两条互不依赖的�
 
 **`features/`** —— 容器。`shell/` 是六个页面位置共用的外壳：`AppHeader`（品牌 + 导航 + 主题）与 `PageShell`（外壳、滚动策略、两种正文模式）；`battle/` 是对战页，并承载 `status.ts` 这类纯推导逻辑；`learn/` 是课程列表与课程运行器；`puzzles/` 是残局挑战；`review/` 是棋谱库、回放与引擎分析。
 
-**`PageShell` 为什么住在 `features/shell/` 而不是 `components/ui/`**：它要渲染 `AppHeader`，而 `AppHeader` 读 store。放进 `components/` 就成了 `components → features`，与「依赖方向单向 `components → features → store`」相反。同层之间互相引用没有这个问题。
+**`PageShell` 为什么住在 `features/shell/` 而不是 `components/ui/`**：它要渲染 `AppHeader`，而 `AppHeader` 读 store。放进 `components/` 就成了 `components` 依赖 `features`，违反上面的依赖方向（`yarn check:layers` 会红）。同层之间互相引用没有这个问题。
 
 **`PageShell` 的两个模式**（`reading` / `flush`）与**滚动策略**：
 
