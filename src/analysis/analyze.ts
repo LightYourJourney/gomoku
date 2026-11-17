@@ -56,6 +56,47 @@ export interface VerdictInput {
   readonly engineNodes: number
 }
 
+/** 「走完某一手之后」的局面，由对手一方搜索得到的结论（分数是对手视角）。 */
+export interface AfterMove {
+  readonly score: number
+  readonly reason: SearchReason
+}
+
+/**
+ * 对手视角的可比分值；`null` = 这个分数不能拿去和别的相减。
+ *
+ * 只有两类结论在同一把尺子上（`AI_ENGINE.md` 的量纲表）：`search`（搜满档位深度的
+ * negamax 值）与 `win`（成五 / 算杀，与前者同量纲）。`block` 的分数是贪心量级、
+ * 符号不可信；`timeout` 的两边可能停在不同层；`opening` / `no_move` 恒为 0。
+ */
+function comparableScore(after: AfterMove | 'ended' | null): number | null {
+  if (after === null) return null
+  // 引擎首选当场成五：对手已经输了
+  if (after === 'ended') return -WIN_SCORE
+  return after.reason === 'search' || after.reason === 'win' ? after.score : null
+}
+
+/**
+ * 同视界分差：实际着法之后的对手评分 − 引擎首选之后的对手评分，负数钳到 0。
+ * 任一边不可比或缺失 → `null`（没有算，不是「没有亏损」）。
+ *
+ * **为什么不直接用「局面 i 的评分 − (−局面 i+1 的评分)」**：那两个数不在同一个搜索视界上。
+ * 局面 i 搜 d 层，最后一手是对手下的；局面 i+1 再搜 d 层，等于从局面 i 看了 d+1 层，
+ * 最后一手换成自己下。评估函数不含行棋方，「谁下最后一手谁占便宜」就原样进了差值，
+ * 而且方向固定——实测引擎走自己的首选时 135 手里 134 手为负、|偏差| 中位数 14,200
+ * （`yarn bench:review-loss` 第一项），真实亏损因此被钳成 0。
+ * 这里比的两个局面都是「走完一手之后、轮到对手、搜同样的层数」，偏差相消。
+ */
+export function horizonLoss(
+  afterPlayed: AfterMove | null,
+  afterEngine: AfterMove | 'ended' | null,
+): number | null {
+  const played = comparableScore(afterPlayed)
+  const engine = comparableScore(afterEngine)
+  if (played === null || engine === null) return null
+  return Math.max(0, played - engine)
+}
+
 export function buildVerdict(input: VerdictInput): MoveVerdict {
   // 着法与引擎首选相同 → 没有亏损，**不管两个评分差多少**。
   // 引擎的必胜/必防/开局走的是捷径（±WIN_SCORE 量纲），而「走完之后」的

@@ -2,7 +2,17 @@ import { describe, expect, it } from 'vitest'
 import type { Point } from '../core/types'
 import { WIN_SCORE } from '../ai/types'
 import { ENGINE_VERSION } from '../ai/version'
-import { buildSummary, buildVerdict, cacheKey, pathLabel, pathSummary, verdictLabel, type MoveVerdict } from './analyze'
+import {
+  buildSummary,
+  buildVerdict,
+  cacheKey,
+  horizonLoss,
+  pathLabel,
+  pathSummary,
+  verdictLabel,
+  type AfterMove,
+  type MoveVerdict,
+} from './analyze'
 
 const AT: Point = { x: 7, y: 7 }
 
@@ -208,5 +218,43 @@ describe('搜索路径的语义（Phase 09A）', () => {
     // `aborted` 的文案本身已含「启发式」，不再重复。
     expect(pathSummary('aborted', 'heuristic')).toBe('预算内未搜完（启发式）')
     expect(pathSummary('none', 'heuristic')).toBe('无可用着法')
+  })
+})
+
+describe('horizonLoss —— 同视界分差', () => {
+  const searched = (score: number): AfterMove => ({ score, reason: 'search' })
+
+  it('两边都搜满：对手在实际着法之后更好受多少，就亏多少', () => {
+    expect(horizonLoss(searched(800), searched(300))).toBe(500)
+  })
+
+  it('实际着法反而更好时钳到 0，不出现负亏损', () => {
+    expect(horizonLoss(searched(300), searched(800))).toBe(0)
+  })
+
+  it('同一个局面比自己恒为 0——这条口径不靠「着法相同」特判也自洽', () => {
+    // −14,200 是旧口径在引擎自对弈上的偏差中位数（`yarn bench:review-loss` 第一项）
+    expect(horizonLoss(searched(-14_200), searched(-14_200))).toBe(0)
+  })
+
+  it('引擎首选当场成五：对手已经输了，按 −WIN_SCORE 计', () => {
+    expect(horizonLoss(searched(100), 'ended')).toBe(WIN_SCORE + 100)
+  })
+
+  it('实际着法之后对手有必胜（win）：与常规搜索同一量纲，可以相减', () => {
+    expect(horizonLoss({ score: WIN_SCORE, reason: 'win' }, searched(0))).toBe(WIN_SCORE)
+  })
+
+  it.each(['block', 'timeout', 'opening', 'no_move'] as const)(
+    '任一边是 %s：分数不在同一把尺子上，不算',
+    (reason) => {
+      expect(horizonLoss({ score: 5, reason }, searched(0))).toBeNull()
+      expect(horizonLoss(searched(0), { score: 5, reason })).toBeNull()
+    },
+  )
+
+  it('任一边缺失：不算', () => {
+    expect(horizonLoss(null, searched(0))).toBeNull()
+    expect(horizonLoss(searched(0), null)).toBeNull()
   })
 })
