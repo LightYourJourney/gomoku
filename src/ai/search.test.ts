@@ -4,6 +4,7 @@ import { BLACK, WHITE, type Board, type Player } from '../core/types'
 import { boardFromLines, nearlyFullBoard } from '../test/board-fixtures'
 import { startAiCounters, stopAiCounters } from './metrics'
 import { isWinningPoint } from './patterns'
+import { DIFFICULTY_PARAMS } from './difficulty'
 import { chooseMove, prescreenCandidates, searchBoard } from './search'
 import type { Difficulty, SearchRequest, SearchResponse } from './types'
 
@@ -36,6 +37,7 @@ describe('chooseMove —— 必胜与必防', () => {
     const result = ask(board, BLACK)
 
     expect(result.reason).toBe('win')
+    expect(result.confidence).toBe('shortcut')
     expect([{ x: 2, y: 2 }, { x: 7, y: 2 }]).toContainEqual(result.move)
   })
 
@@ -49,6 +51,8 @@ describe('chooseMove —— 必胜与必防', () => {
     const result = ask(board, BLACK)
 
     expect(result.reason).toBe('block')
+    // 捷径不冒充搜索：没有展开常规搜索的结论不说成「搜满」
+    expect(result.confidence).toBe('shortcut')
     expect(result.move).toEqual({ x: 7, y: 2 })
   })
 
@@ -137,6 +141,7 @@ describe('chooseMove —— 开局与边界', () => {
 
     expect(result.move).toEqual({ x: 7, y: 7 })
     expect(result.reason).toBe('opening')
+    expect(result.confidence).toBe('shortcut')
   })
 
   it('满盘时没有可走的着法', () => {
@@ -185,11 +190,12 @@ describe('chooseMove —— 时间预算', () => {
 
     expect(result.move).not.toBeNull()
     expect(result.reason).toBe('timeout')
-    expect(result.confidence).toBe('heuristic')
+    // 一层都没搜完才是兜底；搜完了若干层再超时是另一回事
+    expect(result.confidence).toBe(result.depth === 0 ? 'fallback' : 'partial')
     expect(board[result.move!.y * 15 + result.move!.x]).toBe(0)
   })
 
-  it('预算充足时给出精确结论', () => {
+  it('预算充足时搜满这一档的深度', () => {
     const board = boardFromLines([
       '...............',
       '...............',
@@ -204,8 +210,8 @@ describe('chooseMove —— 时间预算', () => {
     const result = ask(board, WHITE, 'easy', { budgetMs: 5000 })
 
     expect(result.reason).toBe('search')
-    expect(result.confidence).toBe('exact')
-    expect(result.depth).toBeGreaterThan(0)
+    expect(result.confidence).toBe('complete')
+    expect(result.depth).toBe(DIFFICULTY_PARAMS.easy.depth)
   })
 
   it('记录搜索耗时与节点数', () => {
@@ -509,11 +515,11 @@ describe('searchBoard —— 提示用的候选与紧急度', () => {
     }
   })
 
-  it('「精确」说的是第一个候选：它必须就是搜索给出的着法', () => {
+  it('可靠度说的是第一个候选：它必须就是搜索给出的着法', () => {
     /*
-     * `confidence` 区分「搜索得出的精确结论」与「预算不足时的启发式建议」
-     * （AI_ENGINE.md）。候选曾经完全来自静态棋型排序、与搜索结果无关，界面却在
-     * 它们旁边写「结论：精确」——第一个候选可能根本不是搜索选的那一手。
+     * `confidence` 说的是「这次搜索的结论是怎么来的」（AI_ENGINE.md）。
+     * 候选曾经完全来自静态棋型排序、与搜索结果无关，界面却在
+     * 它们旁边写着搜索结论的可靠度——第一个候选可能根本不是搜索选的那一手。
      * 这里扫一批随机中盘局面，逐个要求第一个候选 = 搜索着法，且候选不重复。
      */
     let state = 12345
@@ -759,14 +765,14 @@ describe('analyze 用途', () => {
     /*
       **`budgetMs` 必须显式放宽。** `easy` 档自带 **500 ms** 预算
       （`difficulty.ts` 的档位表；250 ms 是**入门**档，别看串了），
-      而这条断言要的是「走的是真分析、不是启发式兜底」——机器一忙（比如并行跑着探针），
-      500 ms 用完就翻成 `'heuristic'`，**断言的结果取决于机器负载** ✗。
+      而这条断言要的是「走的是真分析、搜满了档位深度」——机器一忙（比如并行跑着探针），
+      500 ms 用完就翻成 `'partial'` 甚至 `'fallback'`，**断言的结果取决于机器负载** ✗。
       `budgetMs` 本来就是可覆盖的参数（见 `AGENTS.md` 的时钟约定），给它 5 秒，
       这一条就与负载无关了，而它验的东西一个字没少。
 
       **这条改动是推断，不是实跑红的**：它没有一次变红的记录
       （`e2e/tablet.spec.ts` 那条同类是实跑红过的，见 `PHASE_04.md` §19.4）。
-      判据是配置上的——预算 500 ms、断言等的是 `confidence === 'exact'`，
+      判据是配置上的——预算 500 ms、断言等的是 `confidence === 'complete'`，
       两者相遇在负载下就会翻。这里说清楚，免得后来人以为它有复现记录。
     */
     const result = ask(board, BLACK, 'easy', {
@@ -777,7 +783,7 @@ describe('analyze 用途', () => {
 
     expect(result.moveIndex).toBe(5)
     expect(result.move).not.toBeNull()
-    expect(result.confidence).toBe('exact')
+    expect(result.confidence).toBe('complete')
   })
 })
 

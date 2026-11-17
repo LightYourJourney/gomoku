@@ -7,6 +7,7 @@ import { BLACK } from '../../core/types'
 import { memoryGameRecords } from '../../persist/gameRecords'
 import { memoryPositions } from '../../persist/positions'
 import { MAX_IMPORT_BYTES } from '../../persist/transfer/validate'
+import { FALLBACK_WARNING } from '../../lib/confidence-labels'
 import { PositionEditor } from './PositionEditor'
 
 function engineThat(response: (request: { requestId: number; gameVersion: number }) => SearchResponse): AiEngine {
@@ -26,7 +27,7 @@ const idle = engineThat((request) => ({
   depth: 5,
   nodes: 321,
   elapsedMs: 42,
-  confidence: 'exact',
+  confidence: 'complete',
   reason: 'search',
   candidates: [
     { move: { x: 7, y: 7 }, score: 12, attack: 'three', defense: 'none' },
@@ -131,10 +132,36 @@ describe('PositionEditor —— 分析', () => {
     expect(panel).toHaveTextContent('深度 5 层')
     expect(panel).toHaveTextContent('节点 321')
     expect(panel).toHaveTextContent('42 ms')
-    expect(panel).toHaveTextContent('精确')
+    expect(panel).toHaveTextContent('结论 搜满档位深度')
+    expect(panel).not.toHaveTextContent('不保证最优')
     expect(panel).toHaveTextContent('H8')
     // 分析结论必须注明引擎（AGENTS）；复盘页早就这么做，编辑器曾经漏了。
     expect(panel).toHaveTextContent(`引擎 ${ENGINE_VERSION}`)
+  })
+
+  it('一层都没搜完的结论带警示语，其余不带', async () => {
+    const fallback = engineThat((request) => ({
+      requestId: request.requestId,
+      gameVersion: request.gameVersion,
+      move: { x: 7, y: 6 },
+      score: 12,
+      depth: 0,
+      nodes: 0,
+      elapsedMs: 800,
+      confidence: 'fallback',
+      reason: 'timeout',
+      candidates: [{ move: { x: 7, y: 6 }, score: 12, attack: 'three', defense: 'none' }],
+      urgency: 'normal',
+    }))
+    setup({ engine: fallback })
+    fireEvent.click(screen.getByTestId('intersection-7-7'))
+    fireEvent.click(screen.getByRole('button', { name: '工具：白棋' }))
+    fireEvent.click(screen.getByTestId('intersection-8-8'))
+
+    fireEvent.click(screen.getByRole('button', { name: '分析当前局面' }))
+    const panel = await screen.findByTestId('position-analysis')
+    expect(panel).toHaveTextContent('结论 一步贪心兜底')
+    expect(panel).toHaveTextContent(FALLBACK_WARNING)
   })
 
   it('已有胜利连线时不调用引擎，给出原因', () => {

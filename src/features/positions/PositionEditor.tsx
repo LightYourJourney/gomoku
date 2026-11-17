@@ -7,6 +7,7 @@ import type { GameRecord, GameRecordsStorage } from '../../persist/gameRecords'
 import type { PositionStorage, SavedPosition } from '../../persist/positions'
 import { inputFromPosition, positionFromSaved } from '../../persist/positions'
 import { analyzePosition, positionFromReplay, type EditTool } from '../../core/position'
+import { CONFIDENCE_LABELS, FALLBACK_WARNING } from '../../lib/confidence-labels'
 import { formatPoint } from '../../lib/coords'
 import { cx } from '../../lib/cx'
 import { createEditorStore } from '../../store/editorStore'
@@ -405,7 +406,7 @@ export function PositionEditor({
               <p className="text-faint">
                 引擎 {ENGINE_VERSION}：{DIFFICULTY_LABELS[shownDifficulty]} · 深度 {analysis.response.depth} 层 ·
                 节点 {analysis.response.nodes} · {analysis.response.elapsedMs} ms · 结论{' '}
-                {analysis.response.confidence === 'exact' ? '精确' : '启发式'}
+                {CONFIDENCE_LABELS[analysis.response.confidence]}
               </p>
               <details className="text-faint">
                 <summary className="cursor-pointer">技术细节</summary>
@@ -420,8 +421,8 @@ export function PositionEditor({
                   </li>
                 ))}
               </ul>
-              {analysis.response.confidence === 'heuristic' && (
-                <p className="text-warn">预算内未搜完，这一手是启发式建议，不保证最优。</p>
+              {analysis.response.confidence === 'fallback' && (
+                <p className="text-warn">{FALLBACK_WARNING}</p>
               )}
             </div>
           )}

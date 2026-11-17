@@ -1,6 +1,7 @@
 import { useId, useState } from 'react'
 import type { Confidence, MoveSuggestion, Urgency } from '../../ai/types'
 import { formatPoint } from '../../lib/coords'
+import { CONFIDENCE_LABELS } from '../../lib/confidence-labels'
 import { cx } from '../../lib/cx'
 import { threatLabel } from '../../lib/shape-labels'
 import { HINT_BUDGET_MS } from '../../store/gameStore'
@@ -18,16 +19,11 @@ const URGENCY_LABELS: Record<Urgency, { label: string; tone: string }> = {
 /** 展示多少个候选。与引擎侧的候选上限一致。 */
 const MAX_SHOWN = 3
 
-const CONFIDENCE_LABELS: Record<Confidence, string> = {
-  exact: '结论：精确',
-  heuristic: '结论：启发式，不保证最优',
-}
-
 export interface HintPanelProps {
   /** 按推荐度降序。null 表示还没求过提示。 */
   candidates: readonly MoveSuggestion[] | null
   urgency: Urgency | null
-  /** 这份提示是精确结论还是预算用尽后的启发式建议。 */
+  /** 这份提示（第一个候选）是怎么来的：捷径、搜满、限时内搜完若干层，还是贪心兜底。 */
   confidence: Confidence | null
   thinking: boolean
   error: string | null
@@ -144,10 +140,12 @@ export function HintPanel({ candidates, urgency, confidence, thinking, error, on
           data-testid="hint-confidence"
           className={cx(
             'rounded-lg px-3 py-2 text-xs',
-            confidence === 'heuristic' ? 'bg-warn-soft text-warn' : 'bg-surface-2 text-muted',
+            confidence === 'fallback' ? 'bg-warn-soft text-warn' : 'bg-surface-2 text-muted',
           )}
         >
-          {CONFIDENCE_LABELS[confidence]}
+          {/* 这一行在默认层：文案不带层数。只有贪心兜底要警示。 */}
+          结论：{CONFIDENCE_LABELS[confidence]}
+          {confidence === 'fallback' && '，不保证最优'}
         </p>
       )}
 

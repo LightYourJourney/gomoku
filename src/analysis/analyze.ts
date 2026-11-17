@@ -1,4 +1,4 @@
-import { WIN_SCORE, type SearchPath, type SearchReason } from '../ai/types'
+import { WIN_SCORE, type SearchReason } from '../ai/types'
 import { ENGINE_VERSION } from '../ai/version'
 import { samePoint } from '../core/board'
 import type { Point } from '../core/types'
@@ -27,7 +27,7 @@ export interface MoveVerdict {
   readonly loss: number | null
   /**
    * 引擎给出首选着法时走的路径（`SearchReason` 原样带出）。
-   * 界面必须用 `searchPathOf()` 分类，不能拿 depth / nodes 推。
+   * 界面用 `confidenceOf(reason, engineDepth)` 分类，不能拿 nodes 推。
    */
   readonly reason: SearchReason
   readonly engineDepth: number
@@ -154,27 +154,6 @@ export function verdictLabel(v: MoveVerdict): string {
    */
   if (v.loss < 5_000) return '分差很小（不足 1 子）'
   return `分差约 ${Math.round(v.loss / 10_000)} 子`
-}
-
-/**
- * 「这一手是怎么得出来的」的人话。
- *
- * 与 `verdictLabel`（分差怎么读）是两件事：**四类路径必须分开说**。
- * 把「规则 / 快速路径判定」写成「搜索完成」，等于告诉玩家引擎展开过搜索——
- * 而它可能一次都没展开（直接成五、必防、开局天元，深度 0、节点 0）。
- * 这正是 Phase 08 独立审计发现的那条语义缺陷。
- */
-export function pathLabel(path: SearchPath): string {
-  switch (path) {
-    case 'search':
-      return '搜索完成'
-    case 'shortcut':
-      return '规则/快速路径判定'
-    case 'aborted':
-      return '预算内未搜完（启发式）'
-    case 'none':
-      return '无可用着法'
-  }
 }
 
 /**

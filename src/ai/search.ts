@@ -25,13 +25,13 @@ import {
   type TtFlag,
   type ZobristKey,
 } from './transposition'
-import type {
-  Confidence,
-  MoveSuggestion,
-  SearchReason,
-  SearchRequest,
-  SearchResponse,
-  Urgency,
+import {
+  confidenceOf,
+  type MoveSuggestion,
+  type SearchReason,
+  type SearchRequest,
+  type SearchResponse,
+  type Urgency,
 } from './types'
 
 const CENTER: Point = { x: Math.floor(BOARD_SIZE / 2), y: Math.floor(BOARD_SIZE / 2) }
@@ -361,8 +361,8 @@ function buildSuggestions(board: Board, player: Player, limit = 3): MoveSuggesti
 /**
  * 让提示的第一个候选**就是搜索选中的那一手**，其余仍按静态棋型分排。
  *
- * `confidence`（精确 / 启发式）说的是这次搜索的结论；候选若全来自静态排序，
- * 界面在它们旁边写「精确」就是张冠李戴——第一个候选可能根本不是搜索选的那一手。
+ * `confidence` 说的是这次搜索的结论是怎么来的；候选若全来自静态排序，
+ * 界面在它们旁边标搜索结论的可靠度就是张冠李戴——第一个候选可能根本不是搜索选的那一手。
  */
 function leadWithChosenMove(outcome: SearchOutcome, board: Board, player: Player): SearchOutcome {
   const chosen = outcome.move
@@ -731,8 +731,6 @@ export function chooseMove(request: SearchRequest): SearchResponse {
     Date.now,
   )
 
-  const confidence: Confidence = outcome.reason === 'timeout' ? 'heuristic' : 'exact'
-
   return {
     requestId: request.requestId,
     gameVersion: request.gameVersion,
@@ -742,7 +740,7 @@ export function chooseMove(request: SearchRequest): SearchResponse {
     depth: outcome.depth,
     nodes: outcome.nodes,
     elapsedMs: Date.now() - startedAt,
-    confidence,
+    confidence: confidenceOf(outcome.reason, outcome.depth),
     reason: outcome.reason,
     candidates: outcome.candidates,
     urgency: outcome.urgency,

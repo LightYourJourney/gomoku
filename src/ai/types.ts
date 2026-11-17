@@ -14,50 +14,52 @@ export type SearchReason =
   | 'search'
   /** 空盘开局，下天元 */
   | 'opening'
-  /** 时间预算内未搜完，返回启发式兜底着法 */
+  /**
+   * 时间预算内没搜满。`depth ≥ 1` 时返回的是已完整搜完的那一层的结果；
+   * 只有 `depth === 0` 时才是一步贪心的兜底。
+   */
   | 'timeout'
   /** 没有可落子的位置（棋盘已满） */
   | 'no_move'
 
 /**
- * 这一手是**怎么**得出来的（不是「结论有多可靠」，那是 `Confidence`）。
+ * 这一手是怎么得出来的，也就是它有多可靠。由 `reason` 与 `depth` **唯一决定**
+ * （`confidenceOf`），界面与复盘必须用这个显式分类，**不许靠 nodes / elapsedMs 反推**
+ * ——那些是度量，不是语义：一次算杀可能 0 节点（规则扫描直接命中）。
  *
- * 四类分别对应四种对用户可见的说法，界面与复盘必须用这个显式分类，
- * **不许靠 depth / nodes / elapsedMs 反推**——那些是度量，不是语义：
- * 一次算杀可能 0 节点（规则扫描直接命中），一次很短的搜索也可能深度为 0。
+ * 四类是按**事实**分的，不按「信不信得过」打分：
  */
-export type SearchPath =
-  /** 常规搜索完成 */
-  | 'search'
-  /** 规则或快速路径直接确定：直接成五、必防、开局天元（含算杀链首手） */
+export type Confidence =
+  /** 没有展开常规搜索，由规则或快速路径直接确定：成五、算杀链首手、必防、开局天元、无棋可走 */
   | 'shortcut'
-  /** 预算耗尽、搜索中止，返回启发式兜底 */
-  | 'aborted'
-  /** 无棋可走，没有结论可言 */
-  | 'none'
+  /** 搜满了这一档的深度 */
+  | 'complete'
+  /** 时间到了没搜满；用的是已经**完整搜完**的第 `depth` 层的结果（`depth ≥ 1`） */
+  | 'partial'
+  /** 一层都没搜完，只有一步贪心的估计。只有这一类需要警示「不保证最优」 */
+  | 'fallback'
 
-/** `SearchReason` → 显式路径分类。穷举，新增 reason 时这里会编译失败。 */
-export function searchPathOf(reason: SearchReason): SearchPath {
+/**
+ * `reason × depth` → 可靠度。穷举，新增 reason 时这里会编译失败。
+ *
+ * 为什么要看 `depth`：`timeout` 只说「没搜满」。迭代加深在第 N+1 层超时的时候，
+ * 交出来的是第 N 层的完整结果——那是一次完整的 N 层搜索，不是兜底。只有一层都没
+ * 搜完（`depth === 0`）时，手里才只有那一步贪心。此前不看深度、把两者都叫「启发式」，
+ * 于是专家档搜完六七层的着法顶着「不保证最优」的警示，而入门档搜满一层却标「精确」。
+ */
+export function confidenceOf(reason: SearchReason, depth: number): Confidence {
   switch (reason) {
-    case 'search':
-      return 'search'
-    case 'timeout':
-      return 'aborted'
-    case 'no_move':
-      return 'none'
     case 'win':
     case 'block':
     case 'opening':
+    case 'no_move':
       return 'shortcut'
+    case 'search':
+    case 'timeout':
+      if (depth === 0) return 'fallback'
+      return reason === 'search' ? 'complete' : 'partial'
   }
 }
-
-/**
- * 结论的可靠程度。
- * `exact` 表示这是搜索/必胜判断的结论；`heuristic` 表示预算不足时的启发式建议，
- * 不保证最优。界面必须如实区分二者。
- */
-export type Confidence = 'exact' | 'heuristic'
 
 /** 棋型等级，由高到低。提示界面按它显示中文说明。 */
 export type ThreatKind = 'five' | 'openFour' | 'four' | 'openThree' | 'three' | 'none'
@@ -111,7 +113,7 @@ export interface SearchResponse {
   /** null 表示无棋可走。 */
   readonly move: Point | null
   readonly score: number
-  /** 实际完整搜完的深度。0 表示只用了启发式兜底。 */
+  /** 实际完整搜完的深度。0 表示没有任何一层搜完（捷径，或一步贪心兜底）。 */
   readonly depth: number
   readonly nodes: number
   readonly elapsedMs: number

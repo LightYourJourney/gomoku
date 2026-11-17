@@ -24,7 +24,7 @@ function response(requestId: number, move: Point | null = { x: 7, y: 7 }): Searc
     depth: 1,
     nodes: 1,
     elapsedMs: 1,
-    confidence: 'exact',
+    confidence: 'complete',
     reason: 'search',
     candidates: [],
     urgency: 'normal',

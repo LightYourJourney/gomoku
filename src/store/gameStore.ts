@@ -109,10 +109,10 @@ export interface GameStore {
   readonly hint: readonly MoveSuggestion[] | null
   readonly hintUrgency: Urgency | null
   /**
-   * 这份提示有多可信。
+   * 这份提示是怎么来的（引擎给的那一类，原样记下）。
    *
-   * 提示固定用 800 ms 的短预算，档位越高越可能搜不完而回退到启发式。
-   * 界面必须如实区分——把「没搜完的猜测」说成「精确结论」就是在骗玩家。
+   * 提示固定用 800 ms 的短预算，档位越高越可能搜不满。界面必须如实区分
+   * 「搜完了若干层」与「一层都没搜完」——前者不是猜测，后者才要警示。
    */
   readonly hintConfidence: Confidence | null
   readonly hintThinking: boolean

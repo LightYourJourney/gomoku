@@ -28,7 +28,7 @@ function makeResponse(requestId: number, gameVersion: number, move: Point | null
     depth: 2,
     nodes: 10,
     elapsedMs: 5,
-    confidence: 'exact',
+    confidence: 'complete',
     reason: 'search',
     candidates: [],
     urgency: 'normal',
@@ -820,7 +820,7 @@ describe('AI 提示', () => {
 
     expect(state().hint).toEqual(SUGGESTIONS)
     expect(state().hintUrgency).toBe('danger')
-    expect(state().hintConfidence).toBe('exact')
+    expect(state().hintConfidence).toBe('complete')
     expect(state().hintThinking).toBe(false)
     expect(state().game.moves).toHaveLength(0)
     expect(state().game.board[idx(5, 5)]).toBe(0)
@@ -935,14 +935,14 @@ describe('AI 提示', () => {
     expect(state().pendingRequestId).toBe(playRequestId)
   })
 
-  it('记下提示的可靠度，超时回退时必须如实标成启发式', async () => {
-    // 提示固定用 800 ms 的短预算，专家档几乎必然搜不完——界面要能如实说明
-    // 「这只是建议」，就不能把 confidence 丢掉。
+  it('记下提示的可靠度：原样记下引擎给的那一类', async () => {
+    // 提示固定用 800 ms 的短预算，专家档几乎必然搜不满——界面要能如实说明
+    // 这份提示是怎么来的，就不能把 confidence 丢掉，也不能自己另编一个。
     state().requestHint()
-    replyHint({ confidence: 'heuristic', reason: 'timeout' })
+    replyHint({ confidence: 'partial', reason: 'timeout', depth: 6 })
     await engine.flush()
 
-    expect(state().hintConfidence).toBe('heuristic')
+    expect(state().hintConfidence).toBe('partial')
   })
 
   it('clearHint 清空提示、紧急度与可靠度', async () => {

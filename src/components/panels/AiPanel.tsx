@@ -1,5 +1,6 @@
 import { useId, useState } from 'react'
 import type { SearchReason } from '../../ai/types'
+import { CONFIDENCE_LABELS, FALLBACK_WARNING } from '../../lib/confidence-labels'
 import { formatPoint } from '../../lib/coords'
 import { cx } from '../../lib/cx'
 import type { AiInfo } from '../../store/gameStore'
@@ -23,9 +24,9 @@ import { Panel } from '../ui/Panel'
  */
 const REASON_TEXT: Record<SearchReason, { label: string; player: string }> = {
   /*
-   * `win` **不等于**「刚补成五子」。它有两个来源（`src/ai/search.ts`）：
-   *   1. `:463` 这一步直接成五——对局当场结束，「补成五子」是实话；
-   *   2. `:481` 的 `findForcedWin`（算杀）返回的**取胜链首手**——那一手不必成五，
+   * `win` **不等于**「刚补成五子」。它有两个来源（`src/ai/search.ts` 的 `runSearch`）：
+   *   1. 候选里这一步直接成五——对局当场结束，「补成五子」是实话；
+   *   2. `findForcedWin`（算杀）返回的**取胜链首手**——那一手不必成五，
    *      对局也还没结束。
    * 实测过：盘面 `...BBB.........`（黑活三、无四）也返回 `reason: 'win'`。
    * 走的是哪条算杀路径、代价如何，以 `docs/AI_ENGINE.md` 的「算杀（VCF / VCT）」
@@ -44,16 +45,23 @@ const REASON_TEXT: Record<SearchReason, { label: string; player: string }> = {
    */
   win: { label: '算到必胜', player: 'AI 算出一条连成五子的必胜路线，走了这条路线上的下一手。' },
   block: { label: '必须防守', player: 'AI 在防守：你下一手能连成五子，它先堵住。' },
-  search: { label: '搜索结果', player: 'AI 完整搜索后选了这一手。' },
+  /*
+   * 不说「完整搜索」：入门档搜满的只有一层。说的是事实——这一档的深度搜完了。
+   */
+  search: { label: '搜索结果', player: 'AI 按这一档的深度搜完，选了这一手。' },
   opening: { label: '开局天元', player: '开局第一手，AI 占了天元。' },
-  timeout: { label: '超时回退', player: '时间到了还没搜完，这一手是启发式兜底。' },
+  /*
+   * `timeout` 只说「没搜满」，交出来的是什么要看深度（`confidenceOf`）：
+   * 这一句是**搜完了若干层**的那种——迭代加深退回上一层的完整结果，不是兜底。
+   * 一层都没搜完的那种另有一句（`FALLBACK_PLAYER_TEXT`）。
+   * 两句都不写层数：默认层不出现搜索指标，层数在展开层的「搜索深度」里。
+   */
+  timeout: { label: '超时回退', player: '时间到了，AI 用的是已经搜完的那一层的结果。' },
   no_move: { label: '无棋可走', player: '棋盘已满，AI 没有可落子的位置。' },
 }
 
-const CONFIDENCE_LABELS = {
-  exact: '精确',
-  heuristic: '启发式',
-} as const
+/** 一层都没搜完时的玩家视图。它与警示条总是一起出现。 */
+const FALLBACK_PLAYER_TEXT = '时间到了，AI 一层都没搜完，这一手只是粗略估计。'
 
 export interface AiPanelProps {
   thinking: boolean
@@ -78,7 +86,7 @@ function Stat({ label, value }: { label: string; value: string }) {
  * AI 引擎面板。**两级信息**（任务书 §七）：
  *
  * - **默认层（玩家视图）**：一句人话，由真实的引擎输出（`reason` / `confidence`）生成，
- *   外加启发式时必须出现的免责说明。不出现任何搜索指标。
+ *   外加贪心兜底时必须出现的免责说明。不出现任何搜索指标。
  * - **展开层（技术详情）**：深度 / 节点 / 耗时 / 评分 / 判断 / 结论 + 算法说明，
  *   收在标题右侧的「?」后面，**展开状态不持久化**（`DESIGN_SYSTEM.md` §7）。
  *
@@ -156,7 +164,9 @@ export function AiPanel({ thinking, info, error, canRetry, onRetry, onDismissErr
             守着这条不变量的用例在 `gameStore.test.ts`。
           */}
           <p className="text-xs leading-relaxed text-fg">
-            <span data-testid="ai-player-view">{REASON_TEXT[info.reason].player}</span>
+            <span data-testid="ai-player-view">
+              {info.confidence === 'fallback' ? FALLBACK_PLAYER_TEXT : REASON_TEXT[info.reason].player}
+            </span>
             {' '}落点{' '}
             <span data-testid="ai-move" className="font-mono font-semibold tabular-nums">
               {formatPoint(info.move)}
@@ -165,14 +175,13 @@ export function AiPanel({ thinking, info, error, canRetry, onRetry, onDismissErr
           </p>
 
           {/*
-            启发式的免责说明**恒在默认层**。任务书 §七：「禁止把启发式判断包装成确定性结论」。
-            `confidence` 与 `reason` 是 1:1 的（`search.ts:564`：只有 `timeout` 才是启发式），
-            所以有这段就够，不需要再加一个「精确」的徽标去说一件没说错的事。
+            贪心兜底的免责说明**恒在默认层**。任务书 §七：「禁止把启发式判断包装成确定性结论」。
+            **只有 `fallback` 配它**——一层都没搜完、手里只有一步贪心的那种。
+            超时但搜完了若干层（`partial`）不配：那是一次完整的浅一层搜索，此前把它也算进来，
+            专家档约四成的着法都顶着这条警示。
           */}
-          {info.confidence === 'heuristic' && (
-            <p className="rounded-lg bg-warn-soft px-3 py-2 text-xs text-warn">
-              时间预算内未搜完，这一手是启发式建议，不保证最优。
-            </p>
+          {info.confidence === 'fallback' && (
+            <p className="rounded-lg bg-warn-soft px-3 py-2 text-xs text-warn">{FALLBACK_WARNING}</p>
           )}
         </div>
       )}

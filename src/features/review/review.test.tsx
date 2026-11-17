@@ -578,6 +578,8 @@ describe('分析结论列表：只列真有亏损的手', () => {
     expect(rows[0]).toHaveAttribute('data-testid', 'verdict-1')
     // 手 1 的同视界分差是 500：半子以下不说成「分差约 0 子」
     expect(rows[0]).toHaveTextContent('不足 1 子')
+    // 卡片第三行说引擎首选是怎么来的：常规搜索、搜满了
+    expect(rows[0]).toHaveTextContent('搜满档位深度')
     expect(screen.queryByTestId('analysis-no-loss')).not.toBeInTheDocument()
   })
 
@@ -628,7 +630,7 @@ function echoEngine(): AiEngine {
         depth: 1,
         nodes: 1,
         elapsedMs: 1,
-        confidence: 'exact' as const,
+        confidence: 'complete' as const,
         reason: 'search' as const,
         candidates: [],
         urgency: 'normal' as const,
@@ -670,7 +672,7 @@ function scriptedEngine(timeoutAt: readonly number[] = []): AiEngine {
         depth: 1,
         nodes: 1,
         elapsedMs: 1,
-        confidence: 'exact' as const,
+        confidence: timedOut ? ('partial' as const) : ('complete' as const),
         reason: timedOut ? ('timeout' as const) : ('search' as const),
         candidates: [],
         urgency: 'normal' as const,
@@ -787,7 +789,7 @@ function noMoveAtEngine(nullAt: number): AiEngine {
         depth: 1,
         nodes: 1,
         elapsedMs: 1,
-        confidence: 'exact' as const,
+        confidence: 'complete' as const,
         reason: 'search' as const,
         candidates: [],
         urgency: 'normal' as const,
@@ -861,7 +863,7 @@ function shortcutEngine(): AiEngine {
         depth: 0,
         nodes: 0,
         elapsedMs: 1,
-        confidence: 'exact' as const,
+        confidence: index === 1 ? ('shortcut' as const) : ('complete' as const),
         reason: index === 1 ? ('win' as const) : ('search' as const),
         candidates: [],
         urgency: 'normal' as const,
@@ -885,6 +887,7 @@ describe('ReviewScreen —— 搜索路径的措辞（Phase 09A）', () => {
     const card = await screen.findByTestId('verdict-1')
     expect(card).toHaveTextContent('规则/快速路径判定')
     expect(card).not.toHaveTextContent('搜索完成')
+    expect(card).not.toHaveTextContent('搜满')
     // 原始度量照常显示：读者能自己看出这一手没展开搜索
     expect(card).toHaveTextContent('深度 0')
     expect(card).toHaveTextContent('节点 0')

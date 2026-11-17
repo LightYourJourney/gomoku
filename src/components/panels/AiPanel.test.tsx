@@ -1,5 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
+import { FALLBACK_WARNING } from '../../lib/confidence-labels'
 import type { AiInfo } from '../../store/gameStore'
 import { AiPanel, type AiPanelProps } from './AiPanel'
 
@@ -8,7 +9,7 @@ const INFO: AiInfo = {
   nodes: 42,
   elapsedMs: 3,
   score: -700,
-  confidence: 'exact',
+  confidence: 'complete',
   reason: 'search',
   move: { x: 7, y: 7 },
 }
@@ -85,7 +86,7 @@ describe('AiPanel —— 两级信息', () => {
   it('默认层说清 AI 这一手是怎么来的，不出现任何搜索指标', () => {
     setup({ info: INFO })
 
-    expect(screen.getByTestId('ai-player-view')).toHaveTextContent('AI 完整搜索后选了这一手。')
+    expect(screen.getByTestId('ai-player-view')).toHaveTextContent('AI 按这一档的深度搜完，选了这一手。')
     expect(screen.getByTestId('ai-move')).toHaveTextContent('H8')
     // 指标全都进了展开层
     expect(screen.queryByText('2 层')).not.toBeInTheDocument()
@@ -95,17 +96,22 @@ describe('AiPanel —— 两级信息', () => {
   })
 
   it.each([
-    ['win', 'AI 算出一条连成五子的必胜路线，走了这条路线上的下一手。'],
-    ['block', 'AI 在防守：你下一手能连成五子，它先堵住。'],
-    ['opening', '开局第一手，AI 占了天元。'],
-    ['search', 'AI 完整搜索后选了这一手。'],
-    ['timeout', '时间到了还没搜完，这一手是启发式兜底。'],
-    ['no_move', '棋盘已满，AI 没有可落子的位置。'],
-  ] as const)('reason=%s 时默认层给的是引擎确实说过的那句话', (reason, sentence) => {
-    setup({ info: { ...INFO, reason } })
+    ['win', 'shortcut', 0, 'AI 算出一条连成五子的必胜路线，走了这条路线上的下一手。'],
+    ['block', 'shortcut', 0, 'AI 在防守：你下一手能连成五子，它先堵住。'],
+    ['opening', 'shortcut', 0, '开局第一手，AI 占了天元。'],
+    ['search', 'complete', 2, 'AI 按这一档的深度搜完，选了这一手。'],
+    // 超时分两种，说的话不一样：搜完了若干层的不是「兜底」
+    ['timeout', 'partial', 6, '时间到了，AI 用的是已经搜完的那一层的结果。'],
+    ['timeout', 'fallback', 0, '时间到了，AI 一层都没搜完，这一手只是粗略估计。'],
+    ['no_move', 'shortcut', 0, '棋盘已满，AI 没有可落子的位置。'],
+  ] as const)(
+    'reason=%s（%s）时默认层给的是引擎确实说过的那句话',
+    (reason, confidence, depth, sentence) => {
+      setup({ info: { ...INFO, reason, confidence, depth } })
 
-    expect(screen.getByTestId('ai-player-view')).toHaveTextContent(sentence)
-  })
+      expect(screen.getByTestId('ai-player-view')).toHaveTextContent(sentence)
+    },
+  )
 
   /*
    * 这里**删掉**过一条用例：「棋盘已满（没有落点）时只说原因，不编坐标出来」——
@@ -139,7 +145,16 @@ describe('AiPanel —— 两级信息', () => {
     expect(screen.getByText('3 ms')).toBeInTheDocument()
     expect(screen.getByText('-700')).toBeInTheDocument()
     expect(screen.getByText('搜索结果')).toBeInTheDocument()
-    expect(screen.getByText('精确')).toBeInTheDocument()
+    expect(screen.getByText('搜满档位深度')).toBeInTheDocument()
+  })
+
+  it('入门档搜满 1 层：说「搜满档位深度」，全页没有「精确」二字', () => {
+    setup({ info: { ...INFO, depth: 1 } })
+    openInfo()
+
+    expect(screen.getByText('搜满档位深度')).toBeInTheDocument()
+    expect(screen.getByText('1 层')).toBeInTheDocument()
+    expect(document.body).not.toHaveTextContent('精确')
   })
 
   it('「?」用 aria-expanded 与 aria-controls 表达开合，收起时不留悬空的 IDREF', () => {
@@ -160,18 +175,30 @@ describe('AiPanel —— 两级信息', () => {
     expect(screen.queryByText(/Negamax/)).not.toBeInTheDocument()
   })
 
-  it('启发式结论会额外声明不保证最优——这条恒在默认层，不随折叠藏起来', () => {
-    setup({ info: { ...INFO, confidence: 'heuristic', reason: 'timeout' } })
+  it('一层都没搜完：警示条恒在默认层，不随折叠藏起来', () => {
+    setup({ info: { ...INFO, confidence: 'fallback', reason: 'timeout', depth: 0 } })
 
-    expect(screen.getByText(/不保证最优/)).toBeInTheDocument()
+    expect(screen.getByText(FALLBACK_WARNING)).toBeInTheDocument()
+
+    openInfo()
+    expect(screen.getByText('一步贪心兜底')).toBeInTheDocument()
+    expect(screen.getByText(FALLBACK_WARNING)).toBeInTheDocument()
   })
 
-  it('展开技术详情也不会让启发式的免责声明显得像是精确结论', () => {
-    setup({ info: { ...INFO, confidence: 'heuristic', reason: 'timeout' } })
-    openInfo()
+  /*
+   * 这次改动要修的正是这一条：专家档约四成的着法是「搜完六七层、下一层没搜完」，
+   * 以前它们顶着「启发式兜底、不保证最优」的黄色警示——最强的分析被说成最不可靠的。
+   */
+  it('专家档超时但搜到第 6 层：默认层没有警示条', () => {
+    setup({ info: { ...INFO, confidence: 'partial', reason: 'timeout', depth: 6 } })
 
-    expect(screen.getByText('启发式')).toBeInTheDocument()
-    expect(screen.queryByText('精确')).not.toBeInTheDocument()
+    expect(screen.queryByText(FALLBACK_WARNING)).not.toBeInTheDocument()
+    expect(screen.queryByText(/不保证最优/)).not.toBeInTheDocument()
+    expect(document.body).not.toHaveTextContent('兜底')
+
+    openInfo()
+    expect(screen.getByText('限时内未搜满，取已搜完的层')).toBeInTheDocument()
+    expect(screen.getByText('6 层')).toBeInTheDocument()
   })
 })
 

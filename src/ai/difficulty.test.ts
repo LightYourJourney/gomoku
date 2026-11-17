@@ -92,7 +92,7 @@ describe('难度差异是真实的行为差异', () => {
 
     expect(easy.reason).toBe('search')
     expect(medium.reason).toBe('win')
-    expect(medium.confidence).toBe('exact')
+    expect(medium.confidence).toBe('shortcut')
   })
 
   it('三档以上的算杀结论一致：都判定为胜', () => {

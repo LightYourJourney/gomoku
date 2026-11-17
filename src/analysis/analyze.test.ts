@@ -7,7 +7,6 @@ import {
   buildVerdict,
   cacheKey,
   horizonLoss,
-  pathLabel,
   verdictLabel,
   type AfterMove,
   type MoveVerdict,
@@ -209,20 +208,6 @@ describe('搜索路径的语义（Phase 09A）', () => {
     expect(verdict({ reason: 'win' }).reason).toBe('win')
     expect(verdict({ reason: 'block' }).reason).toBe('block')
     expect(verdict({ reason: 'timeout' }).reason).toBe('timeout')
-  })
-
-  it('四类路径各有各的说法', () => {
-    expect(pathLabel('search')).toBe('搜索完成')
-    expect(pathLabel('shortcut')).toBe('规则/快速路径判定')
-    expect(pathLabel('aborted')).toBe('预算内未搜完（启发式）')
-    expect(pathLabel('none')).toBe('无可用着法')
-  })
-
-  it('快速路径与常规搜索不许混为一谈', () => {
-    // 这条钉的正是 Phase 08 发现的那个缺陷：深度 0、节点 0 的规则判定
-    // 仍然写着「搜索完成」。
-    expect(pathLabel('shortcut')).not.toContain('搜索完成')
-    expect(pathLabel('shortcut')).not.toBe(pathLabel('search'))
   })
 })
 

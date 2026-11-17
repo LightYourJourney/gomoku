@@ -220,7 +220,7 @@ test('分享：应用内改 hash 进入预览会中止在飞 AI，返回后续�
             depth: 1,
             nodes: 1,
             elapsedMs: 1,
-            confidence: 'exact',
+            confidence: 'complete',
             reason: 'search',
             candidates: [],
             urgency: 'normal',

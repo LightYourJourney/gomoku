@@ -1,48 +1,44 @@
 import { describe, expect, it } from 'vitest'
-import { searchPathOf, type SearchReason } from './types'
+import { confidenceOf, type SearchReason } from './types'
 
 /**
- * 搜索路径的**显式**分类。
+ * 可靠度的**显式**分类。
  *
- * 界面不许靠 depth / nodes / elapsedMs 推断走了哪条路——那些是引擎的度量，
- * 不是语义。这里把 `SearchReason` 穷举映射成四类，所有消费方共用。
+ * 一手是怎么得出来的、有多可靠，由 `reason` 与 `depth` 唯一决定——界面不许拿
+ * nodes / elapsedMs 去猜。这张表钉的是此前倒挂过的那件事：搜完六层再超时不是
+ * 「兜底」，只搜一层搜完了也不是「精确」。
  */
-describe('searchPathOf', () => {
-  it('常规搜索', () => {
-    expect(searchPathOf('search')).toBe('search')
-  })
-
-  it('预算耗尽 → aborted（不是「结论」而是「中止」）', () => {
-    expect(searchPathOf('timeout')).toBe('aborted')
-  })
-
-  it('无棋可走 → none', () => {
-    expect(searchPathOf('no_move')).toBe('none')
-  })
-
-  it('规则 / 快速路径：直接成五、必防、开局天元', () => {
-    for (const reason of ['win', 'block', 'opening'] as const) {
-      expect(searchPathOf(reason)).toBe('shortcut')
-    }
+describe('confidenceOf', () => {
+  it.each([
+    ['win', 0, 'shortcut'],
+    ['block', 0, 'shortcut'],
+    ['opening', 0, 'shortcut'],
+    ['no_move', 0, 'shortcut'],
+    ['search', 1, 'complete'],
+    ['search', 8, 'complete'],
+    ['timeout', 6, 'partial'],
+    ['timeout', 1, 'partial'],
+    ['timeout', 0, 'fallback'],
+    ['search', 0, 'fallback'],
+  ] as const)('%s 深度 %i → %s', (reason, depth, expected) => {
+    expect(confidenceOf(reason, depth)).toBe(expected)
   })
 
   it('六种 reason 全部有类别，不存在「未分类」', () => {
-    const reasons: readonly SearchReason[] = [
-      'win',
-      'block',
-      'search',
-      'opening',
-      'timeout',
-      'no_move',
-    ]
+    const reasons: readonly SearchReason[] = ['win', 'block', 'search', 'opening', 'timeout', 'no_move']
 
-    expect(reasons.map(searchPathOf)).toEqual([
+    expect(reasons.map((reason) => confidenceOf(reason, 2))).toEqual([
       'shortcut',
       'shortcut',
-      'search',
+      'complete',
       'shortcut',
-      'aborted',
-      'none',
+      'partial',
+      'shortcut',
     ])
+  })
+
+  it('超时但已经搜完若干层不是兜底——兜底只留给一层都没搜完的', () => {
+    expect(confidenceOf('timeout', 7)).not.toBe('fallback')
+    expect(confidenceOf('timeout', 0)).toBe('fallback')
   })
 })

@@ -38,7 +38,7 @@ function response(overrides: Partial<SearchResponse> = {}): SearchResponse {
     depth: 4,
     nodes: 100,
     elapsedMs: 20,
-    confidence: 'exact',
+    confidence: 'complete',
     reason: 'search',
     candidates: [{ move: { x: 7, y: 7 }, score: 10, attack: 'three', defense: 'none' }],
     urgency: 'normal',

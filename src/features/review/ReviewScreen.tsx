@@ -5,9 +5,10 @@ import { ANALYSIS_BUDGET_MS, createAnalysisStore } from '../../store/analysisSto
 import type { GameRecord, GameRecordsStorage } from '../../persist/gameRecords'
 import { DIFFICULTY_LABELS } from '../../ai/difficulty'
 import { ENGINE_VERSION } from '../../ai/version'
+import { CONFIDENCE_LABELS } from '../../lib/confidence-labels'
 import { formatPoint } from '../../lib/coords'
-import { buildSummary, pathLabel, verdictLabel } from '../../analysis/analyze'
-import { searchPathOf } from '../../ai/types'
+import { buildSummary, verdictLabel } from '../../analysis/analyze'
+import { confidenceOf } from '../../ai/types'
 import { cx } from '../../lib/cx'
 import { Button } from '../../components/ui/Button'
 import { Panel } from '../../components/ui/Panel'
@@ -459,7 +460,7 @@ function AnalysisPanel({ store, engine, replay }: AnalysisPanelProps) {
                 </div>
                 <div className="mt-1 text-xs text-faint">
                   深度 {verdict.engineDepth} · 节点 {verdict.engineNodes} ·{' '}
-                  {pathLabel(searchPathOf(verdict.reason))}
+                  {CONFIDENCE_LABELS[confidenceOf(verdict.reason, verdict.engineDepth)]}
                 </div>
               </button>
             )

@@ -61,7 +61,7 @@ describe('HintPanel —— 空态与引导', () => {
 
 describe('HintPanel —— 候选', () => {
   it('展示最多三个候选与坐标', () => {
-    setup({ candidates: SUGGESTIONS, urgency: 'normal', confidence: 'exact' })
+    setup({ candidates: SUGGESTIONS, urgency: 'normal', confidence: 'complete' })
 
     const items = screen.getAllByTestId(/^hint-candidate-/)
     expect(items).toHaveLength(3)
@@ -84,36 +84,36 @@ describe('HintPanel —— 候选', () => {
   })
 
   it('必胜时显示必胜徽标', () => {
-    setup({ candidates: SUGGESTIONS, urgency: 'win', confidence: 'exact' })
+    setup({ candidates: SUGGESTIONS, urgency: 'win', confidence: 'complete' })
 
     expect(screen.getByTestId('hint-urgency')).toHaveTextContent('必胜')
   })
 
   it('必须防守时显示防守徽标', () => {
-    setup({ candidates: SUGGESTIONS, urgency: 'mustBlock', confidence: 'exact' })
+    setup({ candidates: SUGGESTIONS, urgency: 'mustBlock', confidence: 'complete' })
 
     expect(screen.getByTestId('hint-urgency')).toHaveTextContent('必须防守')
   })
 
   it('对手有活四威胁时显示危险徽标', () => {
-    setup({ candidates: SUGGESTIONS, urgency: 'danger', confidence: 'exact' })
+    setup({ candidates: SUGGESTIONS, urgency: 'danger', confidence: 'complete' })
 
     expect(screen.getByTestId('hint-urgency')).toHaveTextContent('危险')
   })
 
   it('没有紧急情况时不虚张声势', () => {
-    setup({ candidates: SUGGESTIONS, urgency: 'normal', confidence: 'exact' })
+    setup({ candidates: SUGGESTIONS, urgency: 'normal', confidence: 'complete' })
 
     expect(screen.getByTestId('hint-urgency')).toHaveTextContent('一般')
   })
 
   /**
-   * 这条此前传的是 `confidence: 'exact'`，却断言出现「不保证最优」——
+   * 这条此前传的是 `confidence: 'complete'`，却断言出现「不保证最优」——
    * 它**靠脚注里那句「它只是建议，不保证最优」蒙对的**，而不是靠可信度标注。
    * 脚注收进「?」之后它立刻露馅。修成它真正想测的那一档。
    */
-  it('启发式的提示明确标注不保证最优', () => {
-    setup({ candidates: SUGGESTIONS, urgency: 'normal', confidence: 'heuristic' })
+  it('贪心兜底的提示明确标注不保证最优', () => {
+    setup({ candidates: SUGGESTIONS, urgency: 'normal', confidence: 'fallback' })
 
     expect(screen.getByText(/不保证最优/)).toBeInTheDocument()
   })
@@ -141,14 +141,14 @@ describe('HintPanel —— 候选', () => {
    * 默认界面不出现的东西，`800 ms` 正是预算毫秒数。
    */
   it('有候选时不直接把预算毫秒数印在默认界面，而是给一个「?」', () => {
-    setup({ candidates: SUGGESTIONS, urgency: 'normal', confidence: 'exact' })
+    setup({ candidates: SUGGESTIONS, urgency: 'normal', confidence: 'complete' })
 
     expect(screen.queryByText(/短预算/)).not.toBeInTheDocument()
     expect(screen.getByRole('button', { name: '提示是怎么算出来的' })).toBeInTheDocument()
   })
 
   it('点开「?」之后读得到那份说明，再点一次收回去', () => {
-    setup({ candidates: SUGGESTIONS, urgency: 'normal', confidence: 'exact' })
+    setup({ candidates: SUGGESTIONS, urgency: 'normal', confidence: 'complete' })
     const button = screen.getByRole('button', { name: '提示是怎么算出来的' })
 
     expect(button).toHaveAttribute('aria-expanded', 'false')
@@ -166,19 +166,40 @@ describe('HintPanel —— 候选', () => {
     expect(screen.queryByRole('button', { name: '提示是怎么算出来的' })).not.toBeInTheDocument()
   })
 
-  it('给出精确结论时标明是精确的', () => {
-    setup({ candidates: SUGGESTIONS, urgency: 'normal', confidence: 'exact' })
+  it('搜满档位深度：如实说搜满了，不叫「精确」', () => {
+    setup({ candidates: SUGGESTIONS, urgency: 'normal', confidence: 'complete' })
 
-    expect(screen.getByTestId('hint-confidence')).toHaveTextContent('精确')
+    const line = screen.getByTestId('hint-confidence')
+    expect(line).toHaveTextContent('结论：搜满档位深度')
+    expect(line).not.toHaveTextContent('精确')
+    expect(line).not.toHaveClass('text-warn')
   })
 
-  it('超时回退时必须如实标成启发式', () => {
-    // 提示固定 800 ms 短预算，专家档几乎必然搜不完。把启发式结论说成精确的，
-    // 就是在骗玩家。
-    setup({ candidates: SUGGESTIONS, urgency: 'normal', confidence: 'heuristic' })
+  it('限时内没搜满但搜完了若干层：中性色，不说「不保证最优」', () => {
+    // 提示固定 800 ms 短预算，专家档几乎必然搜不满——但它交出来的是已经完整搜完的
+    // 那一层的结果，不是兜底。以前这一档顶着警示色与「启发式，不保证最优」。
+    setup({ candidates: SUGGESTIONS, urgency: 'normal', confidence: 'partial' })
 
-    expect(screen.getByTestId('hint-confidence')).toHaveTextContent('启发式')
-    expect(screen.getByTestId('hint-confidence')).toHaveTextContent(/不保证最优/)
+    const line = screen.getByTestId('hint-confidence')
+    expect(line).toHaveTextContent('结论：限时内未搜满，取已搜完的层')
+    expect(line).not.toHaveTextContent('不保证最优')
+    expect(line).not.toHaveClass('text-warn')
+  })
+
+  it('一层都没搜完：警示色，并明说不保证最优', () => {
+    setup({ candidates: SUGGESTIONS, urgency: 'normal', confidence: 'fallback' })
+
+    const line = screen.getByTestId('hint-confidence')
+    expect(line).toHaveTextContent('结论：一步贪心兜底，不保证最优')
+    expect(line).toHaveClass('text-warn')
+  })
+
+  it('结论行在默认层，里面不出现层数这类搜索指标', () => {
+    for (const confidence of ['shortcut', 'complete', 'partial', 'fallback'] as const) {
+      const { unmount } = setup({ candidates: SUGGESTIONS, urgency: 'normal', confidence })
+      expect(screen.getByTestId('hint-confidence').textContent).not.toMatch(/\d/)
+      unmount()
+    }
   })
 
   it('还没算过提示时不显示可靠度', () => {
@@ -188,7 +209,7 @@ describe('HintPanel —— 候选', () => {
   })
 
   it('可以收起已经展示的候选', () => {
-    const { onClear } = setup({ candidates: SUGGESTIONS, urgency: 'normal', confidence: 'exact' })
+    const { onClear } = setup({ candidates: SUGGESTIONS, urgency: 'normal', confidence: 'complete' })
 
     fireEvent.click(screen.getByRole('button', { name: '收起提示' }))
 
@@ -210,7 +231,7 @@ describe('HintPanel —— 徽标配色', () => {
   ]
 
   it.each(CASES)('%s 用 %s 色调', (urgency, tone) => {
-    setup({ candidates: SUGGESTIONS, urgency, confidence: 'exact' })
+    setup({ candidates: SUGGESTIONS, urgency, confidence: 'complete' })
 
     expect(screen.getByTestId('hint-urgency').className).toContain(tone)
   })
