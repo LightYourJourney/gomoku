@@ -23,27 +23,27 @@
 
 ## Task 1：引擎的取消（先写失败测试）
 
-- [ ] `engine.test.ts` 新用例：`cancel` 拒绝那个 Promise 且错误是 `SearchCancelledError`；之后到达的同 id 响应被丢弃；`abort` 被调用一次且带 id；对已结算 / 不存在的 id 不调 `abort`、不抛；`dispose` 之后 `cancel` 是空操作。
-- [ ] 实现 D1、D2。所有假引擎（`gameStore.test`、`analysisStore.test`、`editorStore.test`、`review.test`、`PositionEditor.test`）补一个 `cancel() {}`（或记录调用的版本），**断言不改**。
+- [x] `engine.test.ts` 新用例：`cancel` 拒绝那个 Promise 且错误是 `SearchCancelledError`；之后到达的同 id 响应被丢弃；`abort` 被调用一次且带 id；对已结算 / 不存在的 id 不调 `abort`、不抛；`dispose` 之后 `cancel` 是空操作。
+- [x] 实现 D1、D2。所有假引擎（`gameStore.test`、`analysisStore.test`、`editorStore.test`、`review.test`、`PositionEditor.test`）补一个 `cancel() {}`（或记录调用的版本），**断言不改**。
 
 ## Task 2：双 Worker 传输层
 
-- [ ] `browserEngine.ts` 按 D3 重写。传输层的车道逻辑抽成纯函数 / 可注入 `spawn` 的工厂（`createLanes(spawn)`），放在 `ai/` 下、不碰 `Worker` 全局，好在 jsdom 里用假 Worker 单测：落子车道新请求终止旧 Worker；取消在飞的落子终止重建；只读车道取消排头的重发其余、取消排后的丢弃响应；两条车道都按需创建、互不影响；Worker 的 `error` 事件让对应车道的在飞请求失败（走 `engine.handleError` 的现有语义——**只失败那条车道上的请求**，见自审 4）。
-- [ ] `AGENTS.md` 的「只有 `worker.ts` 与 `browserEngine.ts` 允许触碰 Worker」照旧成立：车道工厂只拿到注入的 `spawn`。
+- [x] `browserEngine.ts` 按 D3 重写。传输层的车道逻辑抽成纯函数 / 可注入 `spawn` 的工厂（`createLanes(spawn)`），放在 `ai/` 下、不碰 `Worker` 全局，好在 jsdom 里用假 Worker 单测：落子车道新请求终止旧 Worker；取消在飞的落子终止重建；只读车道取消排头的重发其余、取消排后的丢弃响应；两条车道都按需创建、互不影响；Worker 的 `error` 事件让对应车道的在飞请求失败（走 `engine.handleError` 的现有语义——**只失败那条车道上的请求**，见自审 4）。
+- [x] `AGENTS.md` 的「只有 `worker.ts` 与 `browserEngine.ts` 允许触碰 Worker」照旧成立：车道工厂只拿到注入的 `spawn`。
 
 ## Task 3：store 接上取消与超时
 
-- [ ] 失败测试：`gameStore` 悔棋 / 新局 / 认输 / 求提示后落子各一例——被放弃的请求 id 被 `cancel`；正常结算的不会被 `cancel` 成功（空操作也行，断言「待决表里已经没有它」即可）；`analysisStore` 的 `stop()` 与换局取消在飞的那个；`editorStore` 编辑局面后取消在飞的分析；`analysisStore` / `editorStore` 超时（假时钟 15 秒）落到错误状态并取消请求。
-- [ ] 实现 D4、D5；删 `BattleScreen.test.tsx` 的垫片（D7）。
-- [ ] 既有的过期响应用例、超时用例一条不改断言全绿。
+- [x] 失败测试：`gameStore` 悔棋 / 新局 / 认输 / 求提示后落子各一例——被放弃的请求 id 被 `cancel`；正常结算的不会被 `cancel` 成功（空操作也行，断言「待决表里已经没有它」即可）；`analysisStore` 的 `stop()` 与换局取消在飞的那个；`editorStore` 编辑局面后取消在飞的分析；`analysisStore` / `editorStore` 超时（假时钟 15 秒）落到错误状态并取消请求。
+- [x] 实现 D4、D5；删 `BattleScreen.test.tsx` 的垫片（D7）。
+- [x] 既有的过期响应用例、超时用例一条不改断言全绿。
 
 ## Task 4：验收
 
-- [ ] 五条命令 + `gates`；`e2e:browsers`（Firefox / WebKit 的模块 Worker 与 `terminate`）。
-- [ ] `yarn bench:queue` 在生产构建上：A / B / C 场景排队降到几十毫秒以内、B 不累积；与实验记录对照。探针 D 场景要能在按需创建下找到 Worker 脚本——若找不到，改探针的取法（只改 `bench/`，不改产品代码）。
-- [ ] 真实浏览器复核：专家档思考中悔棋再落子，AI 很快应手；复盘页分析中切回对战页落子，不被挡；DevTools 里每页 Worker 数量：只下棋 1 个，求过提示或复盘过 2 个。
-- [ ] 文档：`ARCHITECTURE.md`（引擎与 Worker 一节）、`AI_ENGINE.md`（若提到单 Worker 与无取消）、`TEST_REPORT.md`「〇之二七」、`ROADMAP.md`；`tests.baseline.json` 只上调。
-- [ ] 两轴审查 → 提交 → 推送 → 盯 CI 全档。
+- [x] 五条命令 + `gates`；`e2e:browsers`（Firefox / WebKit 的模块 Worker 与 `terminate`）。
+- [x] `yarn bench:queue` 在生产构建上：A / B / C 场景排队降到几十毫秒以内、B 不累积；与实验记录对照。探针 D 场景要能在按需创建下找到 Worker 脚本——若找不到，改探针的取法（只改 `bench/`，不改产品代码）。
+- [x] 真实浏览器复核：专家档思考中悔棋再落子，AI 很快应手；复盘页分析中切回对战页落子，不被挡；DevTools 里每页 Worker 数量：只下棋 1 个，求过提示或复盘过 2 个。
+- [x] 文档：`ARCHITECTURE.md`（引擎与 Worker 一节）、`AI_ENGINE.md`（若提到单 Worker 与无取消）、`TEST_REPORT.md`「〇之二七」、`ROADMAP.md`；`tests.baseline.json` 只上调。
+- [x] 两轴审查 → 提交 → 推送 → 盯 CI 全档。
 
 ## 验收标准
 
@@ -71,4 +71,16 @@
 
 ## 独立终审
 
-（待填。）
+终审者只读源码与计划，九条意见逐条核实后处理如下（「已在实现中」= Task 1 / 2 动手前后已经这么做了，核对无误）。
+
+| # | 意见 | 核实 | 处理 |
+| --- | --- | --- | --- |
+| 1 | `withDeadline` 若先 `cancel` 再拒绝外层，内层的 `SearchCancelledError` 先结算，store 仍认这个 id，界面显示「已取消」而不是超时 | 成立（`editorStore` / `analysisStore` 的拒绝分支只比 id / run） | 实现时改为：`cancel` 带可选的拒绝原因，`withDeadline` 到时以超时错误取消、返回 `search` 的原 Promise（包一层会让 31 条既有用例晚一个微任务而红，见 `TEST_REPORT.md`「〇之二七」）；用例断言文案 |
+| 2 | `cancel` 在 zustand 监听器里同步执行（在 `set` 内部），抛错会穿出 `set`，打断后续动作与存档订阅 | 成立 | 落子车道的中止只 `terminate`、懒建；只读车道重建失败转成 `handleError(ids)`，不抛（已在实现中，有用例） |
+| 3 | 「被取消的拒绝一定被闸门挡下」没有用例证明：假引擎的 `cancel` 只记账不拒绝 | 成立 | Task 3 每个 store 至少一例用真的 `createAiEngine`，断言错误字段没被写 |
+| 4 | `analysisStore` 没记在飞请求的 id；`start()` 先换引擎再 `reset()`，会拿新引擎取消旧 id | 成立（`analysisStore.ts` `pump` 内联 `nextRequestId()`；`start` 先 `engine = eng`） | 在飞请求连同发出它的引擎一起记下，`reset()` 用记下的那个引擎取消 |
+| 5 | 离开编辑器不取消它的分析，孤儿分析留在只读车道挡住随后的提示 | 成立（`PositionEditor` 无卸载清理，`requestId` 不变订阅不触发） | `editorStore` 加 `dispose()`，`PositionEditor` 卸载时调用 |
+| 6 | 车道记账按 id、只认当前 Worker 的消息；排头已回响应未处理时取消会重复响应；落子被抢占时旧 id 要在待决表里失败；出错后丢弃实例 | 成立 | 均已在实现中：按 id 记账；每个 Worker 的事件先比对是否当前实例；重复响应由引擎按 id 丢弃；抢占时对旧 id `cancel`；出错即终止并置空 |
+| 7 | `handleError` 传空列表必须是空操作 | 成立 | 已在实现中；补一例 |
+| 8 | D7 漏了 `bootstrapStore.test.ts` 的同款垫片；`AGENTS.md` 只点名两个文件可碰 Worker；`useGameStore.ts`、`ReviewScreen.tsx`、`gameStore.ts` 的注释「共用同一个 Worker」「引擎没有取消接口」会变成错话 | 成立 | 两个垫片一起删；车道工厂用自己的 `LaneWorker` 接口，`AGENTS.md` 点名它不碰 Worker；三处注释随改 |
+| 9 | `bench:queue` 的 D 场景页面一打开就读 Worker 脚本的资源记录，按需创建后必然为空 | 成立 | 探针先触发一次落子再取（只改 `bench/`），不是「若找不到再改」 |

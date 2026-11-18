@@ -42,7 +42,7 @@ analysis   learn        ← 分析结论与教学内容（两条互不依赖的�
 `types.ts` 常量与类型；`board.ts` 索引换算、边界、读格；`rules.ts` 胜负判定与落子合法性；`game.ts` 对局状态机；`branch.ts` 从合法前缀校验并重建探索分支局面；`position.ts` 局面编辑器用的棋盘快照（`Position` 不是 `GameState`：没有手顺与胜负派生）、全盘五连扫描与静态合法性检查（`analyzePosition`），契约见 [`positions/POSITION_MODEL.md`](positions/POSITION_MODEL.md)。全部是不可变纯函数。
 
 **`ai/`** —— 引擎。
-`patterns.ts` 单点棋型分析（窗口枚举，含隔子型）；`evaluate.ts` 整盘线段评估；`incrementalEvaluate.ts` 与棋盘同步的增量评估（搜索叶子取分用）；`candidates.ts` 候选点生成；`difficulty.ts` 五档参数表；`transposition.ts` Zobrist 置换表；`threat.ts` 算杀搜索（VCF / VCT）；`search.ts` 搜索主体。`worker.ts` 是 Worker 外壳，`engine.ts` 是主线程侧的请求分发，`browserEngine.ts` 负责把两者接起来。
+`patterns.ts` 单点棋型分析（窗口枚举，含隔子型）；`evaluate.ts` 整盘线段评估；`incrementalEvaluate.ts` 与棋盘同步的增量评估（搜索叶子取分用）；`candidates.ts` 候选点生成；`difficulty.ts` 五档参数表；`transposition.ts` Zobrist 置换表；`threat.ts` 算杀搜索（VCF / VCT）；`search.ts` 搜索主体。`worker.ts` 是 Worker 外壳，`engine.ts` 是主线程侧的请求分发与取消，`lanes.ts` 是两条车道（落子一个 Worker、提示与分析另一个，都在首次请求时才创建；Worker 由调用方注入，自己不碰），`browserEngine.ts` 只负责新建 Worker 并把它交给车道。
 
 `search.ts` 内部分成两层，这个分工是刻意的：
 
@@ -125,7 +125,7 @@ GameStore.playHuman → core.applyMove → 新 GameState（version + 1）
    ↓
 轮到 AI 时 requestAiMove：分配 requestId，记下当前 gameVersion
    ↓
-AiEngine.search → postMessage → Worker.chooseMove（主线程不受影响）
+AiEngine.search → 落子车道 → postMessage → Worker.chooseMove（主线程不受影响）
    ↓
 postMessage 回来 → engine 按 requestId 找到挂起的 promise
    ↓
@@ -138,7 +138,7 @@ GameStore.applyAiResponse：校验 requestId 与 gameVersion，两者都对上�
 ControlBar.onHint → GameStore.requestHint（purpose: 'hint'，固定 800 ms 短预算；入口是工具栏上那颗「求提示」，
 `HintPanel` 只负责渲染候选，它的 props 里没有 `onAsk`）
    ↓
-AiEngine.search → Worker.chooseMove（走同一条引擎、同一套过期校验）
+AiEngine.search → 只读车道 → Worker.chooseMove（走同一条引擎、同一套过期校验；落子不在这个 Worker 上排队）
    ↓
 GameStore.applyHintResponse：只写 hint / hintUrgency，**不调用 applyMove**
    ↓
@@ -164,7 +164,7 @@ position = replay(moves.slice(0, cursor))（纯派生，游标是唯一可变状
                  着法与引擎首选不同的手，另插 1 个对照请求：走完引擎首选之后的局面；
                  某一边走完之后对手只有一手必防时，两边各再插 1 个续搜请求：沿那一手应着再走一步）
    ↓
-AiEngine.search（purpose: 'analyze'，与对局共用同一个 Worker 与全局请求号）
+AiEngine.search（purpose: 'analyze'，走只读车道，与对局共用全局请求号）
    ↓
 响应按任务配对 → buildVerdict（loss = 两种走法的评分之差，一级不可比时用续搜的二级；仍不可比时为空）
    ↓
@@ -198,6 +198,8 @@ type PuzzleGoal =
 
 **过期响应必须丢弃。** 每个 AI 请求带 `requestId`（只增不减，跨对局也不重复）与 `gameVersion`（发起时的局面版本）。响应回来时两道闸门都要过：`requestId` 必须是当前在飞的那一个，`gameVersion` 必须等于当前棋局版本。悔棋、重新开始、切换执子都会把 `pendingRequestId` 置空，于是所有在飞的旧响应全部作废。这个判断位于 store 的纯函数 action 中，可以脱离浏览器直接单测。
 
+**作废的请求要真的取消。** 闸门只保证旧响应不落子，不保证 Worker 不白算：改造前，作废的那次搜索仍占着 Worker，新请求排在它后面（专家档思考中悔棋再落子，排队约 0.9 秒；连续悔棋会累积到 8.5 秒）。现在 `AiEngine.cancel(requestId)` 把请求从待决表摘掉、以 `SearchCancelledError` 拒绝，并让车道中止那次搜索——落子车道终止 Worker、下一次请求再新建；只读车道取消正在算的那个就终止重建并把排在后面的重发，取消排在后面的只划掉记录。store 不在每条作废路径上手写取消：`gameStore` 订阅 `pendingRequestId` / `pendingHintRequestId`、`editorStore` 订阅分析的请求号，号从某个 id 改走就取消那个 id；`analysisStore` 在 `reset()` 里用发出请求的那个引擎取消。订阅在 `set` 之后触发，状态已经不认那个请求，被取消的拒绝一定被闸门挡下。复盘分析与编辑器分析经 `store/searchDeadline.ts` 的 `withDeadline` 带同样的 15 秒兜底（到时以超时错误取消请求）。
+
 **玩家点击必须被正确忽略。** `playHuman` 在三种情况下直接返回：对局已结束、不是玩家的回合、AI 正在思考。加上棋盘组件的 `interactive` 控制，不会出现同色连下两手或卡在「AI 思考中」。
 
 **引擎失败不能让对局卡死。** Worker 报错时挂起的请求以错误结束，store 把 `aiThinking` 复位、记下错误，并**不动棋局**。AI 面板随即显示错误；只要还轮到 AI 走，面板就会给出「重试」入口，点击即用同一个局面重新发起请求。
@@ -206,7 +208,7 @@ type PuzzleGoal =
 
 **存档必须能还原「结果」。** 手顺能还原出胜负与和棋——最后一手就在手顺里。唯独认输还原不出来，所以 `PersistedSession` 单独存一个 `resignedBy`（由 `winner` 反推）。少了它，认输后刷新页面会让这局复活成进行中，AI 还会接着往下走。
 
-**分析与对局共用同一个 Worker，但绝不改变棋局。** 分析请求 `purpose: 'analyze'`、`gameVersion: 0`：它的过期校验走**三重闸门**——响应必须属于当前这一次分析（`runId`，每次 `start` 递增）、是当前在飞的那一个（`inflight`，局面、对照或续搜请求）、且手序号与局面版本对得上（`moveIndex` / `gameVersion`）。只比手序号是不够的：每一次分析的序号都从 0 开始，上一局的迟到响应会被下一局当成自己的。三类请求（落子 / 提示 / 分析）的 `requestId` 全部来自 `requestCounter.ts` 的同一个计数器——分成多个计数器迟早撞号，撞号意味着迟到的分析响应可能被当成对局请求去兑现。分析只在复盘页发起，串行排队、同一时刻最多 1 个在飞，400ms 预算有界，不会长时间占住 Worker。
+**分析绝不改变棋局，也不挡住落子。** 分析请求 `purpose: 'analyze'`、`gameVersion: 0`：它的过期校验走**三重闸门**——响应必须属于当前这一次分析（`runId`，每次 `start` 递增）、是当前在飞的那一个（`inflight`，局面、对照或续搜请求）、且手序号与局面版本对得上（`moveIndex` / `gameVersion`）。只比手序号是不够的：每一次分析的序号都从 0 开始，上一局的迟到响应会被下一局当成自己的。三类请求（落子 / 提示 / 分析）的 `requestId` 全部来自 `requestCounter.ts` 的同一个计数器——分成多个计数器迟早撞号，撞号意味着迟到的分析响应可能被当成对局请求去兑现。分析在复盘页与局面编辑器发起，走只读车道，与落子不在同一个 Worker 上；复盘分析串行排队、同一时刻最多 1 个在飞，400ms 预算有界。离开复盘页 / 编辑器时在飞的分析被取消。
 
 **提示请求与落子请求必须彻底隔离。** 两者走同一条引擎、同一套过期校验，但分别记在 `pendingHintRequestId` 与 `pendingRequestId` 上：**提示在飞时玩家照常落子**（`canHumanPlay` 不看提示状态）。（请求号仍来自同一个只增不减的计数器——分成两个计数器迟早会撞号，撞号意味着迟到的提示响应会去兑现落子请求。）
 

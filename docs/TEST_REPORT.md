@@ -1,6 +1,6 @@
 # 测试报告
 
-**日期**：2026-11-18（阶段 A：复盘分差同视界 + 可靠度四类，见「〇之二四」；A+ 必防续搜，见「〇之二五」；阶段 E 前两项，见「〇之二六」；单测 **1,559**、E2E **193**）
+**日期**：2026-11-18（阶段 A：复盘分差同视界 + 可靠度四类，见「〇之二四」；A+ 必防续搜，见「〇之二五」；阶段 E 前两项，见「〇之二六」；阶段 B 双 Worker + 取消，见「〇之二七」；单测 **1,603**、E2E **193**）
 **2026-11-15**：全仓两轴审查整改，见「〇之二三」；单测 **1,475**、E2E **193**。
 **0.6.0 已发布（2026-10-30）**：备份 v2（含局面）、DB v4 内容唯一索引、session v3 分支来源、
 进度失败顶部提示、严格读取、positions v1 真实浏览器用例、Firefox/WebKit 全量核心 E2E。
@@ -2669,4 +2669,93 @@ session v1、progress v1、records v1（含旧 winner）、positions v1、game/b
 | 规格 | 报告抬头日期仍是 11-17 | **改** |
 
 审查后重跑：`lint` / `typecheck` / `test`（1,559）/ `build` / `gates` 全绿，入口 gzip 131,502 B 不变。
+
+## 〇之二七、阶段 B：AI 请求调度层——双 Worker + 真正的取消（2026-11-18）
+
+出处：评估报告 §4.3、§10「阶段 B」，§14.2 裁定 13（双 Worker）。选型实验见 `docs/research/PHASE_B_C_DECISIONS.md`，
+计划、三轮自审与独立终审（九条全部成立、全部处理）见 `docs/research/PHASE_B_PLAN.md`。
+
+### 改了什么
+
+- **引擎有了取消**：`AiEngine.cancel(requestId, reason?)` 从待决表摘掉请求、以 `SearchCancelledError`（或给定的原因）
+  拒绝，并通知传输层中止；对已结算 / 不认识的 id 是空操作。`handleError` 可只让给定的几个请求失败（空列表 = 空操作）。
+- **两条车道**（`ai/lanes.ts`，不碰 `Worker` 全局，`spawn` 由 `browserEngine.ts` 注入）：落子一个 Worker，同一时刻至多
+  一个请求，被新落子抢占或被取消就终止、下次再建；提示 / 复盘分析 / 编辑器分析另一个 Worker，串行，取消正在算的那个就
+  终止重建并重发其余，取消排在后面的只划掉。两个 Worker 都在首次请求时才创建；只认当前实例的事件。
+- **store 接上取消**：`gameStore` 订阅两个请求号、`editorStore` 订阅分析请求号，号从某个 id 改走就取消它（悔棋、新局、
+  认输、落子清提示、超时……一处订阅全覆盖）；`analysisStore` 在 `reset()` 里用发出请求的那个引擎取消；离开局面编辑器时
+  取消在飞的分析（终审第 5 条）。
+- **分析有了超时兜底**：`store/searchDeadline.ts` 的 `withDeadline`，到 15 秒以超时错误取消请求。
+- `createLaneEngine` 的 `dispose` 同时终止两个 Worker（两轴审查指出：只释放待决表，只读 Worker 上排队的搜索会继续跑）。
+- 删掉 `BattleScreen.test.tsx`、`bootstrapStore.test.ts` 的全局 `FakeWorker` 垫片——Worker 按需创建后，模块加载不再
+  构造 Worker，删了仍全绿。
+
+**与计划的两处出入**：① D5 写的是 `withDeadline` 包一层 Promise；实际一包就让调用方的回调晚一个微任务，`analysisStore`
+里按「`await Promise.resolve()` 一次就推进」写的用例红了 31 条（实测）。改为给 `cancel` 加一个可选的拒绝原因，`withDeadline`
+到时以超时错误取消、返回的仍是 `search` 的原 Promise——既有用例不改一行，终审第 1 条（超时文案不能被「已取消」顶掉）
+同样满足。② `gameStore` 的两处计时器照计划不动（文案与 15 秒常量挪进 `searchDeadline.ts` 共用，行为不变），超时把请求号置空后订阅会顺带取消那个请求。③ `withDeadline` 没有 `ms` 参数：两处调用都是 15 秒，不预留。
+
+### 实测（`yarn bench:queue`，生产构建，本机 Chrome，专家档）
+
+本机同时有别的重负载在跑（1 分钟负载 11–23，8 核），引擎耗时被放大（A 场景一次搜索 1.3–1.5 s，实验时约 0.9 s），
+**排队**不受影响——这正是探针扣掉引擎耗时的用意。两轮：
+
+| 场景 | 改造前（实验记录，主干） | 阶段 B 第 1 轮 | 第 2 轮 |
+| --- | --- | --- | --- |
+| A. 思考中悔棋再落子（三轮各自最后一个请求） | 908 / 897 / 1001；921 / 891 / 912 ms | 12 / 14 / 13 ms | 11 / 13 / 11 ms |
+| B. 连续 6 次「落子 → 悔棋」后落子 | 排队 8,492 / 8,500 ms | 25 ms（AI 2.6 s 应手） | 41 ms（2.5 s） |
+| C. 求提示后 50 ms 落子 | 落子排队 717 / 717 ms | 0 ms | 0 ms |
+| D. Worker 新建 + 首个请求往返（中位，12 次） | 4 ms | 8 ms | 6 ms |
+
+C 场景里提示不再返回：落子清掉提示，订阅随即取消了那次（已过期的）提示请求。验收标准 1（排队 < 50 ms、B 不累积）达到。
+D 场景的探针改为先落一手再取 Worker 脚本地址（终审第 9 条；只改 `bench/`）。
+
+**真实浏览器复核**（本机 Chrome，生产构建，包一层 `window.Worker` 计数）：页面加载后 0 个 Worker；只下两手 1 个；
+求过一次提示 2 个；专家档思考中悔棋再落子：共建 2 个、终止 1 个，AI 2.5 s 后应手（≈ 一次搜索的耗时，没有排队）。
+「复盘页分析中切回对战页落子」没有在真实浏览器里单独复核：两条车道互不排队由 `lanes.test.ts` 钉着，离开复盘页取消分析
+由 `review.test.tsx` 的卸载用例与 `analysisStore` 的取消用例钉着。
+
+### 反向验证（先提交快照再做）
+
+| 故意破坏 | 结果 |
+| --- | --- |
+| 只读车道不比对「是不是当前 Worker」就处理 `error` | 红：「已终止的旧 Worker 迟到的事件被忽略」 |
+| 落子车道被抢占时不终止旧 Worker、不取消旧请求 | 红 1 条 |
+| 只读车道取消排头后不重发其余 | 红 1 条 |
+| 取消排在后面的也终止重建 | 红 1 条 |
+| 引擎的中止回调不通知落子车道 | 红 1 条 |
+| `withDeadline` 到时用缺省原因取消 | 红 2 条（编辑器、复盘分析：文案成了「已取消」） |
+| `analysisStore.reset()` 不取消 | 红 3 条 |
+| Task 1 / 3 的用例在实现之前 | 全红（先写失败测试） |
+
+### 门禁读数（本机）
+
+| 命令 | 结果 |
+| --- | --- |
+| `yarn lint` / `typecheck` / `build` | 通过 |
+| `yarn test` | **1,603 / 1,603**（+44：引擎 9、车道 18、`gameStore` 8、`analysisStore` 4、`editorStore` 4、`PositionEditor` 1） |
+| `yarn e2e` | **193 / 193** |
+| `yarn e2e:prod` | **7 / 7** |
+| `yarn gates` | 零环、knip 干净、0 克隆、条数棘轮、入口 gzip **132,290 B** ≤ 135,000 B（+788 B：车道与取消，含审查后的修改）、依赖方向通过 |
+| `yarn e2e:browsers` | 本机 Firefox / WebKit 未安装，没跑；交给 CI 的 browsers / browsers-full 两档 |
+
+### 两轴审查（`b015d0a...HEAD`）
+
+两个只读代理并行（标准轴：`AGENTS.md`、`CLAUDE.md` + 代码异味基线；规格轴：`PHASE_B_PLAN.md` 含终审九条），每条对照代码核实。
+标准轴推演了车道的迟到事件、订阅取消的时序与 `withDeadline` 的计时器，没发现竞态。
+
+| 轴 | 发现 | 处置 |
+| --- | --- | --- |
+| 标准 | `createLaneEngine` 的 `dispose` 只拒绝待决请求、不终止两个 Worker | **改**：先写失败用例，`dispose` 同时关两条车道 |
+| 标准 | `ROADMAP.md` 复盘一节仍写「引擎没有取消接口，已发出的那一次搜索仍会跑完」 | **改** |
+| 标准 | `editorStore.dispose()` 只是放弃在飞的分析，与 `AiEngine.dispose`（永久释放）同名不同义 | **改**：更名 `abandonAnalysis()` |
+| 标准 | `gameStore` 再导出 `AI_RESPONSE_TIMEOUT_MS` 只为测试 | **改**：测试直接从 `searchDeadline` 取，去掉再导出 |
+| 标准 | 超时有两套机制（`gameStore` 自己的计时器 vs `withDeadline`），「放弃即取消」有订阅与手记两种写法 | 不改：前者是计划 D5 有意保留（`gameStore` 的计时器有假时钟用例钉着）；`analysisStore` 的请求号不在 state 里，订阅不到，只能在 `reset()` 里取消 |
+| 标准 | `AiEngine` 加方法后十多处测试替身各补一行 `cancel() {}` | 不改：替身都显式标了 `AiEngine` 类型，漏补会被 typecheck 抓到，这是想要的 |
+| 标准 | Firefox / WebKit 本机没跑（`AGENTS.md` 要求改 Worker 后跑 `e2e:browsers`） | 如实记录；推送后以 CI 的 browsers / browsers-full 两档为准 |
+| 规格 | `withDeadline` 少了计划写的 `ms` 参数；`cancel` 多了 `reason`；`gameStore` 的超时文案换成共用常量 | 不改，三处出入写进上文「与计划的出入」 |
+| 规格 | 计划「独立终审」第 1 条写的是「先结算外层再取消」，实现是「带原因取消」 | **改**：计划那一行改成与实现一致 |
+| 规格 | 验收 1 与真实浏览器复核的实测数字没有落盘 | 审查时还没写；已写进上文「实测」 |
+
+审查后重跑：`lint` / `typecheck` / `test`（1,603）/ `build` / `gates` 全绿。
 
