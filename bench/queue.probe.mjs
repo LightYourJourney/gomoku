@@ -27,6 +27,8 @@
  *
  * 出处与首次结果：`docs/research/REFACTORING_ASSESSMENT.md` §4.3、§13。
  * 这也是「请求调度层」（该报告的阶段 B）的验收探针：做完后 A/C 应降到与 D 同量级，B 不再累积。
+ * 阶段 B 之后落子与只读请求各一个 Worker、首次请求时才创建（`src/ai/lanes.ts`）；上面「只有一个
+ * Worker、没有取消」描述的是改造前，探针本身不变——包 `window.Worker` 对两个 Worker 同样生效。
  */
 import { loadavg } from 'node:os'
 import { chromium } from '@playwright/test'
@@ -210,6 +212,9 @@ async function hintThenPlay(browser) {
 
 async function respawnCost(browser) {
   const { context, page } = await openApp(browser)
+  // 阶段 B 之后 Worker 在首次请求时才创建：先落一手、等 AI 应手，Worker 脚本才出现在资源记录里。
+  await page.getByTestId('intersection-7-7').click()
+  await waitForStones(page, 2)
   const result = await page.evaluate(async () => {
     const url = performance
       .getEntriesByType('resource')

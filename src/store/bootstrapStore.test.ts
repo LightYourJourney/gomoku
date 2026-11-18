@@ -1,29 +1,4 @@
-import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest'
-
-/**
- * `bootstrapStore()` 里装配的是**真实**的浏览器引擎，`useGameStore` 模块
- * 一加载就会 `new Worker(...)`。jsdom 没有 Worker，所以先把它换成空实现——
- * 与 `BattleScreen.test.tsx:14-20` 同一手法。这里的用例不会真的触发搜索。
- */
-vi.hoisted(() => {
-  class FakeWorker {
-    addEventListener(): void {}
-    postMessage(): void {}
-  }
-  // 记下原本的 Worker（jsdom 里通常是 undefined），用完在 afterAll 里还回去——
-  // 与 `BattleScreen.test.tsx` 同一手法，那边也补了还原。
-  ;(globalThis as { __originalWorker?: unknown }).__originalWorker = (
-    globalThis as { Worker?: unknown }
-  ).Worker
-  Object.assign(globalThis, { Worker: FakeWorker })
-})
-
-afterAll(() => {
-  const original = (globalThis as { __originalWorker?: unknown }).__originalWorker
-  if (original === undefined) Reflect.deleteProperty(globalThis, 'Worker')
-  else Object.assign(globalThis, { Worker: original })
-})
-
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { STORAGE_KEY, encodeSession } from '../persist/storage'
 import { bootstrapStore, useGameStore } from './useGameStore'
 

@@ -517,12 +517,13 @@ function idleEngine(): AiEngine {
     search: () => new Promise(() => {}),
     handleResponse() {},
     handleError() {},
+    cancel() {},
     dispose() {},
   }
 }
 
 describe('ReviewScreen 离开页面时停掉后台工作', () => {
-  it('卸载后分析被停止——不再占着与对局共用的 Worker', async () => {
+  it('卸载后分析被停止——不再占着只读 Worker、挡住之后的提示', async () => {
     const storage = memoryGameRecords()
     await storage.put(nineMoveRecord())
 
@@ -652,6 +653,7 @@ function echoEngine(): AiEngine {
     },
     handleResponse() {},
     handleError() {},
+    cancel() {},
     dispose() {},
   }
 }
@@ -694,6 +696,7 @@ function scriptedEngine(timeoutAt: readonly number[] = []): AiEngine {
     },
     handleResponse() {},
     handleError() {},
+    cancel() {},
     dispose() {},
   }
 }
@@ -780,6 +783,7 @@ function failingEngine(): AiEngine {
     search: () => Promise.reject(new Error('引擎炸了')),
     handleResponse() {},
     handleError() {},
+    cancel() {},
     dispose() {},
   }
 }
@@ -811,6 +815,7 @@ function noMoveAtEngine(nullAt: number): AiEngine {
     },
     handleResponse() {},
     handleError() {},
+    cancel() {},
     dispose() {},
   }
 }
@@ -886,6 +891,7 @@ function shortcutEngine(): AiEngine {
     },
     handleResponse() {},
     handleError() {},
+    cancel() {},
     dispose() {},
   }
 }

@@ -14,6 +14,7 @@ import {
 } from '../core/position'
 import type { Point } from '../core/types'
 import { nextRequestId } from './requestCounter'
+import { withDeadline } from './searchDeadline'
 
 export interface EditorSnapshot {
   readonly position: Position
@@ -62,6 +63,8 @@ export interface EditorStore {
   redo(): void
   load(position: Position, provenance: PositionProvenance | null): void
   analyze(): void
+  /** 离开编辑器时调用：放弃在飞的分析（订阅随即取消它）。 */
+  abandonAnalysis(): void
 }
 
 /**
@@ -72,7 +75,7 @@ export interface EditorStore {
  * 任何编辑或档位变化都会递增 `version` 并清空分析，旧响应因此不可能落到新局面上。
  */
 export function createEditorStore(engine: AiEngine) {
-  return create<EditorStore>()((set, get) => {
+  const store = create<EditorStore>()((set, get) => {
     const push = (
       position: Position,
       provenance: PositionProvenance | null,
@@ -221,15 +224,14 @@ export function createEditorStore(engine: AiEngine) {
           },
         })
 
-        void engine
-          .search({
-            requestId,
-            gameVersion: version,
-            board: new Uint8Array(current.position.board),
-            player: current.position.nextPlayer,
-            difficulty,
-            purpose: 'hint',
-          })
+        void withDeadline(engine, {
+          requestId,
+          gameVersion: version,
+          board: new Uint8Array(current.position.board),
+          player: current.position.nextPlayer,
+          difficulty,
+          purpose: 'hint',
+        })
           .then(
             (response) => {
               const latest = get()
@@ -272,6 +274,18 @@ export function createEditorStore(engine: AiEngine) {
             },
           )
       },
+
+      abandonAnalysis() {
+        if (get().analysis.status === 'running') set({ analysis: IDLE_ANALYSIS })
+      },
     }
   })
+
+  // 与 gameStore 同一手法：分析请求号从某个 id 改走（编辑、切档位、清空、载入、离开），
+  // 就取消那个请求。订阅在 `set` 之后触发，此时闸门已经不认它，拒绝分支不会落到错误状态。
+  store.subscribe((state, previous) => {
+    const abandoned = previous.analysis.requestId
+    if (abandoned !== null && state.analysis.requestId !== abandoned) engine.cancel(abandoned)
+  })
+  return store
 }

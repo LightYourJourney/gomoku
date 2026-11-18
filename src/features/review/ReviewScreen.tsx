@@ -79,8 +79,7 @@ export function ReviewScreen({
   const adoptProgress = useLearnStore((state) => state.adoptProgress)
 
   // 离开复盘页就停掉分析：结果不再有人看，继续跑没有意义。
-  // 注意 `stop()` 只能**丢弃结果**——引擎没有取消接口，已经发出去的那一次
-  // 搜索仍会在共用的 Worker 上跑完（最多一个预算，400ms），之后不再发新的。
+  // `stop()` 会取消在飞的那一次搜索（只读 Worker 随即终止重建），之后不再发新的。
   // 回放也一并停。
   useEffect(() => {
     return () => {

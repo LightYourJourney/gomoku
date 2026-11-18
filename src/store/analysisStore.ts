@@ -16,6 +16,7 @@ import {
   type Reached,
 } from '../analysis/analyze'
 import { nextRequestId } from './requestCounter'
+import { withDeadline } from './searchDeadline'
 
 /**
  * 单手分析的时间预算。
@@ -123,12 +124,23 @@ export function createAnalysisStore(): UseBoundStore<StoreApi<AnalysisStore>> {
      * 丢弃、分析永久卡死。响应必须连同 run 一起核对。
      */
     let runId = 0
+    /**
+     * 最近发出的那个请求，连同发出它的引擎。`reset` 用它取消在飞的请求——必须用
+     * **发出它的**引擎：`start` 先换引擎再 `reset`。请求号全局唯一，所以它已经结算时
+     * 这里不必清空：对已结算的 id 取消是空操作。
+     */
+    let sent: { readonly engine: AiEngine; readonly requestId: number } | null = null
 
     function reset() {
       pending.clear()
       queue = []
       inflight = null
       runId++ // 让所有在飞响应作废
+      if (sent !== null) {
+        const { engine: owner, requestId } = sent
+        sent = null
+        owner.cancel(requestId)
+      }
     }
 
     /** 一个局面请求完成后：填入挂起结论、判定要不要对照、可能直接拼出 verdict。 */
@@ -306,17 +318,18 @@ export function createAnalysisStore(): UseBoundStore<StoreApi<AnalysisStore>> {
       const { index } = job
 
       // 分析不碰对局，但过期闸门照用：gameVersion 恒 0，配对走 moveIndex。
-      void engine
-        .search({
-          requestId: nextRequestId(),
-          gameVersion: 0,
-          board: job.kind === 'position' ? boardAt(index) : job.state.board,
-          player: job.kind === 'position' ? moverAt(index, rec.firstPlayer) : job.state.current,
-          difficulty,
-          budgetMs,
-          purpose: 'analyze',
-          moveIndex: index,
-        })
+      const requestId = nextRequestId()
+      sent = { engine, requestId }
+      void withDeadline(engine, {
+        requestId,
+        gameVersion: 0,
+        board: job.kind === 'position' ? boardAt(index) : job.state.board,
+        player: job.kind === 'position' ? moverAt(index, rec.firstPlayer) : job.state.current,
+        difficulty,
+        budgetMs,
+        purpose: 'analyze',
+        moveIndex: index,
+      })
         .then(
           (response) => {
             // 三道闸门：属于当前这一次分析（run）、是当前在飞的那一个、

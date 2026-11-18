@@ -10,10 +10,9 @@ import { createGameStore, type BranchOrigin } from './gameStore'
 /**
  * 应用唯一的 AI 引擎实例。
  *
- * 导出它，供复盘页的分析管线复用**同一个 Worker**——分析与对局靠
- * `nextRequestId()` 的全局唯一号区分（见 `requestCounter.ts`），
- * 与「提示和落子共用引擎」是同一条设计。分析请求有 400ms 上限，
- * 不会长时间占住 Worker。
+ * 导出它，供复盘页的分析管线与局面编辑器复用**同一个引擎**——落子走落子 Worker，
+ * 提示与两种分析走只读 Worker（见 `ai/lanes.ts`），两个 Worker 都在首次请求时
+ * 才创建。所有请求靠 `nextRequestId()` 的全局唯一号区分（见 `requestCounter.ts`）。
  */
 export const appEngine = createBrowserAiEngine()
 

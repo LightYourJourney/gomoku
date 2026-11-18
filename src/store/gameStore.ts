@@ -27,6 +27,7 @@ import { recordContentKey, type RecordIdentity } from '../persist/recordIdentity
 import type { PersistedSession } from '../persist/storage'
 import type { RecordSaveState } from '../lib/record-save'
 import { nextRequestId } from './requestCounter'
+import { AI_RESPONSE_TIMEOUT_MS, TIMEOUT_MESSAGE } from './searchDeadline'
 
 /** 一次探索分支的来源。只保存回指所需的最小元数据，不复制原棋谱。 */
 export interface BranchOrigin {
@@ -139,14 +140,6 @@ export interface GameStore {
   applyHintResponse(response: SearchResponse): void
   clearHint(): void
 }
-
-/**
- * 等 AI 响应的硬上限。
- *
- * 不是搜索预算：搜索自己会在 2600ms 内收手。这一条只防「Worker 静默死亡后
- * 永不结算」——预算的 5 倍以上，正常机器不可能触发。
- */
-export const AI_RESPONSE_TIMEOUT_MS = 15_000
 
 /** 局面一变就要把提示整体清掉。 */
 const HINT_CLEARED = {
@@ -406,7 +399,7 @@ export function createGameStore(
     }
   }
 
-  return create<GameStore>()((set, get) => {
+  const store = create<GameStore>()((set, get) => {
     const notifier = makeNotifier(set)
     const notifyGameEnd = notifier.notifyGameEnd
 
@@ -607,18 +600,19 @@ export function createGameStore(
         set({ aiThinking: true, aiError: null, pendingRequestId: requestId })
 
         /*
-         * 兜底超时：引擎本身没有取消接口，正常路径一定会结算（响应或错误）。
+         * 兜底超时：正常路径一定会结算（响应或错误）。
          * 但 Worker 若静默死亡（脚本加载失败后不再发任何事件、或内部死循环），
          * 这个 Promise 永远不结算，界面就会一直停在「AI 思考中」——不是崩溃，
          * 却和卡死没有区别。预算最大 2600ms，15 秒足够覆盖最慢的机器。
-         * 超时后旧响应仍会被 `requestId` 闸门丢弃，不会迟到一个落子。
+         * 超时把请求号置空，订阅随即取消那个请求；万一旧响应仍到达，也会被
+         * `requestId` 闸门丢弃，不会迟到一个落子。
          */
         const timer = setTimeout(() => {
           if (get().pendingRequestId !== requestId) return
           set({
             aiThinking: false,
             pendingRequestId: null,
-            aiError: `AI 超过 ${AI_RESPONSE_TIMEOUT_MS / 1000} 秒没有响应，请重试`,
+            aiError: TIMEOUT_MESSAGE,
           })
         }, AI_RESPONSE_TIMEOUT_MS)
 
@@ -736,7 +730,7 @@ export function createGameStore(
           set({
             hintThinking: false,
             pendingHintRequestId: null,
-            hintError: `AI 超过 ${AI_RESPONSE_TIMEOUT_MS / 1000} 秒没有响应，请重试`,
+            hintError: TIMEOUT_MESSAGE,
           })
         }, AI_RESPONSE_TIMEOUT_MS)
 
@@ -792,4 +786,24 @@ export function createGameStore(
       },
     }
   })
+
+  /*
+   * 放弃的请求一律取消，Worker 不再白算。作废路径有十来条（悔棋、新局、认输、恢复、
+   * 挂起 AI、换模式、落子清提示、超时……），它们的共同点是把请求号从某个 id 改走——
+   * 所以只在这一处订阅，不在每条路径上手写。订阅在 `set` 之后同步触发，此时状态已经
+   * 不认那个请求了，被取消的 Promise 的拒绝分支一定被各自的闸门挡下。
+   * 正常结算时请求号也会变走：那时引擎的待决表里已经没有它，`cancel` 是空操作。
+   */
+  store.subscribe((state, previous) => {
+    if (previous.pendingRequestId !== null && state.pendingRequestId !== previous.pendingRequestId) {
+      engine.cancel(previous.pendingRequestId)
+    }
+    if (
+      previous.pendingHintRequestId !== null &&
+      state.pendingHintRequestId !== previous.pendingHintRequestId
+    ) {
+      engine.cancel(previous.pendingHintRequestId)
+    }
+  })
+  return store
 }

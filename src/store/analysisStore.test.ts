@@ -1,11 +1,12 @@
-import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { BLACK, WHITE, type Point } from '../core/types'
 import { nextRequestId } from './requestCounter'
 import { createAnalysisStore } from './analysisStore'
 import type { UseBoundStore, StoreApi } from 'zustand'
 import type { AnalysisStore } from './analysisStore'
 import { createGameStore } from './gameStore'
-import type { AiEngine } from '../ai/engine'
+import { AI_RESPONSE_TIMEOUT_MS } from './searchDeadline'
+import { createAiEngine, type AiEngine } from '../ai/engine'
 import type { GameRecord } from '../persist/gameRecords'
 import { WIN_SCORE, type SearchRequest, type SearchResponse } from '../ai/types'
 
@@ -35,6 +36,8 @@ function threeWinRecord(seq = 1): GameRecord {
 interface EngineSpy {
   engine: AiEngine
   requests: SearchRequest[]
+  /** `engine.cancel` 收到的请求号。 */
+  cancelled: number[]
   /** settle 第 i 个发出的请求（按发出顺序）。move 为 null 表示无棋可走。 */
   settle: (
     order: number,
@@ -48,6 +51,7 @@ interface EngineSpy {
 
 function fakeEngine(): EngineSpy {
   const requests: SearchRequest[] = []
+  const cancelled: number[] = []
   const resolvers = new Map<number, (response: SearchResponse) => void>()
   const rejecters = new Map<number, (error: Error) => void>()
 
@@ -62,12 +66,16 @@ function fakeEngine(): EngineSpy {
     },
     handleResponse() {},
     handleError() {},
+    cancel(requestId) {
+      cancelled.push(requestId)
+    },
     dispose() {},
   }
 
   return {
     engine,
     requests,
+    cancelled,
     settle(order, move, score = 100, depth = 4, overrides: Partial<SearchResponse> = {}) {
       const request = requests[order]
       const resolve = resolvers.get(order)
@@ -828,3 +836,64 @@ describe('分析管线 —— 必防续搜', () => {
   })
 })
 
+
+describe('分析管线 —— 放弃的请求被取消（阶段 B）', () => {
+  it('stop 取消在飞的那个请求，已结算的不取消', async () => {
+    store.getState().start({ record: threeWinRecord(), engine: spy.engine, difficulty: 'easy', budgetMs: 400 })
+    spy.settle(0, { x: 3, y: 7 }, 100)
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    expect(spy.requests).toHaveLength(2)
+
+    store.getState().stop()
+
+    expect(spy.cancelled).toEqual([spy.requests[1]!.requestId])
+  })
+
+  it('换局重开：用发出那个请求的引擎取消它，不拿新引擎去取消', () => {
+    const other = fakeEngine()
+    store.getState().start({ record: threeWinRecord(1), engine: spy.engine, difficulty: 'easy', budgetMs: 400 })
+
+    store.getState().start({ record: threeWinRecord(2), engine: other.engine, difficulty: 'hard', budgetMs: 400 })
+
+    expect(spy.cancelled).toEqual([spy.requests[0]!.requestId])
+    expect(other.cancelled).toEqual([])
+  })
+
+  it('被取消的拒绝被闸门挡下：stop 之后不写 error', async () => {
+    const aborted: number[] = []
+    const real = createAiEngine(
+      () => {},
+      (requestId) => aborted.push(requestId),
+    )
+    store.getState().start({ record: threeWinRecord(), engine: real, difficulty: 'easy', budgetMs: 400 })
+
+    store.getState().stop()
+    await new Promise((resolve) => setTimeout(resolve, 0))
+
+    expect(aborted).toHaveLength(1)
+    expect(store.getState().error).toBeNull()
+  })
+
+  it('引擎永不结算时超时：以超时文案收尾、不停在「分析中」，并取消请求', async () => {
+    vi.useFakeTimers()
+    try {
+      const aborted: number[] = []
+      const posted: number[] = []
+      const real = createAiEngine(
+        (request) => posted.push(request.requestId),
+        (requestId) => aborted.push(requestId),
+      )
+      store.getState().start({ record: threeWinRecord(), engine: real, difficulty: 'easy', budgetMs: 400 })
+
+      await vi.advanceTimersByTimeAsync(AI_RESPONSE_TIMEOUT_MS - 1)
+      expect(store.getState().running).toBe(true)
+
+      await vi.advanceTimersByTimeAsync(1)
+      expect(store.getState().running).toBe(false)
+      expect(store.getState().error).toContain(`${AI_RESPONSE_TIMEOUT_MS / 1000} 秒`)
+      expect(aborted).toEqual(posted)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+})

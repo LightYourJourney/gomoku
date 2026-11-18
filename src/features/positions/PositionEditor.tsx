@@ -78,6 +78,9 @@ export function PositionEditor({
   const [notice, setNotice] = useState<string | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
 
+  // 离开编辑器时放弃在飞的分析：它在只读 Worker 上，留着会挡住之后的提示。
+  useEffect(() => () => editor.getState().abandonAnalysis(), [editor])
+
   useEffect(() => {
     let alive = true
     void records.list().then((result) => {

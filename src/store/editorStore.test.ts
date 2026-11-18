@@ -1,16 +1,18 @@
 import { describe, expect, it, vi } from 'vitest'
-import type { AiEngine } from '../ai/engine'
+import { createAiEngine, type AiEngine } from '../ai/engine'
 import type { SearchResponse } from '../ai/types'
 import { positionFromReplay } from '../core/position'
 import { BLACK, WHITE } from '../core/types'
 import { createEditorStore } from './editorStore'
 import { createGameStore } from './gameStore'
+import { AI_RESPONSE_TIMEOUT_MS } from './searchDeadline'
 
 function idleEngine(): AiEngine {
   return {
     search: vi.fn(() => Promise.reject(new Error('不该调用'))),
     handleResponse() {},
     handleError() {},
+    cancel() {},
     dispose() {},
   }
 }
@@ -23,6 +25,7 @@ function deferredEngine(): { engine: AiEngine; resolve: (r: SearchResponse) => v
       search: vi.fn(() => promise),
       handleResponse() {},
       handleError() {},
+      cancel() {},
       dispose() {},
     },
     resolve,
@@ -204,6 +207,7 @@ describe('editorStore —— AI 分析', () => {
       search: vi.fn(() => Promise.reject(new Error('worker 崩了'))),
       handleResponse() {},
       handleError() {},
+      cancel() {},
       dispose() {},
     }
     const store = createEditorStore(engine)
@@ -239,5 +243,80 @@ describe('editorStore —— AI 分析', () => {
 
     expect(store.getState().analysis.status).toBe('idle')
     expect(store.getState().analysis.response).toBeNull()
+  })
+})
+
+describe('editorStore —— 放弃的分析被取消（阶段 B）', () => {
+  /** 真的 `createAiEngine`：被取消的请求真的以 `SearchCancelledError` 拒绝。 */
+  function realEngine() {
+    const aborted: number[] = []
+    const posted: number[] = []
+    const engine = createAiEngine(
+      (request) => posted.push(request.requestId),
+      (requestId) => aborted.push(requestId),
+    )
+    return { engine, aborted, posted }
+  }
+
+  function analyzable(engine: AiEngine) {
+    const store = createEditorStore(engine)
+    store.getState().setNextPlayer(WHITE)
+    store.getState().edit({ x: 7, y: 7 })
+    store.getState().setNextPlayer(WHITE)
+    return store
+  }
+
+  it('分析中继续摆棋：那次分析被取消，拒绝不落到错误状态', async () => {
+    const { engine, aborted, posted } = realEngine()
+    const store = analyzable(engine)
+    store.getState().analyze()
+
+    store.getState().setTool('white')
+    store.getState().edit({ x: 8, y: 8 })
+    await new Promise((resolve) => setTimeout(resolve, 0))
+
+    expect(aborted).toEqual(posted)
+    expect(store.getState().analysis.status).toBe('idle')
+    expect(store.getState().analysis.error).toBeNull()
+  })
+
+  it('分析中切档位：那次分析被取消', () => {
+    const { engine, aborted, posted } = realEngine()
+    const store = analyzable(engine)
+    store.getState().analyze()
+
+    store.getState().setDifficulty('easy')
+
+    expect(aborted).toEqual(posted)
+  })
+
+  it('离开编辑器（abandonAnalysis）：在飞的分析被取消', () => {
+    const { engine, aborted, posted } = realEngine()
+    const store = analyzable(engine)
+    store.getState().analyze()
+
+    store.getState().abandonAnalysis()
+
+    expect(aborted).toEqual(posted)
+    expect(store.getState().analysis.status).toBe('idle')
+  })
+
+  it('引擎永不结算时超时：落到错误状态、文案是超时而不是「已取消」，并取消请求', async () => {
+    vi.useFakeTimers()
+    try {
+      const { engine, aborted, posted } = realEngine()
+      const store = analyzable(engine)
+      store.getState().analyze()
+
+      await vi.advanceTimersByTimeAsync(AI_RESPONSE_TIMEOUT_MS - 1)
+      expect(store.getState().analysis.status).toBe('running')
+
+      await vi.advanceTimersByTimeAsync(1)
+      expect(store.getState().analysis.status).toBe('error')
+      expect(store.getState().analysis.error).toContain(`${AI_RESPONSE_TIMEOUT_MS / 1000} 秒`)
+      expect(aborted).toEqual(posted)
+    } finally {
+      vi.useRealTimers()
+    }
   })
 })

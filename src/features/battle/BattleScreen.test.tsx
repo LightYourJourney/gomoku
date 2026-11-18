@@ -1,5 +1,5 @@
 import { act, fireEvent, render, screen } from '@testing-library/react'
-import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { applyMove, createGame, resign } from '../../core/game'
 import type { GameState } from '../../core/game'
 import { BLACK } from '../../core/types'
@@ -7,29 +7,6 @@ import type { StoneSound } from '../../lib/sound'
 import { useSettingsStore } from '../../store/settingsStore'
 import { useGameStore } from '../../store/useGameStore'
 import { BattleScreen } from './BattleScreen'
-
-// jsdom 里没有 Worker，而 `useGameStore` 在模块加载时就构造引擎（见 ai/browserEngine.ts）。
-// 这一组用例不碰 AI：引擎只是被建出来，一次搜索都不发。
-// 必须用 vi.hoisted —— 普通语句排在 import 之后，那时模块已经炸了。
-vi.hoisted(() => {
-  class FakeWorker {
-    addEventListener(): void {}
-    postMessage(): void {}
-  }
-  // 记下原本的 Worker（jsdom 里通常是 undefined），用完在 afterAll 里还回去。
-  // 不还原的话，同一文件里将来新增的用例会在「Worker 永远存在」的假前提下写，
-  // 而那是这个文件自己造的假象。
-  ;(globalThis as { __originalWorker?: unknown }).__originalWorker = (
-    globalThis as { Worker?: unknown }
-  ).Worker
-  Object.assign(globalThis, { Worker: FakeWorker })
-})
-
-afterAll(() => {
-  const original = (globalThis as { __originalWorker?: unknown }).__originalWorker
-  if (original === undefined) Reflect.deleteProperty(globalThis, 'Worker')
-  else Object.assign(globalThis, { Worker: original })
-})
 
 function fakeSound(): StoneSound {
   return {

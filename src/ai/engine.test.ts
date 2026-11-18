@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import { createBoard } from '../core/board'
 import { BLACK, type Point } from '../core/types'
-import { createAiEngine } from './engine'
+import { createAiEngine, SearchCancelledError } from './engine'
 import type { SearchRequest, SearchResponse } from './types'
 
 function request(requestId: number, gameVersion = 0): SearchRequest {
@@ -148,5 +148,105 @@ describe('createAiEngine —— Worker 报错的消息为空', () => {
     engine.handleError('')
 
     await expect(pending).rejects.toThrow('AI 引擎异常')
+  })
+})
+
+describe('createAiEngine —— 取消', () => {
+  it('cancel 以 SearchCancelledError 拒绝那个请求，并通知传输层中止一次', async () => {
+    const abort = vi.fn()
+    const engine = createAiEngine(() => {}, abort)
+    const pending = engine.search(request(3))
+
+    engine.cancel(3)
+
+    await expect(pending).rejects.toBeInstanceOf(SearchCancelledError)
+    expect(abort).toHaveBeenCalledTimes(1)
+    expect(abort).toHaveBeenCalledWith(3)
+  })
+
+  it('取消之后才到达的同 id 响应被丢弃，其他请求不受影响', async () => {
+    const engine = createAiEngine(() => {})
+    const cancelled = engine.search(request(1))
+    const kept = engine.search(request(2))
+    cancelled.catch(() => {})
+
+    engine.cancel(1)
+    engine.handleResponse(response(1))
+    engine.handleResponse(response(2))
+
+    await expect(cancelled).rejects.toBeInstanceOf(SearchCancelledError)
+    await expect(kept).resolves.toMatchObject({ requestId: 2 })
+  })
+
+  it('对已结算或不认识的 id 取消是空操作：不调 abort、不抛', async () => {
+    const abort = vi.fn()
+    const engine = createAiEngine(() => {}, abort)
+    const settled = engine.search(request(1))
+    engine.handleResponse(response(1))
+    await settled
+
+    expect(() => engine.cancel(1)).not.toThrow()
+    expect(() => engine.cancel(99)).not.toThrow()
+    expect(abort).not.toHaveBeenCalled()
+  })
+
+  it('dispose 之后 cancel 是空操作', () => {
+    const abort = vi.fn()
+    const engine = createAiEngine(() => {}, abort)
+    void engine.search(request(1)).catch(() => {})
+    engine.dispose()
+
+    expect(() => engine.cancel(1)).not.toThrow()
+    expect(abort).not.toHaveBeenCalled()
+  })
+
+  it('cancel 可以指定拒绝的原因（超时兜底用它报超时，而不是「已取消」）', async () => {
+    const abort = vi.fn()
+    const engine = createAiEngine(() => {}, abort)
+    const pending = engine.search(request(4))
+
+    engine.cancel(4, new Error('超时了'))
+
+    await expect(pending).rejects.toThrow('超时了')
+    expect(abort).toHaveBeenCalledWith(4)
+  })
+
+  it('不传 abort 时 cancel 仍然收干净待决表', async () => {
+    const engine = createAiEngine(() => {})
+    const pending = engine.search(request(5))
+
+    engine.cancel(5)
+
+    await expect(pending).rejects.toBeInstanceOf(SearchCancelledError)
+  })
+})
+
+describe('createAiEngine —— 只让指定请求失败', () => {
+  it('handleError 带 id 列表时只让列出的请求失败', async () => {
+    const engine = createAiEngine(() => {})
+    const failed = engine.search(request(1))
+    const kept = engine.search(request(2))
+
+    engine.handleError('落子 Worker 崩溃', [1])
+    engine.handleResponse(response(2))
+
+    await expect(failed).rejects.toThrow('落子 Worker 崩溃')
+    await expect(kept).resolves.toMatchObject({ requestId: 2 })
+  })
+
+  it('空列表是空操作，不会退化成「全部失败」', async () => {
+    const engine = createAiEngine(() => {})
+    const kept = engine.search(request(1))
+
+    engine.handleError('崩溃', [])
+    engine.handleResponse(response(1))
+
+    await expect(kept).resolves.toMatchObject({ requestId: 1 })
+  })
+
+  it('列表里已不在待决表的 id 被忽略', () => {
+    const engine = createAiEngine(() => {})
+
+    expect(() => engine.handleError('崩溃', [42])).not.toThrow()
   })
 })

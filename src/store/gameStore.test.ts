@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import type { AiEngine } from '../ai/engine'
+import { createAiEngine, type AiEngine } from '../ai/engine'
 import type { MoveSuggestion, SearchRequest, SearchResponse } from '../ai/types'
 import { idx } from '../core/board'
 import { BLACK, WHITE, type Point } from '../core/types'
@@ -8,7 +8,6 @@ import { recordContentKey } from '../persist/recordIdentity'
 import { SCHEMA_VERSION, type PersistedSession } from '../persist/storage'
 import { createGame, resign } from '../core/game'
 import {
-  AI_RESPONSE_TIMEOUT_MS,
   canHumanPlay,
   canUndo,
   createGameStore,
@@ -16,6 +15,7 @@ import {
   undoPlies,
   type GameStore,
 } from './gameStore'
+import { AI_RESPONSE_TIMEOUT_MS } from './searchDeadline'
 
 const flush = () => new Promise<void>((resolve) => setTimeout(resolve, 0))
 
@@ -52,6 +52,10 @@ class FakeEngine implements AiEngine {
 
   handleResponse(): void {}
   handleError(): void {}
+  readonly cancelled: number[] = []
+  cancel(requestId: number): void {
+    this.cancelled.push(requestId)
+  }
   dispose(): void {}
 
   get lastRequest(): SearchRequest {
@@ -1536,7 +1540,7 @@ describe('恢复终局时说明是否已在棋谱库', () => {
 
 describe('AI 响应超时', () => {
   /*
-   * 引擎没有取消接口；正常路径一定会结算。这里模拟的是「Worker 静默死亡」——
+   * 正常路径一定会结算。这里模拟的是「Worker 静默死亡」——
    * 不发响应也不发 error。没有兜底的话 `aiThinking` 会永远为 true。
    */
   it('引擎永不结算时，超时后复位思考态并提示重试', () => {
@@ -1816,5 +1820,104 @@ describe('棋谱探索分支', () => {
     expect(state().branch).not.toBeNull()
     state().newGame()
     expect(state().branch).toBeNull()
+  })
+})
+
+describe('放弃的请求被取消（阶段 B）', () => {
+  it('AI 思考中悔棋：那次落子请求被取消', () => {
+    state().playHuman({ x: 7, y: 7 })
+    const abandoned = engine.lastRequest.requestId
+
+    state().undoMove()
+
+    expect(engine.cancelled).toContain(abandoned)
+  })
+
+  it('AI 思考中开新局：那次落子请求被取消', () => {
+    state().playHuman({ x: 7, y: 7 })
+    const abandoned = engine.lastRequest.requestId
+
+    state().newGame()
+
+    expect(engine.cancelled).toContain(abandoned)
+  })
+
+  it('AI 思考中认输：那次落子请求被取消', () => {
+    state().playHuman({ x: 7, y: 7 })
+    const abandoned = engine.lastRequest.requestId
+
+    state().resign()
+
+    expect(engine.cancelled).toContain(abandoned)
+  })
+
+  it('求提示后落子：那次提示请求被取消', () => {
+    state().requestHint()
+    const abandoned = engine.lastRequest.requestId
+
+    state().playHuman({ x: 7, y: 7 })
+
+    expect(engine.cancelled).toContain(abandoned)
+  })
+
+  it('超时兜底也取消那次请求，Worker 不再白算', () => {
+    vi.useFakeTimers()
+    try {
+      state().playHuman({ x: 7, y: 7 })
+      const abandoned = engine.lastRequest.requestId
+
+      vi.advanceTimersByTime(AI_RESPONSE_TIMEOUT_MS)
+
+      expect(engine.cancelled).toContain(abandoned)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  /** 用真的 `createAiEngine`：被取消的 Promise 真的会以 `SearchCancelledError` 拒绝。 */
+  function realEngine() {
+    const posted: SearchRequest[] = []
+    const aborted: number[] = []
+    const real = createAiEngine(
+      (request) => posted.push(request),
+      (requestId) => aborted.push(requestId),
+    )
+    return { real, posted, aborted, store: createGameStore(real) }
+  }
+
+  it('被取消的落子请求的拒绝被闸门挡下：不写 aiError', async () => {
+    const { posted, aborted, store: real } = realEngine()
+    real.getState().playHuman({ x: 7, y: 7 })
+
+    real.getState().undoMove()
+    await flush()
+
+    expect(aborted).toEqual([posted[0]!.requestId])
+    expect(real.getState().aiError).toBeNull()
+    expect(real.getState().aiThinking).toBe(false)
+  })
+
+  it('被取消的提示请求的拒绝被闸门挡下：不写 hintError', async () => {
+    const { posted, aborted, store: real } = realEngine()
+    real.getState().requestHint()
+
+    real.getState().playHuman({ x: 7, y: 7 })
+    await flush()
+
+    expect(aborted).toEqual([posted[0]!.requestId])
+    expect(real.getState().hintError).toBeNull()
+  })
+
+  it('正常结算的请求不会被中止，也不误伤下一个请求', async () => {
+    const { real: aiEngine, posted, aborted, store: real } = realEngine()
+    real.getState().playHuman({ x: 7, y: 7 })
+    const first = posted[0]!
+    aiEngine.handleResponse(makeResponse(first.requestId, first.gameVersion, { x: 0, y: 0 }))
+    await flush()
+
+    expect(real.getState().game.moves).toHaveLength(2)
+    real.getState().playHuman({ x: 8, y: 8 })
+    expect(posted).toHaveLength(2)
+    expect(aborted).toEqual([])
   })
 })

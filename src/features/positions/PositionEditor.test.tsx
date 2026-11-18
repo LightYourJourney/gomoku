@@ -15,6 +15,7 @@ function engineThat(response: (request: { requestId: number; gameVersion: number
     search: vi.fn(async (request) => response(request)),
     handleResponse() {},
     handleError() {},
+    cancel() {},
     dispose() {},
   }
 }
@@ -137,6 +138,25 @@ describe('PositionEditor —— 分析', () => {
     expect(panel).toHaveTextContent('H8')
     // 分析结论必须注明引擎（AGENTS）；复盘页早就这么做，编辑器曾经漏了。
     expect(panel).toHaveTextContent(`引擎 ${ENGINE_VERSION}`)
+  })
+
+  it('离开编辑器时取消在飞的分析，不让它留在只读 Worker 上挡住之后的提示', () => {
+    const cancel = vi.fn()
+    const pendingEngine: AiEngine = {
+      ...idle,
+      search: vi.fn(() => new Promise<SearchResponse>(() => {})),
+      cancel,
+    }
+    const view = setup({ engine: pendingEngine })
+    fireEvent.click(screen.getByTestId('intersection-7-7'))
+    fireEvent.click(screen.getByRole('button', { name: '工具：白棋' }))
+    fireEvent.click(screen.getByTestId('intersection-8-8'))
+    fireEvent.click(screen.getByRole('button', { name: '分析当前局面' }))
+    const requestId = vi.mocked(pendingEngine.search).mock.calls[0]![0].requestId
+
+    view.unmount()
+
+    expect(cancel).toHaveBeenCalledWith(requestId)
   })
 
   it('一层都没搜完的结论带警示语，其余不带', async () => {
