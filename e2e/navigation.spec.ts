@@ -8,8 +8,8 @@ import { seedGameRecords } from './helpers/seed'
  *
  * 地址就是位置：切页面、进出子页面都推入一条历史，后退 / 前进逐层返回，
  * 回到第一条之后再后退才离开应用；刷新与直达回到原地；对局内的动作不进历史。
- * 每条用例都从全新的页面开始（不用 `seedGameRecords`——它先去 `robots.txt`，
- * 会让「最后一次后退」落在那里而不是离开应用）。
+ * 「离开应用」用一条应用之外的历史来判：先打开 `/robots.txt`（同源的静态文件，不启动应用）再进应用——
+ * 新页面的初始 `about:blank` 在 Firefox 里不留历史，拿它判会因浏览器而异（CI 的 firefox-full 实测）。
  */
 
 const path = (page: Page) => new URL(page.url()).pathname
@@ -19,6 +19,7 @@ async function nav(page: Page, name: '对战' | '教学' | '残局' | '复盘') 
 }
 
 test('三层进入后逐层后退，回到第一条之后再后退就离开应用；前进逐层回来', async ({ page }) => {
+  await page.goto('/robots.txt')
   await page.goto('/')
   await expect(page.getByTestId('board')).toBeVisible()
 
@@ -42,7 +43,7 @@ test('三层进入后逐层后退，回到第一条之后再后退就离开应�
   await expect(page.getByTestId('board')).toBeVisible()
   expect(path(page)).toBe('/')
   await page.goBack()
-  expect(page.url()).toBe('about:blank')
+  await expect(page).toHaveURL(/\/robots\.txt$/)
 
   await page.goForward()
   await expect(page.getByTestId('board')).toBeVisible()

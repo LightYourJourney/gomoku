@@ -2861,3 +2861,14 @@ D 场景的探针改为先落一手再取 Worker 脚本地址（终审第 9 条�
 
 审查后重跑：`lint` / `typecheck` / `test`（1,674）/ `build` / `gates` / `e2e`（201）/ `e2e:prod`（9）全绿。
 
+### CI（推送 `ac9f240` 后）
+
+`fast` / `e2e` / `browsers` / `probe` / `bench` 绿；`browsers-full`（Firefox / WebKit 全量）红 2 条，都在 Firefox：
+
+| 用例 | 原因 | 处置 |
+| --- | --- | --- |
+| `navigation.spec.ts` 三层后退 | 新页面的初始 `about:blank` 在 Firefox 里不留历史，最后一次后退停在应用首页 | 改用一条应用之外的历史判「离开应用」：先开 `/robots.txt` 再进应用，最后一次后退应回到它 |
+| `battle.spec.ts`「落子位置与点击的交叉点一致」 | 连点五个角，没等 AI 应手；AI 思考中的点击按规则被忽略。阶段 B 起落子 Worker 在第一次请求时才创建，第一手应手多了 Worker 启动时间，Firefox CI 上点进了思考期 | 每次点击前等状态条回到「轮到你落子」（只加等待，断言不变） |
+
+（阶段 B 的 CI `44315958433` 第一轮 `browsers` / `browsers-full` 卡在 runner 上安装浏览器超时被取消，与代码无关；重跑全绿。）
+

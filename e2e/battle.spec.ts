@@ -114,6 +114,9 @@ test('落子位置与点击的交叉点一致', async ({ page }) => {
     [14, 14],
     [7, 7],
   ] as const) {
+    // 等 AI 应完上一手再点：AI 思考中的点击按规则被忽略。阶段 B 起落子 Worker 在第一次请求时
+    // 才创建，第一手的应手多了 Worker 启动的时间，Firefox CI 上不等就会点进思考期（2026-11-18 实测红过）。
+    await expect(page.getByTestId('status-pill')).toHaveText('轮到你落子')
     await page.getByTestId(`intersection-${x}-${y}`).click()
     await expect(page.getByTestId(`stone-${x}-${y}`)).toBeVisible()
   }
