@@ -2960,3 +2960,11 @@ N = 库里预先灌入的棋谱数；入库 = 空盘认输到出现「已存入�
 
 审查后重跑：`lint` / `typecheck` / `test`（1,711）/ `build` / `gates`（入口 gzip 99,025 B、总量 148,649 B）/ `e2e`（202）/ `e2e:prod`（9）全绿。
 
+
+### CI（推送 `0652292` 后）
+
+`fast` / `e2e` / `browsers` / `browsers-full` / `bench` 绿；`probe` 红在覆盖棘轮：`review-library` 8 行里三张棋谱卡片的按钮名
+随新增的时间行变长（「黑方胜人机 · 初级 · 9 手」→「…9 手时间未知」，探针灌入的棋谱没有入库时间），共 24 条「丢了按钮」。
+本机 `yarn ui:probe --out ci` 复现。这是同一批按钮改名，不是覆盖缩小：基线里这 24 条一对一换成新名字，并给这 8 行各加上新按钮「删除」
+（收紧）；理由写进 `coverage.baseline.json` 的 `note` 与提交信息。阶段 D 收尾时漏跑了 `ui:probe` + `check:coverage`——本机五条命令与 `gates` 都不含它，
+之后的界面改动收尾补跑这两条。
