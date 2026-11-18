@@ -20,8 +20,8 @@
 | 棋谱库 / 回放某局 / 局面编辑器 | `/review`、`/review/<棋谱号>`、`/review/editor` | 编辑器从棋谱库进入，与哪一局无关；棋谱号是本机自增号，只在本机有意义 |
 
 都相对于 `import.meta.env.BASE_URL`（子路径部署 `VITE_BASE=/gomoku/` 时是 `/gomoku/learn`）。尾斜杠容忍（`/learn/` 同 `/learn`）。
-认不出的地址（`/foo`、`/learn/a/b`、`/review/abc`）：按「对战」处理并 `replaceState` 成 `/`——Cloudflare 上它们本来到不了应用（见 D6），
-只有 dev / preview 会走到这里。
+认不出的地址：开头是认得的页面（`/learn/a/b`、`/review/abc`——Cloudflare 的 `/learn/*` 改写会把它们送进应用）就回那一页的列表，
+否则按对战处理（`/foo` 在 Cloudflare 上是 404 页，只有 dev / preview 会走到这里）；两种都 `replaceState` 掉坏地址（终审第 8 条）。
 
 ## 设计决定
 
@@ -31,12 +31,12 @@
 | D2 | `store/navigationStore.ts`：持有 `route` 与「这次进入要不要恢复上次那节」标记；动作 `navigate(route, { replace? })`、`enterPage(page)`（顶栏用）；`popstate` 时以地址为准更新 `route`。**`learnStore.view` / `setView` 搬走**，`progress.lastView` 由导航 store 在页面变化时写（经 `learnStore` 现有的 `update`），schema 不动 | 评估报告 §4.5：页面位置的归属是历史原因；现在位置以地址为准，留在学习进度里就是两份真相 |
 | D3 | 进历史的只有：切页面、进出子页面。对局内动作、复盘游标、弹窗**不进历史** | 后退键不是悔棋键（`PHASE_B_C_DECISIONS.md` 共同行为） |
 | D4 | 冷启动：地址里有页面就以地址为准；裸 `/` 等学习进度载入后用 `progress.lastView` 恢复（`replaceState`，不多一条历史），带「恢复上次那节」标记。地址里的 id 找不到（课程下线、棋谱删了）→ `replaceState` 回该页列表，不报错 | 与现在「刷新回到上次那页」一致；裸 `/` 既是对战页也是「没说去哪」，只在冷启动时有歧义，按上次位置解 |
-| D5 | **进模块自动展开上次那节（裁定 17）**：只有「点顶栏进入」与「冷启动按 lastView 恢复」两条路带恢复标记；地址栏直达 `/learn`、后退 / 前进回到 `/learn` 不带，显示列表。带标记时若 `lastVisited` 指向有效的课 / 题，把当前这条历史 `replaceState` 成 `/learn/<id>`——用户眼里是一次点击、一条历史。标记一经页面读取即清除；进度还没载入就等载入后再判一次（现在的「渲染期恢复」照旧） | 现有用例「存在上次停留的课程时，直接展开那一节」不改；后退回列表不会被再次自动展开（那会吃掉前进历史） |
+| D5 | **进模块自动展开上次那节（裁定 17）**，**由导航 store 做**（终审第 1 条：页面在渲染期改外部 store 与历史栈不合法）：`enterPage` 在进度已载入时直接去 `/learn/<上次那节>`（一条历史）；没载入就先去 `/learn`，载入后若这期间没发生过别的导航，把这条历史 `replaceState` 成 `/learn/<id>`。冷启动裸 `/` 同理。地址栏直达 `/learn`、后退 / 前进回到 `/learn` 不展开。页面只读地址；地址里的 id 不存在时页面把地址换回列表。已经在这个模块的子页面里再点顶栏的这一项：回到列表（推入一条历史，终审第 5 条）；已在列表则不动 | 现有用例「存在上次停留的课程时，直接展开那一节」断言不改（改为经 `enterPage` 进入，与真实点击同路）；后退回列表不会被再次自动展开（那会吃掉前进历史） |
 | D6 | 部署：`public/_redirects` 为**每个页面前缀**写两条改写（`/learn /index.html 200`、`/learn/* /index.html 200`，`puzzles`、`review` 同）；**不写 `/* /index.html 200`**（Cloudflare 的规则优先于静态文件，会把发布后已不存在的旧分块也回成 HTML）。`_headers` 给这些路径补与 `/` 相同的 `Cache-Control: max-age=0, must-revalidate`。`404.html` 文案改成列出四个入口。单测核对：`routes.ts` 里的每个页面前缀在 `_redirects` 里都有两条规则、没有 `/*` | 文档（developers.cloudflare.com/pages/configuration/redirects）：200 代理只支持站内相对路径；规则优先于资源。目标写 `/index.html` 还是 `/` 文档没说清，**收尾在预览站实测**（裁定 18） |
-| D7 | 子页面状态由地址派生：`LearnScreen` / `PuzzleScreen` 的 `openId`、`ReviewScreen` 的 `open` / `editorOpen` 换成读 `route`；页面里的「← 列表」按钮 `navigate` 到列表（push）。`lastVisited` 跟着地址写：进到某节课 / 某道题写它，回到列表写 null（现在只有点按钮时写；后退回列表也该写，否则下次点顶栏又展开一节用户已经退出的课） | 一处真相 |
+| D7 | 「下一节 / 下一题」也推入一条历史（每个子页面一条）。子页面状态由地址派生：`LearnScreen` / `PuzzleScreen` 的 `openId`、`ReviewScreen` 的 `open` / `editorOpen` 换成读 `route`；页面里的「← 列表」按钮 `navigate` 到列表（push）。`lastVisited` 跟着地址写：进到某节课 / 某道题写它，回到列表写 null（现在只有点按钮时写；后退回列表也该写，否则下次点顶栏又展开一节用户已经退出的课） | 一处真相 |
 | D8 | 回放直达：`/review/<棋谱号>` 冷启动或前进 / 后退到它时，从棋谱库按号读一局（`GameRecordsStorage` 已有 `get`？没有就加只读的按号取），读到前显示加载态，读不到 `replaceState` 回 `/review` | 棋谱号是本机自增号 |
-| D9 | 分享链接的路径改用应用根（`BASE_URL`），不再用 `location.pathname`——否则在 `/review/12` 里生成的链接会带上本机的棋谱号。分享预览照旧靠 `#share=`，在任意路径上都能打开；关闭预览回到原地址 | `ReviewScreen.share` 现在传的是 `window.location.pathname` |
-| D10 | 拆包：`React.lazy` 拆三组——复盘组（`ReviewScreen`，含编辑器、数据管理）、教学组（`LearnScreen` + `PuzzleScreen`）、分享预览（`SharePreview`）。`Suspense` 的占位是一行「正在载入…」；**分块加载失败**落到错误边界，给「页面没能载入（可能是网络断了或应用刚更新），刷新重试」与刷新按钮 | 评估报告 §4.4。项目没有 Service Worker，发布后旧页面请求旧块是真实路径 |
+| D9 | 分享链接的路径改用应用根（`BASE_URL`），不再用 `location.pathname`——否则在 `/review/12` 里生成的链接会带上本机的棋谱号（复盘页与局面编辑器两处，终审第 3 条）。分享预览照旧靠 `#share=`，在任意路径上都能打开；关闭预览回到原地址 | `ReviewScreen.share` 现在传的是 `window.location.pathname` |
+| D10 | 拆包：`React.lazy` 拆三组——复盘组（`ReviewScreen`，含编辑器、数据管理）、教学组（`LearnScreen` + `PuzzleScreen`）、分享预览（`SharePreview`）。**实施时的出入**：教学与残局各自成块（共用的 `PracticeBoard` 由打包器自动抽成第三块），不硬合并；并且启动时先下好地址要去的那一页、其余在后台下——不这么做，`Suspense` 揭开占位的约 300 ms 节流让冷启动直达复盘页从 17 ms 变成 307 ms（实测，见测试报告）。`Suspense` 的占位是一行「正在载入…」；**分块加载失败**落到错误边界，给「页面没能载入（可能是网络断了或应用刚更新），刷新重试」与刷新按钮 | 评估报告 §4.4。项目没有 Service Worker，发布后旧页面请求旧块是真实路径 |
 | D11 | `quality/bundle-budget.mjs`：入口按 `dist/index.html` 里的入口脚本认（拆包后 `index-*.js` 不再保证唯一）；入口上限下调、新增全部 JS 的总量上限。两个数都定为**拆完后的实测值 + 约 10% 余量取整到千字节**，提交信息写明实测与上限 | 裁定 5：只收紧，批准仅限这一次 |
 | D12 | `vite preview` / dev server 自带 SPA 回退（`appType: 'spa'`），e2e 与 `e2e:prod` 不用改服务器；但它们不代表 Cloudflare 的行为——那由 D6 的一致性单测 + 预览站实测兜着 | |
 
@@ -103,4 +103,19 @@
 
 ## 独立终审
 
-（待填。）
+终审者只读源码与计划，十二条意见逐条核实，处理如下（「已在实现中」= Task 1–3 动手时已经这么做了）。
+
+| # | 意见 | 核实 | 处理 |
+| --- | --- | --- | --- |
+| 1 | D5 让页面渲染期读标记、清标记、`replaceState`，是渲染期改外部 store 与历史栈；「标记放 `history.state`」后退时会再次展开，且 `exitShare` 会用 null 覆盖它 | 成立 | 恢复全部放进导航 store（D5 已改写）；不用 `history.state`。已在实现中 |
+| 2 | 用后退 / 前进离开回放不会走 `closeRecord`：分析不停、回放不关、分支弹窗状态带到下一局 | 成立 | 一个依赖地址子页面的 effect 统一处理打开与关闭；分支弹窗状态记下棋谱号，换局即失效。已在实现中，有用例 |
+| 3 | `PositionEditor` 的分享同样用 `location.pathname` | 成立 | 一起改成应用根 |
+| 4 | `main.tsx` / `App.tsx` 为 `shareTokenFromHash` 引入 `sharing/link`，会把 `persist/transfer` 的校验等约 1.4k 行留在入口；`bench:split` 没算这部分 | 待 Task 4 实测 | token 解析挪到无依赖的小模块；以实测为准 |
+| 5 | 刷新后会停在编辑器；在子页面点当前页的顶栏项计划没定（`e2e/editor.spec.ts` 依赖它回到列表） | 成立 | 定为回到列表（推入一条历史），列表上再点不动；有用例 |
+| 6 | `update` 是私有的；`lastView` 的合并要保留；`lastVisited = null` 只在「子页 → 列表」那次转移时写 | 成立 | 新增 `recordView`；`lastView` 合并保留、只删 `view`；null 只在同一模块「子页 → 列表」时写。已在实现中。载入前写下的 null 会被合并的 `??` 吞掉：只在「进度还没载入就从一节课退回列表」这个极窄时序里出现，后果是下次点顶栏多展开一次，记为已知限制 |
+| 7 | `lastCategory` 只在点开时设；「下一节」push 还是 replace 没定；验收的后退次数与 e2e 的 `robots.txt` 起点 | 成立 | `lastCategory` 改为随打开的题派生（有用例）；「下一节」push（D7）；e2e 按实际条数写断言，起点用新开页面而不是 `seed` |
+| 8 | `/learn/a/b` 在 Cloudflare 上会被 `/learn/*` 送进应用，不是「到不了」 | 成立 | 认得页面的坏地址回那一页列表（`fallbackRoute`），有用例 |
+| 9 | 错误边界要在页面层、以页面为 key，否则整屏失效、后退也救不回；e2e 拦分块要用 `route.abort`（preview 的 SPA 回退会把缺失的 js 回成 HTML） | 成立 | Task 4 照此做 |
+| 10 | 入口口径应是入口 script 加它 modulepreload 的分块 | 成立 | Task 4 照此做 |
+| 11 | 子路径部署：`_redirects` / `_headers` 按根路径写，`404.html` 链接写死 `/`；非 Cloudflare 主机深链接刷新即 404，而 `DEPLOYMENT_PLAN.md` 仍声称支持子路径 | 成立 | 文档写明：子路径或非 Cloudflare 主机要自己配同样的回退规则；应用内的地址解析与生成都按 `BASE_URL`（有用例） |
+| 12 | `document.title` 不变；`Suspense` 占位没有 `main` / `h1` | 成立 | 标题本阶段不做（写进已知限制）；占位用 `main` 包一行状态文字 |

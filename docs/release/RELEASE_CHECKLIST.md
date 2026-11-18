@@ -27,6 +27,8 @@
 - [ ] 无 `.map`、无 `.env`、无 `localhost` / `127.0.0.1`
 - [ ] `dist/index.html` 无内联 `<script>`；资源路径带正确的 base
 - [ ] Worker chunk 存在，且被 `index-*.js` 以同源相对路径引用
+- [ ] 页面地址的改写规则随产物部署：线上直达 `/learn/rules`、`/review` 与刷新都回到应用，`/assets/不存在.js` 仍是 404（不是 HTML），
+      `/foo` 是 404 页（`public/_redirects`，阶段 C）
 - [ ] 子路径部署时：`VITE_BASE=/xxx/ yarn build` 后，HTML/JS/CSS/favicon/Worker 全部带前缀
 - [ ] 产物体积无异常增长（0.6.0 build.2：`index` 419.14 kB / gzip 129.10 kB / Worker 13.99 kB；CSS gzip 7.52 kB；`check:bundle` 的预算是 gzip ≤ 135,000 B）
 

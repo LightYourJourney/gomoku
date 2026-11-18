@@ -72,7 +72,11 @@ Cloudflare Pages 会解析这个文件并下发；GitHub Pages 没有等效能�
   末尾必须有斜杠。产物里的 HTML、JS、CSS、favicon、Worker chunk 都会带前缀。
 - 两种方式都已在本地验证：子路径构建后
   `grep -o 'src="[^"]*"' dist/index.html` 得到 `/gomoku/assets/...`。
-- 站内没有前端路由，**不需要 SPA fallback / rewrite 规则**；唯一有效入口是 `/`。
+- **2026-11-18 阶段 C 起有页面地址**（`/learn`、`/puzzles`、`/review` 及其子页面，见 `src/lib/routes.ts`）。
+  Cloudflare Pages 上由 `public/_redirects` 把这些前缀改写到 `index.html`（只写页面前缀，**不写** `/* /index.html 200`：
+  规则优先于静态文件，通配全站会把发布后已不存在的旧分块也回成 HTML）。**换托管平台或部署到子路径时**，
+  必须在那边配同样的回退（子路径下前缀要带上 `VITE_BASE`），否则深链接一刷新就是 404；应用内的地址解析与生成
+  已按 `BASE_URL` 处理。
 - `public/404.html` 的返回链接写的是 `/`，按**根路径部署**设计。若确实要部署到子路径，
   必须把它改成对应的前缀（或改用同源的相对入口），否则从深层 404 返回会落到站点根。
 
