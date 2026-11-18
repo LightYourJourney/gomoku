@@ -10,6 +10,7 @@ import type { SearchRequest } from '../../ai/types'
 import { GameLibrary } from './GameLibrary'
 import { CURRENT_STEP_RADIUS, PLAIN_STEP_RADIUS, ReplayBoard } from './ReplayBoard'
 import { ReviewScreen } from './ReviewScreen'
+import { useNavigationStore } from '../../store/navigationStore'
 
 type ReplayRecord = Omit<GameRecord, 'seq' | 'schemaVersion'>
 
@@ -113,6 +114,8 @@ const fullRecord = { seq: 1, schemaVersion: 1, ...nineMoveRecord() } as GameReco
 
 beforeEach(() => {
   replay = createReplayStore()
+  // 子页面跟着地址走（`/review/<棋谱号>`），而导航 store 是单例：每条用例从棋谱库开始。
+  useNavigationStore.getState().navigate({ page: 'review', sub: null }, { replace: true })
 })
 
 describe('ReplayBoard', () => {
@@ -275,6 +278,82 @@ describe('ReviewScreen 三段流转', () => {
     fireEvent.click(screen.getByRole('button', { name: '开始分析' }))
 
     expect(await screen.findByTestId('analysis-progress')).toHaveTextContent('0 / 9')
+  })
+})
+
+describe('ReviewScreen —— 子页面跟着地址走（阶段 C）', () => {
+  const nav = () => useNavigationStore.getState()
+
+  it('从列表点开一局：地址变成 /review/<棋谱号>', async () => {
+    const storage = memoryGameRecords()
+    const { record } = await storage.put(nineMoveRecord())
+    render(<ReviewScreen storage={storage} engine={idleEngine()} />)
+
+    fireEvent.click((await screen.findAllByTestId(/^record-/))[0]!)
+
+    expect(window.location.pathname).toBe(`/review/${record.seq}`)
+  })
+
+  it('直达 /review/<棋谱号>：按号读出那一局直接回放', async () => {
+    const storage = memoryGameRecords()
+    const { record } = await storage.put(nineMoveRecord())
+    nav().navigate({ page: 'review', sub: { kind: 'record', seq: record.seq } }, { replace: true })
+
+    render(<ReviewScreen storage={storage} engine={idleEngine()} />)
+
+    expect(await screen.findByTestId('move-counter')).toHaveTextContent('0 / 9')
+  })
+
+  it('地址里的棋谱号不存在：回到棋谱库，地址也换回 /review', async () => {
+    const storage = memoryGameRecords()
+    await storage.put(nineMoveRecord())
+    nav().navigate({ page: 'review', sub: { kind: 'record', seq: 999 } }, { replace: true })
+
+    render(<ReviewScreen storage={storage} engine={idleEngine()} />)
+
+    expect(await screen.findAllByTestId(/^record-/)).not.toHaveLength(0)
+    expect(window.location.pathname).toBe('/review')
+  })
+
+  it('直达 /review/editor：打开局面编辑器', async () => {
+    nav().navigate({ page: 'review', sub: { kind: 'editor' } }, { replace: true })
+
+    render(<ReviewScreen storage={memoryGameRecords()} engine={idleEngine()} />)
+
+    expect(await screen.findByRole('heading', { level: 1, name: '局面研究' })).toBeInTheDocument()
+  })
+
+  it('不经按钮离开回放（后退）：停分析、关回放，分支弹窗不带到下一局', async () => {
+    const storage = memoryGameRecords()
+    const first = (await storage.put(threeMoveRecord())).record
+    const second = (await storage.put(nineMoveRecord())).record
+    const analysis = createAnalysisStore()
+    const stopAnalysis = vi.spyOn(analysis.getState(), 'stop')
+    const injectedReplay = createReplayStore()
+    render(
+      <ReviewScreen
+        storage={storage}
+        engine={idleEngine()}
+        stores={{ replay: injectedReplay, analysis }}
+        onStartBranch={() => ({ ok: true }) as const}
+      />,
+    )
+    act(() => nav().navigate({ page: 'review', sub: { kind: 'record', seq: first.seq } }))
+    await screen.findByTestId('move-counter')
+    fireEvent.click(screen.getByRole('button', { name: '从这里继续对弈' }))
+    expect(await screen.findByTestId('branch-dialog')).toBeInTheDocument()
+    stopAnalysis.mockClear()
+
+    // 相当于后退：地址直接换走，不经「← 棋谱列表」
+    act(() => nav().navigate({ page: 'review', sub: null }, { replace: true }))
+    await screen.findAllByTestId(/^record-/)
+
+    expect(stopAnalysis).toHaveBeenCalled()
+    expect(injectedReplay.getState().record).toBeNull()
+
+    act(() => nav().navigate({ page: 'review', sub: { kind: 'record', seq: second.seq } }))
+    expect(await screen.findByTestId('move-counter')).toHaveTextContent('0 / 9')
+    expect(screen.queryByTestId('branch-dialog')).not.toBeInTheDocument()
   })
 })
 

@@ -17,5 +17,24 @@
 /index.html
   Cache-Control: public, max-age=0, must-revalidate
 
+# 应用内页面（改写到 index.html，见 _redirects）：与入口页同样每次回源校验。
+/learn
+  Cache-Control: public, max-age=0, must-revalidate
+
+/learn/*
+  Cache-Control: public, max-age=0, must-revalidate
+
+/puzzles
+  Cache-Control: public, max-age=0, must-revalidate
+
+/puzzles/*
+  Cache-Control: public, max-age=0, must-revalidate
+
+/review
+  Cache-Control: public, max-age=0, must-revalidate
+
+/review/*
+  Cache-Control: public, max-age=0, must-revalidate
+
 /robots.txt
   Cache-Control: public, max-age=3600

@@ -230,6 +230,8 @@ const SHORT_FOR = new Set(['battle-empty', 'battle-midgame'])
 /** 等应用挂到第一帧。`board` 是四个页面共有的稳定锚点（复盘列表页除外）。 */
 async function waitApp(page) {
   await page.waitForSelector('[data-testid="status-pill"], nav[aria-label="主导航"]')
+  // 阶段 C 起教学 / 残局 / 复盘按页加载：顶栏先出来，页面分块到了才换掉「正在载入…」。
+  await page.waitForSelector('[role="status"]:has-text("正在载入…")', { state: 'detached' })
   await page.evaluate(() => document.fonts.ready)
   await page.waitForTimeout(120)
 }
@@ -606,7 +608,8 @@ const STATES = [
         learn: progress({ lastView: 'learn', completedLessons: ids }),
         records: [],
       })
-      await page.reload()
+      // 回到裸的根地址再进：阶段 C 起地址就是位置，在 `/puzzles` 上刷新不会按 lastView / lastVisited 恢复。
+      await page.goto(BASE_URL)
       await waitApp(page)
       await page.waitForSelector(
         `[data-testid="learn-progress"]:has-text("已完成 ${ids.length} / ${ids.length} 节")`,
@@ -692,7 +695,8 @@ const STATES = [
         learn: progress({ lastView: 'puzzles', solvedPuzzles: ids }),
         records: [],
       })
-      await page.reload()
+      // 回到裸的根地址再进：阶段 C 起地址就是位置，在 `/puzzles` 上刷新不会按 lastView / lastVisited 恢复。
+      await page.goto(BASE_URL)
       await waitApp(page)
       await page.waitForSelector(
         `[data-testid="puzzle-progress"]:has-text("已通过 ${ids.length} / ${ids.length} 题")`,
@@ -728,7 +732,8 @@ const STATES = [
         }),
         records: [],
       })
-      await page.reload()
+      // 回到裸的根地址再进：阶段 C 起地址就是位置，在 `/puzzles` 上刷新不会按 lastView / lastVisited 恢复。
+      await page.goto(BASE_URL)
       await waitApp(page)
       await page.waitForSelector('[data-testid="board"]')
 

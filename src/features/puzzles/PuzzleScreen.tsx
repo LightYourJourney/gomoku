@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { PageHeader } from '../../components/ui/PageHeader'
 import { cx } from '../../lib/cx'
 import { CATEGORY_LABELS, CATEGORY_ORDER, PUZZLES } from '../../learn/puzzles'
 import type { PuzzleCategory } from '../../learn/types'
 import { useLearnStore } from '../../store/learnStore'
+import { useNavigationStore } from '../../store/navigationStore'
 import { ProgressBlock } from '../learn/ProgressBlock'
 import { PageShell } from '../shell/PageShell'
 import { PuzzleView } from './PuzzleView'
@@ -35,9 +36,9 @@ export function PuzzleScreen() {
   const progress = useLearnStore((state) => state.progress)
   const isPuzzleDone = useLearnStore((state) => state.isPuzzleDone)
   const visit = useLearnStore((state) => state.visit)
-  const setView = useLearnStore((state) => state.setView)
-
-  const [openId, setOpenId] = useState<string | null>(null)
+  // 打开哪一道由地址决定（`/puzzles/<题目 id>`）；点顶栏进来时展开上次那道由导航 store 负责。
+  const openId = useNavigationStore(({ route }) => (route.page === 'puzzles' ? route.puzzle : null))
+  const { navigate, enterPage } = useNavigationStore.getState()
   /*
     「本次会话里打开过哪一类」。
 
@@ -47,30 +48,22 @@ export function PuzzleScreen() {
   */
   const [lastCategory, setLastCategory] = useState<PuzzleCategory | null>(null)
 
-  // 进度载入之后恢复上次那道题。**不读它的话，visit('puzzle', …) 写的那个
-  // 位置就是一个只写不读的死字段**——刷新残局会退回列表。
-  const [restored, setRestored] = useState(false)
-  if (!restored && loaded) {
-    setRestored(true)
-
-    const last = progress.lastVisited
-    if (last?.kind === 'puzzle' && PUZZLES.some((entry) => entry.id === last.id)) {
-      setOpenId(last.id)
-    }
-  }
-
   const puzzle = PUZZLES.find((entry) => entry.id === openId) ?? null
+  // 打开的是哪一类就记哪一类——不管是点进来的，还是直达 / 后退 / 前进进来的。
+  // 渲染期调整自己的 state（不放 effect，免得多一轮渲染）。
+  if (puzzle !== null && puzzle.category !== lastCategory) setLastCategory(puzzle.category)
+
+  // 地址里的题目不存在：回到列表，把地址也换掉，不报错页。
+  useEffect(() => {
+    if (openId !== null && puzzle === null) navigate({ page: 'puzzles', puzzle: null }, { replace: true })
+  }, [openId, puzzle, navigate])
 
   const open = (id: string): void => {
-    const entry = PUZZLES.find((puzzle) => puzzle.id === id)
-    if (entry !== undefined) setLastCategory(entry.category)
-    setOpenId(id)
-    visit('puzzle', id)
+    navigate({ page: 'puzzles', puzzle: id })
   }
 
   const backToList = (): void => {
-    setOpenId(null)
-    visit(null)
+    navigate({ page: 'puzzles', puzzle: null })
   }
 
   /**
@@ -107,8 +100,13 @@ export function PuzzleScreen() {
                 // 真的全做完了，这条链就到头了：教学 → 残局 → 实战。
                 // 只是走到最后一道的话，出口是**回列表**接前面没做的题。
                 run: () => {
-                  backToList()
-                  if (allSolved) setView('battle')
+                  if (!allSolved) {
+                    backToList()
+                    return
+                  }
+                  // 跨模块离开，手动清（理由同课程页的「去残局」）。
+                  visit(null)
+                  enterPage('battle')
                 },
               }
             : {

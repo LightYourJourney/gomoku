@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react'
 import { cx } from '../../lib/cx'
 import { THEME_LABELS, THEME_PREFERENCES } from '../../lib/theme'
-import { useLearnStore, type View } from '../../store/learnStore'
+import type { Page } from '../../lib/routes'
+import { useNavigationStore } from '../../store/navigationStore'
 import { useSettingsStore } from '../../store/settingsStore'
 
 /**
@@ -120,14 +121,14 @@ function ThemeToggle() {
   )
 }
 
-const NAV_LABELS: Record<View, string> = {
+const NAV_LABELS: Record<Page, string> = {
   battle: '对战',
   learn: '教学',
   puzzles: '残局',
   review: '复盘',
 }
 
-const NAV_ORDER: readonly View[] = ['battle', 'learn', 'puzzles', 'review']
+const NAV_ORDER: readonly Page[] = ['battle', 'learn', 'puzzles', 'review']
 
 /**
  * 顶层导航。四个页面共用同一个顶栏，切换时只换中间那块内容。
@@ -137,8 +138,8 @@ const NAV_ORDER: readonly View[] = ['battle', 'learn', 'puzzles', 'review']
  * 底色仍然留着——只改文字色的话，深浅两套主题里的对比强度不一样。
  */
 function AppNav() {
-  const view = useLearnStore((state) => state.view)
-  const setView = useLearnStore((state) => state.setView)
+  const view = useNavigationStore((state) => state.route.page)
+  const enterPage = useNavigationStore((state) => state.enterPage)
 
   return (
     <nav
@@ -150,7 +151,7 @@ function AppNav() {
         <button
           key={entry}
           type="button"
-          onClick={() => setView(entry)}
+          onClick={() => enterPage(entry)}
           aria-current={view === entry ? 'page' : undefined}
           className={cx(
             'min-h-8 rounded-md px-3 py-2 text-sm font-medium whitespace-nowrap transition',

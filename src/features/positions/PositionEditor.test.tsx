@@ -121,6 +121,22 @@ describe('PositionEditor —— 编辑', () => {
   })
 })
 
+describe('PositionEditor —— 分享', () => {
+  it('在 /review/editor 里生成的链接指向应用根，不带页面地址', async () => {
+    window.history.replaceState(null, '', '/review/editor')
+    setup()
+    fireEvent.click(screen.getByTestId('intersection-7-7'))
+
+    fireEvent.click(screen.getByRole('button', { name: '分享局面' }))
+    fireEvent.click(await screen.findByRole('button', { name: /分享当前局面/ }))
+
+    const link = new URL((await screen.findByTestId('share-link') as HTMLInputElement).value)
+    expect(link.pathname).toBe('/')
+    expect(link.hash).toMatch(/^#share=/)
+    window.history.replaceState(null, '', '/')
+  })
+})
+
 describe('PositionEditor —— 分析', () => {
   it('合法局面调用引擎并显示候选/深度/节点/耗时/可靠度', async () => {
     setup()

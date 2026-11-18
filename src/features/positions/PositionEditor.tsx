@@ -211,7 +211,8 @@ export function PositionEditor({
         title.trim() || '未命名局面',
         state.provenance,
       ),
-      { origin: window.location.origin, pathname: window.location.pathname },
+      // 应用根，不是当前地址（`/review/editor`）：分享链接只认 `#share=`。
+      { origin: window.location.origin, pathname: import.meta.env.BASE_URL },
     )
   }
 

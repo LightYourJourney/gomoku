@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { parseBoardLines } from '../../lib/board-lines'
 import { solveMove } from '../../learn/hints'
@@ -9,9 +9,21 @@ import { PUZZLES } from '../../learn/puzzles'
 import { useLearnStore } from '../../store/learnStore'
 import { PuzzleScreen } from '../puzzles/PuzzleScreen'
 import { LearnScreen } from './LearnScreen'
+import type { Page } from '../../lib/routes'
+import { useNavigationStore } from '../../store/navigationStore'
+/**
+ * 「从顶栏进入这一页」（原来这里写的是 `view: '…'`）：先回到对战页再进，
+ * 展开上次那节的规则（裁定 17）与真实点击走同一条路。
+ */
+function enter(page: Page): void {
+  useNavigationStore.getState().navigate({ page: 'battle' }, { replace: true })
+  useNavigationStore.getState().enterPage(page)
+}
+
 
 beforeEach(() => {
-  useLearnStore.setState({ progress: EMPTY_PROGRESS, loaded: true, view: 'learn' })
+  useLearnStore.setState({ progress: EMPTY_PROGRESS, loaded: true })
+  enter('learn')
 })
 
 const openLesson = (id: string): void => {
@@ -73,8 +85,8 @@ describe('LearnScreen —— 课程列表', () => {
     useLearnStore.setState({
       progress: { ...EMPTY_PROGRESS, completedLessons: ['rules'] },
       loaded: true,
-      view: 'learn',
     })
+    enter('learn')
     render(<LearnScreen />)
 
     expect(screen.getByTestId('learn-progress')).toHaveTextContent(`1 / ${LESSONS.length}`)
@@ -139,8 +151,8 @@ describe('LearnScreen —— 课程列表', () => {
     useLearnStore.setState({
       progress: { ...EMPTY_PROGRESS, lastVisited: { kind: 'lesson', id: 'defense' } },
       loaded: true,
-      view: 'learn',
     })
+    enter('learn')
 
     render(<LearnScreen />)
 
@@ -152,12 +164,38 @@ describe('LearnScreen —— 课程列表', () => {
     useLearnStore.setState({
       progress: { ...EMPTY_PROGRESS, lastVisited: { kind: 'lesson', id: '已经删掉的课' } },
       loaded: true,
-      view: 'learn',
     })
+    enter('learn')
 
     render(<LearnScreen />)
 
     expect(screen.getByTestId('lesson-rules')).toBeInTheDocument()
+  })
+})
+
+describe('课程与残局 —— 地址里的子页面（阶段 C）', () => {
+  it('直达 /learn/<课程 id>：打开那一节', () => {
+    useNavigationStore.getState().navigate({ page: 'learn', lesson: 'defense' }, { replace: true })
+    render(<LearnScreen />)
+
+    const lesson = LESSONS.find((entry) => entry.id === 'defense')!
+    expect(screen.getByText(lesson.steps[0]!.title)).toBeInTheDocument()
+  })
+
+  it('地址里的课程不存在：显示列表，地址换回 /learn', () => {
+    useNavigationStore.getState().navigate({ page: 'learn', lesson: '没有这节' }, { replace: true })
+    render(<LearnScreen />)
+
+    expect(screen.getByTestId('lesson-rules')).toBeInTheDocument()
+    expect(window.location.pathname).toBe('/learn')
+  })
+
+  it('地址里的题目不存在：显示列表，地址换回 /puzzles', () => {
+    useNavigationStore.getState().navigate({ page: 'puzzles', puzzle: '没有这题' }, { replace: true })
+    render(<PuzzleScreen />)
+
+    expect(screen.getByTestId('puzzle-win-h')).toBeInTheDocument()
+    expect(window.location.pathname).toBe('/puzzles')
   })
 })
 
@@ -237,8 +275,8 @@ describe('PuzzleScreen —— 残局列表', () => {
     useLearnStore.setState({
       progress: { ...EMPTY_PROGRESS, solvedPuzzles: ['win-h', 'win-diag'] },
       loaded: true,
-      view: 'puzzles',
     })
+    enter('puzzles')
     render(<PuzzleScreen />)
 
     expect(screen.getByTestId('puzzle-progress')).toHaveTextContent(`2 / ${PUZZLES.length}`)
@@ -273,8 +311,8 @@ describe('PuzzleScreen —— 残局列表', () => {
     useLearnStore.setState({
       progress: { ...EMPTY_PROGRESS, lastVisited: { kind: 'puzzle', id: 'vcf-basic' } },
       loaded: true,
-      view: 'puzzles',
     })
+    enter('puzzles')
 
     render(<PuzzleScreen />)
 
@@ -286,8 +324,8 @@ describe('PuzzleScreen —— 残局列表', () => {
     useLearnStore.setState({
       progress: { ...EMPTY_PROGRESS, lastVisited: { kind: 'puzzle', id: '已经删掉的题' } },
       loaded: true,
-      view: 'puzzles',
     })
+    enter('puzzles')
 
     render(<PuzzleScreen />)
 
@@ -431,7 +469,7 @@ describe('LearnScreen —— 进度与推荐（Phase 04）', () => {
 
     fireEvent.click(screen.getByTestId('learn-to-puzzles'))
 
-    expect(useLearnStore.getState().view).toBe('puzzles')
+    expect(useNavigationStore.getState().route.page).toBe('puzzles')
   })
 
   it('简介里的节数由内容推出来，不是写死的「八」', () => {
@@ -545,7 +583,7 @@ describe('LearnScreen —— 最后一节的出口（Phase 04）', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /去残局挑战/ }))
 
-    expect(useLearnStore.getState().view).toBe('puzzles')
+    expect(useNavigationStore.getState().route.page).toBe('puzzles')
   })
 
   it('不是最后一节时，出口仍然是「下一节 →」', async () => {
@@ -572,8 +610,8 @@ describe('PuzzleScreen —— 重进已通过的题（Phase 04 验收补）', ()
     useLearnStore.setState({
       progress: { ...EMPTY_PROGRESS, solvedPuzzles: [PUZZLES[0]!.id] },
       loaded: true,
-      view: 'puzzles',
     })
+    enter('puzzles')
 
     render(<PuzzleScreen />)
     fireEvent.click(screen.getByTestId(`puzzle-${PUZZLES[0]!.id}`))
@@ -596,8 +634,8 @@ describe('PuzzleScreen —— 首页信息（Phase 05）', () => {
     useLearnStore.setState({
       progress: { ...EMPTY_PROGRESS, solvedPuzzles: [...ids] },
       loaded: true,
-      view: 'puzzles',
     })
+    enter('puzzles')
   }
 
   it('每个分类标题旁边有该类自己的 X / Y，而且 X / Y 不在标题文字里', () => {
@@ -656,6 +694,15 @@ describe('PuzzleScreen —— 首页信息（Phase 05）', () => {
     expect(screen.getByRole('button', { name: /继续挑战/ })).toHaveTextContent('冲四开场')
   })
 
+  it('经地址（直达 / 后退 / 前进）进到某一类的题，回列表后「继续挑战」同样跟着那一类走', () => {
+    render(<PuzzleScreen />)
+
+    act(() => useNavigationStore.getState().navigate({ page: 'puzzles', puzzle: 'vcf-basic' }))
+    act(() => useNavigationStore.getState().navigate({ page: 'puzzles', puzzle: null }))
+
+    expect(screen.getByRole('button', { name: /继续挑战/ })).toHaveTextContent('冲四开场')
+  })
+
   it('全做完时不给「继续挑战」，只给完成文案', () => {
     seedSolved(PUZZLES.map((puzzle) => puzzle.id))
     render(<PuzzleScreen />)
@@ -693,8 +740,8 @@ describe('PuzzleScreen —— 出口（Phase 05）', () => {
     useLearnStore.setState({
       progress: { ...EMPTY_PROGRESS, solvedPuzzles: PUZZLES.map((puzzle) => puzzle.id) },
       loaded: true,
-      view: 'puzzles',
     })
+    enter('puzzles')
     render(<PuzzleScreen />)
     fireEvent.click(screen.getByTestId(`puzzle-${last.id}`))
 
@@ -714,8 +761,8 @@ describe('PuzzleScreen —— 出口（Phase 05）', () => {
     useLearnStore.setState({
       progress: { ...EMPTY_PROGRESS, solvedPuzzles: [last.id] },
       loaded: true,
-      view: 'puzzles',
     })
+    enter('puzzles')
     render(<PuzzleScreen />)
     fireEvent.click(screen.getByTestId(`puzzle-${last.id}`))
 
@@ -736,8 +783,8 @@ describe('PuzzleScreen —— 出口（Phase 05）', () => {
     useLearnStore.setState({
       progress: { ...EMPTY_PROGRESS, solvedPuzzles: ['win-h'] },
       loaded: true,
-      view: 'puzzles',
     })
+    enter('puzzles')
     render(<PuzzleScreen />)
     fireEvent.click(screen.getByTestId('puzzle-win-h'))
 
@@ -759,8 +806,8 @@ describe('PuzzleScreen —— 出口（Phase 05）', () => {
       // 该类两道全通，但全局只有 2 / 15 —— 走的是 allDone 而**不是** allSolved
       progress: { ...EMPTY_PROGRESS, solvedPuzzles: ['forced-deep', last.id] },
       loaded: true,
-      view: 'puzzles',
     })
+    enter('puzzles')
     render(<PuzzleScreen />)
     fireEvent.click(screen.getByTestId(`puzzle-${last.id}`))
 
@@ -793,8 +840,8 @@ describe('PuzzleScreen —— 出口（Phase 05）', () => {
     useLearnStore.setState({
       progress: { ...EMPTY_PROGRESS, solvedPuzzles: ['win-h'] },
       loaded: true,
-      view: 'puzzles',
     })
+    enter('puzzles')
     render(<PuzzleScreen />)
     fireEvent.click(screen.getByTestId('puzzle-win-h'))
 
@@ -811,8 +858,8 @@ describe('PuzzleScreen —— 出口（Phase 05）', () => {
         solvedPuzzles: ['win-h', 'win-diag', 'win-vertical'],
       },
       loaded: true,
-      view: 'puzzles',
     })
+    enter('puzzles')
     render(<PuzzleScreen />)
     fireEvent.click(screen.getByTestId('puzzle-win-h'))
 
@@ -823,8 +870,8 @@ describe('PuzzleScreen —— 出口（Phase 05）', () => {
     useLearnStore.setState({
       progress: { ...EMPTY_PROGRESS, solvedPuzzles: ['win-h'] },
       loaded: true,
-      view: 'puzzles',
     })
+    enter('puzzles')
     render(<PuzzleScreen />)
     fireEvent.click(screen.getByTestId('puzzle-win-h'))
 

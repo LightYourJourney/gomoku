@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { useEffect } from 'react'
 import { Button } from '../../components/ui/Button'
 import { PageHeader } from '../../components/ui/PageHeader'
 import { cx } from '../../lib/cx'
 import { LESSONS } from '../../learn/lessons'
 import { useLearnStore } from '../../store/learnStore'
+import { useNavigationStore } from '../../store/navigationStore'
 import { PageShell } from '../shell/PageShell'
 import { ProgressBlock } from './ProgressBlock'
 import { LessonView } from './LessonView'
@@ -36,28 +37,20 @@ export function LearnScreen() {
   const completeLesson = useLearnStore((state) => state.completeLesson)
   const isLessonDone = useLearnStore((state) => state.isLessonDone)
   const visit = useLearnStore((state) => state.visit)
-  const setView = useLearnStore((state) => state.setView)
+  // 打开哪一节由地址决定（`/learn/<课程 id>`）；点顶栏进来时展开上次那节由导航 store 负责，
+  // `lastVisited` 也由它跟着地址写。动作是稳定引用，不必订阅。
+  const openId = useNavigationStore(({ route }) => (route.page === 'learn' ? route.lesson : null))
+  const { navigate, enterPage } = useNavigationStore.getState()
+  const lesson = LESSONS.find((entry) => entry.id === openId) ?? null
 
-  const [openId, setOpenId] = useState<string | null>(null)
-
-  // 进度载入之后恢复上次那节课。在**渲染期间**调整状态而不是放进 effect：
-  // effect 里 setState 会白白多触发一轮渲染，而且 lint 也会拦。
-  const [restored, setRestored] = useState(false)
-  if (!restored && loaded) {
-    setRestored(true)
-
-    const last = progress.lastVisited
-    if (last?.kind === 'lesson' && LESSONS.some((lesson) => lesson.id === last.id)) {
-      setOpenId(last.id)
-    }
-  }
+  // 地址里的课程不存在（下线了、手敲错了）：回到列表，把地址也换掉，不报错页。
+  useEffect(() => {
+    if (openId !== null && lesson === null) navigate({ page: 'learn', lesson: null }, { replace: true })
+  }, [openId, lesson, navigate])
 
   const open = (id: string): void => {
-    setOpenId(id)
-    visit('lesson', id)
+    navigate({ page: 'learn', lesson: id })
   }
-
-  const lesson = LESSONS.find((entry) => entry.id === openId) ?? null
 
   if (lesson !== null) {
     const index = LESSONS.indexOf(lesson)
@@ -71,8 +64,7 @@ export function LearnScreen() {
         lesson={lesson}
         solved={isLessonDone(lesson.id)}
         onExit={() => {
-          setOpenId(null)
-          visit(null)
+          navigate({ page: 'learn', lesson: null })
         }}
         onSolved={() => completeLesson(lesson.id)}
         /*
@@ -84,9 +76,10 @@ export function LearnScreen() {
             ? {
                 kind: 'puzzles',
                 run: () => {
-                  setOpenId(null)
+                  // 跨模块离开不经导航 store 的「子页 → 列表」规则，手动清：与改造前一样，
+                  // 学完最后一节去残局后，再点「教学」看列表而不是重开这一节。
                   visit(null)
-                  setView('puzzles')
+                  enterPage('puzzles')
                 },
               }
             : { kind: 'next', run: () => open(next.id) }
@@ -233,7 +226,7 @@ export function LearnScreen() {
         {/*
           任务书 §二⑥：通往残局的入口。
           原先这里是**一段纯文字**，读起来像说明而不像能点——现在它是真按钮。
-          走 `setView('puzzles')`，与顶栏导航同一条路，不新开一层。
+          走 `enterPage('puzzles')`，与顶栏导航同一条路，不新开一层。
         */}
         <div className="rounded-xl border border-border bg-surface px-4 py-3">
           <p className="text-xs text-muted">
@@ -252,7 +245,7 @@ export function LearnScreen() {
             data-testid="learn-to-puzzles"
             className="mt-2"
             onClick={() => {
-              setView('puzzles')
+              enterPage('puzzles')
             }}
           >
             去残局挑战 →

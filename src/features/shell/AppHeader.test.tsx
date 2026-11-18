@@ -1,12 +1,12 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it } from 'vitest'
-import { useLearnStore } from '../../store/learnStore'
+import { useNavigationStore } from '../../store/navigationStore'
 import { AppHeader } from './AppHeader'
 
 /** store 是单例，改完要还回去，否则会污染后面的用例。 */
 afterEach(() => {
-  useLearnStore.setState({ view: 'battle' })
+  useNavigationStore.getState().navigate({ page: 'battle' }, { replace: true })
 })
 
 function navItems(): HTMLElement[] {
@@ -38,7 +38,7 @@ describe('AppHeader 的导航', () => {
   })
 
   it('aria-current 跟着当前页面走', () => {
-    useLearnStore.setState({ view: 'puzzles' })
+    useNavigationStore.getState().navigate({ page: 'puzzles', puzzle: null }, { replace: true })
     render(<AppHeader />)
 
     const current = navItems().find((item) => item.getAttribute('aria-current') === 'page')
@@ -50,7 +50,7 @@ describe('AppHeader 的导航', () => {
     render(<AppHeader />)
 
     await user.click(screen.getByRole('button', { name: '教学' }))
-    expect(useLearnStore.getState().view).toBe('learn')
+    expect(useNavigationStore.getState().route.page).toBe('learn')
   })
 
   it('导航项有足够的命中高度（不低于 32px）', () => {

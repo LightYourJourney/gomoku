@@ -6,6 +6,17 @@ import { useLearnStore } from '../store/learnStore'
 import cssSource from '../index.css?raw'
 import { LearnScreen } from '../features/learn/LearnScreen'
 import { PuzzleScreen } from '../features/puzzles/PuzzleScreen'
+import type { Page } from './routes'
+import { useNavigationStore } from '../store/navigationStore'
+/**
+ * 「从顶栏进入这一页」（原来这里写的是 `view: '…'`）：先回到对战页再进，
+ * 展开上次那节的规则（裁定 17）与真实点击走同一条路。
+ */
+function enter(page: Page): void {
+  useNavigationStore.getState().navigate({ page: 'battle' }, { replace: true })
+  useNavigationStore.getState().enterPage(page)
+}
+
 
 /**
  * 主题配色的对比度守卫。
@@ -256,8 +267,8 @@ describe.each(['light', 'dark'] as const)('用法层：%s 主题下渲染出来�
         solvedPuzzles: ['win-h'],
       },
       loaded: true,
-      view: 'learn',
     })
+    enter('learn')
 
     withTheme(() => {
       const { container } = render(<LearnScreen />)
@@ -269,8 +280,8 @@ describe.each(['light', 'dark'] as const)('用法层：%s 主题下渲染出来�
     useLearnStore.setState({
       progress: { ...EMPTY_PROGRESS, completedLessons: ['rules'], solvedPuzzles: ['win-h'] },
       loaded: true,
-      view: 'puzzles',
     })
+    enter('puzzles')
 
     withTheme(() => {
       const { container } = render(<PuzzleScreen />)

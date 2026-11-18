@@ -1,18 +1,17 @@
-import { useEffect, useRef, useState } from 'react'
+import { Suspense, useEffect, useRef, useState } from 'react'
 import { BattleScreen } from './features/battle/BattleScreen'
-import { LearnScreen } from './features/learn/LearnScreen'
-import { PuzzleScreen } from './features/puzzles/PuzzleScreen'
-import { ReviewScreen } from './features/review/ReviewScreen'
+import { LearnScreen, PuzzleScreen, ReviewScreen, SharePreview } from './features/shell/pages'
+import { PageBoundary, PageLoading } from './features/shell/PageBoundary'
 import { indexedDbGameRecords } from './persist/gameRecords'
 import { indexedDbPositions } from './persist/positions'
 import { appEngine, useGameStore } from './store/useGameStore'
 import { useLearnStore } from './store/learnStore'
+import { useNavigationStore } from './store/navigationStore'
 import { useThemeEffect } from './store/settingsStore'
 import { useFlushOnHide } from './lib/useFlushOnHide'
-import { SharePreview } from './features/sharing/SharePreview'
 import { ProgressPersistBanner } from './components/ProgressPersistBanner'
 import { shouldResumeAiAfterHashChange } from './features/sharing/hash'
-import { shareTokenFromHash } from './sharing/link'
+import { shareTokenFromHash } from './sharing/token'
 
 function currentShareToken(): string | null {
   return shareTokenFromHash(window.location.hash)
@@ -47,7 +46,7 @@ export default function App() {
     useGameStore.getState().requestAiMove()
   }
 
-  const view = useLearnStore((state) => state.view)
+  const view = useNavigationStore((state) => state.route.page)
   const bootstrap = useLearnStore((state) => state.bootstrap)
   const flush = useLearnStore((state) => state.flush)
   const persistState = useLearnStore((state) => state.persistState)
@@ -69,14 +68,19 @@ export default function App() {
       <div
         className={ROOT_CLASS}
       >
-        <SharePreview
-          key={shareToken}
-          token={shareToken}
-          games={indexedDbGameRecords}
-          positions={indexedDbPositions}
-          now={Date.now}
-          onExit={exitShare}
-        />
+        {/* 分享预览里不给主导航：点了只改地址，预览还在，等于一颗点了没反应的按钮。 */}
+        <PageBoundary showNav={false}>
+          <Suspense fallback={<PageLoading showNav={false} />}>
+            <SharePreview
+              key={shareToken}
+              token={shareToken}
+              games={indexedDbGameRecords}
+              positions={indexedDbPositions}
+              now={Date.now}
+              onExit={exitShare}
+            />
+          </Suspense>
+        </PageBoundary>
       </div>
     )
   }
@@ -107,21 +111,26 @@ export default function App() {
       className={ROOT_CLASS}
     >
       <ProgressPersistBanner failed={persistState === 'failed'} onRetry={retryPersist} />
-      {view === 'battle' && <BattleScreen />}
-      {view === 'learn' && <LearnScreen />}
-      {view === 'puzzles' && <PuzzleScreen />}
-      {view === 'review' && (
-        <ReviewScreen
-          storage={indexedDbGameRecords}
-          engine={appEngine}
-          onRestoreSession={(session) => useGameStore.getState().restore(session)}
-          onStartBranch={(input) => useGameStore.getState().startBranch(input)}
-          hasGameInProgress={() => {
-            const { game } = useGameStore.getState()
-            return game.status === 'playing' && game.moves.length > 0
-          }}
-        />
-      )}
+      {/* 以页面为 key：一页的分块没下来，换一页就重置，不连累别的页面。 */}
+      <PageBoundary key={view}>
+        <Suspense fallback={<PageLoading />}>
+          {view === 'battle' && <BattleScreen />}
+          {view === 'learn' && <LearnScreen />}
+          {view === 'puzzles' && <PuzzleScreen />}
+          {view === 'review' && (
+            <ReviewScreen
+              storage={indexedDbGameRecords}
+              engine={appEngine}
+              onRestoreSession={(session) => useGameStore.getState().restore(session)}
+              onStartBranch={(input) => useGameStore.getState().startBranch(input)}
+              hasGameInProgress={() => {
+                const { game } = useGameStore.getState()
+                return game.status === 'playing' && game.moves.length > 0
+              }}
+            />
+          )}
+        </Suspense>
+      </PageBoundary>
     </div>
   )
 }

@@ -16,6 +16,7 @@ import { PageShell } from '../shell/PageShell'
 import type { AiEngine } from '../../ai/engine'
 import type { BranchConfig, BranchStartInput, BranchStartResult } from '../../store/gameStore'
 import { useLearnStore } from '../../store/learnStore'
+import { useNavigationStore } from '../../store/navigationStore'
 import { useSettingsStore } from '../../store/settingsStore'
 import { loadProgress, mergeProgress, saveProgressStrict } from '../../persist/progress'
 import { loadSession, saveSession, SCHEMA_VERSION, type PersistedSession } from '../../persist/storage'
@@ -75,7 +76,9 @@ export function ReviewScreen({
 
   // 空状态那颗「开始一局对战」要真的切页面，所以得够得着导航。
   // 与 `PuzzleScreen` 同法：页面自己连 store，不让展示组件去连。
-  const setView = useLearnStore((state) => state.setView)
+  const sub = useNavigationStore(({ route }) => (route.page === 'review' ? route.sub : null))
+  // 动作是稳定引用，不必订阅（与课程、残局页同一写法）。
+  const { navigate, enterPage } = useNavigationStore.getState()
   const adoptProgress = useLearnStore((state) => state.adoptProgress)
 
   // 离开复盘页就停掉分析：结果不再有人看，继续跑没有意义。
@@ -88,12 +91,48 @@ export function ReviewScreen({
     }
   }, [analysis, replay])
 
-  const [open, setOpen] = useState(false)
-  const [editorOpen, setEditorOpen] = useState(false)
-  const [branchCursor, setBranchCursor] = useState<number | null>(null)
+  // 子页面由地址决定：`/review`（棋谱库）、`/review/<棋谱号>`（回放）、`/review/editor`。
+  const seq = sub?.kind === 'record' ? sub.seq : null
+  const editorOpen = sub?.kind === 'editor'
+  /**
+   * 分支弹窗挂在哪一局的哪一手上。记下棋谱号：后退 / 前进换了一局时，
+   * 旧的弹窗状态不能落到新的一局上。
+   */
+  const [branch, setBranch] = useState<{ readonly seq: number; readonly cursor: number } | null>(null)
   const [branchError, setBranchError] = useState<string | null>(null)
   const branchSubmitting = useRef(false)
   const replayRecord = useStore(replay, (state) => state.record)
+  const branchCursor = branch !== null && branch.seq === seq ? branch.cursor : null
+
+  /*
+   * 回放跟着地址走。从列表点开时 `openRecord` 已经把那一局装进回放，这里什么都不做；
+   * 直达、刷新、后退 / 前进到 `/review/<号>` 时按号从棋谱库读——读回来时地址已经
+   * 换了就丢弃，读不到（删了、换了设备）就回到列表。离开回放（含后退）时停分析、关回放。
+   */
+  useEffect(() => {
+    if (seq === null) {
+      if (replay.getState().record !== null) {
+        analysis.getState().stop()
+        replay.getState().close()
+      }
+      return
+    }
+    if (replay.getState().record?.seq === seq) return
+    analysis.getState().stop()
+    replay.getState().close()
+    let current = true
+    const backToLibrary = () => {
+      if (current) navigate({ page: 'review', sub: null }, { replace: true })
+    }
+    storage.get(seq).then((record) => {
+      if (!current) return
+      if (record === null) backToLibrary()
+      else replay.getState().open(record)
+    }, backToLibrary)
+    return () => {
+      current = false
+    }
+  }, [seq, storage, replay, analysis, navigate])
 
   /*
    * 数据管理的能力注入。`Date.now` 只传引用、不在这里调用——文件名的时间戳
@@ -136,17 +175,15 @@ export function ReviewScreen({
   function openRecord(record: GameRecord) {
     analysis.getState().stop()
     replay.getState().open(record)
-    setBranchCursor(null)
+    setBranch(null)
     setBranchError(null)
-    setOpen(true)
+    navigate({ page: 'review', sub: { kind: 'record', seq: record.seq } })
   }
 
   function closeRecord() {
-    analysis.getState().stop()
-    replay.getState().close()
-    setBranchCursor(null)
+    setBranch(null)
     setBranchError(null)
-    setOpen(false)
+    navigate({ page: 'review', sub: null })
   }
 
   function share(scope: 'game' | 'current', cursor: number): ShareLinkResult {
@@ -154,7 +191,8 @@ export function ReviewScreen({
     if (record === null) return { ok: false, message: '当前没有可分享的棋谱。' }
     return shareLink(
       scope === 'game' ? createGameShare(record) : createReplayPositionShare(record, cursor),
-      { origin: window.location.origin, pathname: window.location.pathname },
+      // 应用根，不是当前地址：`/review/<号>` 里的棋谱号是本机的，不能带进分享链接。
+      { origin: window.location.origin, pathname: import.meta.env.BASE_URL },
     )
   }
 
@@ -175,9 +213,9 @@ export function ReviewScreen({
       }
       analysis.getState().stop()
       replay.getState().pause()
-      setBranchCursor(null)
+      setBranch(null)
       setBranchError(null)
-      setView('battle')
+      enterPage('battle')
       // 成功后保持锁直到本页卸载；连点不能再次接管同一个分支。
     } catch (error) {
       branchSubmitting.current = false
@@ -191,12 +229,23 @@ export function ReviewScreen({
         engine={engine}
         records={storage}
         positions={positions ?? indexedDbPositions}
-        onExit={() => setEditorOpen(false)}
+        onExit={() => navigate({ page: 'review', sub: null })}
       />
     )
   }
 
-  if (open) {
+  if (seq !== null && replayRecord?.seq !== seq) {
+    // 直达 / 后退到某一局、棋谱还在读：与列表同一个外壳，只放一行状态。
+    return (
+      <PageShell key="replay-loading">
+        <p role="status" className="text-sm text-muted">
+          正在读取棋谱…
+        </p>
+      </PageShell>
+    )
+  }
+
+  if (seq !== null) {
     return (
       <PageShell
         /*
@@ -237,7 +286,7 @@ export function ReviewScreen({
                 ? undefined
                 : (cursor) => {
                     setBranchError(null)
-                    setBranchCursor(cursor)
+                    setBranch({ seq, cursor })
                   }
             }
             onShare={share}
@@ -251,7 +300,7 @@ export function ReviewScreen({
               error={branchError}
               replacesGameInProgress={hasGameInProgress?.() ?? false}
               onCancel={() => {
-                setBranchCursor(null)
+                setBranch(null)
                 setBranchError(null)
               }}
               onConfirm={confirmBranch}
@@ -268,9 +317,9 @@ export function ReviewScreen({
         storage={storage}
         positions={positions ?? indexedDbPositions}
         onOpen={openRecord}
-        onStartBattle={() => setView('battle')}
+        onStartBattle={() => enterPage('battle')}
         services={dataServices}
-        onOpenEditor={() => setEditorOpen(true)}
+        onOpenEditor={() => navigate({ page: 'review', sub: { kind: 'editor' } })}
       />
     </PageShell>
   )

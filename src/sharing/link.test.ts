@@ -11,8 +11,8 @@ import {
   encodeSharePayload,
   type ShareKind,
   MAX_SHARE_TOKEN,
-  shareTokenFromHash,
 } from './link'
+import { shareTokenFromHash } from './token'
 
 const NINE_MOVES: readonly Point[] = [
   { x: 3, y: 7 }, { x: 3, y: 9 },

@@ -160,10 +160,9 @@ describe('完成与通关', () => {
     storage.saved = { ...EMPTY_PROGRESS, lastView: 'battle' }
 
     state().bootstrap()
-    state().setView('learn')
+    state().recordView('learn')
     await tick()
 
-    expect(state().view).toBe('learn')
     expect(state().progress.lastView).toBe('learn')
     // 而且这次操作必须真的落盘——否则刷新之后会退回原样
     expect(storage.saved.lastView).toBe('learn')
@@ -183,28 +182,27 @@ describe('完成与通关', () => {
 
 describe('视图', () => {
   it('默认停在对战页', () => {
-    expect(state().view).toBe('battle')
+    expect(state().progress.lastView).toBe('battle')
   })
 
-  it('setView 同时更新当前视图与要落盘的位置', async () => {
+  it('recordView 更新要落盘的位置（当前位置本身归导航 store）', async () => {
     state().bootstrap()
     await tick()
 
-    state().setView('puzzles')
+    state().recordView('puzzles')
     await tick()
 
-    expect(state().view).toBe('puzzles')
     expect(state().progress.lastView).toBe('puzzles')
     expect(storage.saved.lastView).toBe('puzzles')
   })
 
-  it('载入时恢复上次所在的视图', async () => {
+  it('载入时恢复上次所在的视图（导航 store 据此回到那一页，见 navigationStore.test.ts）', async () => {
     storage.saved = { ...EMPTY_PROGRESS, lastView: 'learn' }
 
     state().bootstrap()
     await tick()
 
-    expect(state().view).toBe('learn')
+    expect(state().progress.lastView).toBe('learn')
   })
 })
 
@@ -225,14 +223,14 @@ describe('位置与视图', () => {
 })
 
 describe("视图扩展 —— 'review'", () => {
-  it("setView('review') 后 view 是 'review'", () => {
-    state().setView('review')
+  it("recordView('review') 后要落盘的位置是 'review'", () => {
+    state().recordView('review')
 
-    expect(state().view).toBe('review')
+    expect(state().progress.lastView).toBe('review')
   })
 
-  it("setView('review') 把 lastView 落盘", () => {
-    state().setView('review')
+  it("recordView('review') 把 lastView 落盘", () => {
+    state().recordView('review')
 
     expect(state().progress.lastView).toBe('review')
   })
@@ -317,8 +315,8 @@ describe('写入时序（Phase 09A）', () => {
   })
 
   it('旧写入不会覆盖新数据：第一笔完成之后才写第二笔', async () => {
-    state().setView('learn')
-    state().setView('puzzles')
+    state().recordView('learn')
+    state().recordView('puzzles')
 
     expect(gated.calls).toHaveLength(1)
     gated.finishNext()
@@ -368,12 +366,12 @@ describe('写入时序（Phase 09A）', () => {
   })
 
   it('把设置成同一个值不会重复写入', async () => {
-    state().setView('learn')
+    state().recordView('learn')
     gated.finishNext()
     await tick()
     const before = gated.calls.length
 
-    state().setView('learn')
+    state().recordView('learn')
 
     expect(gated.calls.length).toBe(before)
   })

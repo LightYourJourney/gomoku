@@ -3,13 +3,13 @@ import { positionFromReplay, type Position, type PositionProvenance } from '../c
 import { parsePositionText, toPositionFile } from '../persist/transfer/position'
 import { jsonDepth, MAX_JSON_DEPTH, parseImportText } from '../persist/transfer/validate'
 import { toGameFile, type GamePayload } from '../persist/transfer/format'
+import { SHARE_HASH_PREFIX } from './token'
 
 /**
  * 分享协议版本。与棋谱/局面内部格式版本分开：这是链接外壳的版本。
  * 版本过新的链接明确拒绝，不猜测字段含义。
  */
 const SHARE_VERSION = 1
-const SHARE_HASH_PREFIX = '#share='
 
 /**
  * 链接 token 的长度上限。
@@ -150,10 +150,6 @@ export function shareLink(
 ): ShareLinkResult {
   if (!result.ok) return { ok: false, message: result.message }
   return { ok: true, link: createShareUrl(result.token, base) }
-}
-
-export function shareTokenFromHash(hash: string): string | null {
-  return hash.startsWith(SHARE_HASH_PREFIX) ? hash.slice(SHARE_HASH_PREFIX.length) : null
 }
 
 function decodeEnvelope(token: string): ShareEnvelope | ShareFailure {

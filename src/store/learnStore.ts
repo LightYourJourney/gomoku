@@ -9,8 +9,6 @@ export interface LearnStore {
   readonly loaded: boolean
   /** 最近一次写入是否失败；成功后回到 idle。 */
   readonly persistState: 'idle' | 'saving' | 'failed'
-  /** 当前在哪一页。与 `progress.lastView` 是同一件事，所以放在同一个 store 里。 */
-  readonly view: View
 
   bootstrap(): void
   /** 导入备份后用合并结果替换内存态；写入走同一条串行队列。 */
@@ -24,7 +22,8 @@ export interface LearnStore {
   flush(): Promise<void>
   /** 重新尝试落盘当前内存进度。 */
   retryPersist(): void
-  setView(view: View): void
+  /** 记下当前在哪一页（`progress.lastView`）。位置本身归导航 store（`navigationStore.ts`），这里只落盘。 */
+  recordView(view: View): void
   completeLesson(id: string): void
   solvePuzzle(id: string): void
   visit(kind: 'lesson' | 'puzzle' | null, id?: string): void
@@ -139,7 +138,6 @@ export function createLearnStore(storage: ProgressStorage): UseBoundStore<StoreA
       progress: EMPTY_PROGRESS,
       loaded: false,
       persistState: 'idle',
-      view: 'battle',
 
       bootstrap() {
         void storage.load().then(
@@ -158,10 +156,6 @@ export function createLearnStore(storage: ProgressStorage): UseBoundStore<StoreA
                 lastView: current.lastView === 'battle' ? stored.lastView : current.lastView,
               },
               loaded: true,
-              // 位置同样要合并：载入期间用户可能已经点了导航。直接把存储里的
-              // lastView 赋给 view 会把他刚点的那一页顶掉——首屏载入很快，
-              // 但点得够快就会踩到。
-              view: current.lastView === 'battle' ? stored.lastView : current.lastView,
             })
 
             // 把载入期间挂起的那次写入补上
@@ -177,8 +171,7 @@ export function createLearnStore(storage: ProgressStorage): UseBoundStore<StoreA
         )
       },
 
-      setView(view) {
-        set({ view })
+      recordView(view) {
         update({ lastView: view })
       },
 

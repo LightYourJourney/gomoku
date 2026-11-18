@@ -125,9 +125,35 @@ test('分享链接预览在生产构建与根路径下可解析', async ({ page 
   await page.getByRole('button', { name: '分享棋谱' }).click()
   await page.getByRole('button', { name: '分享整盘' }).click()
   const link = await page.getByTestId('share-link').inputValue()
+  // 在 `/review/<棋谱号>` 里生成的链接不带子路径：棋谱号是本机的（阶段 C）
+  expect(new URL(link).pathname).toBe('/')
   await page.getByRole('button', { name: '关闭' }).click()
 
   await page.goto(link)
   await expect(page.getByTestId('share-kind')).toContainText('单盘棋谱')
   await expect(page.getByTestId('share-save')).toBeVisible()
+})
+
+test('冷启动直达复盘页、某节课与局面编辑器：生产服务器把页面地址回给入口，分块按需取到', async ({ page }) => {
+  await page.goto('/review')
+  await expect(page.getByText('还没有保存的对局')).toBeVisible()
+
+  await page.goto('/learn/rules')
+  await expect(page.getByRole('button', { name: '← 课程列表' })).toBeVisible()
+
+  await page.goto('/review/editor')
+  await expect(page.getByRole('heading', { level: 1, name: '局面研究' })).toBeVisible()
+})
+
+test('页面分块没能载入：给出刷新提示，顶栏还在，换一页照常', async ({ page }) => {
+  // 必须 abort：preview 的 SPA 回退会把缺失的 js 回成 index.html，那测不到「没下来」。
+  await page.route(/\/assets\/ReviewScreen-.*\.js$/, (route) => route.abort())
+  await page.goto('/')
+
+  await page.getByRole('button', { name: '复盘', exact: true }).click()
+
+  await expect(page.getByRole('alert')).toContainText('页面没能载入')
+  await expect(page.getByRole('button', { name: '刷新重试' })).toBeVisible()
+  await page.getByRole('button', { name: '对战', exact: true }).click()
+  await expect(page.getByTestId('board')).toBeVisible()
 })
