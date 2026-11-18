@@ -42,7 +42,7 @@ analysis   learn        ← 分析结论与教学内容（两条互不依赖的�
 `types.ts` 常量与类型；`board.ts` 索引换算、边界、读格；`rules.ts` 胜负判定与落子合法性；`game.ts` 对局状态机；`branch.ts` 从合法前缀校验并重建探索分支局面；`position.ts` 局面编辑器用的棋盘快照（`Position` 不是 `GameState`：没有手顺与胜负派生）、全盘五连扫描与静态合法性检查（`analyzePosition`），契约见 [`positions/POSITION_MODEL.md`](positions/POSITION_MODEL.md)。全部是不可变纯函数。
 
 **`ai/`** —— 引擎。
-`patterns.ts` 单点棋型分析（窗口枚举，含隔子型）；`evaluate.ts` 整盘线段评估；`incrementalEvaluate.ts` 与棋盘同步的增量评估（搜索叶子取分用）；`candidates.ts` 候选点生成；`difficulty.ts` 五档参数表；`transposition.ts` Zobrist 置换表；`threat.ts` 算杀搜索（VCF / VCT）；`search.ts` 搜索主体。`worker.ts` 是 Worker 外壳，`engine.ts` 是主线程侧的请求分发与取消，`lanes.ts` 是两条车道（落子一个 Worker、提示与分析另一个，都在首次请求时才创建；Worker 由调用方注入，自己不碰），`browserEngine.ts` 只负责新建 Worker 并把它交给车道。
+`patterns.ts` 单点棋型分析（窗口枚举，含隔子型）；`evaluate.ts` 整盘线段评估；`incrementalEvaluate.ts` 与棋盘同步的增量评估（搜索叶子取分用）；`candidates.ts` 候选点生成；`difficulty.ts` 五档参数表；`transposition.ts` Zobrist 置换表；`threat.ts` 算杀搜索（VCF / VCT）；`search.ts` 搜索主体。`worker.ts` 是 Worker 外壳，`engine.ts` 是主线程侧的请求分发与取消，`lanes.ts` 是两条车道（落子一个 Worker、提示与分析另一个，模块加载时都不建；只读 Worker 首次请求时才建，落子 Worker 由 `main.tsx` 在应用挂载后预热（`warmUp`，免得第一手等 Worker 下载与启动）；Worker 由调用方注入，自己不碰），`browserEngine.ts` 只负责新建 Worker 并把它交给车道。
 
 `search.ts` 内部分成两层，这个分工是刻意的：
 

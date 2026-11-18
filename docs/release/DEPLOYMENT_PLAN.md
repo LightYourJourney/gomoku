@@ -73,7 +73,7 @@ Cloudflare Pages 会解析这个文件并下发；GitHub Pages 没有等效能�
 - 两种方式都已在本地验证：子路径构建后
   `grep -o 'src="[^"]*"' dist/index.html` 得到 `/gomoku/assets/...`。
 - **2026-11-18 阶段 C 起有页面地址**（`/learn`、`/puzzles`、`/review` 及其子页面，见 `src/lib/routes.ts`）。
-  Cloudflare Pages 上由 `public/_redirects` 把这些前缀改写到 `index.html`（只写页面前缀，**不写** `/* /index.html 200`：
+  Cloudflare Pages 上由 `public/_redirects` 把这些前缀改写到入口页 `/`（目标不能写 `/index.html`：Pages 会把它 308 到 `/`，改写就成了跳转，预览环境实测；只写页面前缀，**不写** `/* /index.html 200`：
   规则优先于静态文件，通配全站会把发布后已不存在的旧分块也回成 HTML）。**换托管平台或部署到子路径时**，
   必须在那边配同样的回退（子路径下前缀要带上 `VITE_BASE`），否则深链接一刷新就是 404；应用内的地址解析与生成
   已按 `BASE_URL` 处理。

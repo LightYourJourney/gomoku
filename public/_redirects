@@ -1,10 +1,12 @@
 # 应用内页面的地址（src/lib/routes.ts）在 Cloudflare Pages 上改写到入口页，地址栏不变。
+# 目标写 `/` 而不是 `/index.html`：Pages 会把 `/index.html` 308 到 `/`，改写到它就变成了跳转
+# （2026-11-18 预览环境实测：`/learn` 被 308 到首页、`/learn/rules` 直接 404）。
 # 只为页面前缀写规则，**不要**写 `/* /index.html 200`：Pages 的规则优先于静态文件，
 # 通配全站会把发布后已不存在的旧分块（/assets/xxx.js）也回成 HTML，分块加载失败
 # 就变成「把 HTML 当 JS 解析」。与地址规则的一致性由 src/lib/routes.test.ts 核对。
-/learn /index.html 200
-/learn/* /index.html 200
-/puzzles /index.html 200
-/puzzles/* /index.html 200
-/review /index.html 200
-/review/* /index.html 200
+/learn / 200
+/learn/* / 200
+/puzzles / 200
+/puzzles/* / 200
+/review / 200
+/review/* / 200

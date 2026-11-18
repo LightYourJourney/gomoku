@@ -1,5 +1,4 @@
-import type { AiEngine } from './engine'
-import { createLaneEngine, type Spawn } from './lanes'
+import { createLaneEngine, type LaneEngine, type Spawn } from './lanes'
 import type { SearchResponse } from './types'
 
 /**
@@ -20,6 +19,6 @@ const spawn: Spawn = (events) => {
   return worker
 }
 
-export function createBrowserAiEngine(): AiEngine {
+export function createBrowserAiEngine(): LaneEngine {
   return createLaneEngine(spawn)
 }

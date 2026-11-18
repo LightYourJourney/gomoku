@@ -33,7 +33,7 @@ interface Sink {
  * 落子车道：同一时刻至多一个请求。取消在飞的那个、或新落子到来时上一个还在飞
  * （它必然已经过期），就终止 Worker；下一个请求再新建。
  */
-function playLane(spawn: Spawn, sink: Sink): Lane {
+function playLane(spawn: Spawn, sink: Sink): Lane & { warm(): void } {
   let worker: LaneWorker | null = null
   let inflight: number | null = null
 
@@ -75,6 +75,9 @@ function playLane(spawn: Spawn, sink: Sink): Lane {
       if (requestId === inflight) drop()
     },
     close: drop,
+    warm() {
+      worker ??= create()
+    },
   }
 }
 
@@ -151,7 +154,16 @@ function readLane(spawn: Spawn, sink: Sink): Lane {
  * 两个 Worker 都在首次请求时才创建。不碰 `Worker` 全局——`spawn` 由调用方注入，
  * 所以能在 jsdom 里用假 Worker 单测。
  */
-export function createLaneEngine(spawn: Spawn): AiEngine {
+export interface LaneEngine extends AiEngine {
+  /**
+   * 提前建好落子 Worker。按需创建让模块加载不碰 Worker，但第一手就要等 Worker 脚本下载与启动——
+   * 预览环境实测第一手应手 257–417 ms，原来启动时就建好 Worker 的生产站是 67–72 ms。
+   * 应用挂载之后调一次（`main.tsx`），把这段时间挪到玩家还没落子的时候。
+   */
+  warmUp(): void
+}
+
+export function createLaneEngine(spawn: Spawn): LaneEngine {
   const sink: Sink = {
     response: (response) => engine.handleResponse(response),
     error: (message, requestIds) => engine.handleError(message, requestIds),
@@ -174,6 +186,9 @@ export function createLaneEngine(spawn: Spawn): AiEngine {
       engine.dispose()
       play.close()
       read.close()
+    },
+    warmUp() {
+      play.warm()
     },
   }
 }

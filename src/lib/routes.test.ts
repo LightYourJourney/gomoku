@@ -81,9 +81,10 @@ describe('部署配置与地址规则一致（Cloudflare Pages）', () => {
     .filter((line) => line !== '' && !line.startsWith('#'))
     .map((line) => line.split(/\s+/))
 
-  it.each(PAGE_PATHS)('/%s 与 /%s/* 都改写到 index.html（200）', (path) => {
-    expect(rules).toContainEqual([`/${path}`, '/index.html', '200'])
-    expect(rules).toContainEqual([`/${path}/*`, '/index.html', '200'])
+  // 目标是 `/` 不是 `/index.html`：Pages 把 `/index.html` 308 到 `/`，改写到它会变成跳转（预览环境实测）。
+  it.each(PAGE_PATHS)('/%s 与 /%s/* 都改写到入口页 /（200）', (path) => {
+    expect(rules).toContainEqual([`/${path}`, '/', '200'])
+    expect(rules).toContainEqual([`/${path}/*`, '/', '200'])
   })
 
   it('没有通配全站的改写——那会把发布后已不存在的旧分块也回成 HTML', () => {

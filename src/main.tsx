@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import { AppErrorBoundary } from './components/AppErrorBoundary.tsx'
 import './index.css'
-import { bootstrapStore } from './store/useGameStore'
+import { appEngine, bootstrapStore } from './store/useGameStore'
 import { shareTokenFromHash } from './sharing/token'
 import { preloadAllPages, preloadPage } from './features/shell/pages'
 import { useNavigationStore } from './store/navigationStore'
@@ -25,4 +25,6 @@ void preloadPage(shared ? 'share' : useNavigationStore.getState().route.page).th
     </StrictMode>,
   )
   preloadAllPages()
+  // 落子 Worker 按需创建；挂载之后先建好，第一手不必等它下载、启动（见 ai/lanes.ts 的 warmUp）。
+  appEngine.warmUp()
 })

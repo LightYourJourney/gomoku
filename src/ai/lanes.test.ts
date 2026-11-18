@@ -322,3 +322,18 @@ describe('createLaneEngine —— 释放', () => {
     expect(hint.error).toBeInstanceOf(Error)
   })
 })
+
+describe('createLaneEngine —— 预热', () => {
+  it('warmUp 提前建好落子 Worker，第一手不再等 Worker 启动；只建一次，不碰只读车道', () => {
+    const { engine, workers } = harness()
+
+    engine.warmUp()
+    engine.warmUp()
+    expect(workers).toHaveLength(1)
+
+    void engine.search(request('play'))
+    expect(workers).toHaveLength(1)
+    expect(workers[0]!.received.map((r) => r.purpose)).toEqual(['play'])
+  })
+})
+
