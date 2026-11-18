@@ -34,6 +34,7 @@ test('旧版本夹具：外部文件、内部记录与会话都还能被当前�
   expect(backup.ok).toBe(true)
   if (!backup.ok || backup.kind !== 'backup') return
   expect(backup.games).toHaveLength(2)
+  expect(backup.games.every((game) => !('createdAt' in game))).toBe(true)
   expect(backup.progress?.completedLessons).toContain('rules')
   const storage = memoryGameRecords()
   expect(await storage.importMany(backup.games.map(gamePayloadToRecordInput))).toMatchObject({
@@ -101,6 +102,8 @@ test('旧 v2 库：升级、导出完整备份、干净上下文恢复', async (
   await expect(page.getByTestId('learn-progress')).toContainText('已完成 1 / 8 节')
   await page.getByRole('button', { name: '复盘', exact: true }).click()
   await expect(page.getByTestId(/^record-/)).toHaveCount(2)
+  // 0.6.0 的旧棋谱没有入库时间：如实写「时间未知」（阶段 D），备份里也不编一个
+  for (const item of await page.getByTestId(/^record-/).all()) await expect(item).toContainText('时间未知')
 
   const [download] = await Promise.all([
     page.waitForEvent('download'),

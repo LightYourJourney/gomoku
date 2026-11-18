@@ -131,6 +131,7 @@ test('分享：打开链接不自动续走本地对局，返回应用后才续�
     difficulty: 'easy',
     resignedBy: null,
     winner: BLACK,
+    createdAt: null,
   })
   expect(token.ok).toBe(true)
   if (!token.ok) return
@@ -187,6 +188,7 @@ test('分享：应用内改 hash 进入预览会中止在飞 AI，返回后续�
     difficulty: 'easy',
     resignedBy: null,
     winner: BLACK,
+    createdAt: null,
   })
   expect(token.ok).toBe(true)
   if (!token.ok) return
@@ -395,6 +397,7 @@ test('分享：本地存档是一局已结束的棋时，打开链接同样不�
     difficulty: 'easy',
     resignedBy: null,
     winner: BLACK,
+    createdAt: null,
   })
   expect(token.ok).toBe(true)
   if (!token.ok) return

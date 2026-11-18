@@ -8,6 +8,7 @@ import {
   exportFilename,
   GAME_FORMAT,
   gameContentKey,
+  gamePayloadToRecordInput,
   toBackupFile,
   toGameFile,
   toGamePayload,
@@ -147,5 +148,58 @@ describe('对外格式 · 完整备份', () => {
     expect(parsed.games).toHaveLength(1)
     expect(parsed.gameErrors).toHaveLength(1)
     expect(parsed.gameErrors[0]!.index).toBe(1)
+  })
+})
+
+describe('棋谱的入库时间（阶段 D，可选字段、不升版本）', () => {
+  const AT = Date.UTC(2026, 10, 18, 7, 30, 0)
+
+  it('导出单盘文件：有时间写 ISO 字符串；没有就不写这个键（旧版本读到未知键会告警）', () => {
+    expect(toGameFile({ ...winRecord(), createdAt: AT }).createdAt).toBe('2026-11-18T07:30:00.000Z')
+    expect('createdAt' in toGameFile({ ...winRecord(), createdAt: null })).toBe(false)
+    expect('createdAt' in toGameFile(winRecord())).toBe(false)
+  })
+
+  it('完整备份里的棋谱同样带时间', () => {
+    const backup = toBackupFile({ games: [{ ...winRecord(), createdAt: AT }] })
+
+    expect(backup.games[0]!.createdAt).toBe('2026-11-18T07:30:00.000Z')
+  })
+
+  it('读回文件：时间原样回到棋谱库的写入输入（毫秒）', () => {
+    const parsed = parseImportText(JSON.stringify(toGameFile({ ...winRecord(), createdAt: AT })))
+
+    expect(parsed.ok).toBe(true)
+    if (!parsed.ok || parsed.kind !== 'game') return
+    expect(parsed.warnings).toEqual([])
+    expect(gamePayloadToRecordInput(parsed.game).createdAt).toBe(AT)
+  })
+
+  it.each(['2026-11-18', 'yesterday', '2026-13-40T99:99:99.000Z', 12345])(
+    '时间写坏了（%s）：这一局照常导入、时间当没有，并给一条告警',
+    (value) => {
+      const file = { ...toGameFile(winRecord()), createdAt: value }
+      const parsed = parseImportText(JSON.stringify(file))
+
+      expect(parsed.ok).toBe(true)
+      if (!parsed.ok || parsed.kind !== 'game') return
+      expect(gamePayloadToRecordInput(parsed.game).createdAt).toBeNull()
+      expect(parsed.warnings.some((warning) => warning.path.endsWith('createdAt'))).toBe(true)
+    },
+  )
+
+  it('没有时间的旧文件：时间为 null，没有告警', () => {
+    const parsed = parseImportText(JSON.stringify(toGameFile(winRecord())))
+
+    expect(parsed.ok).toBe(true)
+    if (!parsed.ok || parsed.kind !== 'game') return
+    expect(parsed.warnings).toEqual([])
+    expect(gamePayloadToRecordInput(parsed.game).createdAt).toBeNull()
+  })
+
+  it('内容身份不含时间', () => {
+    const a = toGamePayload({ ...winRecord(), createdAt: AT })
+    const b = toGamePayload({ ...winRecord(), createdAt: null })
+    expect(gameContentKey(a)).toBe(gameContentKey(b))
   })
 })

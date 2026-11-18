@@ -395,3 +395,27 @@ test('点开一局棋谱之后，焦点落在回放页的正文上', async ({ pa
     )
     .toBe(true)
 })
+
+test('棋谱库：下完的一局带时间；删除要二次确认，删掉之后刷新也不回来', async ({ page }) => {
+  await page.goto('/')
+  await page.getByRole('radio', { name: '本地双人' }).click()
+  for (const [x, y] of [[3, 7], [3, 9], [4, 7], [4, 9], [5, 7], [5, 9], [6, 7], [6, 9], [7, 7]] as const) {
+    await page.getByTestId(`intersection-${x}-${y}`).click()
+  }
+  await expect(page.getByRole('dialog')).toContainText('黑棋获胜')
+  await expect(page.getByRole('dialog')).toContainText('已存入')
+  await page.getByRole('button', { name: '看看棋盘' }).click()
+
+  await page.getByRole('button', { name: '复盘', exact: true }).click()
+  const item = page.getByTestId(/^record-/).first()
+  await expect(item).toContainText(/\d{4}-\d{2}-\d{2} \d{2}:\d{2}/)
+  const seq = (await item.getAttribute('data-testid'))!.slice('record-'.length)
+
+  await page.getByRole('button', { name: `删除棋谱 ${seq}` }).click()
+  await page.getByRole('button', { name: `确认删除棋谱 ${seq}` }).click()
+  await expect(page.getByText('已删除这局棋谱。')).toBeVisible()
+  await expect(page.getByTestId(`record-${seq}`)).toHaveCount(0)
+
+  await page.reload()
+  await expect(page.getByText('还没有保存的对局')).toBeVisible()
+})

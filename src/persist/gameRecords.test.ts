@@ -9,7 +9,7 @@ import {
   memoryGameRecords,
   saveGameReplacing,
   __setGameRecordsIndexedDbFactory,
-  type GameRecord,
+  type GameRecordInput,
 } from './gameRecords'
 import { DB_NAME, PROGRESS_STORE } from './schema'
 import { recordContentKey } from './recordIdentity'
@@ -21,7 +21,7 @@ const FIVE_IN_NINE = [
   { x: 7, y: 7 },
 ] as const
 
-type RecordInput = Omit<GameRecord, 'seq' | 'schemaVersion' | 'winner'>
+type RecordInput = GameRecordInput
 
 function winRecord(): RecordInput {
   return {
@@ -296,20 +296,8 @@ describe('saveGameReplacing：替换而不是留下两条', () => {
     expect(await indexedDbGameRecords.get(first.seq)).not.toBeNull()
   })
 
-  it('删旧条失败时撤回新条，并如实报错（不冒充已替换）', async () => {
-    const first = (await indexedDbGameRecords.put(winRecord())).record
-    const del = vi
-      .spyOn(indexedDbGameRecords, 'delete')
-      .mockRejectedValueOnce(new Error('删除被中止'))
-      .mockResolvedValueOnce(undefined)
-
-    await expect(saveGameReplacing(resignRecord(), first.seq)).rejects.toThrow('本次保存已撤回')
-    // 第一次删旧的，第二次撤回刚写的新条
-    expect(del).toHaveBeenCalledTimes(2)
-    expect(del.mock.calls[1]![0]).toBeGreaterThan(first.seq)
-
-    del.mockRestore()
-  })
+  // 「删旧条失败时撤回新条」那条用例随补偿逻辑一起删了：写新与删旧现在是一个事务，
+  // 删旧失败整笔回滚——由下面「putReplacing：事务中途失败」那条钉着。
 
   it('没真正落库时**不删**旧条——宁可多一条，也不能整局消失', async () => {
     const first = (await indexedDbGameRecords.put(winRecord())).record
@@ -509,13 +497,16 @@ describe('棋谱库 —— 存储恢复后合并内存记录', () => {
 
     __setGameRecordsIndexedDbFactory(flaky)
     try {
-      const saved = await indexedDbGameRecords.put(winRecord())
+      const saved = await indexedDbGameRecords.put({ ...winRecord(), createdAt: 42 })
       expect(saved.persisted).toBe(false) // 只进了内存
 
       const listed = await indexedDbGameRecords.list()
       expect(listed.degraded).toBe(false)
       // 补写时 seq 由库重新分配，所以按内容身份比，而不是旧 seq
-      expect(listed.records.some((record) => recordContentKey(record) === recordContentKey(saved.record))).toBe(true)
+      const drained = listed.records.find((record) => recordContentKey(record) === recordContentKey(saved.record))
+      expect(drained).toBeDefined()
+      // 补写进库时入库时间原样带过去（阶段 D）
+      expect(drained?.createdAt).toBe(42)
 
       // 补写之后再列一次不会重复
       const again = await indexedDbGameRecords.list()
@@ -611,3 +602,205 @@ describe('棋谱库 —— 批量导入', () => {
     }
   })
 })
+
+/** 绕过 put，直接往库里写一条原样对象（模拟旧版本或别处写下的数据）。 */
+async function writeRaw(record: Record<string, unknown>): Promise<void> {
+  const db = await new Promise<IDBDatabase>((resolve, reject) => {
+    const request = indexedDB.open(DB_NAME)
+    request.onsuccess = () => resolve(request.result)
+    request.onerror = () => reject(request.error)
+  })
+  await new Promise<void>((resolve, reject) => {
+    const tx = db.transaction('records', 'readwrite')
+    tx.objectStore('records').add(record)
+    tx.oncomplete = () => {
+      db.close()
+      resolve()
+    }
+    tx.onerror = () => reject(tx.error)
+  })
+}
+
+describe('棋谱库 —— 入库时间（阶段 D，可选字段、不递增版本）', () => {
+  it('带时间入库，读回原值；schemaVersion 仍是 1', async () => {
+    const saved = (await indexedDbGameRecords.put({ ...winRecord(), createdAt: 1_763_000_000_000 })).record
+
+    const read = await indexedDbGameRecords.get(saved.seq)
+    expect(read?.createdAt).toBe(1_763_000_000_000)
+    expect(read?.schemaVersion).toBe(1)
+  })
+
+  it('不带时间入库：读回 null', async () => {
+    const saved = (await indexedDbGameRecords.put(winRecord())).record
+
+    expect((await indexedDbGameRecords.get(saved.seq))?.createdAt).toBeNull()
+  })
+
+  it.each([
+    ['缺这个字段（旧版本写下的）', undefined],
+    ['字符串', '2026-11-18'],
+    ['负数', -1],
+    ['NaN', Number.NaN],
+    ['无穷大', Number.POSITIVE_INFINITY],
+    ['超出 Date 能表示的范围', 9e15],
+    ['小数', 1.5],
+  ])('时间%s：整条照常可读，时间记为 null', async (_label, value) => {
+    const { seq, schemaVersion, winner, ...rest } = { seq: 0, schemaVersion: 1, winner: null, ...winRecord() }
+    void seq
+    void winner
+    await writeRaw({ ...rest, schemaVersion, ...(value === undefined ? {} : { createdAt: value }) })
+
+    const { records, skipped } = await indexedDbGameRecords.list()
+    expect(skipped).toBe(0)
+    expect(records).toHaveLength(1)
+    expect(records[0]!.createdAt).toBeNull()
+  })
+
+  it('内容身份不含时间：同一局不因时间不同变成两局', () => {
+    const early = { ...winRecord(), createdAt: 1 }
+    const late = { ...winRecord(), createdAt: 2 }
+    expect(recordContentKey(early)).toBe(recordContentKey(late))
+  })
+
+  it('导入保留原来的时间；与库里同一局重复时跳过，不拿导入的时间覆盖', async () => {
+    const existing = (await indexedDbGameRecords.put({ ...winRecord(), createdAt: 100 })).record
+    const result = await indexedDbGameRecords.importMany([
+      { ...winRecord(), createdAt: 999 },
+      { ...resignRecord(), createdAt: 200 },
+    ])
+
+    expect(result.imported).toBe(1)
+    const { records } = await indexedDbGameRecords.list()
+    expect(records.find((record) => record.seq === existing.seq)?.createdAt).toBe(100)
+    expect(records.find((record) => record.resignedBy !== null)?.createdAt).toBe(200)
+  })
+})
+
+describe('棋谱库 —— putReplacing：一个事务里写新、删旧', () => {
+  it('按号替换：旧条没了，只剩新条，新条带时间', async () => {
+    const first = (await indexedDbGameRecords.put(winRecord())).record
+
+    const result = await indexedDbGameRecords.putReplacing(
+      { ...resignRecord(), createdAt: 5 },
+      { replacesSeq: first.seq },
+    )
+
+    expect(result.persisted).toBe(true)
+    const { records } = await indexedDbGameRecords.list()
+    expect(records.map((record) => record.seq)).toEqual([result.record.seq])
+    expect(records[0]!.createdAt).toBe(5)
+  })
+
+  it('号已失效：退回按内容身份找同一局', async () => {
+    await indexedDbGameRecords.put(winRecord())
+
+    await indexedDbGameRecords.putReplacing(winRecord(), { replacesSeq: 9999 })
+
+    expect((await indexedDbGameRecords.list()).records).toHaveLength(1)
+  })
+
+  it('关闭内容匹配：同一局也不删', async () => {
+    await indexedDbGameRecords.put(winRecord())
+
+    await indexedDbGameRecords.putReplacing(winRecord(), { replacesSeq: null, allowContentMatch: false })
+
+    expect((await indexedDbGameRecords.list()).records).toHaveLength(2)
+  })
+
+  it('没有旧条：只写新的', async () => {
+    const result = await indexedDbGameRecords.putReplacing(winRecord(), { replacesSeq: null })
+
+    expect(result.persisted).toBe(true)
+    expect((await indexedDbGameRecords.list()).records).toHaveLength(1)
+  })
+
+  it('事务中途失败：整笔回滚，旧条还在、新条没进库，如实报成没落库', async () => {
+    const first = (await indexedDbGameRecords.put(winRecord())).record
+    const del = vi.spyOn(IDBObjectStore.prototype, 'delete').mockImplementation(() => {
+      throw new Error('删除失败')
+    })
+    try {
+      const result = await indexedDbGameRecords.putReplacing(resignRecord(), { replacesSeq: first.seq })
+      expect(result.persisted).toBe(false)
+    } finally {
+      del.mockRestore()
+    }
+
+    const read = await new Promise<unknown[]>((resolve, reject) => {
+      const request = indexedDB.open(DB_NAME)
+      request.onsuccess = () => {
+        const db = request.result
+        const all = db.transaction('records').objectStore('records').getAll()
+        all.onsuccess = () => {
+          db.close()
+          resolve(all.result)
+        }
+        all.onerror = () => reject(all.error)
+      }
+    })
+    expect(read).toHaveLength(1)
+    expect((read[0] as { seq: number }).seq).toBe(first.seq)
+  })
+
+  it('读不出来的记录（同内容、或号对得上）不会被一次保存删掉', async () => {
+    const { createdAt, ...content } = winRecord()
+    void createdAt
+    await writeRaw({ ...content, seq: 50, schemaVersion: 99, winner: null })
+
+    await indexedDbGameRecords.putReplacing(winRecord(), { replacesSeq: 50 })
+
+    const raw = await new Promise<unknown[]>((resolve, reject) => {
+      const request = indexedDB.open(DB_NAME)
+      request.onsuccess = () => {
+        const db = request.result
+        const all = db.transaction('records').objectStore('records').getAll()
+        all.onsuccess = () => {
+          db.close()
+          resolve(all.result)
+        }
+        all.onerror = () => reject(all.error)
+      }
+    })
+    expect(raw).toHaveLength(2)
+  })
+
+  it('内存实现同样按号 / 按内容替换', async () => {
+    const memory = memoryGameRecords()
+    const first = (await memory.put(winRecord())).record
+
+    await memory.putReplacing(resignRecord(), { replacesSeq: first.seq })
+    await memory.putReplacing(resignRecord(), { replacesSeq: null })
+
+    expect((await memory.list()).records).toHaveLength(1)
+  })
+})
+
+describe('saveGameReplacing —— 时钟由调用方注入', () => {
+  it('传了 now 就用它记下这局下完的时间', async () => {
+    const saved = await saveGameReplacing(winRecord(), null, { now: () => 1_700_000_000_000 })
+
+    expect((await indexedDbGameRecords.get(saved.record.seq))?.createdAt).toBe(1_700_000_000_000)
+  })
+})
+
+describe('棋谱库 —— 删除如实报告删的是不是库里那条', () => {
+  it('库里那条删掉了：persisted 为 true，刷新（重新读库）不复现', async () => {
+    const saved = (await indexedDbGameRecords.put(winRecord())).record
+
+    expect(await indexedDbGameRecords.delete(saved.seq)).toEqual({ persisted: true })
+    expect((await indexedDbGameRecords.list()).records).toHaveLength(0)
+  })
+
+  it('库打不开：只删了内存兜底，persisted 为 false', async () => {
+    const saved = Object.getOwnPropertyDescriptor(globalThis, 'indexedDB')
+    Reflect.deleteProperty(globalThis, 'indexedDB')
+    try {
+      __setGameRecordsIndexedDbFactory(null)
+      expect(await indexedDbGameRecords.delete(1)).toEqual({ persisted: false })
+    } finally {
+      if (saved !== undefined) Object.defineProperty(globalThis, 'indexedDB', saved)
+      __setGameRecordsIndexedDbFactory(null)
+    }
+  })
+})
+

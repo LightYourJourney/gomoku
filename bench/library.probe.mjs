@@ -157,9 +157,11 @@ async function run() {
         `${String(row.rows).padEnd(9)} ${String(row.nodes).padEnd(9)} ` +
         `${row.longDuringSave.join(',') || '—'} | ${row.longDuringOpen.join(',') || '—'}`,
     )
-    // 灌入 N 条 + 刚认输的那一局；对不上说明灌入的形状已经跟不上存储层了
-    if (row.rows !== row.size + 1) {
-      console.log(`    ⚠ 期望 ${row.size + 1} 行：seedRecords 的记录形状可能已与 src/persist 不一致`)
+    // 灌入 N 条 + 刚认输的那一局；对不上说明灌入的形状已经跟不上存储层了。
+    // 阶段 D 起列表一批只显示 50 局（之前的构建全量显示），两种都认。
+    const expected = [row.size + 1, Math.min(row.size + 1, 50)]
+    if (!expected.includes(row.rows)) {
+      console.log(`    ⚠ 期望 ${expected.join(' 或 ')} 行：seedRecords 的记录形状可能已与 src/persist 不一致`)
     }
   }
   console.log('\n提示：数字受机器负载影响。写进文档时把上面的负载一起记下。')

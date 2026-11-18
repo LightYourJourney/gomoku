@@ -1618,6 +1618,7 @@ describe('棋谱探索分支', () => {
       difficulty: 'easy',
       resignedBy: null,
       winner: null,
+      createdAt: null,
       ...overrides,
     }
   }

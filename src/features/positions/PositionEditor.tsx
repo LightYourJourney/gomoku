@@ -22,6 +22,7 @@ import { exportFilename } from '../../persist/transfer/format'
 import { parsePositionText, toPositionFile } from '../../persist/transfer/position'
 import { MAX_IMPORT_BYTES } from '../../persist/transfer/validate'
 import { ShareLinkDialog } from '../sharing/ShareLinkDialog'
+import { formatLocalMinute } from '../../lib/time-format'
 import type { ShareLinkResult } from '../../sharing/link'
 import { createPositionShare, shareLink } from '../../sharing/link'
 
@@ -47,10 +48,7 @@ function recordLabel(record: GameRecord): string {
 /** 旧 v1 局面没有时间；不要用 1970 年假装知道。 */
 function savedAtLabel(record: SavedPosition): string {
   if (record.updatedAt === null) return '时间未知（旧记录）'
-  const date = new Date(record.updatedAt)
-  if (Number.isNaN(date.getTime())) return '时间未知（无效时间）'
-  const pad = (value: number) => String(value).padStart(2, '0')
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`
+  return formatLocalMinute(record.updatedAt) ?? '时间未知（无效时间）'
 }
 
 export function PositionEditor({

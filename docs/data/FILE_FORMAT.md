@@ -48,6 +48,7 @@
 | `difficulty` | 是 | `beginner` / `easy` / `medium` / `hard` / `expert` |
 | `ending` | 是 | 结束方式，见下 |
 | `source` | 否 | `{ app, engineVersion }`；不参与重复判断 |
+| `createdAt` | 否 | 这局下完的时间，ISO 8601 UTC（`2026-11-18T07:30:00.000Z`）；没有就不写这个键。写坏了只告警、当没有，不拒绝这一局；不参与重复判断；**分享链接不带**。新增可选字段，不升 `formatVersion`（阶段 D 起）。完整备份里的每一局同样适用 |
 
 ### `ending`
 

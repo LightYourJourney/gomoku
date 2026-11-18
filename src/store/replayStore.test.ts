@@ -22,6 +22,7 @@ function winRecord(moves: readonly Point[] = WIN_MOVES): ReplayRecord {
     difficulty: 'easy',
     resignedBy: null,
     winner: BLACK,
+    createdAt: null,
   }
 }
 
@@ -34,6 +35,7 @@ function resignRecord(): ReplayRecord {
     difficulty: 'easy',
     resignedBy: BLACK,
     winner: WHITE,
+    createdAt: null,
   }
 }
 

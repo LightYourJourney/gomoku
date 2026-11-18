@@ -162,6 +162,7 @@ test('分享预览进出不弄乱历史：返回应用后回到原来的页面�
     difficulty: 'easy',
     resignedBy: null,
     winner: BLACK,
+    createdAt: null,
   })
   expect(token.ok).toBe(true)
   if (!token.ok) return

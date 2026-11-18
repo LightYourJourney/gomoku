@@ -100,7 +100,8 @@ export function encodeSharePayload(kind: ShareKind, data: unknown): ShareTokenRe
 
 export function createGameShare(record: GameRecord): ShareTokenResult {
   try {
-    return encodeSharePayload('game', toGameFile(record))
+    // 分享不带入库时间：链接里只放这局棋本身，不带本机信息（`docs/sharing/SECURITY_MODEL.md`）。
+    return encodeSharePayload('game', toGameFile({ ...record, createdAt: null }))
   } catch (error) {
     return {
       ok: false,

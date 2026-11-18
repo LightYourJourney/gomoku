@@ -30,6 +30,7 @@ function threeWinRecord(seq = 1): GameRecord {
     difficulty: 'easy',
     resignedBy: null,
     winner: BLACK,
+    createdAt: null,
   }
 }
 
@@ -223,6 +224,7 @@ function missedWinRecord(): GameRecord {
     ...threeWinRecord(5),
     moves: [...NINE_WIN_MOVES.slice(0, 8), { x: 10, y: 10 }],
     winner: null,
+    createdAt: null,
     resignedBy: BLACK,
   }
 }

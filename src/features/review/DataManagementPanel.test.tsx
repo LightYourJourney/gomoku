@@ -251,6 +251,7 @@ describe('数据管理面板 · 导入', () => {
       schemaVersion: 1,
       moves: [{ x: 7, y: 7 }],
       winner: null,
+      createdAt: null,
     }
     const storage = {
       ...base,
@@ -310,6 +311,7 @@ describe('数据管理面板 · 导入', () => {
       schemaVersion: 1,
       moves: [{ x: 7, y: 7 }],
       winner: null,
+      createdAt: null,
     }
     const storage = {
       ...base,

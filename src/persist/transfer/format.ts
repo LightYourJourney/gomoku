@@ -8,6 +8,7 @@ import type { GameRecord, GameRecordInput } from '../gameRecords'
 import type { LearningProgress } from '../progress'
 import type { PersistedSession } from '../storage'
 import { recordContentKey, type RecordIdentity } from '../recordIdentity'
+import { isoToMillis, millisOrNull } from '../../lib/time-format'
 
 /**
  * 对外交换格式。
@@ -41,6 +42,11 @@ export interface GamePayload {
   readonly difficulty: Difficulty
   readonly ending: GameEnding
   readonly source?: SourceMeta
+  /**
+   * 这局下完的时间，ISO 8601（UTC）。可选字段，**不升 `formatVersion`**；没有时间就不写这个键
+   * （旧版本读到未知键会告警）。分享链接不带它（`sharing/link.ts`）。
+   */
+  readonly createdAt?: string
 }
 
 export interface GameFile extends GamePayload {
@@ -111,9 +117,14 @@ export interface BackupFile {
 
 const SOURCE_META: SourceMeta = { app: 'gomoku-lab', engineVersion: ENGINE_VERSION }
 
+/** 导出用的棋谱：内容身份 + 可选的入库时间。 */
+export type ExportableGame = RecordIdentity & { readonly createdAt?: number | null }
+
 /** 内部记录（或导入的载荷）→ 对外单盘载荷。未结束的棋不能导出。 */
-export function toGamePayload(record: RecordIdentity): GamePayload {
+export function toGamePayload(record: ExportableGame): GamePayload {
   const state = replay(record.moves, record.firstPlayer)
+  const time = millisOrNull(record.createdAt)
+  const stamp = time === null ? {} : { createdAt: new Date(time).toISOString() }
 
   if (record.resignedBy !== null) {
     if (state.status !== 'playing') {
@@ -127,6 +138,7 @@ export function toGamePayload(record: RecordIdentity): GamePayload {
       difficulty: record.difficulty,
       ending: { type: 'resign', winner: opponentOf(record.resignedBy), resignedBy: record.resignedBy },
       source: SOURCE_META,
+      ...stamp,
     }
   }
 
@@ -139,6 +151,7 @@ export function toGamePayload(record: RecordIdentity): GamePayload {
       difficulty: record.difficulty,
       ending: { type: 'five', winner: state.winner },
       source: SOURCE_META,
+      ...stamp,
     }
   }
 
@@ -151,13 +164,14 @@ export function toGamePayload(record: RecordIdentity): GamePayload {
       difficulty: record.difficulty,
       ending: { type: 'draw', winner: null },
       source: SOURCE_META,
+      ...stamp,
     }
   }
 
   throw new Error('对局还没结束，不能导出为棋谱文件')
 }
 
-export function toGameFile(record: RecordIdentity): GameFile {
+export function toGameFile(record: ExportableGame): GameFile {
   return {
     format: GAME_FORMAT,
     formatVersion: GAME_FORMAT_VERSION,
@@ -181,6 +195,7 @@ export function gamePayloadToRecordInput(game: GamePayload): GameRecordInput {
     humanColor: game.humanColor,
     difficulty: game.difficulty,
     resignedBy: resignedByOfEnding(game.ending),
+    createdAt: game.createdAt === undefined ? null : isoToMillis(game.createdAt),
   }
 }
 

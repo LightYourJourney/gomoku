@@ -29,6 +29,7 @@ function nineMoveRecord(): ReplayRecord {
     difficulty: 'easy',
     resignedBy: null,
     winner: BLACK,
+    createdAt: null,
   }
 }
 
@@ -41,6 +42,7 @@ function threeMoveRecord(): ReplayRecord {
     difficulty: 'easy',
     resignedBy: null,
     winner: null,
+    createdAt: null,
   } as ReplayRecord
 }
 
@@ -116,6 +118,88 @@ beforeEach(() => {
   replay = createReplayStore()
   // 子页面跟着地址走（`/review/<棋谱号>`），而导航 store 是单例：每条用例从棋谱库开始。
   useNavigationStore.getState().navigate({ page: 'review', sub: null }, { replace: true })
+})
+
+describe('GameLibrary —— 时间、分批、删除（阶段 D）', () => {
+  it('每局显示下完的时间；没有时间的写「时间未知」，不编造', async () => {
+    const storage = memoryGameRecords()
+    await storage.put({ ...nineMoveRecord(), createdAt: new Date(2026, 10, 18, 15, 30).getTime() })
+    await storage.put({ ...threeMoveRecord(), createdAt: null })
+    render(<GameLibrary storage={storage} onOpen={vi.fn()} onStartBattle={vi.fn()} />)
+
+    const items = await screen.findAllByTestId(/^record-/)
+    // 本地时区显示：断言用形状，不写死时区换算后的字面量
+    expect(items[1]).toHaveTextContent(/2026-11-18 \d{2}:\d{2}/)
+    expect(items[0]).toHaveTextContent('时间未知')
+  })
+
+  it('一次只显示 50 局，「再显示」按批追加；5,000 局时首屏也只有 50 条', async () => {
+    const storage = memoryGameRecords()
+    for (let i = 0; i < 5_000; i++) await storage.put(nineMoveRecord())
+    render(<GameLibrary storage={storage} onOpen={vi.fn()} onStartBattle={vi.fn()} />)
+
+    expect(await screen.findAllByTestId(/^record-/)).toHaveLength(50)
+    fireEvent.click(screen.getByRole('button', { name: /再显示 50 局/ }))
+    expect(screen.getAllByTestId(/^record-/)).toHaveLength(100)
+  })
+
+  it('不足一批时没有「再显示」', async () => {
+    const storage = memoryGameRecords()
+    await storage.put(nineMoveRecord())
+    render(<GameLibrary storage={storage} onOpen={vi.fn()} onStartBattle={vi.fn()} />)
+
+    await screen.findAllByTestId(/^record-/)
+    expect(screen.queryByRole('button', { name: /再显示/ })).not.toBeInTheDocument()
+  })
+
+  it('删除要二次确认：取消不删；确认后这一局从列表消失，库里也没了', async () => {
+    const storage = memoryGameRecords()
+    const keep = (await storage.put(threeMoveRecord())).record
+    const gone = (await storage.put(nineMoveRecord())).record
+    const del = vi.spyOn(storage, 'delete').mockResolvedValue({ persisted: true })
+    render(<GameLibrary storage={storage} onOpen={vi.fn()} onStartBattle={vi.fn()} />)
+    await screen.findAllByTestId(/^record-/)
+
+    fireEvent.click(screen.getByRole('button', { name: `删除棋谱 ${gone.seq}` }))
+    fireEvent.click(screen.getByRole('button', { name: '取消' }))
+    expect(del).not.toHaveBeenCalled()
+
+    fireEvent.click(screen.getByRole('button', { name: `删除棋谱 ${gone.seq}` }))
+    fireEvent.click(screen.getByRole('button', { name: `确认删除棋谱 ${gone.seq}` }))
+
+    await waitFor(() => expect(screen.queryByTestId(`record-${gone.seq}`)).not.toBeInTheDocument())
+    expect(del).toHaveBeenCalledWith(gone.seq)
+    expect(screen.getByTestId(`record-${keep.seq}`)).toBeInTheDocument()
+    expect(screen.getByRole('status')).toHaveTextContent('已删除')
+  })
+
+  it('库不可用、只删了内存里的：如实说「可能仍在」，列表不动', async () => {
+    const storage = memoryGameRecords()
+    const record = (await storage.put(nineMoveRecord())).record
+    vi.spyOn(storage, 'delete').mockResolvedValue({ persisted: false })
+    render(<GameLibrary storage={storage} onOpen={vi.fn()} onStartBattle={vi.fn()} />)
+    await screen.findAllByTestId(/^record-/)
+
+    fireEvent.click(screen.getByRole('button', { name: `删除棋谱 ${record.seq}` }))
+    fireEvent.click(screen.getByRole('button', { name: `确认删除棋谱 ${record.seq}` }))
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('可能仍在')
+    expect(screen.getByTestId(`record-${record.seq}`)).toBeInTheDocument()
+  })
+
+  it('删除失败：报出原因，列表不动', async () => {
+    const storage = memoryGameRecords()
+    const record = (await storage.put(nineMoveRecord())).record
+    vi.spyOn(storage, 'delete').mockRejectedValue(new Error('棋谱库删除被中止'))
+    render(<GameLibrary storage={storage} onOpen={vi.fn()} onStartBattle={vi.fn()} />)
+    await screen.findAllByTestId(/^record-/)
+
+    fireEvent.click(screen.getByRole('button', { name: `删除棋谱 ${record.seq}` }))
+    fireEvent.click(screen.getByRole('button', { name: `确认删除棋谱 ${record.seq}` }))
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('棋谱库删除被中止')
+    expect(screen.getByTestId(`record-${record.seq}`)).toBeInTheDocument()
+  })
 })
 
 describe('ReplayBoard', () => {
@@ -795,7 +879,8 @@ describe('GameLibrary —— 读不出棋谱时如实说明', () => {
     list: () => Promise.resolve({ records: [], degraded: false, skipped: 2 }),
     get: () => Promise.resolve(null),
     put: () => Promise.reject(new Error('测试里用不到')),
-    delete: () => Promise.resolve(),
+    putReplacing: () => Promise.reject(new Error('测试里用不到')),
+    delete: () => Promise.resolve({ persisted: true }),
     importMany: () => Promise.resolve({ imported: 0, duplicates: 0, persisted: true, storage: 'indexeddb' as const }),
   }
 
@@ -830,7 +915,8 @@ describe('GameLibrary —— 读不出棋谱时如实说明', () => {
       list: () => new Promise(() => {}),
       get: () => Promise.resolve(null),
       put: () => Promise.reject(new Error('测试里用不到')),
-      delete: () => Promise.resolve(),
+      putReplacing: () => Promise.reject(new Error('测试里用不到')),
+      delete: () => Promise.resolve({ persisted: true }),
       importMany: () => Promise.resolve({ imported: 0, duplicates: 0, persisted: true, storage: 'indexeddb' as const }),
     }
 
@@ -936,6 +1022,7 @@ function drawRecord(): ReplayRecord {
     difficulty: 'easy',
     resignedBy: null,
     winner: null,
+    createdAt: null,
   }
 }
 

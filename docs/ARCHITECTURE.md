@@ -83,7 +83,7 @@ analysis   learn        ← 分析结论与教学内容（两条互不依赖的�
 **`sharing/`** —— 分享协议。`link.ts` 负责版本化外壳、base64url、FNV-1a 完整性校验、严格解码，以及整盘/局面分享内容与 URL 的生成；内容复用 Phase 11A/11B 的文件格式与校验器。`features/sharing/SharePreview.tsx` 负责只读预览与显式导入，`App.tsx` 只识别 `#share=` Fragment（取 token 的 `sharing/token.ts` 无依赖，入口包不必为此带上解码与校验）。分享链接的路径一律是应用根，不带页面地址。
 
 **`persist/`** —— 存档。
-`storage.ts` 负责对局存档的序列化与**结构校验**（localStorage）；`progress.ts` 负责学习进度、`gameRecords.ts` 负责多局棋谱（两者都在 IndexedDB）——它的 `list()` **从不上抛**（每一步失败都落内存兜底），所以把「读不出来」的两种情形**分开报**：`degraded`（底层不可用，数据来自兜底）与 `skipped`（读到了但没通过校验）。界面靠这两个信号如实说明，不会把两者一起说成「你还没下过棋」；`schema.ts` 是**库名、版本与建表的唯一出处**——两个模块共用一个库，各写一份版本号的话，先打开的那个只建自己的表，另一个同版本打开不触发升级、表不存在，事务失败后被内存兜底吞掉，症状是「界面说已保存、刷新就没了」。两处同一条口径：任何一处不符合预期都当作没有数据，宁可重来也不把半成品灌进状态机。
+`storage.ts` 负责对局存档的序列化与**结构校验**（localStorage）；`progress.ts` 负责学习进度、`gameRecords.ts` 负责多局棋谱（两者都在 IndexedDB）——它的 `list()` **从不上抛**（每一步失败都落内存兜底），所以把「读不出来」的两种情形**分开报**：`degraded`（底层不可用，数据来自兜底）与 `skipped`（读到了但没通过校验）。界面靠这两个信号如实说明，不会把两者一起说成「你还没下过棋」。棋谱的写入有两条：`put` 只写；`putReplacing` 在**一个读写事务**里找旧条（号，或内容身份）→ 写新 → 删旧，终局入库（`saveGameReplacing`）走它，「同一局只留一条」不再靠多个事务加补偿。`delete` 返回 `{ persisted }`——库打不开时只删得了内存兜底里的那份，界面据此不说「已删除」。可选字段 `createdAt`（下完的时间，时钟由 `useGameStore` 注入）不递增 `schemaVersion`，缺失读成 null；`schema.ts` 是**库名、版本与建表的唯一出处**——两个模块共用一个库，各写一份版本号的话，先打开的那个只建自己的表，另一个同版本打开不触发升级、表不存在，事务失败后被内存兜底吞掉，症状是「界面说已保存、刷新就没了」。两处同一条口径：任何一处不符合预期都当作没有数据，宁可重来也不把半成品灌进状态机。
 
 **为什么分两种存储**：对局存档每次落子都要写、数据小、丢了就丢了；学习进度写得少但**丢了会让人白学一遍**，值得用更耐久的 IndexedDB。进度层在 IndexedDB 不可用时（隐私模式、open 抛错、被其他标签页占用）整体降级为内存态——进度丢了可以接受，白屏不行。
 
@@ -150,7 +150,7 @@ Board.marks → 棋盘上按推荐顺序画编号 1/2/3 的标记
    ↓
 gameStore 的 notifyGameEnd：只在「进行中 → 终局」这一跃迁上回调
    ↓
-useGameStore 装配的 onGameEnd → indexedDbGameRecords.put（棋谱库）
+useGameStore 装配的 onGameEnd → saveGameReplacing → indexedDbGameRecords.putReplacing（棋谱库，单事务替换）
    ↓
 recordSaveState: saving → saved / failed —— 结果弹窗如实显示
 ```

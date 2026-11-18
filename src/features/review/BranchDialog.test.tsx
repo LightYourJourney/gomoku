@@ -23,6 +23,7 @@ function record(overrides: Partial<GameRecord> = {}): GameRecord {
     difficulty: 'easy',
     resignedBy: null,
     winner: null,
+    createdAt: null,
     ...overrides,
   }
 }

@@ -3,7 +3,10 @@ import type { Difficulty } from '../ai/types'
 import { inBounds } from '../core/board'
 import { CELL_COUNT, type GameMode, type Player, type Point } from '../core/types'
 
-/** 存档格式版本。字段含义发生变化时递增，旧存档会被安全丢弃。 */
+/**
+ * 存档格式版本。字段含义发生变化时递增，**并且必须提供迁移**（下面的 v1 / v2 → v3 只读迁移就是）；
+ * 只有迁移不了的未来版本才拒绝读（`SCHEMA_MIGRATION.md` §4）。
+ */
 export const SCHEMA_VERSION = 3
 
 export const STORAGE_KEY = 'gomoku-lab:session'

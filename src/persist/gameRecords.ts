@@ -5,20 +5,21 @@ import { isDifficulty } from '../ai/difficulty'
 import { openDatabaseWithSchema, resolveIdbFactory, storeRunner } from './idb'
 import { RECORDS_STORE } from './schema'
 import { recordContentKey } from './recordIdentity'
+import { millisOrNull } from '../lib/time-format'
 import type { Difficulty } from '../ai/types'
 
 /**
- * 棋谱格式版本。与 `progress.ts` / `storage.ts` 同一条口径：字段形状一变
- * 就递增，旧数据被安全丢弃。
+ * 棋谱格式版本。**改变已有字段的含义**才递增，并且必须同时提供迁移（`SCHEMA_MIGRATION.md` §4：
+ * 迁移前不破坏旧数据、不因单条无效清空全部）；**纯新增的可选字段不递增**（如 `createdAt`，
+ * 评估报告裁定 2）——旧代码只取认识的字段，读新数据不受影响，回滚安全。
  */
 export const GAME_RECORDS_SCHEMA_VERSION = 1
 
 /**
  * 一局已结束的棋。
  *
- * **不存时间戳**：项目约定时钟一律注入，`Date.now()` 的**直接调用**只允许出现在
- * `ai/search.ts`；棋谱的先后次序由 IndexedDB 的自增主键 `seq` 表达——列表按它降序，
- * 最近的在前。
+ * 先后次序由 IndexedDB 的自增主键 `seq` 表达——列表按它降序，最近入库的在前
+ * （不按 `createdAt` 排：导入的旧棋谱 `seq` 新、时间可能早）。
  */
 export interface GameRecord {
   /** IndexedDB 自增主键。列表按它降序 = 最近的在前。 */
@@ -36,9 +37,24 @@ export interface GameRecord {
    * 五连与和棋，认输则叠加 `resignedBy`：认输方的对手获胜。
    */
   readonly winner: Player | null
+  /**
+   * 这局下完的时间（毫秒时间戳）。**可选字段，不递增 `schemaVersion`**（见上）：
+   * 旧版本写下的、或时间不合法的，一律为 null——界面写「时间未知」，不编造。
+   * 时钟由调用方注入（入库路径在 `useGameStore` 传 `Date.now`），存储层不读时钟。
+   * **不参与内容身份**：同一局不因时间不同变成两局。
+   */
+  readonly createdAt: number | null
 }
 
-export type GameRecordInput = Omit<GameRecord, 'seq' | 'schemaVersion' | 'winner'>
+export type GameRecordInput = Omit<GameRecord, 'seq' | 'schemaVersion' | 'winner' | 'createdAt'> & {
+  readonly createdAt?: number | null
+}
+
+/** `putReplacing` 的替换目标：按号；号失效或没给时（允许的话）按内容身份找同一局。 */
+export interface ReplaceTarget {
+  readonly replacesSeq: number | null
+  readonly allowContentMatch?: boolean
+}
 
 /**
  * 入库结果。
@@ -92,7 +108,16 @@ export interface GameRecordsStorage {
   list(): Promise<GameRecordList>
   get(seq: number): Promise<GameRecord | null>
   put(record: GameRecordInput): Promise<PutResult>
-  delete(seq: number): Promise<void>
+  /**
+   * 写一局，并在**同一个事务里**删掉它要替换的旧条（同一局只留一条）。
+   * 事务失败整笔回滚、新旧都不动，与 `put` 失败一样退内存兜底并如实报 `persisted: false`。
+   */
+  putReplacing(record: GameRecordInput, target: ReplaceTarget): Promise<PutResult>
+  /**
+   * 删一条。`persisted` 如实告知删的是不是库里那条：库打不开时只删了内存兜底里的，
+   * 刷新后库里那条还在——界面不能说「已删除」。事务失败照旧抛错。
+   */
+  delete(seq: number): Promise<{ readonly persisted: boolean }>
   importMany(records: readonly GameRecordInput[]): Promise<ImportRecordsResult>
 }
 
@@ -115,8 +140,10 @@ export function createGameRecord(input: GameRecordInput): Omit<GameRecord, 'seq'
   return {
     ...input,
     winner: deriveWinner(input.moves, input.firstPlayer, input.resignedBy),
+    createdAt: millisOrNull(input.createdAt),
   }
 }
+
 
 /** 校验一条从库里读出来的记录。任何一处不符合预期都返回 null（整条丢弃）。 */
 function parseRecord(value: unknown): GameRecord | null {
@@ -158,6 +185,7 @@ function parseRecord(value: unknown): GameRecord | null {
     difficulty: raw.difficulty,
     resignedBy,
     winner: deriveWinner(moves, raw.firstPlayer, resignedBy),
+    createdAt: millisOrNull(raw.createdAt),
   }
 }
 
@@ -171,6 +199,16 @@ function parseRecord(value: unknown): GameRecord | null {
 export function memoryGameRecords(degraded = false): GameRecordsStorage {
   const bySeq = new Map<number, GameRecord>()
   let nextSeq = 1
+
+  function put(record: GameRecordInput): PutResult {
+    const stored: GameRecord = {
+      ...createGameRecord(record),
+      seq: nextSeq++,
+      schemaVersion: GAME_RECORDS_SCHEMA_VERSION,
+    }
+    bySeq.set(stored.seq, stored)
+    return { record: stored, persisted: false } // 内存态：刷新不留
+  }
 
   return {
     async list() {
@@ -188,13 +226,13 @@ export function memoryGameRecords(degraded = false): GameRecordsStorage {
       return bySeq.get(seq) ?? null
     },
     async put(record) {
-      const stored: GameRecord = {
-        ...createGameRecord(record),
-        seq: nextSeq++,
-        schemaVersion: GAME_RECORDS_SCHEMA_VERSION,
-      }
-      bySeq.set(stored.seq, stored)
-      return { record: stored, persisted: false } // 内存态：刷新不留
+      return put(record)
+    },
+    async putReplacing(record, target) {
+      const old = replaceTargetIn([...bySeq.values()], record, target)
+      const saved = put(record)
+      if (old !== null) bySeq.delete(old)
+      return saved
     },
     async importMany(records) {
       const keys = new Set([...bySeq.values()].map((record) => recordContentKey(record)))
@@ -220,6 +258,7 @@ export function memoryGameRecords(degraded = false): GameRecordsStorage {
 
     async delete(seq) {
       bySeq.delete(seq)
+      return { persisted: false } // 内存态：与 put 同一口径
     },
   }
 }
@@ -227,56 +266,62 @@ export function memoryGameRecords(degraded = false): GameRecordsStorage {
 /**
  * 存一局，并保证**同一局在库里只有一条**。
  *
- * 顺序是刻意的：**先写新的，成功了再删旧的**。反过来（先删后写）时，
- * 若写入退到内存兜底（隐私模式、配额满），旧条已经删了、新条没落库——
- * 刷新之后整局从棋谱里消失，比多一条严重得多。
+ * 写新与删旧在**同一个事务**里：写不进库（退到内存兜底）时旧条原样保留——
+ * 宁可多一条，也不能整局从棋谱里消失。
  *
+ * `replacesSeq` 可能已经失效（降级期间只写进内存的记录补写进库时拿的是新号，界面手里
+ * 还握着旧的）：指向不存在的记录时退回内容身份匹配，否则库里会留两条同一局。
  * `replacesSeq` 为 null 时按**规范化内容身份**找旧条（先手、手顺、模式、
  * 执子、难度、认输方全部相同才视为同一局）。这条路径覆盖「终局后刷新页面、
  * 再悔棋重下到终局」：那时内存里的 seq 链接已经随刷新丢了，只能按内容比。
  */
-export async function saveGameReplacing(
+export function saveGameReplacing(
   input: GameRecordInput,
   replacesSeq: number | null,
-  options: { readonly allowContentMatch?: boolean } = {},
+  options: { readonly allowContentMatch?: boolean; readonly now?: () => number } = {},
 ): Promise<PutResult> {
-  const saved = await indexedDbGameRecords.put(input)
-  if (!saved.persisted) return saved // 没落库就不动旧的
+  // 「写新、删旧」在存储的一个事务里完成：要么都成、要么都不动。
+  // 时钟由调用方注入（`useGameStore` 传 `Date.now`），这里不读时钟。
+  const record = options.now === undefined ? input : { ...input, createdAt: options.now() }
+  return indexedDbGameRecords.putReplacing(record, { replacesSeq, allowContentMatch: options.allowContentMatch })
+}
 
-  let target = replacesSeq
-  /*
-   * `replacesSeq` 可能已经失效：降级期间只写进内存的记录，在存储恢复后被补写进库
-   * 时拿的是新 seq；界面手里还握着旧的。指向不存在的记录时，退回内容身份匹配——
-   * 否则这一次保存会在库里留下两条同一局。
-   */
-  if (target !== null && (await indexedDbGameRecords.get(target)) === null) target = null
-  if (target === null && options.allowContentMatch !== false) {
-    // 这里只关心记录本身，降级与跳过两个信号在这条路径上没有意义
-    const { records: existing } = await indexedDbGameRecords.list()
-    // 与导入去重使用**同一条内容身份**：手顺只是其中一项。只比手顺+先手方
-    // 会把「同样的棋、不同的模式/执子/难度/认输方」当成同一局并删掉旧记录。
-    // 分支的同手顺保护另有 `allowContentMatch:false` 闸门，不靠这条兜底。
-    const key = recordContentKey(input)
-    const sameGame = existing.find(
-      (record) => record.seq !== saved.record.seq && recordContentKey(record) === key,
-    )
-    target = sameGame?.seq ?? null
+/** 库里一条原样对象的内容身份；形状不对就是 null（它也过不了 `parseRecord`）。 */
+function rawContentKey(entry: unknown): string | null {
+  try {
+    return recordContentKey(entry as GameRecord)
+  } catch {
+    return null
   }
+}
 
-  if (target !== null && target !== saved.record.seq) {
-    try {
-      await indexedDbGameRecords.delete(target)
-    } catch {
-      /*
-       * 旧条删不掉（事务被中止/阻塞）。此时库里是「旧的 + 刚写的新」两条同内容记录。
-       * 先试着把新条撤掉，保持「同一局一条」；撤不掉也没办法，但**绝不能**
-       * 报告成功——界面会显示「已存入」，而库里的状态已经不是它描述的那样。
-       */
-      await indexedDbGameRecords.delete(saved.record.seq).catch(() => {})
-      throw new Error('旧棋谱没能替换，本次保存已撤回')
-    }
+/**
+ * 在已有记录里找要替换的那一条：按号；号不在或没给时（允许的话）按内容身份。
+ *
+ * 收的是**库里的原样对象**，只对候选条做完整校验（`parseRecord` 要逐手回放）：
+ * 存一局不该为了找一条旧记录把几千条棋谱全回放一遍。只替换**能通过校验**的记录——
+ * 读不出来的那些在列表里本来就看不到，不能被一次保存悄悄删掉。
+ */
+function replaceTargetIn(
+  existing: readonly unknown[],
+  input: GameRecordInput,
+  { replacesSeq, allowContentMatch = true }: ReplaceTarget,
+): number | null {
+  const valid = (entry: unknown): number | null => parseRecord(entry)?.seq ?? null
+  if (replacesSeq !== null) {
+    const hit = existing.find((entry) => (entry as { seq?: unknown } | null)?.seq === replacesSeq)
+    if (hit !== undefined && valid(hit) !== null) return replacesSeq
   }
-  return saved
+  if (!allowContentMatch) return null
+  // 与导入去重使用**同一条内容身份**：手顺只是其中一项。只比手顺+先手方
+  // 会把「同样的棋、不同的模式/执子/难度/认输方」当成同一局并删掉旧记录。
+  const key = recordContentKey(input)
+  for (const entry of existing) {
+    if (rawContentKey(entry) !== key) continue
+    const seq = valid(entry)
+    if (seq !== null) return seq
+  }
+  return null
 }
 
 // ── IndexedDB 实现 ───────────────────────────────────────────────
@@ -342,6 +387,7 @@ export const indexedDbGameRecords: GameRecordsStorage = {
               humanColor: record.humanColor,
               difficulty: record.difficulty,
               resignedBy: record.resignedBy,
+              createdAt: record.createdAt,
             })),
           )
           if (imported.storage === 'indexeddb') {
@@ -384,6 +430,39 @@ export const indexedDbGameRecords: GameRecordsStorage = {
     } catch {
       // 落到了内存兜底：本次会话照常可用，但**如实标成没落库**
       return fallbackToMemory().put(record)
+    }
+  },
+
+  async putReplacing(record, target) {
+    const payload = { ...createGameRecord(record), schemaVersion: GAME_RECORDS_SCHEMA_VERSION }
+    let db: IDBDatabase | null = null
+    try {
+      db = await openDatabase()
+      const seq = await new Promise<number>((resolve, reject) => {
+        const tx = db!.transaction(STORE, 'readwrite')
+        const store = tx.objectStore(STORE)
+        let added = 0
+        // 读全表找旧条（号或内容身份）→ 写新 → 删旧，都在这一个事务里；任何一步抛错都会让事务中止、整笔回滚。
+        const all = store.getAll()
+        all.onsuccess = () => {
+          const old = replaceTargetIn(all.result, record, target)
+          const add = store.add(payload)
+          add.onsuccess = () => {
+            added = Number(add.result)
+            if (old !== null) store.delete(old)
+          }
+        }
+        tx.oncomplete = () => resolve(added)
+        tx.onerror = () => reject(new Error('棋谱库替换失败'))
+        tx.onabort = () => reject(new Error('棋谱库替换被中止'))
+      })
+      return { record: { ...payload, seq }, persisted: true }
+    } catch {
+      // 打不开库，或事务失败（整笔回滚，旧条还在）：与 `put` 失败同一条路——内存兜底、如实报没落库。
+      // 不在内存里替换：`replacesSeq` 是库里的号，内存兜底的号与它不是一套，按号删会删错。
+      return fallbackToMemory().put(record)
+    } finally {
+      db?.close()
     }
   },
 
@@ -443,9 +522,8 @@ export const indexedDbGameRecords: GameRecordsStorage = {
   },
 
   async delete(seq) {
-    // 与 `importMany` 同一口径：**打不开库**才退内存；事务失败要如实抛。
-    // 以前这里吞掉一切异常再退内存（内存里本来就没有这条），调用方于是以为
-    // 删成功了——`saveGameReplacing` 就会留下「新的写进去了、旧的没删掉」两条。
+    // 与 `importMany` 同一口径：**打不开库**才退内存（并报 `persisted: false`）；事务失败要如实抛——
+    // 吞掉异常再退内存的话（内存里本来就没有这条），界面会说「已删除」，刷新后它又回来了。
     let db: IDBDatabase | null = null
     try {
       db = await openDatabase()
@@ -456,11 +534,9 @@ export const indexedDbGameRecords: GameRecordsStorage = {
         tx.onerror = () => reject(new Error('棋谱库删除失败'))
         tx.onabort = () => reject(new Error('棋谱库删除被中止'))
       })
+      return { persisted: true }
     } catch (error) {
-      if (db === null) {
-        await fallbackToMemory().delete(seq)
-        return
-      }
+      if (db === null) return fallbackToMemory().delete(seq)
       throw error
     } finally {
       db?.close()

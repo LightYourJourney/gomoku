@@ -5,6 +5,7 @@ import { BOARD_SIZE, type Player, type Point } from '../../core/types'
 import { isThemePreference } from '../../lib/theme'
 import { isView } from '../progress'
 import { isBranchInRange } from '../storage'
+import { isoToMillis } from '../../lib/time-format'
 import { isFiniteInt, isObj, isPlayer, issue, type ImportErrorCode, type ImportIssue } from './guards'
 import type {
   BackupPosition,
@@ -385,7 +386,7 @@ function validateGamePayload(
 
   warnUnknownFields(
     game,
-    ['firstPlayer', 'moves', 'mode', 'humanColor', 'difficulty', 'ending', 'source', ...envelopeKeys],
+    ['firstPlayer', 'moves', 'mode', 'humanColor', 'difficulty', 'ending', 'source', 'createdAt', ...envelopeKeys],
     path,
     warnings,
   )
@@ -428,6 +429,16 @@ function validateGamePayload(
   const source = validateSource(game.source, `${path}.source`, errors, warnings)
   if (errors.length > 0) return { ok: false, errors, warnings }
 
+  // 入库时间是附属信息：写坏了只告警、当没有，不拒绝这一局。
+  let createdAt: string | undefined
+  if (game.createdAt !== undefined) {
+    if (isoToMillis(game.createdAt) === null) {
+      warnings.push(issue('invalid_field', `${path}.createdAt`, '入库时间不是有效的 ISO 时间，已忽略'))
+    } else {
+      createdAt = game.createdAt as string
+    }
+  }
+
   return {
     ok: true,
     warnings,
@@ -439,6 +450,7 @@ function validateGamePayload(
       difficulty,
       ending,
       ...(source === undefined ? {} : { source }),
+      ...(createdAt === undefined ? {} : { createdAt }),
     },
   }
 }

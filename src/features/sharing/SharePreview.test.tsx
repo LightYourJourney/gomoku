@@ -26,6 +26,7 @@ function gameShare() {
     difficulty: 'easy',
     resignedBy: null,
     winner: BLACK,
+    createdAt: null,
   })
   if (!result.ok) throw new Error(result.message)
   return result.token

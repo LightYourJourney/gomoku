@@ -33,6 +33,7 @@ function game(overrides: Partial<GameRecord> = {}): GameRecord {
     difficulty: 'easy',
     resignedBy: null,
     winner: BLACK,
+    createdAt: null,
     ...overrides,
   }
 }
@@ -242,3 +243,17 @@ describe('分享链接 —— 错误与边界', () => {
     expect(url).toBe('https://example.test/#share=abc')
   })
 })
+
+describe('分享链接不带入库时间（SECURITY_MODEL：分享不带本机信息）', () => {
+  it('棋谱带着时间，生成的分享里没有它', () => {
+    const shared = createGameShare(game({ createdAt: Date.UTC(2026, 10, 18) }))
+    expect(shared.ok).toBe(true)
+    if (!shared.ok) return
+
+    const decoded = decodeShareToken(shared.token)
+    expect(decoded.ok).toBe(true)
+    if (!decoded.ok) return
+    expect(JSON.stringify(decoded)).not.toContain('createdAt')
+  })
+})
+

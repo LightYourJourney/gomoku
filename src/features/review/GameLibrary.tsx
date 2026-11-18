@@ -9,6 +9,7 @@ import { DataManagementPanel, type DataManagementServices } from './DataManageme
 import { exportFilename, toGameFile } from '../../persist/transfer/format'
 import { downloadJson } from './download'
 import { indexedDbPositions, type PositionStorage } from '../../persist/positions'
+import { formatLocalMinute } from '../../lib/time-format'
 
 export interface GameLibraryProps {
   readonly storage: GameRecordsStorage
@@ -35,16 +36,20 @@ function resultLabel(record: GameRecord): string {
  * **人机局补上难度档**（F-UI-22）：棋谱里最能解释「这局为什么长这样」的就是它，
  * 而它本来就在 `record.difficulty` 里躺着。双人局不标——那里没有 AI 难度，
  * 硬写一个「入门」是在编。
- *
- * **不加时间戳**：`AGENTS.md` 规定时钟一律注入、`Date.now()` 的直接调用只能出现在
- * `ai/search.ts`，而 `GameRecord` 是刻意不存时间的（先后由自增主键表达）；
- * 补上去会让所有存量棋谱作废。先后看列表顺序就够了。
  */
 function metaLabel(record: GameRecord): string {
   const mode = record.mode === 'pve' ? '人机' : '双人'
   const difficulty = record.mode === 'pve' ? ` · ${DIFFICULTY_LABELS[record.difficulty]}` : ''
   return `${mode}${difficulty} · ${record.moves.length} 手`
 }
+
+/** 这局下完的时间。阶段 D 之前的棋谱没有时间，如实说，不编造。 */
+function timeLabel(record: GameRecord): string {
+  return (record.createdAt === null ? null : formatLocalMinute(record.createdAt)) ?? '时间未知'
+}
+
+/** 一批显示多少局。5,000 局全量渲染是 3 万个元素、首屏 433 ms（评估报告 §4.6）；分批够用，不上虚拟列表。 */
+const PAGE_SIZE = 50
 
 /** 被跳过的棋谱条数说明——空库与列表上方说的是同一句话。 */
 function skippedNote(count: number): string {
@@ -105,6 +110,10 @@ export function GameLibrary({
   const [result, setResult] = useState<GameRecordList | null>(null)
   const [reloadKey, setReloadKey] = useState(0)
   const [exportError, setExportError] = useState<string | null>(null)
+  const [shown, setShown] = useState(PAGE_SIZE)
+  /** 正在等「确认删除」的那一局。 */
+  const [confirming, setConfirming] = useState<number | null>(null)
+  const [deleteNote, setDeleteNote] = useState<{ readonly ok: boolean; readonly text: string } | null>(null)
 
   useEffect(() => {
     let alive = true
@@ -115,6 +124,23 @@ export function GameLibrary({
       alive = false
     }
   }, [storage, reloadKey])
+
+  async function deleteRecord(seq: number): Promise<void> {
+    setConfirming(null)
+    try {
+      const { persisted } = await storage.delete(seq)
+      if (!persisted) {
+        setDeleteNote({ ok: false, text: '棋谱库现在不可用，只删了本次会话里的这一局——刷新后它可能仍在。' })
+        return
+      }
+      setResult((current) =>
+        current === null ? current : { ...current, records: current.records.filter((record) => record.seq !== seq) },
+      )
+      setDeleteNote({ ok: true, text: '已删除这局棋谱。' })
+    } catch (err) {
+      setDeleteNote({ ok: false, text: `删除失败：${err instanceof Error ? err.message : String(err)}` })
+    }
+  }
 
   function exportRecord(record: GameRecord): void {
     if (services === undefined) return
@@ -151,6 +177,15 @@ export function GameLibrary({
             onImported={() => setReloadKey((key) => key + 1)}
           />
         </div>
+      )}
+
+      {deleteNote !== null && (
+        <p
+          role={deleteNote.ok ? 'status' : 'alert'}
+          className={`mb-3 text-xs ${deleteNote.ok ? 'text-muted' : 'text-danger'}`}
+        >
+          {deleteNote.text}
+        </p>
       )}
 
       {exportError !== null && (
@@ -205,8 +240,11 @@ export function GameLibrary({
               )}
             </p>
           )}
+          {confirming !== null && (
+            <p className="mb-2 text-xs text-warn">删除的是本机保存的这一局，删除后不能撤销。</p>
+          )}
           <ul className="space-y-2">
-            {result.records.map((record) => (
+            {result.records.slice(0, shown).map((record) => (
               <li key={record.seq} className="flex items-stretch gap-2">
                 <button
                   type="button"
@@ -218,6 +256,7 @@ export function GameLibrary({
                     <span className="text-sm font-medium text-fg">{resultLabel(record)}</span>
                     <span className="shrink-0 text-xs text-faint">{metaLabel(record)}</span>
                   </div>
+                  <div className="mt-1 text-xs text-faint">{timeLabel(record)}</div>
                 </button>
                 {services !== undefined && (
                   <Button
@@ -228,9 +267,43 @@ export function GameLibrary({
                     导出
                   </Button>
                 )}
+                {/* 删除不可撤销：与局面库同一套二次确认，危险色只给「确认删除」那一下。 */}
+                {confirming === record.seq ? (
+                  <>
+                    <Button
+                      size="sm"
+                      variant="danger"
+                      aria-label={`确认删除棋谱 ${record.seq}`}
+                      onClick={() => void deleteRecord(record.seq)}
+                    >
+                      确认删除
+                    </Button>
+                    <Button size="sm" onClick={() => setConfirming(null)}>
+                      取消
+                    </Button>
+                  </>
+                ) : (
+                  <Button
+                    size="sm"
+                    aria-label={`删除棋谱 ${record.seq}`}
+                    onClick={() => {
+                      setDeleteNote(null)
+                      setConfirming(record.seq)
+                    }}
+                  >
+                    删除
+                  </Button>
+                )}
               </li>
             ))}
           </ul>
+          {result.records.length > shown && (
+            <div className="mt-3 text-center">
+              <Button size="sm" onClick={() => setShown((count) => count + PAGE_SIZE)}>
+                再显示 {Math.min(PAGE_SIZE, result.records.length - shown)} 局（共 {result.records.length} 局）
+              </Button>
+            </div>
+          )}
         </>
       )}
     </>
