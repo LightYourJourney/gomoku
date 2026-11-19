@@ -25,6 +25,13 @@
  * 结果是**确定的**（固定开局、固定种子、预算给足所以不受时钟影响），与机器负载无关；
  * 引擎的搜索或评估变了，数字才会变。
  *
+ * **档位与预算可换**（复盘分析预算实验，`docs/research/ANALYSIS_BUDGET_PLAN.md`）：
+ *
+ *   REVIEW_DIFFICULTY=medium REVIEW_BUDGET_MS=1000 REVIEW_OUT=/tmp/b.json yarn bench:review-loss
+ *
+ * 缺省是初级 + 给足的预算（与上面描述的一致）。给真实预算时另报每次复盘搜索的耗时分布与被时间截断的比例；
+ * `REVIEW_OUT` 写出自对弈样本里每局的亏损榜（产品取前三，`buildSummary`），供不同组之间比对。
+ *
  * 局限：分差仍然只是 2 层初级引擎的看法，不是真理。这里量的是口径**自洽不自洽、
  * 有多少手算得出来**，说明不了着法的真实好坏。
  *
@@ -36,20 +43,40 @@ import { candidateMoves } from '../src/ai/candidates'
 import { DIFFICULTY_PARAMS } from '../src/ai/difficulty'
 import { searchBoard, searchOptionsFor } from '../src/ai/search'
 import {
+  buildSummary,
   buildVerdict,
   followUpState,
   followUpStates,
   linesToFollow,
   type AfterMove,
+  type MoveVerdict,
   type Reached,
 } from '../src/analysis/analyze'
+import type { Difficulty } from '../src/ai/types'
+import { writeFileSync } from 'node:fs'
 import { samePoint } from '../src/core/board'
 import { applyMove, replay, type GameState } from '../src/core/game'
 import type { Point } from '../src/core/types'
 
-/** 复盘页固定用初级档（`ReviewScreen`）；预算给足，让每次都搜满档位深度。 */
-const OPTIONS = searchOptionsFor(DIFFICULTY_PARAMS.easy, { budgetMs: 60_000 })
+/** 复盘档位：缺省与复盘页一致（初级，`ReviewScreen`）。 */
+const DIFFICULTY = (process.env.REVIEW_DIFFICULTY ?? 'easy') as Difficulty
+if (!(DIFFICULTY in DIFFICULTY_PARAMS)) throw new Error(`REVIEW_DIFFICULTY 不认识：${DIFFICULTY}`)
+/** 缺省预算给足，让每次都搜满档位深度；给真实预算时量截断。 */
+const BUDGET_MS = Number(process.env.REVIEW_BUDGET_MS ?? 60_000)
+if (!Number.isFinite(BUDGET_MS) || BUDGET_MS <= 0) throw new Error(`REVIEW_BUDGET_MS 不合法：${process.env.REVIEW_BUDGET_MS}`)
+const OPTIONS = searchOptionsFor(DIFFICULTY_PARAMS[DIFFICULTY], { budgetMs: BUDGET_MS })
 const now = Date.now
+console.log(`\n复盘档位 ${DIFFICULTY}、每次搜索预算 ${BUDGET_MS} ms`)
+
+/** 复盘搜索（用 `OPTIONS` 的那些）的耗时与结束原因，给真实预算的那一轮报截断。 */
+const searches: { readonly ms: number; readonly reason: string }[] = []
+/** 复盘口径的一次搜索：记下耗时与原因。 */
+function reviewSearch(board: GameState['board'], player: GameState['current']) {
+  const startedAt = performance.now()
+  const reply = searchBoard(board, player, OPTIONS, now)
+  searches.push({ ms: Math.round(performance.now() - startedAt), reason: reply.reason })
+  return reply
+}
 
 const OPENINGS: readonly (readonly Point[])[] = [
   [{ x: 7, y: 7 }, { x: 8, y: 8 }, { x: 7, y: 9 }],
@@ -108,7 +135,7 @@ test('旧公式的自洽性：引擎走自己的首选时，score(i) − (−sco
 
 /** 轮到 `state.current` 走的局面，由这一方搜出来的结论。 */
 function searchState(state: GameState): Reached {
-  const reply = searchBoard(state.board, state.current, OPTIONS, now)
+  const reply = reviewSearch(state.board, state.current)
   return { score: reply.score, reason: reply.reason, move: reply.move }
 }
 
@@ -167,11 +194,16 @@ function tally(
    * 只为统计，不进结论。
    */
   const levelGap: number[] = []
+  /** 每局的结论（只收着法不同的手），给自对弈样本算亏损榜。 */
+  const verdictsByGame: MoveVerdict[][] = []
+  searches.length = 0
 
   for (const opening of OPENINGS) {
+    const verdicts: MoveVerdict[] = []
+    verdictsByGame.push(verdicts)
     let game = replay([...opening])
     for (let step = 0; step < 40 && game.status === 'playing'; step += 1) {
-      const here = searchBoard(game.board, game.current, OPTIONS, now)
+      const here = reviewSearch(game.board, game.current)
       const engineMove = here.move
       if (engineMove === null) break
       const played = pick(game, engineMove)
@@ -213,6 +245,7 @@ function tally(
           engineDepth: here.depth,
           engineNodes: here.nodes,
         })
+        verdicts.push(verdict)
         const followed = lines.played || lines.engine
         if (verdict.loss === null) {
           count.uncomputed += 1
@@ -279,6 +312,27 @@ function tally(
       ` / 正 ${levelGap.filter((v) => v > 0).length}；中位 ${median(levelGap) ?? '—'}`,
   )
   console.log(`对照：旧口径在这 ${count.different} 手上报「零亏损」${legacyZero} 手`)
+
+  // 复盘搜索的耗时与截断：分母只算走到搜索那一步的（search / timeout），必胜 / 必防等捷径不算。
+  const searched = searches.filter((s) => s.reason === 'search' || s.reason === 'timeout')
+  const times = searches.map((s) => s.ms).sort((a, b) => a - b)
+  const timeouts = searched.filter((s) => s.reason === 'timeout').length
+  console.log(
+    `复盘搜索 ${searches.length} 次：耗时中位 ${quantile(times, 0.5)} ms、P90 ${quantile(times, 0.9)} ms、最大 ${times.at(-1)} ms；` +
+      `被时间截断 ${timeouts} / ${searched.length}（捷径 ${searches.length - searched.length} 次不计）`,
+  )
+
+  if (advance === 'played') {
+    const tops = verdictsByGame.map((verdicts) =>
+      buildSummary(verdicts).topLosses.map((v) => ({ moveIndex: v.moveIndex, loss: v.loss })),
+    )
+    tops.forEach((top, i) => console.log(`  第 ${i + 1} 局亏损榜：${top.map((t) => `#${t.moveIndex}(${t.loss})`).join('、') || '—'}`))
+    const out = process.env.REVIEW_OUT
+    if (out !== undefined) {
+      writeFileSync(out, JSON.stringify({ difficulty: DIFFICULTY, budgetMs: BUDGET_MS, tops, uncomputed: count.uncomputed, different: count.different }, null, 2))
+      console.log(`  亏损榜写到 ${out}`)
+    }
+  }
 }
 
 test('亏损检出：随机着法，生产口径给出多少亏损、多少未算', () => {

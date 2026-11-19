@@ -12,7 +12,8 @@ export default defineConfig({
   test: {
     environment: 'node',
     include: ['bench/review-loss.measure.ts'],
-    testTimeout: 600_000,
+    // 复盘预算实验（ANALYSIS_BUDGET_PLAN）里高档位给足预算时单条可能超过 10 分钟
+    testTimeout: 3_600_000,
     // 这份脚本的产物就是给人看的表：让 console.log 原样出现在终端
     disableConsoleIntercept: true,
   },
