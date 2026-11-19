@@ -4,7 +4,28 @@
 > 以及线上验收的原始读数。与方案/清单分开，避免「计划」和「事实」混写。
 > 最新一次在最上面。
 
-## Phase 12 · 0.6.0 build.3 两轴审查整改（当前生产）
+## 0.7.0 · 重构评估 A–E 合集（当前生产）
+
+| 项 | 值 |
+| --- | --- |
+| 应用版本 | `0.7.0` |
+| 引擎版本 | `search-1`（搜索决策未变） |
+| 提交 / 标签 | `a073f37` / `v0.7.0` |
+| 生产部署 | `975912ae-e604-4fb7-a694-c62dbd05c6af`（https://975912ae.gomoku-lab.pages.dev） |
+| 生产地址 | **https://gomoku-lab.pages.dev** |
+| 预览部署 | `a25fa681-992b-4def-92a6-b8860b9af83b`（https://a25fa681.gomoku-lab-preview.pages.dev） |
+| 部署时间 | 2026-11-20（UTC+8） |
+| 部署方式 | 在 `a073f37` 的独立工作区里 `yarn build`（保证 `build-commit` 就是这个提交），`npx wrangler@4.151.3 pages deploy dist --project-name gomoku-lab-preview / gomoku-lab --branch main --commit-hash a073f37…` |
+| 回滚目标 | `16bed862…`（`6301201` / 0.6.0 build.3）→ `12e748bb…`（build.2）→ … |
+| 产物 | `index-D37bYH-C.js`（311.8 kB / gzip **98.8 kB**，教学 / 残局 / 复盘按页另载）、`index-CpF4lQXI.css`、`worker-01U1Gnzb.js`（15.1 kB） |
+| 验收 | CI `44588072218`（D + E）与 `44590655034`（发布提交）六个 job 全绿；预览与生产 `e2e:remote` 均 **202 / 202**；生产 meta `app-version=0.7.0`、`build-commit=a073f37…`；页面地址 `/learn/rules`、`/review/3` 为 200 入口页，`/foo` 与 `/assets/不存在.js` 为 404；入口 `must-revalidate`、`/assets/*` `immutable`；CSP / HSTS / X-Frame-Options / nosniff / Referrer-Policy 下发 |
+
+- **授权**：裁定 20——「预览验证通过后直接上生产」。
+- **内容**：重构评估的 A、A+、B、C、D、E 六个阶段，见 `RELEASE_NOTES_0.7.0.md`。
+- **数据格式**：`DB_VERSION` 4、各 `schemaVersion`、文件 `formatVersion` 均未变；棋谱新增可选字段 `createdAt`。
+- **回滚**：回 `16bed862…`（`6301201`）无数据代价，见 `ROLLBACK_PLAN.md` §4.0.2；回滚后页面路径（`/learn/…` 等）在旧版本上是 404，从根地址进入不受影响。
+
+## Phase 12 · 0.6.0 build.3 两轴审查整改（历史）
 
 | 项 | 值 |
 | --- | --- |
@@ -351,7 +372,8 @@ REMOTE_BASE=https://gomoku-lab.pages.dev yarn e2e:remote
 
 - 部署前跑全档：`yarn lint && yarn typecheck && yarn test && yarn build && yarn e2e && yarn e2e:prod && yarn gates && yarn bench:check`；
   界面结构有改动的，还要等 CI 的 `probe`（`yarn ui:probe --out ci` + 覆盖棘轮）与 `browsers` / `browsers-full` 全绿。
-- `e2e:remote` 的当前期望是 **190/190**（预览与生产各跑一次），不是 162/162。
+- `e2e:remote` 的当前期望是 **202/202**（0.7.0；预览与生产各跑一次）。
+- 部署前在发布提交的独立工作区里构建（`git worktree add --detach <dir> <提交>`），保证 `build-commit` 与发布提交一致，不被之后的本地文档提交带偏。
 
 ---
 
