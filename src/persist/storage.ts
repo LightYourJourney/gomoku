@@ -1,6 +1,6 @@
 import { isDifficulty } from '../ai/difficulty'
+import { isPlayer, parsePoint } from './parse'
 import type { Difficulty } from '../ai/types'
-import { inBounds } from '../core/board'
 import { CELL_COUNT, type GameMode, type Player, type Point } from '../core/types'
 
 /**
@@ -35,20 +35,6 @@ export interface PersistedSession {
   /** 探索分支来源；v1/v2 没有，迁移后为 null。 */
   /** 旧调用方可省略；解码 v1/v2 会补 null。 */
   readonly branch?: PersistedBranch | null
-}
-
-function isPlayer(value: unknown): value is Player {
-  return value === 1 || value === 2
-}
-
-function parsePoint(value: unknown): Point | null {
-  if (typeof value !== 'object' || value === null) return null
-
-  const { x, y } = value as { x?: unknown; y?: unknown }
-  if (typeof x !== 'number' || typeof y !== 'number') return null
-  if (!inBounds(x, y)) return null
-
-  return { x, y }
 }
 
 /**

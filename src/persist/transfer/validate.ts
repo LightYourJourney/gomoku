@@ -6,7 +6,8 @@ import { isThemePreference } from '../../lib/theme'
 import { isView } from '../progress'
 import { isBranchInRange } from '../storage'
 import { isoToMillis } from '../../lib/time-format'
-import { isFiniteInt, isObj, isPlayer, issue, type ImportErrorCode, type ImportIssue } from './guards'
+import { isFiniteInt, isObj, isPlayer } from '../parse'
+import { issue, type ImportErrorCode, type ImportIssue } from './guards'
 import type {
   BackupPosition,
   BackupPreferences,

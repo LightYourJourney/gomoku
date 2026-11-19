@@ -1,7 +1,6 @@
 import { useRef, useState } from 'react'
 import type { PersistedSession } from '../../persist/storage'
 import {
-  positionContentKey,
   positionFromSaved,
   type PositionStorage,
   type SavedPosition,
@@ -10,7 +9,6 @@ import type { LearningProgress } from '../../persist/progress'
 import type {
   GameRecord,
   GameRecordsStorage,
-  ImportRecordsResult,
 } from '../../persist/gameRecords'
 import { recordContentKey } from '../../persist/recordIdentity'
 import {
@@ -24,7 +22,6 @@ import {
   GAME_FORMAT_VERSION,
   exportFilename,
   gameContentKey,
-  gamePayloadToRecordInput,
   toBackupFile,
   toGamePayload,
   type BackupPosition,
@@ -38,6 +35,7 @@ import { Modal } from '../../components/ui/Modal'
 import { Panel } from '../../components/ui/Panel'
 import { Switch } from '../../components/ui/Switch'
 import { downloadJson } from './download'
+import { restoreImport, type RestoreOutcome, type SectionOutcome } from '../../persist/transfer/restore'
 
 /**
  * 数据管理依赖的宿主能力。
@@ -87,23 +85,6 @@ type Preview =
       readonly warnings: readonly ImportIssue[]
     }
 
-type SectionOutcome = 'merged' | 'restored' | 'skipped' | 'failed' | 'absent'
-
-interface Outcome {
-  readonly imported: number
-  readonly duplicates: number
-  readonly invalid: number
-  readonly persisted: boolean
-  readonly storage: ImportRecordsResult['storage']
-  readonly progress: SectionOutcome
-  readonly preferences: SectionOutcome
-  readonly session: SectionOutcome
-  readonly positionsImported: number
-  readonly positionsDuplicates: number
-  readonly positionsFailed: number
-  readonly positionsMemory: number
-}
-
 function issueSummary(issues: readonly ImportIssue[]): string {
   return issues
     .slice(0, 3)
@@ -148,7 +129,7 @@ export function DataManagementPanel({
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [exportNotice, setExportNotice] = useState<string | null>(null)
-  const [outcome, setOutcome] = useState<Outcome | null>(null)
+  const [outcome, setOutcome] = useState<RestoreOutcome | null>(null)
   const [withProgress, setWithProgress] = useState(true)
   const [withPreferences, setWithPreferences] = useState(false)
   const [withSession, setWithSession] = useState(false)
@@ -229,137 +210,45 @@ export function DataManagementPanel({
 
   async function confirmImport(): Promise<void> {
     if (pending === null) return
-
-    const games = pending.kind === 'game' ? [pending.game] : pending.games
-    const invalid = pending.kind === 'backup' ? pending.gameErrors.length : 0
     setBusy(true)
     setError(null)
 
-    let recordsResult: ImportRecordsResult
-    try {
-      recordsResult = await storage.importMany(games.map(gamePayloadToRecordInput))
-    } catch (err) {
-      setPending(null)
-      fail(err instanceof Error ? err.message : String(err))
-      setBusy(false)
-      return
-    }
+    // 恢复策略（不做半恢复、各段独立成败、局面逐条去重）住在 `restoreImport` 里，这里只把预览与开关交给它。
+    const result = await restoreImport(
+      pending.kind === 'game'
+        ? { kind: 'game', game: pending.game }
+        : {
+            kind: 'backup',
+            games: pending.games,
+            invalid: pending.gameErrors.length,
+            progress: pending.progress,
+            preferences: pending.preferences,
+            session: pending.session,
+            positions: pending.positions,
+            include: {
+              progress: withProgress,
+              preferences: withPreferences,
+              session: withSession,
+              positions: withPositions,
+            },
+          },
+      {
+        records: storage,
+        positions,
+        mergeProgress: (progress) => services.onMergeProgress(progress),
+        restorePreferences: (preferences) => services.onRestorePreferences(preferences),
+        restoreSession: (session) => services.onRestoreSession(session),
+        now: services.now,
+      },
+    )
 
-    // 棋谱段整笔失败（典型是配额）时，备份里后面的进度/偏好/会话/局面一律不动：
-    // 否则用户会得到「棋谱一条没进去，当前对局却已被存档覆盖」的半恢复状态。
-    // 单盘棋谱没有别的段，保留下面那张更具体的分项结果。
-    if (recordsResult.storage === 'failed' && pending.kind === 'backup') {
-      setPending(null)
-      fail('棋谱库写入失败（可能是空间不足）；为避免只导入一半，其余各段均未改动')
-      setBusy(false)
-      return
-    }
-
-    let progress: SectionOutcome = 'absent'
-    let preferences: SectionOutcome = 'absent'
-    let session: SectionOutcome = 'absent'
-    let positionsImported = 0
-    let positionsDuplicates = 0
-    let positionsFailed = 0
-    let positionsMemory = 0
-
-    if (pending.kind === 'backup') {
-      if (pending.progress !== null) {
-        if (!withProgress) progress = 'skipped'
-        else {
-          try {
-            await services.onMergeProgress(pending.progress)
-            progress = 'merged'
-          } catch {
-            progress = 'failed'
-          }
-        }
-      }
-
-      if (pending.preferences !== null) {
-        if (!withPreferences) preferences = 'skipped'
-        else {
-          try {
-            services.onRestorePreferences(pending.preferences)
-            preferences = 'restored'
-          } catch {
-            preferences = 'failed'
-          }
-        }
-      }
-
-      if (pending.session !== null) {
-        if (!withSession) session = 'skipped'
-        else {
-          try {
-            services.onRestoreSession(pending.session)
-            session = 'restored'
-          } catch {
-            session = 'failed'
-          }
-        }
-      }
-
-      if (pending.positions.length > 0 && withPositions) {
-        try {
-          const existing = new Set(
-            (await positions.list()).records.map((record) =>
-              positionContentKey({
-                cells: record.cells,
-                nextPlayer: record.nextPlayer,
-                provenance: record.provenance,
-              }),
-            ),
-          )
-          for (const entry of pending.positions) {
-            const key = positionContentKey({
-              cells: entry.cells,
-              nextPlayer: entry.nextPlayer,
-              provenance: entry.provenance,
-            })
-            if (existing.has(key)) {
-              positionsDuplicates += 1
-              continue
-            }
-            try {
-              const saved = await positions.save(
-                {
-                  title: entry.title ?? '',
-                  cells: entry.cells,
-                  nextPlayer: entry.nextPlayer,
-                  provenance: entry.provenance,
-                },
-                null,
-                services.now,
-              )
-              existing.add(key)
-              positionsImported += 1
-              if (!saved.persisted) positionsMemory += 1
-            } catch {
-              positionsFailed += 1
-            }
-          }
-        } catch {
-          positionsFailed += pending.positions.length
-        }
-      }
-    }
-
-    setOutcome({
-      imported: recordsResult.imported,
-      duplicates: recordsResult.duplicates,
-      invalid,
-      persisted: recordsResult.persisted,
-      storage: recordsResult.storage,
-      progress,
-      preferences,
-      session,
-      positionsImported,
-      positionsDuplicates,
-      positionsFailed,
-      positionsMemory,
-    })
     setPending(null)
+    if (!result.ok) {
+      fail(result.error)
+      setBusy(false)
+      return
+    }
+    setOutcome(result.outcome)
     setBusy(false)
     onImported()
   }

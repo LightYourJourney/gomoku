@@ -4,12 +4,12 @@ import { positionContentKey } from './positionKey'
 export { positionContentKey } from './positionKey'
 import { openDatabaseWithSchema, resolveIdbFactory, storeRunner } from './idb'
 import { POSITIONS_CONTENT_INDEX, POSITIONS_STORE } from './schema'
+import { isPlayer, parsePoint } from './parse'
+import { millisOrNull } from '../lib/time-format'
 
 const POSITION_SCHEMA_VERSION = 2
 const LEGACY_POSITION_SCHEMA_VERSION = 1
 const MAX_POSITION_TITLE = 80
-/** `Date` 能表示的最大毫秒数；超过它 `new Date(x).getTime()` 是 NaN。 */
-const MAX_DATE_MS = 8_640_000_000_000_000
 
 export interface SavedPosition {
   readonly id: number
@@ -85,10 +85,6 @@ function positionPayload(
   }
 }
 
-function isPlayer(value: unknown): value is Player {
-  return value === 1 || value === 2
-}
-
 function parseProvenance(value: unknown): PositionProvenance | null {
   if (typeof value !== 'object' || value === null) return null
   const raw = value as Record<string, unknown>
@@ -99,32 +95,11 @@ function parseProvenance(value: unknown): PositionProvenance | null {
   if (raw.ply !== raw.moves.length || raw.ply < 0 || raw.ply > 225) return null
   const moves: { x: number; y: number }[] = []
   for (const entry of raw.moves) {
-    if (typeof entry !== 'object' || entry === null) return null
-    const point = entry as Record<string, unknown>
-    if (
-      typeof point.x !== 'number' ||
-      typeof point.y !== 'number' ||
-      !Number.isInteger(point.x) ||
-      !Number.isInteger(point.y) ||
-      point.x < 0 ||
-      point.x >= 15 ||
-      point.y < 0 ||
-      point.y >= 15
-    ) {
-      return null
-    }
-    moves.push({ x: point.x, y: point.y })
+    const point = parsePoint(entry)
+    if (point === null) return null
+    moves.push(point)
   }
   return { kind: 'replay', moves, firstPlayer: raw.firstPlayer, ply: raw.ply }
-}
-
-function isTimestamp(value: unknown): value is number {
-  return (
-    typeof value === 'number' &&
-    Number.isSafeInteger(value) &&
-    value >= 0 &&
-    value <= MAX_DATE_MS
-  )
 }
 
 interface PositionTimestamps {
@@ -147,8 +122,11 @@ function migratePositionTimestamps(
     return { createdAt: null, updatedAt: null }
   }
   if (version !== POSITION_SCHEMA_VERSION) return null
-  if (!isTimestamp(value.createdAt) || !isTimestamp(value.updatedAt)) return null
-  return { createdAt: value.createdAt, updatedAt: value.updatedAt }
+  // 非负安全整数、`Date` 表示得了——与棋谱的入库时间同一条规则（`lib/time-format.ts`）。
+  const createdAt = millisOrNull(value.createdAt)
+  const updatedAt = millisOrNull(value.updatedAt)
+  if (createdAt === null || updatedAt === null) return null
+  return { createdAt, updatedAt }
 }
 
 export function parseSavedPosition(value: unknown): SavedPosition | null {

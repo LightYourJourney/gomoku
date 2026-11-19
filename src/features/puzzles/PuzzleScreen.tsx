@@ -19,7 +19,7 @@ import {
  * 进度块的文案。模块级常量，理由同 `LearnScreen` 的同名常量。
  *
  * **`doneLabel` 与 `unit` 拼出来的那句必须原样是 `已通过 X / 15 题`**：
- * 探针三个残局状态的 boot 绑着这条逐字文案（`ui.probe.mjs:617`），
+ * 探针三个残局状态的 boot 绑着这条逐字文案（`bench/ui.probe.mjs` 里等 `puzzle-progress` 的那几处），
  * 改了它 boot 会超时——而超时比报错更难查。
  */
 const PROGRESS_TEXTS = {

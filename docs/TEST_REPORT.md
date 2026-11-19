@@ -2968,3 +2968,56 @@ N = 库里预先灌入的棋谱数；入库 = 空盘认输到出现「已存入�
 本机 `yarn ui:probe --out ci` 复现。这是同一批按钮改名，不是覆盖缩小：基线里这 24 条一对一换成新名字，并给这 8 行各加上新按钮「删除」
 （收紧）；理由写进 `coverage.baseline.json` 的 `note` 与提交信息。阶段 D 收尾时漏跑了 `ui:probe` + `check:coverage`——本机五条命令与 `gates` 都不含它，
 之后的界面改动收尾补跑这两条。
+
+## 〇之三十、阶段 E 其余项：恢复编排、入库链、解析收口；测试环境的测量（2026-11-19）
+
+计划：[PHASE_E_REST_PLAN](research/PHASE_E_REST_PLAN.md)（三轮自审 + 独立终审七条，全部采纳）。前三项**零行为变更**：已有测试的断言零改动——
+`DataManagementPanel.test.tsx` / `gameRecords.test.ts` / `positions.test.ts` 一行未动，`gameStore.test.ts` 只改了一处指错的注释（见下「两轴审查」）。
+
+| 项 | 做了什么 |
+| --- | --- |
+| E3 恢复编排（§5.5） | `DataManagementPanel.confirmImport` 里约 135 行的策略平移为 `persist/transfer/restore.ts` 的 `restoreImport(plan, deps)`，依赖全部注入（棋谱 `importMany`、局面 `list` / `save`、三个恢复回调、时钟）。组件只剩置忙、组装计划、按结果显示。新增 `restore.test.ts` 10 条直接钉策略：写入抛错、备份棋谱段整笔失败其余不动、单盘不受此限、全选、未选 / 文件里没有、一段失败不连累别的段、无效条数、局面去重（库里已有 + 文件内重复）、单条写失败、列不出已有局面。**反向验证**：把「备份棋谱段整笔失败就停」那一行短路掉，新用例与组件里原有的「棋谱段写入失败时中止整次导入」各红一条 |
+| E4 入库链（§5.4） | `makeNotifier` 连同 `GameEndInput` 平移为 `store/recordNotifier.ts` 的 `createRecordNotifier(onGameEnd, set)`，函数体逐字搬，注释只改一处（「存储层无条件删掉那一条（`gameRecords.ts:188`）」按阶段 D 后的实情改为「按号删掉那一条（`putReplacing`）」）；`before` 只收真正读的五个字段，`branch` 按结构写，不引 `gameStore`（`check:cycles` 无环）。`gameStore.ts` 809 → 672 行 |
+| E5 解析收口（§5.6、§5.7） | 新 `persist/parse.ts`：`isObj` / `isPlayer` / `isFiniteInt`（自 `transfer/guards.ts`）+ `parsePoint`（自 `storage.ts`）。删掉 `storage` / `positions` / `gameRecords` 各自的 `isPlayer`，`gameRecords` 与 `positions` 手写的坐标循环改用 `parsePoint`（`inBounds` 本身查整数与 0–14，与 `positions` 手写的边界逐项相同）；`positions.isTimestamp` 改用 `lib/time-format.millisOrNull`（同一规则）。五处「文件:行号」引用改为符号名（含终审指出的两处 `ui.probe.mjs:617`，已指错），`grep -rnE '[A-Za-z]+\.(tsx?\|mjs):[0-9]{2,}' src`（排除测试）为空 |
+
+### E6 纯逻辑测试换 node 环境：量了，没量出能拍板的数
+
+`src/core src/ai src/learn src/analysis`（505 条；`src/lib` 有读 DOM 的用例，不算纯逻辑）上 node / jsdom 交替：
+
+| 轮次 | 1 分钟负载 | node 墙钟 | jsdom 墙钟 |
+| --- | --- | --- | --- |
+| 第一轮（三次） | 12–16 | 11.11 / 11.49 / 9.19 s | 11.06 / 11.93 / 11.88 s |
+| 第二轮（三次） | 19–63 | 18.29 / 24.84 / 28.81 s | 38.13 / 29.89 / 35.95 s |
+| 第三轮（两次，`/usr/bin/time`） | 50–161 | real 18.5 / 74.7 s；user+sys 35.5 / 34.6 s | real 42.4 / 78.6 s；user+sys 52.8 / 51.6 s |
+
+- 墙钟：计划写死的判据是「空载下中位省 ≥ 15%」。这段时间机器一直被别的任务压着（负载 12 → 200+），第一轮负载最低时中位只差 7%，
+  之后各轮的波动比差值还大——**按判据不能采用，也不能据此否决**。
+- CPU 时间（受负载影响小得多）：jsdom 比 node 多用约 17 s CPU（+48%），全花在每个文件的环境初始化上；但墙钟由最慢的几个搜索用例决定，
+  这些 CPU 大多落在并行的空闲槽里。
+- 速度之外的那一条：node 环境下纯逻辑代码里误用 `window` / `localStorage` 会直接红，`check:layers` 只查 import、管不到这些全局。
+- **没有改配置**，是否采用交由裁定。
+
+### 验证
+
+`lint` / `typecheck` 通过；`test` 1,721 条：全量跑时机器 1 分钟负载 192，`patterns.test.ts` 那条 6,000 局面差分（上限 90 s）跑了 91.8 s 超时，
+单独重跑通过（60.3 s，负载 211）——阶段 D 开工前负载 421 时同一条也这样超时过，与本阶段改动无关（`patterns.ts` 只改了一行注释）。
+
+### 两轴审查（基线 `46b47b5`，两轮）
+
+第一轮（实施后）与第二轮（`/code-review`，整改后复核）的意见合并如下；两轮规格轴都确认三项「零行为变更」成立
+（`confirmImport` 各出口的状态写入与回调、`parsePoint` 前后的接受 / 拒绝集合、`millisOrNull` 与原 `isTimestamp`、入库链传参后的行为）。
+
+| 轴 | 意见 | 处理 |
+| --- | --- | --- |
+| 标准 | `restore.ts` 里进度段手写四态判断，偏好 / 会话用 `restoreSection`，同一形状两份 | **改**：三段统一为一个 async `restoreSection`（偏离计划「逐字搬」，等价性记在计划「实施中的偏离」） |
+| 标准 | `positionContentKey({cells, nextPlayer, provenance})` 逐字段拼了两次 | **改**：直接传记录（函数本来只读这三项） |
+| 标准 | 终局回调签名在 `recordNotifier` 与 `gameStore` 各写一遍 | **改**：导出 `GameEndCallback`；第二轮指出它插在函数的长注释与函数之间，**再改**：挪到注释上方 |
+| 标准 | `parsePoint` 不用 `isObj` 的原因没写 | **改**：补一句注释 |
+| 标准 | `ROADMAP` 一句重复；`TEST_REPORT` 说注释「逐字搬」不准确 | **改** |
+| 标准 | `DataManagementPanel` 传给 `restoreImport` 的三个回调只是转发（Middle Man） | 不改：直接传 `services.onMergeProgress` 会把方法调用变成裸函数调用，`services` 的实现若用 `this` 就变了行为 |
+| 标准 | `RestoreOutcome` 的四个局面计数字段总是一起走（Data Clumps）；「棋谱库写入失败…」文案落在 `persist` | 不改：形状与文案都是原样平移，改它们就不再是零行为变更；记为以后的整理项 |
+| 规格 | 计划说 `setBusy(false)` 由一处 `finally` 收，实际两个出口各一次 | 改计划原文（`restoreImport` 不会 reject，两种写法等价） |
+| 规格 | 「偏好 / 会话同步调用」变成了 `await` | 等价性分析写进计划「实施中的偏离」 |
+| 规格 / 标准 | `AI_ENGINE.md` 同一段还剩一处 `:116,…` 行号；`gameStore.test.ts` 注释仍引 `gameRecords.ts:188` 且说法过时 | **改**两处 |
+| 规格 | `〇之三十` 的验证一节缺 build / gates / e2e | 全量重跑后补在下面 |
+

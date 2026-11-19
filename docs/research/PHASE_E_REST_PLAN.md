@@ -50,7 +50,7 @@
 - 五处「文件:行号」改成符号名（另有 `ProgressBlock.tsx`、`PuzzleScreen.tsx` 引的 `ui.probe.mjs:617`，已指错）（`TECH_DEBT.md` 的教训：核对以符号名为准）。`gameStore` 那句「存储层拿到它就无条件删掉那一条」按阶段 D 后的
   实情改为「`putReplacing` 按号删掉那一条」。
 
-## E6 纯逻辑测试换 node 环境：量了，不采用
+## E6 纯逻辑测试换 node 环境：量了，待裁定
 
 在 `src/core src/ai src/learn src/analysis`（505 条，`lib` 里有读 DOM 的用例，不算纯逻辑）上交替各跑三次（`--environment`，1 分钟负载 12–16）：
 
@@ -80,8 +80,8 @@
 3. 报告 §5.4 说「请求生命周期（随 4.3 抽走）」——阶段 B 已做（`withDeadline` + 订阅取消），本阶段只剩 `makeNotifier`。
 
 **第二轮（零行为变更的边界）**
-4. E3：组件里 `setBusy(false)` 在三个出口各写一次，抽走后由组件一处 `finally` 收——`busy` 的可见时序不变（都在 `await` 之后同一个任务里置回）。
-   `onImported()` 仍只在成功出口调用；`setPending(null)` 在三个出口都有，保持。
+4. E3：组件里 `setBusy(false)` 原先在三个出口各写一次；抽走后剩失败、成功两个出口各写一次（`restoreImport` 不会 reject，没有第三个出口）——
+   `busy` 的可见时序不变（都在 `await` 之后同一个任务里置回）。`onImported()` 仍只在成功出口调用；`setPending(null)` 在两个出口之前统一调用。
 5. E3：`gamePayloadToRecordInput` 的映射搬进 `restoreImport`，阶段 D 加的 `createdAt` 随之一起走，不另写。
 6. E4：`options.onGameEnd` 现在每次经 `options` 读（`runSave` 与 `notifyGameEnd` 各一处）；搬走后改为创建时传入的参数。没有任何地方改 `options`，所以读到的是同一个值，行为等价。
 7. E5：`gameRecords.parseRecord` 的坐标循环里「不是对象就整条丢」与 `parsePoint` 返回 null 后整条丢等价；`storage` 本来就用 `parsePoint`。
@@ -105,4 +105,12 @@
 | 5 | E6 第二条理由不成立：`check:layers` 不查 DOM 全局；负载下的测量只能说明「量不出差别」 | 实施时空载重测，判据先写死（≥ 15%），并把「强制不碰 DOM」单独权衡 |
 | 6 | `isTimestamp` 是类型守卫，换掉后要改调用处并删 `MAX_DATE_MS` | 写进 E5 |
 | 7 | 自审第 10 条多余：jscpd 已忽略测试文件 | 删 |
+
+## 实施中的偏离（记录）
+
+- **进度 / 偏好 / 会话三段统一成一个 `restoreSection`**（两轴审查的去重意见）。原先偏好与会话是同步调用，现在一律 `await`：
+  同步抛错仍在 `try` 里被捕获、三段顺序不变，差别只有段与段之间多几次微任务让出；若回调返回一个 rejected promise，原先记「恢复」、现在记「失败」——
+  这两个回调的类型是 `=> void`，现有实现（`ReviewScreen`）都不返回 promise，实际等价。
+- `gameStore.test.ts` 改了一处**注释**（`gameRecords.ts:188` → `putReplacing`），断言零改动。
+- `AI_ENGINE.md` 里两处 `threat.ts` 行号引用一并改为符号名（不在「五处」清单内，同一类问题顺手收掉）。
 

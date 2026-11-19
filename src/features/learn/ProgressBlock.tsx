@@ -9,7 +9,7 @@ export interface ProgressTexts {
    *
    * 与 `unit` 分开是因为中文里它们**不是同一个模板的两个槽**——残缺局面的
    * 动词不同（学 vs 通过），换个量词拼不出来。残局那句必须**原样**是
-   * `已通过 X / 15 题`：探针三个状态的 boot 绑着逐字文案（`ui.probe.mjs:617`）。
+   * `已通过 X / 15 题`：探针三个状态的 boot 绑着逐字文案（`bench/ui.probe.mjs` 里等 `puzzle-progress` 的那几处）。
    */
   readonly doneLabel: string
   /** 计数用的量词：「节」/「题」。 */

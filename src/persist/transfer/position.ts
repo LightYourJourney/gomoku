@@ -8,7 +8,8 @@ import {
   MAX_JSON_DEPTH,
   warnUnknownFields,
 } from './validate'
-import { isFiniteInt, isObj, isPlayer, issue, type ImportIssue } from './guards'
+import { isFiniteInt, isObj, isPlayer } from '../parse'
+import { issue, type ImportIssue } from './guards'
 
 export const POSITION_FORMAT = 'gomoku-lab.position'
 const POSITION_FORMAT_VERSION = 1

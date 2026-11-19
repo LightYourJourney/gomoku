@@ -72,7 +72,7 @@ function LibraryGlyph() {
       data-testid="library-glyph"
     >
       {/*
-        网格线用 `--c-grid`——`Board.tsx:374` 的棋盘本身用的就是它。
+        网格线用 `--c-grid`——`Board.tsx` 的 `board-grid` 本身用的就是它。
         原先写的是 `--c-border-strong`，那个令牌在 `DESIGN_SYSTEM.md` §2.2 里的
         用途是「控件的 hover 描边、开关的关闭态」，禁用途一栏明写「**常态**」；
         §6 说得更硬：「常态不许用」。画在这里的就是常态的棋盘线。

@@ -1,11 +1,12 @@
 import { replay, replayStrict } from '../core/game'
-import { inBounds, opponentOf } from '../core/board'
+import { opponentOf } from '../core/board'
 import type { GameMode, Player, Point } from '../core/types'
 import { isDifficulty } from '../ai/difficulty'
 import { openDatabaseWithSchema, resolveIdbFactory, storeRunner } from './idb'
 import { RECORDS_STORE } from './schema'
 import { recordContentKey } from './recordIdentity'
 import { millisOrNull } from '../lib/time-format'
+import { isPlayer, parsePoint } from './parse'
 import type { Difficulty } from '../ai/types'
 
 /**
@@ -121,10 +122,6 @@ export interface GameRecordsStorage {
   importMany(records: readonly GameRecordInput[]): Promise<ImportRecordsResult>
 }
 
-function isPlayer(value: unknown): value is Player {
-  return value === 1 || value === 2
-}
-
 /** 胜负推导：replay 还原盘面，认输时改判认输方的对手获胜。 */
 function deriveWinner(
   moves: readonly Point[],
@@ -162,11 +159,9 @@ function parseRecord(value: unknown): GameRecord | null {
 
   const moves: Point[] = []
   for (const entry of raw.moves) {
-    if (typeof entry !== 'object' || entry === null) return null
-    const point = entry as Record<string, unknown>
-    if (typeof point.x !== 'number' || typeof point.y !== 'number') return null
-    if (!inBounds(point.x, point.y)) return null
-    moves.push({ x: point.x, y: point.y })
+    const point = parsePoint(entry)
+    if (point === null) return null
+    moves.push(point)
   }
 
   const replayed = replayStrict(moves, raw.firstPlayer)

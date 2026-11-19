@@ -334,7 +334,7 @@ export function completesFive(board: Board, point: Point, player: Player): boole
  * 一个看起来合理但毫无意义的答案，不会抛错也不会返回空。
  *
  * 当前全部生产调用点都满足这个前提：取点来源只有 `candidateMoves`
- * （它只收 `board[index] === 0` 的空位）与 `threat.ts:283` 那个显式的
+ * （它只收 `board[index] === 0` 的空位）与 `threat.ts` 的 `isForcedWinStart` 开头那个显式的
  * `!== 0` 守卫。`patterns.test.ts` 里有一条用例把这个行为钉住——
  * 将来若真要改语义，会因为那条用例变红而变成一次刻意决定。
  */
