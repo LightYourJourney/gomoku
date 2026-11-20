@@ -929,3 +929,4 @@ Worker 是共用的，这会把无辜的在飞请求（一手复盘分析）一�
 | --- | --- | --- | --- |
 | 22 | 复盘分析的档位与预算（裁定 21 的实验结果，`TEST_REPORT.md`「〇之三十一」） | **中级档、每局面 1,000 ms** | 改 `AnalysisPanel` 的固定档位与 `ANALYSIS_BUDGET_MS`；e2e 断言、覆盖基线里的分析卡片、`AI_ENGINE.md` 基线随之更新 |
 | 23 | 纯逻辑层禁用浏览器全局对象（裁定 19 的单独评估） | **加 lint 规则**：`core` / `ai` 算法部分 / `learn` / `analysis` 禁用 `window`、`document`、`localStorage` 等，Worker 外壳除外 | `.oxlintrc.json` 按目录覆写；故意违规一次做反向验证 |
+| 24 | 复盘改中级档（`7af8e69`）的部署 | **预览验证通过后上生产**，版本 `0.7.1` | 流程同裁定 20 |
