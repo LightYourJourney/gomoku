@@ -4,7 +4,28 @@
 > 以及线上验收的原始读数。与方案/清单分开，避免「计划」和「事实」混写。
 > 最新一次在最上面。
 
-## 0.7.0 · 重构评估 A–E 合集（当前生产）
+## 0.7.1 · 复盘分析改中级档（当前生产）
+
+| 项 | 值 |
+| --- | --- |
+| 应用版本 | `0.7.1` |
+| 引擎版本 | `search-1`（搜索决策未变） |
+| 提交 / 标签 | `3d3324d`（改动 `7af8e69`）/ `v0.7.1` |
+| 生产部署 | `bf528e8b-00ae-4dbf-99af-9d866b4193ad`（https://bf528e8b.gomoku-lab.pages.dev） |
+| 生产地址 | **https://gomoku-lab.pages.dev** |
+| 预览部署 | `5ed0da12-34e2-405d-a9b7-de36e5b39c02`（https://5ed0da12.gomoku-lab-preview.pages.dev） |
+| 部署时间 | 2026-11-20（UTC+8） |
+| 部署方式 | 同 0.7.0：在 `3d3324d` 的独立工作区里构建，`npx wrangler@4.151.3 pages deploy dist …` |
+| 回滚目标 | `975912ae…`（`a073f37` / 0.7.0）→ `16bed862…`（`6301201` / 0.6.0 build.3）→ … |
+| 产物 | `index-DRTfZEUU.js`（gzip **98.8 kB**）、`worker-01U1Gnzb.js`（与 0.7.0 相同） |
+| 验收 | CI `44677848703`（改动）与 `44679180974`（发布提交）六个 job 全绿；预览 `e2e:remote` **202 / 202**；生产 **201 / 202**，红的一条是 `battle.spec.ts`「人机对战：玩家落子后 AI 自动应手」——第一手 AI 应手超过 5 秒的等待（当时本机 1 分钟负载约 20），对生产单跑三次全过（7.1 / 5.0 / 4.6 s）；生产 meta `app-version=0.7.1`、`build-commit=3d3324d…`；页面地址、404、缓存头、安全头同 0.7.0 |
+
+- **授权**：裁定 24——「预览通过后上生产」。
+- **内容**：复盘分析改为中级档、每局面 1,000 ms（裁定 22）；纯逻辑层 lint 禁用浏览器全局（裁定 23，不影响产物行为）。
+- **数据格式**：无变化。
+- **回滚**：回 `975912ae…`（0.7.0）无数据代价，复盘回到初级档。
+
+## 0.7.0 · 重构评估 A–E 合集（历史）
 
 | 项 | 值 |
 | --- | --- |
@@ -372,7 +393,7 @@ REMOTE_BASE=https://gomoku-lab.pages.dev yarn e2e:remote
 
 - 部署前跑全档：`yarn lint && yarn typecheck && yarn test && yarn build && yarn e2e && yarn e2e:prod && yarn gates && yarn bench:check`；
   界面结构有改动的，还要等 CI 的 `probe`（`yarn ui:probe --out ci` + 覆盖棘轮）与 `browsers` / `browsers-full` 全绿。
-- `e2e:remote` 的当前期望是 **202/202**（0.7.0；预览与生产各跑一次）。
+- `e2e:remote` 的当前期望是 **202/202**（0.7.x；预览与生产各跑一次）。
 - 部署前在发布提交的独立工作区里构建（`git worktree add --detach <dir> <提交>`），保证 `build-commit` 与发布提交一致，不被之后的本地文档提交带偏。
 
 ---
