@@ -344,7 +344,8 @@ describe('ReviewScreen 三段流转', () => {
     fireEvent.click((await screen.findAllByTestId(/^record-/))[0]!)
 
     const source = await screen.findByTestId('analysis-source')
-    expect(source).toHaveTextContent(/ms/)
+    // 裁定 22：复盘固定用中级档、每局面 1,000 ms（初级档不开算杀，抓不到「这手之后对手已有必胜」）
+    expect(source).toHaveTextContent('中级 · 1000ms')
     expect(source).toHaveTextContent(/引擎 search-1/)
 
     // §八 点名要有「分数的含义和局限」：没有这句，「分差约 3 子」会被当成精确值

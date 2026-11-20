@@ -922,3 +922,10 @@ Worker 是共用的，这会把无辜的在飞请求（一手复盘分析）一�
 | 19 | 纯逻辑测试换 node 环境（H-5，阶段 E 第 6 项） | **等空载再量**：1 分钟负载 < 5 时 node / jsdom 交替各三次；中位墙钟省 ≥ 15% 就采用，否则不采用，但「误用 DOM 全局会直接红」这一条单独评估 | 量完记入 `TEST_REPORT`「〇之三十」并按结果改或不改 `vite.config.ts` |
 | 20 | D、E 推送且 CI 全绿后的部署 | **预览验证通过后直接上生产**：先部署 `gomoku-lab-preview` 跑 `e2e:remote` 全量与响应头抽查，全绿后按 `DEPLOYMENT_RECORD.md` 的流程部署生产、打标签、记录，并在生产上再跑一遍 `e2e:remote` | 回滚目标 `6301201`，无数据代价（`ROLLBACK_PLAN.md` §4.0.2） |
 | 21 | 复盘分析的档位与预算是否放开 | **先做实验再定**：短计划 + 在固定一组棋谱上比较两到三组「档位 + 预算」的未算分差比例、分析总耗时与体感，结果交所有者选 | 新文件 `docs/research/ANALYSIS_BUDGET_PLAN.md` |
+
+### 14.5 实验之后的两项（2026-11-20）
+
+| # | 事项 | 裁定 | 影响 |
+| --- | --- | --- | --- |
+| 22 | 复盘分析的档位与预算（裁定 21 的实验结果，`TEST_REPORT.md`「〇之三十一」） | **中级档、每局面 1,000 ms** | 改 `AnalysisPanel` 的固定档位与 `ANALYSIS_BUDGET_MS`；e2e 断言、覆盖基线里的分析卡片、`AI_ENGINE.md` 基线随之更新 |
+| 23 | 纯逻辑层禁用浏览器全局对象（裁定 19 的单独评估） | **加 lint 规则**：`core` / `ai` 算法部分 / `learn` / `analysis` 禁用 `window`、`document`、`localStorage` 等，Worker 外壳除外 | `.oxlintrc.json` 按目录覆写；故意违规一次做反向验证 |

@@ -138,7 +138,7 @@ test('分析：逐手跑完并给出结论，标注引擎出处', async ({ page 
   await page.getByTestId(/^record-/).first().click()
 
   // 结论的出处必须写在面板上
-  await expect(page.getByTestId('analysis-source')).toContainText('400ms')
+  await expect(page.getByTestId('analysis-source')).toContainText('中级 · 1000ms')
   await expect(page.getByTestId('analysis-source')).toContainText('引擎 search-1')
 
   await page.getByRole('button', { name: '开始分析' }).click()

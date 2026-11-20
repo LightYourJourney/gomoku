@@ -8,7 +8,8 @@
  * 「走完实际着法之后」与「走完引擎首选之后」两个局面，同视角、同深度，偏差相消；
  * 两边评分不可比时不算。
  *
- * 这里用与复盘页相同的参数（初级档；预算给足，恒搜满深度）量三件事：
+ * 这里用与复盘页相同的档位（中级档，裁定 22；2026-11-20 之前是初级档，`AI_ENGINE.md` 两组数字都留着；
+ * 预算给足，恒搜满深度）量三件事：
  *
  *   1. **旧公式的自洽性**：让引擎自己走自己的首选。按定义这时分差应为 0，
  *      `score(i) − (−score(i+1))` 实际偏了多少、偏向哪边。这是「为什么不用那个公式」的证据，
@@ -29,10 +30,10 @@
  *
  *   REVIEW_DIFFICULTY=medium REVIEW_BUDGET_MS=1000 REVIEW_OUT=/tmp/b.json yarn bench:review-loss
  *
- * 缺省是初级 + 给足的预算（与上面描述的一致）。给真实预算时另报每次复盘搜索的耗时分布与被时间截断的比例；
+ * 缺省是中级 + 给足的预算（与上面描述的一致）。给真实预算时另报每次复盘搜索的耗时分布与被时间截断的比例；
  * `REVIEW_OUT` 写出自对弈样本里每局的亏损榜（产品取前三，`buildSummary`），供不同组之间比对。
  *
- * 局限：分差仍然只是 2 层初级引擎的看法，不是真理。这里量的是口径**自洽不自洽、
+ * 局限：分差仍然只是复盘档位引擎的看法，不是真理。这里量的是口径**自洽不自洽、
  * 有多少手算得出来**，说明不了着法的真实好坏。
  *
  * 出处：`docs/research/REFACTORING_ASSESSMENT.md` §4.1、§13；现行基线记在
@@ -58,8 +59,8 @@ import { samePoint } from '../src/core/board'
 import { applyMove, replay, type GameState } from '../src/core/game'
 import type { Point } from '../src/core/types'
 
-/** 复盘档位：缺省与复盘页一致（初级，`ReviewScreen`）。 */
-const DIFFICULTY = (process.env.REVIEW_DIFFICULTY ?? 'easy') as Difficulty
+/** 复盘档位：缺省与复盘页一致（中级，`ReviewScreen`）。 */
+const DIFFICULTY = (process.env.REVIEW_DIFFICULTY ?? 'medium') as Difficulty
 if (!(DIFFICULTY in DIFFICULTY_PARAMS)) throw new Error(`REVIEW_DIFFICULTY 不认识：${DIFFICULTY}`)
 /** 缺省预算给足，让每次都搜满档位深度；给真实预算时量截断。 */
 const BUDGET_MS = Number(process.env.REVIEW_BUDGET_MS ?? 60_000)
@@ -350,11 +351,11 @@ test('亏损检出：随机着法，生产口径给出多少亏损、多少未�
   )
 })
 
-test('亏损检出：入门档自对弈，由初级档复盘', () => {
+test('亏损检出：入门档自对弈，由复盘档位复盘', () => {
   const beginner = searchOptionsFor(DIFFICULTY_PARAMS.beginner, { budgetMs: 60_000 })
 
   tally(
-    '3. 亏损检出：入门档自对弈，由初级档复盘（更接近真实对局的分布）',
+    '3. 亏损检出：入门档自对弈，由复盘档位复盘（更接近真实对局的分布）',
     (game) => searchBoard(game.board, game.current, beginner, now).move ?? undefined,
     'played',
   )

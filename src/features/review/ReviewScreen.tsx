@@ -345,9 +345,9 @@ function AnalysisPanel({ store, engine, replay }: AnalysisPanelProps) {
 
   if (record === null) return null
 
-  // 分析固定用初级档：换档位结论就会变，界面必须把档位与预算一起标出来。
-  // 预算不写死 400，读 ANALYSIS_BUDGET_MS——标注与实际用的必须是同一个数。
-  const difficulty = 'easy' as const
+  // 分析固定用中级档（裁定 22：初级档不开算杀，抓不到「这手之后对手已有必胜」）。换档位结论就会变，
+  // 界面必须把档位与预算一起标出来。预算读 ANALYSIS_BUDGET_MS——标注与实际用的必须是同一个数。
+  const difficulty = 'medium' as const
   const budgetMs = ANALYSIS_BUDGET_MS
 
   function start() {

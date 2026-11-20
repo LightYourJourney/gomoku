@@ -4,5 +4,29 @@
   "rules": {
     "react/rules-of-hooks": "error",
     "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
+  },
+  "overrides": [
+    {
+      "files": ["src/core/**", "src/ai/**", "src/learn/**", "src/analysis/**"],
+      "excludeFiles": ["src/ai/worker.ts", "src/ai/browserEngine.ts", "src/**/*.test.ts", "src/**/*.test.tsx"],
+      "rules": {
+        "no-restricted-globals": [
+          "error",
+          { "name": "window", "message": "纯逻辑层不碰浏览器全局（AGENTS.md「分层」）；需要就从调用方注入" },
+          { "name": "document", "message": "纯逻辑层不碰 DOM（AGENTS.md「分层」）" },
+          { "name": "localStorage", "message": "存储走 persist 层，不在纯逻辑层直接读写" },
+          { "name": "sessionStorage", "message": "存储走 persist 层，不在纯逻辑层直接读写" },
+          { "name": "indexedDB", "message": "存储走 persist 层，不在纯逻辑层直接读写" },
+          { "name": "navigator", "message": "纯逻辑层不碰浏览器全局（AGENTS.md「分层」）" },
+          { "name": "location", "message": "纯逻辑层不碰浏览器全局（AGENTS.md「分层」）" },
+          { "name": "history", "message": "纯逻辑层不碰浏览器全局（AGENTS.md「分层」）" },
+          { "name": "self", "message": "只有 ai/worker.ts 是 Worker 入口" },
+          { "name": "postMessage", "message": "只有 ai/worker.ts 是 Worker 入口" },
+          { "name": "Worker", "message": "只有 ai/browserEngine.ts 创建 Worker" },
+          { "name": "matchMedia", "message": "纯逻辑层不碰浏览器全局（AGENTS.md「分层」）" },
+          { "name": "requestAnimationFrame", "message": "纯逻辑层不碰浏览器全局（AGENTS.md「分层」）" }
+        ]
+      }
+    }
+  ]
 }

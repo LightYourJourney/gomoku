@@ -3069,3 +3069,15 @@ N = 库里预先灌入的棋谱数；入库 = 空盘认输到出现「已存入�
 
 **建议：B（中级档）**。预算可以照计划写 1,000 ms，也可以收紧到 500 ms（实测最长 134 ms，留了余量）——前者与对局里的中级档同一个数，界面标注好解释。
 同为引擎的看法，档位一换结论就变：换档后界面的「出处」随之写成「中级」，`AI_ENGINE.md` 的基线数字要按 B 重写。
+
+### 实施（裁定 22：中级档、1,000 ms；裁定 23：纯逻辑层禁用浏览器全局）
+
+- `AnalysisPanel` 的固定档位改为 `medium`、`ANALYSIS_BUDGET_MS` 改为 1,000（先改 `review.test.tsx` 的出处断言为「中级 · 1000ms」看它红，再改实现）；
+  `e2e/review.spec.ts` 的出处断言同步；`bench:review-loss` 缺省档位随复盘页改为中级；`AI_ENGINE.md`「复盘分差的口径」补中级档的基线（初级档的数字留作口径证据）；`USAGE.md` 复盘一节。
+- 覆盖棘轮：`review-analysis` / `review-verdict-selected` 两个状态 × 8 个尺寸里，第 4 手那张卡片的出处从「深度 2 · 节点 61」变成「深度 4 · 节点 586」——
+  同一张卡片，16 条一对一替换；中级档在探针那局里还报出了第 6 手的决定性败着（「分差极大」，初级档看不出），这张新卡片在 16 行各加一条（收紧）。
+- 裁定 23：`.oxlintrc.json` 在 `src/core` / `src/ai` / `src/learn` / `src/analysis` 上开 `no-restricted-globals`（`window`、`document`、`localStorage`、`sessionStorage`、
+  `indexedDB`、`navigator`、`location`、`history`、`self`、`postMessage`、`Worker`、`matchMedia`、`requestAnimationFrame`），`ai/worker.ts`、`ai/browserEngine.ts` 与测试文件除外。
+  **反向验证**：往 `core/board.ts`、`learn/verify.ts`、`analysis/analyze.ts`、`ai/search.ts` 各写一行用 `window` / `localStorage` / `document` 的代码，`yarn lint` 报 12 条错；
+  同时往 `ai/worker.ts` 写一行用 `self` 的不报。还原后 `yarn lint` 干净。
+

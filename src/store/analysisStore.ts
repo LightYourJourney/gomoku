@@ -23,9 +23,10 @@ import { withDeadline } from './searchDeadline'
  *
  * 一局几十手、每手一到两个请求，串行跑：预算给太长整体就拖沓，给太短后续局面
  * 搜不满——那样的手不算分差（见 `analysis/analyze.ts` 的 `horizonLoss`）。
- * 400ms 在入门~中级档一般能搜满；高档位会有更多手落进「未算分差」。
+ * 复盘用中级档、1,000 ms（裁定 22）：实测中级档每次复盘搜索最长 134 ms，预算从来用不满、结论与给足预算时
+ * 逐手相同；高级档在 1,600 ms 下近一成搜索被截断（`TEST_REPORT.md`「〇之三十一」）。与对局里中级档同一个数。
  */
-export const ANALYSIS_BUDGET_MS = 400
+export const ANALYSIS_BUDGET_MS = 1000
 
 interface AnalysisTarget {
   readonly seq: number
