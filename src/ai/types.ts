@@ -6,7 +6,10 @@ export const WIN_SCORE = 1_000_000
 export type Difficulty = 'beginner' | 'easy' | 'medium' | 'hard' | 'expert'
 
 export type SearchReason =
-  /** 己方已有四，直接补成五 */
+  /**
+   * 必胜：己方能直接成五，**或**算杀（VCF / VCT）命中、这一手是杀棋的首手——
+   * 后者盘上可能一颗四都没有，界面不能把它说成「补成五」。
+   */
   | 'win'
   /** 对手下一手能成五，必须堵 */
   | 'block'

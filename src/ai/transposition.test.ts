@@ -189,3 +189,47 @@ describe('置换表', () => {
     expect(table.size).toBe(0)
   })
 })
+
+/*
+ * 原先 hi、lo 是同一个 xorshift32 相邻两次的输出：lo[i] = T(hi[i])，T 是 GF(2) 上的线性映射，
+ * 对异或可分配——于是任意局面都有 key.lo = T(key.hi)（行棋方那一位除外），
+ * `hi` 撞了的两个不同局面 `lo` 必然也一样，`probe` 的 lo 校验一次都挡不住，
+ * 「64 位键」实际只有 32 位。这条用高斯消元直接检查「lo 是不是 hi 的线性函数」。
+ */
+describe('Zobrist 随机表：校验分量 lo 不能由主键 hi 推出', () => {
+  /** 是否存在线性映射 M 使每一格都有 lo = M(hi)。是 ⇒ hi 相同的局面 lo 必相同。 */
+  function loIsLinearInHi(pairs: ReadonlyArray<readonly [number, number]>): boolean {
+    const basis = new Map<number, { hi: number; lo: number }>()
+    for (const [h, l] of pairs) {
+      let hi = h >>> 0
+      let lo = l >>> 0
+      for (let bit = 31; bit >= 0 && hi !== 0; bit--) {
+        if (((hi >>> bit) & 1) === 0) continue
+        const row = basis.get(bit)
+        if (row === undefined) {
+          basis.set(bit, { hi, lo })
+          hi = 0
+          lo = 0
+          break
+        }
+        hi = (hi ^ row.hi) >>> 0
+        lo = (lo ^ row.lo) >>> 0
+      }
+      // 一组棋子的 hi 异或成 0，lo 却不是 0：这两组棋子 hi 相同、lo 不同——校验分量起作用了。
+      if (hi === 0 && lo !== 0) return false
+    }
+    return true
+  }
+
+  it('存在 hi 相同而 lo 不同的两组棋子', () => {
+    const zero = { hi: 0, lo: 0 }
+    const pairs: Array<readonly [number, number]> = []
+    for (let index = 0; index < 225; index++) {
+      for (const player of [BLACK, WHITE] as const) {
+        const key = toggleStone(zero, index, player)
+        pairs.push([key.hi, key.lo])
+      }
+    }
+    expect(loIsLinearInHi(pairs)).toBe(false)
+  })
+})

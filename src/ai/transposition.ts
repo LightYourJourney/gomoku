@@ -14,7 +14,7 @@ export interface ZobristKey {
 }
 
 /**
- * 用确定性 PRNG（xorshift32）生成随机表，而不是 Math.random。
+ * 用确定性 PRNG（主键 xorshift32、校验分量 mulberry32）生成随机表，而不是 Math.random。
  *
  * 同一份代码在任何环境、任何次运行都得到同一张表，调试时哈希值可复现；
  * Math.random 每次启动都不一样，出了哈希相关的问题将无从对照。
@@ -31,12 +31,30 @@ function createRandomTable(): { hi: Uint32Array; lo: Uint32Array } {
     return state
   }
 
+  /*
+   * 校验分量 lo 另用一个**非线性**生成器（mulberry32，含整数乘法）。
+   * 原先 lo 取 xorshift32 的下一个输出：xorshift 的一步是 GF(2) 上的线性映射 T，
+   * lo[i] = T(hi[i])，异或累加后整盘也有 key.lo = T(key.hi)——hi 撞了的局面 lo 必然也撞，
+   * 校验形同虚设。换成另一个种子的 xorshift 也不行（仍是 hi 的线性函数），必须非线性。
+   */
+  let mixState = 0x85ebca6b
+  const nextMixed = (): number => {
+    mixState = (mixState + 0x6d2b79f5) >>> 0
+    let t = mixState
+    t = Math.imul(t ^ (t >>> 15), t | 1)
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61)
+    return (t ^ (t >>> 14)) >>> 0
+  }
+
   // 两种颜色各一份，每格一个。
   const hi = new Uint32Array(CELL_COUNT * 2)
   const lo = new Uint32Array(CELL_COUNT * 2)
   for (let i = 0; i < hi.length; i++) {
     hi[i] = next()
-    lo[i] = next()
+    // 照旧消耗一次 xorshift：hi 序列与改动前逐位相同，置换表的槽位分布（取 hi）不变，
+    // 固定深度的搜索结果只会在「原先错误命中」的那几处不同。
+    next()
+    lo[i] = nextMixed()
   }
 
   return { hi, lo }
