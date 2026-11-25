@@ -8,7 +8,16 @@ import { formatPoint } from '../lib/coords'
 import { SHAPE_LABELS, threatLabel } from './shape-labels'
 import type { PuzzleGoal } from './types'
 
-export type Verdict = { readonly ok: true } | { readonly ok: false; readonly reason: string }
+/**
+ * 判定结果。
+ *
+ * `inconclusive: true` 是「**未定**」：判题预算用光、没算完，既不能说对也不能说错。
+ * 它仍挂在 `ok: false` 这一支上（没判对，出口不开），只是界面不许把它显示成「错」。
+ * 普通判错不带这个字段，所以现有只看 `ok` / `reason` 的调用方不受影响。
+ */
+export type Verdict =
+  | { readonly ok: true }
+  | { readonly ok: false; readonly reason: string; readonly inconclusive?: true }
 
 const OK: Verdict = { ok: true }
 
@@ -136,7 +145,11 @@ export function judgeMove(
       // 没找到有两种完全不同的原因：算完了确实没有，或者预算用光、根本没算完。
       // 后者什么结论都没有，不能说成「对手能防住」——那是在编造结论。
       if (now() >= deadline) {
-        return fail('这一手的取胜路线没算完（判题超时），没法确认对错。再落一次试试。')
+        return {
+          ok: false,
+          reason: '这一手的取胜路线没算完（判题超时），没法确认对错。再落一次试试。',
+          inconclusive: true,
+        }
       }
       // 判题只认「以冲四开路」的取胜链（allowThrees: false，与 `solveMove` 同一口径）。
       // 话要说到这个范围为止：以活三开路的杀，判题器本来就不找。

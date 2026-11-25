@@ -629,6 +629,31 @@ describe('PuzzleScreen —— 重进已通过的题（Phase 04 验收补）', ()
  * 播种进度而不是真做题：这里验的是**读出来的东西对不对**，
  * 「真做完一道题之后进度会不会变」由上面那组和 e2e 负责。
  */
+/**
+ * **冷启动直达一道已通过的题**（刷新 `/puzzles/<id>`）。
+ *
+ * `PuzzleView` 的「进入时是否已通过」是挂载时取的快照；刷新时进度还没从存储读回，
+ * 快照恒为 false，做对之后就说「第一次做对这道题。」——假话。
+ */
+describe('PuzzleScreen —— 冷启动直达已通过的题', () => {
+  it('进度晚于页面载入时，做对后仍说「这一题已经通过。」', async () => {
+    useLearnStore.setState({ progress: EMPTY_PROGRESS, loaded: false })
+    useNavigationStore.getState().navigate({ page: 'puzzles', puzzle: 'win-h' }, { replace: true })
+    render(<PuzzleScreen />)
+
+    act(() => {
+      useLearnStore.setState({
+        progress: { ...EMPTY_PROGRESS, solvedPuzzles: ['win-h'] },
+        loaded: true,
+      })
+    })
+    fireEvent.click(screen.getByTestId('intersection-4-7'))
+
+    expect(await screen.findByText('这一题已经通过。')).toBeInTheDocument()
+    expect(screen.queryByText('第一次做对这道题。')).not.toBeInTheDocument()
+  })
+})
+
 describe('PuzzleScreen —— 首页信息（Phase 05）', () => {
   const seedSolved = (ids: readonly string[]): void => {
     useLearnStore.setState({

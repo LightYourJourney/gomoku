@@ -243,7 +243,53 @@ describe('PositionEditor —— 保存与载入', () => {
     fireEvent.change(screen.getByLabelText('打开已保存局面'), {
       target: { value: String((await positions.list()).records[0]!.id) },
     })
+    fireEvent.click(screen.getByRole('button', { name: '打开' }))
     expect(screen.getByTestId('stone-7-7')).toBeInTheDocument()
+  })
+
+  /**
+   * 下拉框**只记录所选**，不直接覆盖盘面。
+   *
+   * 原先 `onChange` 即 `loadSaved`：键盘在下拉框上按方向键会逐条触发 change，
+   * 当前盘面被一条条覆盖，而编辑器的撤销撤不回「打开」。
+   */
+  it('在下拉里换选不覆盖当前盘面，点「打开」才载入；未选时「打开」禁用', async () => {
+    const positions = memoryPositions()
+    setup({ positions })
+    fireEvent.click(screen.getByTestId('intersection-7-7'))
+    fireEvent.change(screen.getByLabelText('局面名称'), { target: { value: '旧局面' } })
+    fireEvent.click(screen.getByRole('button', { name: '保存局面' }))
+    await screen.findByText(/只写进了内存兜底/)
+
+    fireEvent.click(screen.getByRole('button', { name: '清空' }))
+    fireEvent.click(screen.getByTestId('intersection-3-3'))
+
+    const select = screen.getByLabelText('打开已保存局面')
+    fireEvent.change(select, { target: { value: '' } })
+    expect(screen.getByRole('button', { name: '打开' })).toBeDisabled()
+
+    fireEvent.change(select, { target: { value: String((await positions.list()).records[0]!.id) } })
+    // 只是选中：盘面还是刚摆的那一手
+    expect(screen.getByTestId('stone-3-3')).toBeInTheDocument()
+    expect(screen.queryByTestId('stone-7-7')).not.toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: '打开' }))
+    expect(screen.getByTestId('stone-7-7')).toBeInTheDocument()
+    expect(screen.queryByTestId('stone-3-3')).not.toBeInTheDocument()
+  })
+
+  it('下拉里选了别的但还没「打开」时，不显示针对当前那条的删除——免得以为删的是新选的', async () => {
+    const positions = memoryPositions()
+    setup({ positions })
+    fireEvent.click(screen.getByTestId('intersection-7-7'))
+    fireEvent.change(screen.getByLabelText('局面名称'), { target: { value: '旧局面' } })
+    fireEvent.click(screen.getByRole('button', { name: '保存局面' }))
+    await screen.findByText(/只写进了内存兜底/)
+    expect(screen.getByRole('button', { name: '删除已保存局面' })).toBeInTheDocument()
+
+    fireEvent.change(screen.getByLabelText('打开已保存局面'), { target: { value: '' } })
+
+    expect(screen.queryByRole('button', { name: '删除已保存局面' })).not.toBeInTheDocument()
   })
 
   it('载入合法棋谱第 N 手并标为已知手顺', async () => {

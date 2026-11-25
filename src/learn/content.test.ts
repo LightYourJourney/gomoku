@@ -1,11 +1,15 @@
 import { describe, expect, it } from 'vitest'
-import { BLACK, WHITE } from '../core/types'
+import { analyzePoint, hasDoubleThreat } from '../ai/patterns'
+import { pointFromIdx } from '../core/board'
+import { findWinLine } from '../core/rules'
+import { BLACK, WHITE, type Point } from '../core/types'
 import { parseBoardLines } from '../lib/board-lines'
+import { formatPoint } from '../lib/coords'
 import { solveMove } from './hints'
 import { LESSONS } from './lessons'
 import { CATEGORY_ORDER, PUZZLES } from './puzzles'
 import type { Practice } from './types'
-import { boardHasFive, checkPrecondition, judgeMove } from './verify'
+import { applyToBoard, boardHasFive, checkPrecondition, judgeMove } from './verify'
 
 /**
  * 跨全部内容的自检。
@@ -108,6 +112,68 @@ describe('内容自检 —— 覆盖度', () => {
     const ids = PUZZLES.map((puzzle) => puzzle.id)
 
     expect(new Set(ids).size).toBe(ids.length)
+  })
+})
+
+/** 判定器在这个局面上判对的**全部**空点（逐点枚举，不走求解器）。 */
+function acceptedPoints(practice: Practice): Point[] {
+  const parsed = parseBoardLines(practice.board.lines)
+  const accepted: Point[] = []
+  for (let i = 0; i < parsed.length; i++) {
+    if (parsed[i] !== 0) continue
+    const point = pointFromIdx(i)
+    if (judgeMove(parsed, practice.player, point, practice.goal, NOW).ok) accepted.push(point)
+  }
+  return accepted
+}
+
+/**
+ * 双重威胁题判对的点必须**真的是双重威胁**。
+ *
+ * `judgeMove` 的 doubleThreat 分支对单线活四也判对（活四本身就是胜势）。
+ * 题面若留了「在某一条线上补出活四」的口子，学习者在那里落子会被判对，
+ * 而解法说明讲的却是「交叉点上一手两个威胁」——判对与说明各说各话。
+ * 所以每个判对点都要么直接成五，要么 `hasDoubleThreat` 成立。
+ * 这里只断言性质，不写任何题目的答案坐标。
+ */
+describe('内容自检 —— 双重威胁题没有单线活四的旁解', () => {
+  const doubles = ALL.filter(({ practice }) => practice.goal.kind === 'doubleThreat')
+
+  it('至少有一道双重威胁题（防止过滤条件失效后整组空转）', () => {
+    expect(doubles.length).toBeGreaterThan(0)
+  })
+
+  it.each(doubles)('$id：每个判对点都是真正的双重威胁', ({ practice }) => {
+    const parsed = parseBoardLines(practice.board.lines)
+    const accepted = acceptedPoints(practice)
+    expect(accepted.length).toBeGreaterThan(0)
+
+    const stray = accepted.filter((point) => {
+      const after = applyToBoard(parsed, point, practice.player)
+      if (findWinLine(after, point) !== null) return false
+      return !hasDoubleThreat(analyzePoint(after, point, practice.player))
+    })
+    expect(stray.map(formatPoint)).toEqual([])
+  })
+})
+
+/**
+ * 「双四」两道题的解法说明写的是「交叉点」，那判对的就只能是交叉点。
+ *
+ * 这两道题的横线原先是 `....BBB.W`：BBB 左侧两格都空，补在左端就是活四，
+ * 被 doubleThreat 分支的 `openFour > 0` 判对——与说明不符。
+ * 交叉点 (7,7) 是横线 x=4..6 与竖线 y=4..6 共用的那一格，取自题面本身。
+ */
+describe('内容自检 —— 双四题只有交叉点一个解', () => {
+  const INTERSECTION = { x: 7, y: 7 }
+  const targets = ALL.filter(({ id }) => id === 'lesson:double' || id === 'puzzle:double-four')
+
+  it('两道题都在', () => {
+    expect(targets.map(({ id }) => id).sort()).toEqual(['lesson:double', 'puzzle:double-four'])
+  })
+
+  it.each(targets)('$id：判对的点恰好是交叉点', ({ practice }) => {
+    expect(acceptedPoints(practice)).toEqual([INTERSECTION])
   })
 })
 

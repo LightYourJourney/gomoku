@@ -66,6 +66,13 @@ export function PositionEditor({
   const [saved, setSaved] = useState<readonly SavedPosition[]>([])
   const [positionsDegraded, setPositionsDegraded] = useState(false)
   const [savedId, setSavedId] = useState<number | null>(null)
+  /*
+    下拉框里**选中但还没打开**的那一条（option 的 value）；null 表示跟着 `savedId` 走。
+    下拉框只记录所选，点「打开」才覆盖盘面：`onChange` 直接载入的话，键盘方向键
+    会逐条触发 change、把当前盘面一条条盖掉，而编辑器的撤销撤不回「打开」。
+    凡是改 `savedId` 的路径都把它清回 null，下拉框于是重新显示当前打开的那一条。
+  */
+  const [picked, setPicked] = useState<string | null>(null)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [saving, setSaving] = useState(false)
   const [shareOpen, setShareOpen] = useState(false)
@@ -97,6 +104,8 @@ export function PositionEditor({
 
   const report = analyzePosition(state.position, state.provenance?.firstPlayer)
   const selectedSaved = saved.find((entry) => entry.id === savedId) ?? null
+  const pickedValue = picked ?? (savedId === null ? '' : String(savedId))
+  const pickedRecord = saved.find((entry) => String(entry.id) === pickedValue)
   const analysis = state.analysis
   const shownDifficulty = analysis.difficulty ?? state.difficulty
   const candidates = analysis.status === 'done' ? (analysis.response?.candidates ?? []) : []
@@ -118,6 +127,7 @@ export function PositionEditor({
   function loadSaved(record: SavedPosition): void {
     editor.getState().load(positionFromSaved(record), record.provenance)
     setSavedId(record.id)
+    setPicked(null)
     setTitle(record.title)
     setConfirmDelete(false)
     flash(`已打开「${record.title}」`)
@@ -137,6 +147,7 @@ export function PositionEditor({
     const loaded = positionFromReplay(record.moves, record.firstPlayer, n)
     editor.getState().load(loaded.position, loaded.provenance)
     setSavedId(null)
+    setPicked(null)
     setConfirmDelete(false)
     setTitle(`棋谱 #${record.seq} 第 ${n} 手`)
     flash(`已载入棋谱 #${record.seq} 第 ${n} 手`)
@@ -160,6 +171,7 @@ export function PositionEditor({
       return
     }
     setSavedId(result.record.id)
+    setPicked(null)
     setConfirmDelete(false)
     setTitle(result.record.title)
     try {
@@ -194,6 +206,7 @@ export function PositionEditor({
     const list = await positions.list()
     setSaved(list.records)
     setSavedId(null)
+    setPicked(null)
     setConfirmDelete(false)
     if (result.persisted) {
       flash(`已删除「${name}」`)
@@ -472,26 +485,36 @@ export function PositionEditor({
             />
           </div>
 
-          <label className="block text-xs text-faint">
-            打开已保存局面
-            <select
-              value={savedId === null ? '' : String(savedId)}
-              onChange={(event) => {
-                const record = saved.find((entry) => String(entry.id) === event.target.value)
-                if (record !== undefined) loadSaved(record)
+          <div className="flex items-end gap-2">
+            {/* 按钮放在 label 外面：放进去的话「打开」会并进下拉框的可访问名称 */}
+            <label className="block min-w-0 flex-1 text-xs text-faint">
+              打开已保存局面
+              <select
+                value={pickedValue}
+                onChange={(event) => setPicked(event.target.value)}
+                className="mt-1 w-full rounded-lg border border-border bg-surface-2 px-3 py-2 text-sm text-fg"
+              >
+                <option value="">选择…</option>
+                {saved.map((record) => (
+                  <option key={record.id} value={record.id}>
+                    {record.title}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <Button
+              size="sm"
+              disabled={pickedRecord === undefined}
+              onClick={() => {
+                if (pickedRecord !== undefined) loadSaved(pickedRecord)
               }}
-              className="mt-1 w-full rounded-lg border border-border bg-surface-2 px-3 py-2 text-sm text-fg"
             >
-              <option value="">选择…</option>
-              {saved.map((record) => (
-                <option key={record.id} value={record.id}>
-                  {record.title}
-                </option>
-              ))}
-            </select>
-          </label>
+              打开
+            </Button>
+          </div>
 
-          {selectedSaved !== null && (
+          {/* 只在下拉显示的就是当前打开的那条时给删除：选了别的还没「打开」时，这颗按钮删的仍是旧的那条，容易被当成删新选的。 */}
+          {selectedSaved !== null && pickedValue === String(selectedSaved.id) && (
             <div className="space-y-2">
               <p data-testid="position-saved-at" className="text-xs text-faint">
                 最近保存：{savedAtLabel(selectedSaved)}

@@ -37,8 +37,8 @@ export interface PracticeBoardProps {
  *
  * 1. **判错后锁盘**，必须点「重试」才能再走。不锁的话玩家会乱点，
  *    反馈条也会一直闪，看不出哪一手被判错了。
- * 2. **提示逐级揭示**：前两级是文案（题目自带的点拨、目标复述），
- *    第三级才由引擎算出具体点位。提前给点位等于剥夺思考的机会。
+ * 2. **提示逐级揭示**：前两级是题目自带的两条点拨（`hints[0]`、`hints[1]`），
+ *    第三级才给出目标复述，并由引擎算出具体点位。提前给点位等于剥夺思考的机会。
  * 3. **点位是算出来的**，不是题目里写死的——所以出一道题不必附带答案表，
  *    多解也天然成立。
  */
@@ -57,6 +57,8 @@ export function PracticeBoard({ practice, onSolved, alreadySolved = false, foote
   )
 
   const solved = attempt?.verdict.ok === true
+  // 判题超时：没判对、也不能说判错（`Verdict` 的 inconclusive 形态）
+  const inconclusive = attempt !== null && !attempt.verdict.ok && attempt.verdict.inconclusive === true
   const board = attempt === null ? base : applyToBoard(base, attempt.move, practice.player)
 
   /*
@@ -75,7 +77,14 @@ export function PracticeBoard({ practice, onSolved, alreadySolved = false, foote
     // 判题标记带明确符号（F-UI-12）：只给 tone 不给 label 时，`Board` 会走
     // `String(index + 1)` 的兜底，棋盘上于是出现一个**写着「1」、含义不明**的圆。
     // 回放编号靠那个兜底，判题反馈不该也靠它。
-    marks.push({ point: attempt.move, tone: solved ? 'good' : 'bad', label: solved ? '对' : '错' })
+    // 未定（判题超时）用中性的「?」：判定器自己都说「没法确认对错」，棋盘不能替它写「错」。
+    marks.push(
+      solved
+        ? { point: attempt.move, tone: 'good', label: '对' }
+        : inconclusive
+          ? { point: attempt.move, tone: 'accent', label: '?' }
+          : { point: attempt.move, tone: 'bad', label: '错' },
+    )
   }
 
   /*
@@ -98,6 +107,24 @@ export function PracticeBoard({ practice, onSolved, alreadySolved = false, foote
   }
 
   const retry = (): void => setAttempt(null)
+
+  /*
+    判题之后棋盘变只读，键盘落子时拿着焦点的那一格不再可聚焦——焦点会掉到 body
+    （或在只读的棋盘上悬空），键盘用户得从页面开头重新 Tab。所以判题后把焦点接到
+    反馈条上；焦点若已在别的控件上（例如「要提示」）就不抢。
+  */
+  const feedbackRef = useRef<HTMLParagraphElement>(null)
+  useEffect(() => {
+    if (attempt === null) return
+    const active = document.activeElement
+    const stranded =
+      active === null ||
+      active === document.body ||
+      active === document.documentElement ||
+      active.closest('[data-testid="board"]') !== null
+    // preventScroll：鼠标 / 触屏落子同样会走到这里，窄屏上不该因此把页面跳到反馈条
+    if (stranded) feedbackRef.current?.focus({ preventScroll: true })
+  }, [attempt])
 
   const askHint = (): void => {
     setHintLevel((level) => Math.min(level + 1, HINT_LEVELS))
@@ -189,12 +216,21 @@ export function PracticeBoard({ practice, onSolved, alreadySolved = false, foote
           </p>
         </Panel>
 
-        {attempt !== null && (
-          <FeedbackBanner
-            ok={attempt.verdict.ok}
-            message={attempt.verdict.ok ? practice.solution : attempt.verdict.reason}
-          />
-        )}
+        {/*
+          播报区**常驻**，内容按需填入：`role="status"` 若随内容一起挂载，
+          部分读屏软件不播报第一次的判题结果（它们只听已在树里的 live region 的变化）。
+          空着时 `empty:mb-0` 抵掉外层 `space-y-3` 给它的下边距，免得面板与按钮之间多出一道空隙。
+        */}
+        <div role="status" className="empty:mb-0">
+          {attempt !== null && (
+            <FeedbackBanner
+              ref={feedbackRef}
+              ok={attempt.verdict.ok}
+              inconclusive={inconclusive}
+              message={attempt.verdict.ok ? practice.solution : attempt.verdict.reason}
+            />
+          )}
+        </div>
 
         <div className="flex items-center gap-2">
           {attempt !== null && !solved && (

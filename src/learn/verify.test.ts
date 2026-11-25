@@ -297,6 +297,23 @@ describe('judgeMove —— 强制取胜', () => {
     expect(verdict.ok === false && verdict.reason).not.toMatch(/防住/)
   })
 
+  it('超时的判定标成「未定」，而不是普通的判错', () => {
+    // 界面靠这个标记区分「错」与「没算完」：前者打「错」、后者不能说错。
+    let calls = 0
+    const expired = () => (calls++ === 0 ? 0 : 1e12)
+
+    const verdict = judgeMove(LIVE_THREE, BLACK, { x: 2, y: 4 }, goal, expired)
+
+    expect(verdict).toMatchObject({ ok: false, inconclusive: true })
+  })
+
+  it('算完了确实没有杀的判错不带「未定」标记', () => {
+    const verdict = judgeMove(BLOCKED_ONE_END, BLACK, { x: 7, y: 7 }, goal, NOW)
+
+    expect(verdict.ok).toBe(false)
+    expect(verdict.ok === false && verdict.inconclusive).toBeFalsy()
+  })
+
   it('一步成五也满足强制取胜', () => {
     expect(judgeMove(BLACK_FOUR, BLACK, { x: 2, y: 3 }, goal, NOW)).toEqual({ ok: true })
   })

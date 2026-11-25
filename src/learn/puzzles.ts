@@ -258,6 +258,8 @@ export const PUZZLES: readonly Puzzle[] = [
     title: '一手做出两个冲四',
     category: 'doubleThreat',
     prompt: '黑棋横一条、竖一条，都缺同一个交点。落下它，做出双四。',
+    // 横线左端第二格（C8）的白子不是摆设：少了它，BBB 左侧两格全空，补在左端
+    // 就是单线活四，同样被判对，与「落在交叉点」的说明对不上（content.test.ts 逐点守着）。
     board: board(
       BLANK,
       BLANK,
@@ -266,11 +268,11 @@ export const PUZZLES: readonly Puzzle[] = [
       '.......B.......',
       '.......B.......',
       '.......B.......',
-      '....BBB.W......',
+      '..W.BBB.W......',
       '.......W.......',
       BLANK,
       BLANK,
-      '....W..........',
+      BLANK,
       '..........W..W.',
       BLANK,
       BLANK,

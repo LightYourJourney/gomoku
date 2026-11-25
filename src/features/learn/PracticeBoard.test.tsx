@@ -1,5 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react'
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { Practice } from '../../learn/types'
 import { PracticeBoard } from './PracticeBoard'
 
@@ -392,5 +392,147 @@ describe('PracticeBoard —— 判题标记（F-UI-12）', () => {
     const marks = screen.getAllByTestId(/^board-mark-/)
     expect(marks).toHaveLength(1)
     expect(marks[0]).toHaveTextContent('对')
+  })
+})
+
+/** 黑棋活三补一端成活四：强制取胜题，判题要跑算杀，可以用假时钟逼它超时。 */
+const FORCED_WIN: Practice = {
+  prompt: '找出强制取胜的第一手。',
+  board: {
+    lines: [
+      '...............',
+      '...............',
+      '...............',
+      '...............',
+      '...BBB.........',
+      '...............',
+      '...............',
+      '...............',
+      '...............',
+      '...............',
+      '...............',
+      '...............',
+      '...............',
+      '...............',
+      '...............',
+    ],
+  },
+  player: 1,
+  goal: { kind: 'forcedWin', maxPlies: 5 },
+  hints: ['活三补一端。', '补成活四。'],
+  solution: '补成活四，对手堵不过来。',
+}
+
+/**
+ * 判题超时是「**未定**」，不是「错」。
+ *
+ * 判定器在预算用光时说的是「没法确认对错」；界面若仍打「错」标记、用 bad 色调，
+ * 等于替它下了一个它没下的结论。
+ */
+describe('PracticeBoard —— 判题超时', () => {
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  it('超时：棋盘不写「错」、反馈条不说「还不对」也不用 bad 色调，仍可重试', () => {
+    // 每读一次时钟就前进 1e6 毫秒：判题一开始的截止时间（+2000ms）随即越过。
+    // 不按调用序号硬编码，React 自己读时钟也不会打乱它。
+    let tick = 0
+    vi.spyOn(Date, 'now').mockImplementation(() => (tick += 1e6))
+    const onSolved = vi.fn()
+    render(<PracticeBoard practice={FORCED_WIN} onSolved={onSolved} />)
+
+    play(2, 4)
+
+    const feedback = screen.getByTestId('feedback')
+    expect(feedback).toHaveAttribute('data-ok', 'false')
+    expect(feedback).toHaveAttribute('data-inconclusive', 'true')
+    expect(feedback).toHaveTextContent(/没算完|超时/)
+    expect(feedback).not.toHaveTextContent('还不对')
+    expect(feedback.className).not.toMatch(/danger/)
+
+    const mark = screen.getByTestId('board-mark-2-4')
+    expect(mark).not.toHaveAttribute('data-tone', 'bad')
+    expect(mark).not.toHaveTextContent('错')
+    expect(mark).toHaveTextContent('?')
+
+    expect(onSolved).not.toHaveBeenCalled()
+    fireEvent.click(screen.getByRole('button', { name: '重试' }))
+    expect(screen.queryByTestId('feedback')).not.toBeInTheDocument()
+  })
+
+  it('普通判错不带「未定」标记', () => {
+    setup()
+
+    play(10, 10)
+
+    expect(screen.getByTestId('feedback')).not.toHaveAttribute('data-inconclusive')
+  })
+})
+
+/**
+ * live region 必须**先于内容**存在。
+ *
+ * `role="status"` 若随反馈条一起挂载，部分读屏软件不会播报第一次的判题结果——
+ * 它们只监听已经在树里的 live region 的**变化**。
+ */
+describe('PracticeBoard —— 反馈的播报区', () => {
+  it('还没落子时 status 区域已经在，而且是空的；判题之后反馈出现在它里面', () => {
+    setup()
+
+    const region = screen.getByRole('status')
+    expect(region).toBeEmptyDOMElement()
+
+    play(10, 10)
+
+    expect(screen.getByRole('status')).toBe(region)
+    expect(region).toContainElement(screen.getByTestId('feedback'))
+  })
+
+  it('重试之后播报区仍在，只是清空', () => {
+    setup()
+
+    play(10, 10)
+    fireEvent.click(screen.getByRole('button', { name: '重试' }))
+
+    expect(screen.getByRole('status')).toBeEmptyDOMElement()
+  })
+})
+
+/**
+ * 键盘判题之后棋盘变只读，原先拿着焦点的那一格不再可聚焦——焦点掉到 body，
+ * 键盘用户得从页面开头重新 Tab。判题后把焦点接到反馈条上。
+ */
+describe('PracticeBoard —— 键盘判题后的焦点', () => {
+  it('回车落子判错后，焦点落在反馈条上', () => {
+    setup()
+
+    const cell = screen.getByTestId('intersection-10-10')
+    cell.focus()
+    fireEvent.keyDown(cell, { key: 'Enter' })
+
+    expect(screen.getByTestId('feedback')).toHaveAttribute('data-ok', 'false')
+    expect(document.activeElement).toBe(screen.getByTestId('feedback'))
+  })
+
+  it('回车落子判对后，焦点同样落在反馈条上', () => {
+    setup()
+
+    const cell = screen.getByTestId('intersection-4-7')
+    cell.focus()
+    fireEvent.keyDown(cell, { key: 'Enter' })
+
+    expect(screen.getByTestId('feedback')).toHaveAttribute('data-ok', 'true')
+    expect(document.activeElement).toBe(screen.getByTestId('feedback'))
+  })
+
+  it('焦点已经在别的控件上时不抢', () => {
+    setup()
+
+    const hint = screen.getByTestId('ask-hint')
+    hint.focus()
+    play(10, 10)
+
+    expect(document.activeElement).toBe(hint)
   })
 })

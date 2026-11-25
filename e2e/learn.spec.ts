@@ -84,6 +84,25 @@ test('练习做错：给出理由，重试之后还能再走', async ({ page }) 
   await expect(page.getByTestId('feedback')).toHaveAttribute('data-ok', 'true')
 })
 
+/**
+ * 键盘判题之后棋盘变只读，拿着焦点的那一格不再可聚焦——真浏览器会把焦点丢到 body
+ * （jsdom 不做这一步，所以组件测试替代不了这条）。判题后焦点应接到反馈条上。
+ */
+test('键盘回车判题后，焦点落在反馈条上而不是掉到 body', async ({ page }) => {
+  await gotoLearn(page)
+  await page.getByTestId('lesson-rules').click()
+  await gotoPractice(page, 3)
+
+  await page.getByTestId('intersection-0-0').focus()
+  await page.keyboard.press('Enter')
+
+  const feedback = page.getByTestId('feedback')
+  await expect(feedback).toHaveAttribute('data-ok', 'false')
+  await expect(feedback).toBeFocused()
+  // 反馈填进常驻的播报区里，而不是自己带着 role="status" 现挂
+  await expect(page.getByRole('status').filter({ has: feedback })).toHaveCount(1)
+})
+
 test('三级提示：第三次才在棋盘上标出点位', async ({ page }) => {
   await gotoLearn(page)
   await page.getByTestId('lesson-rules').click()

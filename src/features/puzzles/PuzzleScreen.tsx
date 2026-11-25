@@ -86,8 +86,14 @@ export function PuzzleScreen() {
 
     return (
       <PuzzleView
-        // 换题必须重建：`alreadySolvedOnEntry` 是挂载时取的快照，复用实例会串题
-        key={puzzle.id}
+        /*
+          换题必须重建：`alreadySolvedOnEntry` 是挂载时取的快照，复用实例会串题。
+          key 里还带 `loaded`：刷新直达 `/puzzles/<id>` 时进度还没读回，那一刻的快照
+          恒为 false，做对之后会说「第一次做对」——载入完成时重建一次、重新取快照。
+          代价：载入完成之前在这道题上的操作（落子、提示级数）会随重建清掉一次。
+          进度读取通常只要几毫秒，赶在它之前落子的情况极少，而说错话是每次刷新都会发生的。
+        */
+        key={`${puzzle.id}:${loaded ? 'loaded' : 'loading'}`}
         puzzle={puzzle}
         onExit={backToList}
         exit={

@@ -67,6 +67,8 @@ test('编辑器：保存局面 → 刷新后显示时间并删除', async ({ pag
   await page.getByRole('button', { name: '复盘', exact: true }).click()
   await page.getByRole('button', { name: '局面研究' }).click()
   await page.getByLabel('打开已保存局面').selectOption({ label: '斜月研究' })
+  // 下拉框只记录所选，点「打开」才载入（方向键逐条换选不再覆盖盘面）
+  await page.getByRole('button', { name: '打开', exact: true }).click()
   await expect(page.getByTestId('stone-7-7')).toBeVisible()
   await expect(page.getByTestId('position-saved-at')).toContainText(
     /最近保存：\d{4}-\d{2}-\d{2} \d{2}:\d{2}/,
@@ -253,6 +255,8 @@ test('编辑器：positions v1 记录在真实浏览器里读取并写回 v2', a
 
   await openEditor(page)
   await page.getByLabel('打开已保存局面').selectOption({ label: '旧局面' })
+  // 下拉框只记录所选，点「打开」才载入（方向键逐条换选不再覆盖盘面）
+  await page.getByRole('button', { name: '打开', exact: true }).click()
   await expect(page.getByTestId('position-saved-at')).toContainText('时间未知')
   await page.getByRole('button', { name: '保存局面', exact: true }).click()
   await expect(page.getByTestId('position-notice')).toContainText('已保存')
