@@ -120,6 +120,30 @@ describe('useSettingsStore —— 导入偏好', () => {
   })
 })
 
+describe('useSettingsStore —— 日常写入失败', () => {
+  it('写不进 localStorage 时不抛错，并如实标出 persistFailed；恢复后清掉', () => {
+    const setItem = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new DOMException('full', 'QuotaExceededError')
+    })
+    try {
+      expect(() => useSettingsStore.getState().setTheme('dark')).not.toThrow()
+      expect(useSettingsStore.getState().theme).toBe('dark')
+      expect(useSettingsStore.getState().persistFailed).toBe(true)
+    } finally {
+      setItem.mockRestore()
+    }
+
+    useSettingsStore.getState().setShowCoords(false)
+    expect(useSettingsStore.getState().persistFailed).toBe(false)
+  })
+
+  it('persistFailed 只是运行时信号，不写进存储', () => {
+    useSettingsStore.getState().setSoundEnabled(false)
+    const stored = JSON.parse(localStorage.getItem('gomoku-lab:settings') ?? '{}') as { state?: object }
+    expect(stored.state).not.toHaveProperty('persistFailed')
+  })
+})
+
 describe('useSettingsStore —— 持久化的坏数据', () => {
   const KEY = 'gomoku-lab:settings'
 

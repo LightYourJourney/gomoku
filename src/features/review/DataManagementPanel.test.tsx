@@ -129,6 +129,41 @@ describe('数据管理面板 · 导出', () => {
     expect(await screen.findByTestId('import-error')).toHaveTextContent('空的')
     expect(blobs).toHaveLength(0)
   })
+
+  it('导出前自检：导得回来但会丢掉一整段（例如会话段校验不过）同样不下载', async () => {
+    // 解析器对可选段是「校验不过就跳过、记一条告警」，整体仍是 ok——只看 ok 拦不住这一类。
+    const storage = memoryGameRecords()
+    await storage.put(record())
+    const broken: PersistedSession = { ...SESSION, moves: [{ x: 99, y: 99 }] }
+    render(
+      <DataManagementPanel
+        positions={memoryPositions()}
+        storage={storage}
+        services={services({ loadSession: () => broken })}
+        onImported={vi.fn()}
+        degraded={false}
+      />,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: '完整备份' }))
+    expect(await screen.findByTestId('import-error')).toHaveTextContent('会话')
+    expect(blobs).toHaveLength(0)
+  })
+
+  it('导出前自检：超出导入上限、本程序导不回来的文件不下载，并说明原因', async () => {
+    // 导入限 2,000 局；导出原先不查，用户拿到的是一份恢复不了的「备份」。
+    const storage = memoryGameRecords()
+    for (let i = 0; i < 2_001; i++) await storage.put(record())
+    render(
+      <DataManagementPanel positions={memoryPositions()} storage={storage} services={services()} onImported={vi.fn()} degraded={false} />,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: '完整备份' }))
+    expect(await screen.findByTestId('import-error')).toHaveTextContent('2000')
+    fireEvent.click(screen.getByRole('button', { name: '导出全部棋谱' }))
+    await waitFor(() => expect(screen.getByTestId('import-error')).toHaveTextContent('导不回来'))
+    expect(blobs).toHaveLength(0)
+  })
 })
 
 describe('数据管理面板 · 导入', () => {

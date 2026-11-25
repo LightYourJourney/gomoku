@@ -57,15 +57,23 @@ interface GameEndContext {
  * 同一局在棋谱库里留下两条。
  *
  * 现在改成：把写入排成一条链，`replacesSeq` 在**轮到它执行时**才读
- * （`lastSeq` 那时已经是上一次的结果），并且配一道只增不减的闸门，
+ * （这一局的号那时已经是上一次的结果），号按局隔离，并且配一道只增不减的闸门，
  * 保证迟到的结果不会把新的状态覆盖回去。这与 `analysisStore` 的 `runId` 同一手法。
  */
 export function createRecordNotifier(
   onGameEnd: GameEndCallback | undefined,
   set: (partial: RecordSaveFields) => void,
 ) {
-  /** 上一次成功入库的 seq。`null` 表示这一局还没存过。 */
-  let lastSeq: number | null = null
+  /**
+   * **这一局**上一次成功入库的 seq（`null` 表示这一局还没存过）。
+   *
+   * 按局隔离成一个持有者对象，而不是一个共用变量：`reset()` 换一个新的持有者，
+   * 旧局排在链上的写入仍握着旧局那一个。共用变量时，旧局的第二次写入
+   * （悔棋重下后再终局）在 `reset()` 之后才轮到执行，读到的是被清空的 null，
+   * 于是不替换第一次那条、新增一条——同一局在库里留两条。
+   */
+  type SeqHolder = { seq: number | null }
+  let current: SeqHolder = { seq: null }
   /** 还没跑完的入库次数。0 表示队列空闲。 */
   let pending = 0
   /** 入库链的尾巴。 */
@@ -73,17 +81,17 @@ export function createRecordNotifier(
   /**
    * 现在是第几局。`reset()` 时自增——这就是上面说的那道闸门。
    *
-   * 少了它，`reset()` 只是把 `lastSeq` 置空，**在飞的那次写入并不知情**：
-   * 「终局 → 立刻重开」时它兑现后照样写回，新局于是被标成「已存入」、
-   * `recordedSeq` 拿到上一局的 seq；新局下完再把它当 `replacesSeq` 交出去，
+   * 少了它，**在飞的那次写入并不知情**：「终局 → 立刻重开」时它兑现后照样写回
+   * 界面状态，新局于是被标成「已存入」、`recordedSeq` 拿到上一局的 seq；
+   * 新局下完再把它当 `replacesSeq` 交出去，
    * 而存储层拿到它就会**按号删掉那一条**（`gameRecords.ts` 的 `putReplacing`）——
    * 上一局的棋谱直接没了，比原本要修的「多一条」更重。
    */
   let generation = 0
 
-  async function runSave(build: () => GameEndInput, gen: number): Promise<void> {
+  async function runSave(build: () => GameEndInput, gen: number, holder: SeqHolder): Promise<void> {
     try {
-      // `build()` 在**轮到它执行时**才求值——那时 `lastSeq` 已经是上一次的结果了。
+      // `build()` 在**轮到它执行时**才求值——那时持有者里已经是上一次的结果了。
       // 排队时就求值等于回到原来那个 bug（第二次终局拿到 null）。
       const result = onGameEnd?.(build())
 
@@ -99,15 +107,17 @@ export function createRecordNotifier(
 
       const seq = await result
 
-      // 这一局已经翻篇了（开了新局 / 恢复了存档）：**什么状态都不许写**。
-      // `lastSeq` 尤其不能写——它现在属于新局。
+      // 号记在**这一局自己的**持有者上：即使这一局已经翻篇，它排在链上的后续写入
+      // 仍要拿这个号去替换，否则会多出一条。新局用的是另一个持有者，不受影响。
+      if (typeof seq === 'number') holder.seq = seq
+
+      // 这一局已经翻篇了（开了新局 / 恢复了存档）：**界面状态不许写**——它现在属于新局。
       if (gen !== generation) return
 
-      if (typeof seq === 'number') lastSeq = seq
-      set({ recordSaveState: 'saved', recordedSeq: lastSeq })
+      set({ recordSaveState: 'saved', recordedSeq: holder.seq })
     } catch {
       if (gen !== generation) return
-      // 失败要如实说，而且**不动 `lastSeq`**——这一局还是没进库
+      // 失败要如实说，而且**不动持有者里的号**——这一局还是没进库
       set({ recordSaveState: 'failed' })
     }
   }
@@ -135,8 +145,10 @@ export function createRecordNotifier(
       // 局号在**发起时**记下，不在执行时读：排队期间可能已经开了新局，
       // 那时读到的会是新局号，这次写入就认不出自己已经过期了。
       const gen = generation
+      // 持有者同理：发起时记下的是**这一局的**，`build()` 执行时再从它读号。
+      const holder = current
       const step = (): Promise<void> =>
-        runSave(() => ({ ...base, replacesSeq: lastSeq }), gen).then(() => {
+        runSave(() => ({ ...base, replacesSeq: holder.seq }), gen, holder).then(() => {
           pending--
         })
 
@@ -160,7 +172,7 @@ export function createRecordNotifier(
      */
     reset(): void {
       generation++
-      lastSeq = null
+      current = { seq: null }
     },
   }
 }

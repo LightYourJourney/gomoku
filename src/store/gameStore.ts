@@ -342,7 +342,7 @@ export function createGameStore(
         // seq 也持久化进存档（`PersistedSession`）并升 schema 版本，
         // 那会让所有存档作废，代价比一条重复棋谱大。见 FINDINGS 的 F-25。
         //
-        // 入库链接由下一行的 `notifier.reset()` 切断（清 `lastSeq`、自增局号）。
+        // 入库链接由下一行的 `notifier.reset()` 切断（换一个新的入库号持有者、自增局号）。
         // 但两个**展示用**字段不在 `TRANSIENT_RESET` 里：不清的话，恢复出的
         // 终局会沿用上一局的「已存入」状态。
         notifier.reset()

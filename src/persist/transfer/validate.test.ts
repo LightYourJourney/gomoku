@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { BLACK, WHITE, type Point } from '../../core/types'
 import type { GameRecordInput } from '../gameRecords'
+import { recordContentKey } from '../recordIdentity'
 import { toGameFile, toBackupFile } from './format'
 import { jsonDepth, MAX_IMPORT_BYTES, MAX_JSON_DEPTH, MAX_WARNINGS, parseImportText } from './validate'
 
@@ -451,5 +452,33 @@ describe('严格导入 · 告警规模', () => {
     expect(result.ok).toBe(true)
     if (!result.ok || result.kind !== 'backup') return
     expect(result.session?.branch).toMatchObject({ cursor: 4, sourceMoves: 9 })
+  })
+
+  it('满盘来源棋谱生成的 sourceContentKey 也能导回来（导出的就必须能导入）', () => {
+    // 键由 `recordContentKey` 生成，长度随来源手数线性增长；原先限 800 字符，
+    // 约 117 手以上的来源导出后再导入，整个会话段被静默丢弃。
+    const fullBoard = Array.from({ length: 225 }, (_, i) => ({ x: i % 15, y: Math.floor(i / 15) }))
+    const key = recordContentKey({
+      firstPlayer: BLACK,
+      moves: fullBoard,
+      mode: 'pve',
+      humanColor: BLACK,
+      difficulty: 'expert',
+      resignedBy: null,
+    })
+    const backup = JSON.parse(JSON.stringify(toBackupFile({ games: [] }))) as { session?: unknown }
+    backup.session = {
+      moves: NINE_MOVES.map((point) => ({ x: point.x, y: point.y })),
+      firstPlayer: BLACK,
+      mode: 'pve',
+      humanColor: BLACK,
+      difficulty: 'easy',
+      resignedBy: null,
+      branch: { sourceSeq: 1, sourceContentKey: key, cursor: 9, sourceMoves: 225 },
+    }
+    const result = parse(backup)
+    expect(result.ok).toBe(true)
+    if (!result.ok || result.kind !== 'backup') throw new Error('应解析为备份')
+    expect(result.session?.branch?.sourceContentKey).toBe(key)
   })
 })

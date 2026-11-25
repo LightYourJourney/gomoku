@@ -56,6 +56,28 @@ beforeEach(() => {
   store = createLearnStore(storage)
 })
 
+describe('currentProgress：给备份/合并取「此刻真实的进度」', () => {
+  it('落盘失败后取到的是内存里的新进度，而不是库里那份旧的', async () => {
+    // 完整备份原先直接读库：配额满时完成的那一课只在内存里，备份里就缺了它。
+    state().bootstrap()
+    await tick()
+    storage.setFailSave(true)
+    state().completeLesson('rules')
+
+    const current = await state().currentProgress()
+
+    expect(state().persistState).toBe('failed')
+    expect(storage.saved.completedLessons).toEqual([])
+    expect(current.completedLessons).toEqual(['rules'])
+  })
+
+  it('还没载入时退回读存储', async () => {
+    storage.saved = { ...EMPTY_PROGRESS, solvedPuzzles: ['win-h'] }
+
+    expect((await state().currentProgress()).solvedPuzzles).toEqual(['win-h'])
+  })
+})
+
 describe('载入', () => {
   it('载入前 loaded 为 false，载入后为 true', async () => {
     expect(state().loaded).toBe(false)

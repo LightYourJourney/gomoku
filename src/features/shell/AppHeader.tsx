@@ -78,16 +78,19 @@ function BrandMark() {
 function ThemeToggle() {
   const theme = useSettingsStore((state) => state.theme)
   const setTheme = useSettingsStore((state) => state.setTheme)
+  // 写 localStorage 失败（配额满、存储被禁用）：这颗按钮在每一页都能点，失败也得在这里说出来。
+  const saveFailed = useSettingsStore((state) => state.persistFailed)
 
   const index = THEME_PREFERENCES.indexOf(theme)
   const next = THEME_PREFERENCES[(index + 1) % THEME_PREFERENCES.length]
+  const failNote = saveFailed ? '。设置没能保存到浏览器，刷新后会恢复原样' : ''
 
   return (
     <button
       type="button"
       onClick={() => setTheme(next)}
-      title={`主题：${THEME_LABELS[theme]}（点击切换为${THEME_LABELS[next]}）`}
-      aria-label={`主题：${THEME_LABELS[theme]}，点击切换为${THEME_LABELS[next]}`}
+      title={`主题：${THEME_LABELS[theme]}（点击切换为${THEME_LABELS[next]}）${failNote}`}
+      aria-label={`主题：${THEME_LABELS[theme]}，点击切换为${THEME_LABELS[next]}${failNote}`}
       className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-border bg-surface text-muted transition hover:border-border-strong hover:text-fg active:brightness-95"
     >
       <svg viewBox="0 0 24 24" className="h-4 w-4" aria-hidden="true">

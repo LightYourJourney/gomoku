@@ -239,7 +239,8 @@ export function parsePositionText(text: string): PositionParseResult {
   }
 
   let title: string | null = null
-  if (parsed.title !== undefined) {
+  // 显式 null 与省略同义：备份里的局面段一直接受 null，单个局面文件不该更严。
+  if (parsed.title !== undefined && parsed.title !== null) {
     if (typeof parsed.title !== 'string' || parsed.title.length > MAX_TITLE) {
       errors.push(issue('invalid_field', 'file.title', `标题必须是不超过 ${MAX_TITLE} 字符的字符串`))
       return { ok: false, errors, warnings }
@@ -249,7 +250,7 @@ export function parsePositionText(text: string): PositionParseResult {
 
   const position = { board, nextPlayer: parsed.nextPlayer }
   let provenance: PositionProvenance | null = null
-  if (parsed.provenance !== undefined) {
+  if (parsed.provenance !== undefined && parsed.provenance !== null) {
     if (!isObj(parsed.provenance)) {
       errors.push(issue('invalid_field', 'file.provenance', 'provenance 必须是对象'))
       return { ok: false, errors, warnings }

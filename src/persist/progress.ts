@@ -191,6 +191,13 @@ function parseProgress(value: unknown): LearningProgress | null {
   }
 }
 
+/** 库里那条是不是更新版本的应用写的（版本号是比当前大的正整数）。 */
+function isNewerThanCurrent(value: unknown): boolean {
+  if (typeof value !== 'object' || value === null) return false
+  const version = (value as { schemaVersion?: unknown }).schemaVersion
+  return typeof version === 'number' && Number.isInteger(version) && version > PROGRESS_SCHEMA_VERSION
+}
+
 async function readFromIndexedDb(): Promise<LearningProgress | null> {
   const db = await openDatabase()
 
@@ -213,8 +220,26 @@ async function writeToIndexedDb(progress: LearningProgress | null): Promise<void
     await new Promise<void>((resolve, reject) => {
       const tx = db.transaction(STORE, 'readwrite')
       const store = tx.objectStore(STORE)
-      if (progress === null) store.delete(KEY)
-      else store.put(JSON.parse(JSON.stringify(progress)), KEY)
+      if (progress === null) {
+        // 显式清空是用户主动的出口：哪怕库里是更新版本的记录也照删。
+        store.delete(KEY)
+      } else {
+        /*
+         * 先看库里那条：**比当前版本新**的记录读的时候当作没有进度（我们不认识它），
+         * 但写的时候不许覆盖——那是更新版本的应用写下的真实进度（回滚部署时就会遇到），
+         * 盖掉就永久丢了（SCHEMA_MIGRATION.md §4「迁移前不破坏旧数据」）。
+         * 这里中止事务、如实报失败；内存兜底照常可用，界面标「保存失败」。
+         * 同版本里被改坏的记录不在此列：它本来就读不出来，覆盖不损失任何可恢复的东西。
+         */
+        const existing = store.get(KEY)
+        existing.onsuccess = () => {
+          if (isNewerThanCurrent(existing.result)) {
+            tx.abort()
+            return
+          }
+          store.put(JSON.parse(JSON.stringify(progress)), KEY)
+        }
+      }
       tx.oncomplete = () => resolve()
       tx.onerror = () => reject(new Error('写进度失败'))
       tx.onabort = () => reject(new Error('写进度被中止'))

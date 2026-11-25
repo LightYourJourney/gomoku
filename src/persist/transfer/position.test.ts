@@ -23,6 +23,16 @@ describe('局面文件格式', () => {
     expect(parsed.position.nextPlayer).toBe(BLACK)
   })
 
+  it('title / provenance 显式写 null 等同于省略（与备份里的局面段同一口径）', () => {
+    const position = applyEdit(createPosition(), { x: 7, y: 7 }, 'black')
+    const file = { ...JSON.parse(JSON.stringify(toPositionFile(position, '天元', null))), title: null, provenance: null }
+    const parsed = parsePositionText(JSON.stringify(file))
+    expect(parsed.ok).toBe(true)
+    if (!parsed.ok) throw new Error('应接受 null')
+    expect(parsed.title).toBeNull()
+    expect(parsed.provenance).toBeNull()
+  })
+
   it('已知手顺可以证明可重放，并原样往返', () => {
     const loaded = positionFromReplay(NINE_MOVES, BLACK, 5)
     const parsed = parsePositionText(

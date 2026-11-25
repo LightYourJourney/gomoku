@@ -37,6 +37,12 @@ const MAX_MOVES = BOARD_SIZE * BOARD_SIZE
 const MAX_TOTAL_MOVES = 100_000
 const MAX_STRING_LENGTH = 200
 const MAX_PROGRESS_IDS = 1_000
+/**
+ * 分支来源的内容键（`recordContentKey` 的输出）上限。它不是用户写的字符串，
+ * 长度随来源手数线性增长：头部不到 40 字符，每手最多 `[14,14],` 8 字符，
+ * 满盘 225 手约 1,840 字符。取 2,048 留余量——比这个还长的不可能是本程序导出的。
+ */
+const MAX_CONTENT_KEY_LENGTH = 2_048
 
 export type { ImportIssue } from './guards'
 
@@ -729,7 +735,7 @@ function validateSession(
     if (
       !isFiniteInt(value.sourceSeq) ||
       typeof value.sourceContentKey !== 'string' ||
-      value.sourceContentKey.length > MAX_STRING_LENGTH * 4 ||
+      value.sourceContentKey.length > MAX_CONTENT_KEY_LENGTH ||
       !isFiniteInt(value.cursor) ||
       !isFiniteInt(value.sourceMoves)
     ) {

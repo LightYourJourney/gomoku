@@ -1,7 +1,8 @@
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { useNavigationStore } from '../../store/navigationStore'
+import { useSettingsStore } from '../../store/settingsStore'
 import { AppHeader } from './AppHeader'
 
 /** store 是单例，改完要还回去，否则会污染后面的用例。 */
@@ -80,5 +81,31 @@ describe('AppHeader 不抢导航空间', () => {
     expect(screen.getByRole('button', { name: /^主题：/ })).toBeInTheDocument()
     // 右侧那一组不许被 flex 压扁
     expect(container.querySelector('header > div:last-child')!.className).toContain('shrink-0')
+  })
+})
+
+describe('AppHeader —— 偏好写入失败', () => {
+  afterEach(() => {
+    useSettingsStore.setState({ persistFailed: false })
+  })
+
+  it('主题按钮在每一页都能点，写不进存储时它的名字里如实说出来', () => {
+    const setItem = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new DOMException('full', 'QuotaExceededError')
+    })
+    try {
+      render(<AppHeader />)
+      fireEvent.click(screen.getByRole('button', { name: /^主题：/ }))
+
+      expect(screen.getByRole('button', { name: /^主题：/ })).toHaveAccessibleName(/刷新后会恢复原样/)
+    } finally {
+      setItem.mockRestore()
+    }
+  })
+
+  it('没失败时不提', () => {
+    render(<AppHeader />)
+
+    expect(screen.getByRole('button', { name: /^主题：/ })).not.toHaveAccessibleName(/刷新后会恢复原样/)
   })
 })

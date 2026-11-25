@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
+import { createJSONStorage, persist, type StateStorage } from 'zustand/middleware'
 import { applyTheme, isThemePreference, resolveTheme, type ThemePreference } from '../lib/theme'
 
 const SETTINGS_STORAGE_KEY = 'gomoku-lab:settings'
@@ -15,11 +15,41 @@ export interface SettingsStore {
   theme: ThemePreference
   showCoords: boolean
   soundEnabled: boolean
+  /**
+   * 最近一次写 localStorage 失败了（配额满、浏览器禁用存储）。**只是运行时信号**，
+   * 不落盘：内存里的设置照常生效，只是刷新后会回到上次存下的值，界面要能说出来。
+   */
+  persistFailed: boolean
   setTheme(theme: ThemePreference): void
   setShowCoords(showCoords: boolean): void
   setSoundEnabled(soundEnabled: boolean): void
   /** 导入备份用：三项一起写；落盘校验失败时回滚并抛错。 */
   restorePreferences(next: PreferencesSnapshot): void
+}
+
+/**
+ * 写失败不往上抛的 localStorage。
+ *
+ * zustand 的 `persist` 在每次 `set` 之后**同步**调 `setItem`、不捕获异常：配额满时
+ * `setTheme` 这类按钮回调会把 `QuotaExceededError` 抛进事件处理器——内存值已改、
+ * 用户却什么提示都看不到。这里吞掉异常、改为置 `persistFailed`，成功一次就清掉。
+ * `restorePreferences` 不受影响：它写完会**读回校验**，写不进去照样回滚并抛错。
+ */
+const guardedLocalStorage: StateStorage = {
+  getItem: (name) => localStorage.getItem(name),
+  removeItem: (name) => localStorage.removeItem(name),
+  setItem: (name, value) => {
+    let failed = false
+    try {
+      localStorage.setItem(name, value)
+    } catch {
+      failed = true
+    }
+    // 只在状态真的翻转时 set：`set` 会再触发一次 `setItem`，不加这道判断就是死循环。
+    if (useSettingsStore.getState().persistFailed !== failed) {
+      useSettingsStore.setState({ persistFailed: failed })
+    }
+  },
 }
 
 export const useSettingsStore = create<SettingsStore>()(
@@ -28,6 +58,7 @@ export const useSettingsStore = create<SettingsStore>()(
       theme: 'system',
       showCoords: true,
       soundEnabled: true,
+      persistFailed: false,
       setTheme: (theme) => set({ theme }),
       setShowCoords: (showCoords) => set({ showCoords }),
       setSoundEnabled: (soundEnabled) => set({ soundEnabled }),
@@ -61,6 +92,9 @@ export const useSettingsStore = create<SettingsStore>()(
     }),
     {
       name: SETTINGS_STORAGE_KEY,
+      storage: createJSONStorage(() => guardedLocalStorage),
+      // 只存三项偏好；`persistFailed` 是运行时信号，存进去就成了下次启动的假警报。
+      partialize: ({ theme, showCoords, soundEnabled }) => ({ theme, showCoords, soundEnabled }),
       /**
        * 逐字段校验读回来的设置，不合格的回落到当前值（水合时就是默认值）。
        *

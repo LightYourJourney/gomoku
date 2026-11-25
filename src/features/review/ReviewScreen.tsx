@@ -18,7 +18,7 @@ import type { BranchConfig, BranchStartInput, BranchStartResult } from '../../st
 import { useLearnStore } from '../../store/learnStore'
 import { useNavigationStore } from '../../store/navigationStore'
 import { useSettingsStore } from '../../store/settingsStore'
-import { loadProgress, mergeProgress, saveProgressStrict } from '../../persist/progress'
+import { mergeProgress, saveProgressStrict } from '../../persist/progress'
 import { loadSession, saveSession, SCHEMA_VERSION, type PersistedSession } from '../../persist/storage'
 import { indexedDbPositions, type PositionStorage } from '../../persist/positions'
 import type { DataManagementServices } from './DataManagementPanel'
@@ -140,7 +140,8 @@ export function ReviewScreen({
    */
   const dataServices: DataManagementServices = {
     now: Date.now,
-    loadProgress,
+    // 备份取**此刻真实的**进度（内存优先）：写库失败时库里是旧值，直接读库会少掉刚完成的那一项。
+    loadProgress: () => useLearnStore.getState().currentProgress(),
     loadSession,
     preferences: () => {
       const settings = useSettingsStore.getState()
@@ -152,11 +153,9 @@ export function ReviewScreen({
     },
     onMergeProgress: async (incoming) => {
       // 用**内存里的当前进度**合并：用户可能刚完成一节课，写入队列还没落盘；
-      // 这时先 loadProgress() 会读到旧值，合并完反而把刚完成的那一项盖掉。
-      // 先等旧写队列排空，避免严格写入后再被一笔更早的队列写覆盖。
-      await useLearnStore.getState().flush()
-      const live = useLearnStore.getState()
-      const current = live.loaded ? live.progress : await loadProgress()
+      // 这时直接读库会读到旧值，合并完反而把刚完成的那一项盖掉。
+      // `currentProgress` 先等旧写队列排空，避免严格写入后再被一笔更早的队列写覆盖。
+      const current = await useLearnStore.getState().currentProgress()
       const merged = mergeProgress(current, incoming)
       // 导入必须知道是否真的落盘；失败时由面板标“失败”，不能显示“合并完成”。
       if (!(await saveProgressStrict(merged))) throw new Error('学习进度写入失败')
@@ -401,9 +400,10 @@ function AnalysisPanel({ store, engine, replay }: AnalysisPanelProps) {
         /*
          * 分析失败要**说出来**。原先 `error` 只是躺在 store 里没人渲染，
          * 失败之后界面静默退回「开始分析」按钮——与「从没分析过」长得一模一样。
+         * 这是错误态，用 `danger`（§2.2：`warn` 不用在错误上）。
          */
         <>
-          <p data-testid="analysis-error" className="text-xs text-warn">
+          <p data-testid="analysis-error" className="text-xs text-danger">
             这次分析没跑完：{state.error}
           </p>
           <Button block variant="primary" onClick={start}>

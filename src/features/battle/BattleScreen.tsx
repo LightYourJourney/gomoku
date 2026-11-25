@@ -258,6 +258,7 @@ export function BattleScreen({ sound: injectedSound }: BattleScreenProps = {}) {
       onThemeChange={settings.setTheme}
       onShowCoordsChange={settings.setShowCoords}
       onSoundEnabledChange={settings.setSoundEnabled}
+      preferencesSaveFailed={settings.persistFailed}
       beforeModeChange={beforeModeChange}
       beforeHumanColorChange={beforeHumanColorChange}
     />

@@ -110,7 +110,8 @@ describe.each(Object.entries(TOKENS))('%s 主题的对比度', (_name, selector)
 
   it.each(PAIRS)('%s 压在 %s 上不低于 4.5:1', (fg, bg) => {
     const ratio = contrast(tokens.get(fg)!, tokens.get(bg)!)
-    expect(Number(ratio.toFixed(2))).toBeGreaterThanOrEqual(MIN_RATIO)
+    // 不取整：WCAG 的 4.5:1 是硬阈值，4.495 先 toFixed(2) 会被抬成 4.50 放行。
+    expect(ratio, `实测 ${ratio.toFixed(3)}:1`).toBeGreaterThanOrEqual(MIN_RATIO)
   })
 })
 
@@ -213,7 +214,7 @@ describe.each(Object.entries(TOKENS))('非文字：%s 主题的焦点环', (_nam
     const background = tokens.get(bg)!
 
     const best = Math.max(contrast(ring, background), contrast(halo, background))
-    expect(Number(best.toFixed(2))).toBeGreaterThanOrEqual(MIN_NON_TEXT_RATIO)
+    expect(best, `实测 ${best.toFixed(3)}:1`).toBeGreaterThanOrEqual(MIN_NON_TEXT_RATIO)
   })
 })
 

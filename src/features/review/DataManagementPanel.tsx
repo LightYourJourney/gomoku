@@ -23,6 +23,7 @@ import {
   exportFilename,
   gameContentKey,
   toBackupFile,
+  type BackupFile,
   toGamePayload,
   type BackupPosition,
   type BackupPreferences,
@@ -34,7 +35,7 @@ import { Button } from '../../components/ui/Button'
 import { Modal } from '../../components/ui/Modal'
 import { Panel } from '../../components/ui/Panel'
 import { Switch } from '../../components/ui/Switch'
-import { downloadJson } from './download'
+import { downloadJsonText, toJsonText } from './download'
 import { restoreImport, type RestoreOutcome, type SectionOutcome } from '../../persist/transfer/restore'
 
 /**
@@ -269,6 +270,46 @@ export function DataManagementPanel({
     return { games, dropped }
   }
 
+  /**
+   * 导出前自检：**本程序导不回来的文件不下载。**
+   *
+   * 导入有上限（局数、总手数、局面数、文件大小……），导出原先不查——大库用户拿到
+   * 的是一份「成功」却恢复不了的备份，而他可能正拿它当清数据前的保险。
+   * 直接拿导入解析器量**将要下载的那份文本**：口径与导入逐字一致，不必在两处各抄一遍上限。
+   * 解析器有「接近 10 MiB 不卡死」的用例钉着，导出本来就要整份序列化，多一次解析是同量级开销。
+   */
+  function downloadIfRestorable(filename: string, file: BackupFile): boolean {
+    const text = toJsonText(file)
+    const check = parseImportText(text)
+    if (!check.ok) {
+      fail(
+        `这份文件超出了导入上限，本程序导不回来，所以没有下载：${check.errors
+          .map((issue) => issue.message)
+          .join('；')}。请先删掉一部分棋谱或局面再导出。`,
+      )
+      return false
+    }
+    /*
+     * 整体 ok 还不够：可选段（进度 / 偏好 / 会话）校验不过时解析器只是「跳过、记一条告警」，
+     * 单局 / 单个局面坏了也只是不导入那一条。导出的东西每一条都必须原样导得回来——
+     * 少一段、少一局都是这份备份在悄悄缩水（分支来源键超长那次就是会话段被跳过）。
+     */
+    const lost: string[] = []
+    if (check.kind === 'backup') {
+      if (check.games.length !== file.games.length) lost.push(`${file.games.length - check.games.length} 局棋谱`)
+      if (check.positions.length !== (file.positions?.length ?? 0)) lost.push('部分局面')
+      if (file.progress !== undefined && check.progress === null) lost.push('学习进度段')
+      if (file.preferences !== undefined && check.preferences === null) lost.push('显示偏好段')
+      if (file.session !== undefined && file.session !== null && check.session === null) lost.push('进行中的对局（会话段）')
+    }
+    if (lost.length > 0) {
+      fail(`这份文件导回来会丢掉${lost.join('、')}，所以没有下载。这是本程序的缺陷，请反馈。`)
+      return false
+    }
+    downloadJsonText(filename, text)
+    return true
+  }
+
   async function exportGames(): Promise<void> {
     setError(null)
     setExportNotice(null)
@@ -291,10 +332,7 @@ export function DataManagementPanel({
         )
         return
       }
-      downloadJson(
-        exportFilename('games', services.now),
-        toBackupFile({ games }),
-      )
+      if (!downloadIfRestorable(exportFilename('games', services.now), toBackupFile({ games }))) return
       setExportNotice(`已导出 ${games.length} 条${dropped > 0 ? `，跳过 ${dropped} 条损坏/未结束记录` : ''}。`)
     } catch (err) {
       fail(err instanceof Error ? err.message : String(err))
@@ -320,16 +358,14 @@ export function DataManagementPanel({
         return
       }
       const { games, dropped } = exportableGames(records, skipped)
-      downloadJson(
-        exportFilename('backup', services.now),
-        toBackupFile({
-          games,
-          progress,
-          preferences: services.preferences(),
-          session,
-          positions: positionList.records.map(backupPositionOf),
-        }),
-      )
+      const backup = toBackupFile({
+        games,
+        progress,
+        preferences: services.preferences(),
+        session,
+        positions: positionList.records.map(backupPositionOf),
+      })
+      if (!downloadIfRestorable(exportFilename('backup', services.now), backup)) return
       setExportNotice(`已导出 ${games.length} 条棋谱、${positionList.records.length} 个局面${dropped > 0 ? `；跳过 ${dropped} 条损坏/未结束记录` : ''}。`)
     } catch (err) {
       fail(err instanceof Error ? err.message : String(err))

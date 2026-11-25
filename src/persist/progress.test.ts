@@ -195,6 +195,32 @@ describe('学习进度存储 —— 损坏数据', () => {
     expect(await loadProgress()).toEqual(EMPTY_PROGRESS)
   })
 
+  it('比当前版本新的记录只读地忽略：之后的保存不覆盖它（回滚部署不丢进度）', async () => {
+    // SCHEMA_MIGRATION.md §3「版本比当前新…当作没有进度」，§4「迁移前不破坏旧数据」。
+    // 读成空进度是对的；但随后完成一课就整条 put，库里那份更新版本的记录就没了。
+    const future = {
+      schemaVersion: PROGRESS_SCHEMA_VERSION + 1,
+      completedLessons: ['rules', 'two', 'three'],
+      solvedPuzzles: ['win-h'],
+      lastVisited: null,
+      lastView: 'learn',
+    }
+    await writeRaw(future)
+
+    expect(await loadProgress()).toEqual(EMPTY_PROGRESS)
+    expect(await saveProgressStrict({ ...EMPTY_PROGRESS, completedLessons: ['rules'] })).toBe(false)
+    await saveProgress({ ...EMPTY_PROGRESS, completedLessons: ['rules'] })
+
+    expect(await readRaw()).toEqual(future)
+  })
+
+  it('显式清空仍然能删掉更新版本的记录（用户主动的出口）', async () => {
+    await writeRaw({ schemaVersion: PROGRESS_SCHEMA_VERSION + 1, completedLessons: [] })
+    await clearProgress()
+
+    expect(await readRaw()).toBeUndefined()
+  })
+
   it('认不出的 lastView 只回落到对战页，课程与题目记录照常保留', async () => {
     // 只影响「打开哪一页」的位置信息，不值得拿整条进度去换。
     // 'review' 上线时白名单漏改，用户的课程记录就是这样被整条丢掉的。
@@ -246,6 +272,25 @@ describe('进度迁移框架', () => {
 })
 
 /** 绕过类型直接往库里写一份原始数据，用来构造「存进去的东西坏了」的情形。 */
+async function readRaw(): Promise<unknown> {
+  const request = globalThis.indexedDB.open(DB_NAME, DB_VERSION)
+  await new Promise<void>((resolve, reject) => {
+    request.onupgradeneeded = () => ensureSchema(request.result, request.transaction)
+    request.onsuccess = () => resolve()
+    request.onerror = () => reject(new Error('打不开数据库'))
+  })
+  const db = request.result
+  try {
+    return await new Promise<unknown>((resolve, reject) => {
+      const get = db.transaction('progress', 'readonly').objectStore('progress').get('learning')
+      get.onsuccess = () => resolve(get.result)
+      get.onerror = () => reject(new Error('读不出来'))
+    })
+  } finally {
+    db.close()
+  }
+}
+
 async function writeRaw(value: unknown): Promise<void> {
   // 用共享 schema 的库名与版本——硬编码会与真实打开方式错开（版本不同
   // 会触发升级或 VersionError），测试就测不到真实路径了。

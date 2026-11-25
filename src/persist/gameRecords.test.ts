@@ -252,6 +252,30 @@ describe('put 如实报告有没有真正落库', () => {
   })
 })
 
+describe('内存兜底的号不与库里的号撞车', () => {
+  it('降级期间存下的记录，库恢复后按号删除只删内存那条，不误删库里同号的真实棋谱', async () => {
+    const real = (await indexedDbGameRecords.put(winRecord())).record
+
+    // IDB 暂时不可用：存下的记录拿的是内存兜底的号。旧实现从 1 起数，存够 real.seq 条必然撞号。
+    const descriptor = Object.getOwnPropertyDescriptor(globalThis, 'indexedDB')
+    Reflect.deleteProperty(globalThis, 'indexedDB')
+    const fallbackSeqs: number[] = []
+    try {
+      for (let i = 0; i < real.seq; i++) {
+        fallbackSeqs.push((await indexedDbGameRecords.put(winRecord())).record.seq)
+      }
+    } finally {
+      if (descriptor !== undefined) Object.defineProperty(globalThis, 'indexedDB', descriptor)
+    }
+
+    expect(fallbackSeqs).not.toContain(real.seq)
+    // 库恢复后删除这些内存记录（界面手里握的就是这些号）
+    for (const seq of fallbackSeqs) await indexedDbGameRecords.delete(seq)
+
+    expect(await indexedDbGameRecords.get(real.seq)).not.toBeNull()
+  })
+})
+
 describe('saveGameReplacing：替换而不是留下两条', () => {
   it('带 replacesSeq 时旧条被删、只剩新条', async () => {
     const first = (await indexedDbGameRecords.put(winRecord())).record

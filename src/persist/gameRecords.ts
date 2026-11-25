@@ -187,13 +187,26 @@ function parseRecord(value: unknown): GameRecord | null {
 // ── 内存实现（降级兜底 + 测试注入） ─────────────────────────────
 
 /**
+ * 降级兜底的号段起点。IndexedDB 的自增键从 1 起、每存一局加一，到这个数要存上万亿局；
+ * 它仍是正整数，复盘页地址（`/review/<seq>`）照常认得。
+ */
+const FALLBACK_SEQ_BASE = 1_000_000_000_000
+
+/** 这个号是不是降级兜底发出去的（而不是库里的）。 */
+function isFallbackSeq(seq: number): boolean {
+  return seq >= FALLBACK_SEQ_BASE
+}
+
+/**
  * 每次调用返回一个全新的内存实例。降级路径用它兜底，测试用它做隔离——
  * 真正的降级语义（全局摘掉 indexedDB 后 `indexedDbGameRecords` 自己落进来）
  * 由下面的单例负责。
  */
 export function memoryGameRecords(degraded = false): GameRecordsStorage {
   const bySeq = new Map<number, GameRecord>()
-  let nextSeq = 1
+  // 当兜底用时从一个大偏移起数：库恢复后界面手里还握着这些号，若与库的自增号同一套，
+  // 按号删除会删掉库里另一局真实棋谱（见 `isFallbackSeq`）。单独使用（测试）时仍从 1 起。
+  let nextSeq = degraded ? FALLBACK_SEQ_BASE : 1
 
   function put(record: GameRecordInput): PutResult {
     const stored: GameRecord = {
@@ -409,6 +422,8 @@ export const indexedDbGameRecords: GameRecordsStorage = {
   },
 
   async get(seq) {
+    // 兜底发出去的号只可能在内存里；拿去问库，命中的也只会是别的局。
+    if (isFallbackSeq(seq)) return (await memoryFallback?.get(seq)) ?? null
     try {
       const raw = await withStore<unknown>('readonly', (store) => store.get(seq))
       return raw === undefined ? null : parseRecord(raw)
@@ -519,6 +534,8 @@ export const indexedDbGameRecords: GameRecordsStorage = {
   async delete(seq) {
     // 与 `importMany` 同一口径：**打不开库**才退内存（并报 `persisted: false`）；事务失败要如实抛——
     // 吞掉异常再退内存的话（内存里本来就没有这条），界面会说「已删除」，刷新后它又回来了。
+    // 兜底的号不许拿去删库：库恢复后同号的是另一局真实棋谱。
+    if (isFallbackSeq(seq)) return fallbackToMemory().delete(seq)
     let db: IDBDatabase | null = null
     try {
       db = await openDatabase()

@@ -20,6 +20,13 @@ export interface LearnStore {
    * **它不是「落盘保证」**：页面在等待期间被销毁，异步写入仍可能来不及提交。
    */
   flush(): Promise<void>
+  /**
+   * 此刻真实的进度：先等写队列排空，载入过就用**内存里的**，否则才读存储。
+   *
+   * 备份与导入合并都要用它，不能直接读存储：写入失败（配额满）或还在队列里时，
+   * 库里是旧值，拿它导出会少掉刚完成的那一项，拿它合并会把那一项盖掉。
+   */
+  currentProgress(): Promise<LearningProgress>
   /** 重新尝试落盘当前内存进度。 */
   retryPersist(): void
   /** 记下当前在哪一页（`progress.lastView`）。位置本身归导航 store（`navigationStore.ts`），这里只落盘。 */
@@ -181,6 +188,12 @@ export function createLearnStore(storage: ProgressStorage): UseBoundStore<StoreA
       },
 
       flush,
+
+      async currentProgress() {
+        await flush()
+        const live = get()
+        return live.loaded ? live.progress : storage.load()
+      },
 
       retryPersist() {
         if (!get().loaded) return
