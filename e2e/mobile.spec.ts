@@ -423,3 +423,50 @@ test('分享：移动端生成链接并打开只读预览，无横向溢出', as
     ),
   ).toBe(0)
 })
+
+/*
+ * 弹窗比视口高时，底部按钮必须够得着。
+ *
+ * 遮罩原先是 `fixed inset-0 grid`、对话框没有最大高度：横屏手机（915×412）上
+ * 分支确认框（三个下拉 + 两行事实 + 按钮）比可视高度还高，居中后上下都被裁掉，
+ * 遮罩本身不滚、页面又被遮罩挡住——「开始探索」滚不进来，也点不到。
+ */
+test('横屏手机上弹窗比视口高：底部按钮能滚进可视区并点中', async ({ page }) => {
+  await page.setViewportSize({ width: 915, height: 412 })
+  await seedGameRecords(page, [
+    {
+      schemaVersion: 1,
+      moves: [
+        { x: 3, y: 7 },
+        { x: 3, y: 9 },
+        { x: 4, y: 7 },
+      ],
+      firstPlayer: BLACK,
+      // 人机局：分支框会多出「玩家执子」「AI 难度」两个下拉，高度才超过 412
+      mode: 'pve',
+      humanColor: BLACK,
+      difficulty: 'easy',
+      resignedBy: null,
+    },
+  ])
+  await page.goto('/')
+  await page.getByRole('button', { name: '复盘', exact: true }).click()
+  await page.getByTestId(/^record-/).first().click()
+
+  const slider = page.getByLabel('回放手数')
+  await slider.focus()
+  await slider.press('Home')
+  await slider.press('ArrowRight')
+  await page.getByRole('button', { name: '从这里继续对弈' }).tap()
+  await expect(page.getByTestId('branch-dialog')).toBeVisible()
+
+  // 前提：这个弹窗在这一档确实比视口高，否则这条用例什么也没测
+  const dialogHeight = (await page.getByRole('dialog').evaluate((el) => el.scrollHeight)) as number
+  expect(dialogHeight, `弹窗只有 ${dialogHeight}px 高，不足以复现`).toBeGreaterThan(412)
+
+  const confirm = page.getByRole('button', { name: '开始探索' })
+  await confirm.scrollIntoViewIfNeeded()
+  await expect(confirm).toBeInViewport({ ratio: 1 })
+  await confirm.tap()
+  await expect(page.getByTestId('branch-banner')).toContainText('从第 1 手继续')
+})

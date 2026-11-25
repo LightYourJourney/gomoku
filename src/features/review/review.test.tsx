@@ -160,12 +160,12 @@ describe('GameLibrary —— 时间、分批、删除（阶段 D）', () => {
     render(<GameLibrary storage={storage} onOpen={vi.fn()} onStartBattle={vi.fn()} />)
     await screen.findAllByTestId(/^record-/)
 
-    fireEvent.click(screen.getByRole('button', { name: `删除棋谱 ${gone.seq}` }))
+    fireEvent.click(screen.getByRole('button', { name: /^删除棋谱：黑方胜，时间未知（第 \d+ 条）$/ }))
     fireEvent.click(screen.getByRole('button', { name: '取消' }))
     expect(del).not.toHaveBeenCalled()
 
-    fireEvent.click(screen.getByRole('button', { name: `删除棋谱 ${gone.seq}` }))
-    fireEvent.click(screen.getByRole('button', { name: `确认删除棋谱 ${gone.seq}` }))
+    fireEvent.click(screen.getByRole('button', { name: /^删除棋谱：黑方胜，时间未知（第 \d+ 条）$/ }))
+    fireEvent.click(screen.getByRole('button', { name: /^确认删除棋谱：黑方胜，时间未知（第 \d+ 条）$/ }))
 
     await waitFor(() => expect(screen.queryByTestId(`record-${gone.seq}`)).not.toBeInTheDocument())
     expect(del).toHaveBeenCalledWith(gone.seq)
@@ -173,18 +173,25 @@ describe('GameLibrary —— 时间、分批、删除（阶段 D）', () => {
     expect(screen.getByRole('status')).toHaveTextContent('已删除')
   })
 
-  it('库不可用、只删了内存里的：如实说「可能仍在」，列表不动', async () => {
-    const storage = memoryGameRecords()
+  /**
+   * 降级时内存里那条**已经删了**——列表不能还留着它：再点那一行打开的是一局
+   * 库里已经没有的棋。用真实的降级内存存储，不 mock `delete`：
+   * mock 掉的话「内存里删没删」这件事本身就测不到了。
+   */
+  it('库不可用、只删了内存里的：如实说「可能仍在」，这一行也从列表消失', async () => {
+    const storage = memoryGameRecords(true)
+    const keep = (await storage.put(threeMoveRecord())).record
     const record = (await storage.put(nineMoveRecord())).record
-    vi.spyOn(storage, 'delete').mockResolvedValue({ persisted: false })
     render(<GameLibrary storage={storage} onOpen={vi.fn()} onStartBattle={vi.fn()} />)
     await screen.findAllByTestId(/^record-/)
 
-    fireEvent.click(screen.getByRole('button', { name: `删除棋谱 ${record.seq}` }))
-    fireEvent.click(screen.getByRole('button', { name: `确认删除棋谱 ${record.seq}` }))
+    fireEvent.click(screen.getByRole('button', { name: /^删除棋谱：黑方胜，时间未知（第 \d+ 条）$/ }))
+    fireEvent.click(screen.getByRole('button', { name: /^确认删除棋谱：黑方胜，时间未知（第 \d+ 条）$/ }))
 
     expect(await screen.findByRole('alert')).toHaveTextContent('可能仍在')
-    expect(screen.getByTestId(`record-${record.seq}`)).toBeInTheDocument()
+    expect(screen.queryByTestId(`record-${record.seq}`)).not.toBeInTheDocument()
+    expect(screen.getByTestId(`record-${keep.seq}`)).toBeInTheDocument()
+    expect(await storage.get(record.seq)).toBeNull()
   })
 
   it('删除失败：报出原因，列表不动', async () => {
@@ -194,11 +201,78 @@ describe('GameLibrary —— 时间、分批、删除（阶段 D）', () => {
     render(<GameLibrary storage={storage} onOpen={vi.fn()} onStartBattle={vi.fn()} />)
     await screen.findAllByTestId(/^record-/)
 
-    fireEvent.click(screen.getByRole('button', { name: `删除棋谱 ${record.seq}` }))
-    fireEvent.click(screen.getByRole('button', { name: `确认删除棋谱 ${record.seq}` }))
+    fireEvent.click(screen.getByRole('button', { name: /^删除棋谱：黑方胜，时间未知（第 \d+ 条）$/ }))
+    fireEvent.click(screen.getByRole('button', { name: /^确认删除棋谱：黑方胜，时间未知（第 \d+ 条）$/ }))
 
     expect(await screen.findByRole('alert')).toHaveTextContent('棋谱库删除被中止')
     expect(screen.getByTestId(`record-${record.seq}`)).toBeInTheDocument()
+    // 那一行还在，焦点回到它的「删除」，可以直接再试一次
+    expect(screen.getByRole('button', { name: /^删除棋谱：黑方胜，时间未知（第 \d+ 条）$/ })).toHaveFocus()
+  })
+
+  /**
+   * 按钮的可访问名只用界面上看得到的东西（结果 + 时间）。
+   * 原先是内部的 `seq`（「删除棋谱 17」），读屏用户听到一个屏幕上找不到的编号。
+   */
+  it('删除按钮的可访问名是结果与时间，不是内部编号', async () => {
+    const storage = memoryGameRecords()
+    await storage.put({ ...nineMoveRecord(), createdAt: new Date(2026, 10, 18, 15, 30).getTime() })
+    render(<GameLibrary storage={storage} onOpen={vi.fn()} onStartBattle={vi.fn()} />)
+    await screen.findAllByTestId(/^record-/)
+
+    fireEvent.click(screen.getByRole('button', { name: /^删除棋谱：黑方胜，\d{4}-\d{2}-\d{2} \d{2}:\d{2}（第 \d+ 条）$/ }))
+    expect(
+      screen.getByRole('button', { name: /^确认删除棋谱：黑方胜，\d{4}-\d{2}-\d{2} \d{2}:\d{2}（第 \d+ 条）$/ }),
+    ).toBeInTheDocument()
+  })
+
+  /*
+   * 「删除」→「确认删除 / 取消」是整颗按钮换掉：不显式移焦，焦点跟着被卸载的
+   * 节点掉到 `<body>`，键盘用户得从页首重新 Tab 过来。
+   */
+  it('点「删除」后焦点落在「确认删除」；取消后回到这一行的「删除」', async () => {
+    const storage = memoryGameRecords()
+    await storage.put(nineMoveRecord())
+    render(<GameLibrary storage={storage} onOpen={vi.fn()} onStartBattle={vi.fn()} />)
+    await screen.findAllByTestId(/^record-/)
+
+    fireEvent.click(screen.getByRole('button', { name: /^删除棋谱：黑方胜，时间未知（第 \d+ 条）$/ }))
+    expect(screen.getByRole('button', { name: /^确认删除棋谱：黑方胜，时间未知（第 \d+ 条）$/ })).toHaveFocus()
+
+    fireEvent.click(screen.getByRole('button', { name: '取消' }))
+    expect(screen.getByRole('button', { name: /^删除棋谱：黑方胜，时间未知（第 \d+ 条）$/ })).toHaveFocus()
+  })
+
+  it('确认删除后焦点落到下一行；删的是最后一行就落到上一行', async () => {
+    const storage = memoryGameRecords()
+    const oldest = (await storage.put(threeMoveRecord())).record
+    const middle = (await storage.put({ ...threeMoveRecord(), resignedBy: BLACK })).record
+    const newest = (await storage.put(nineMoveRecord())).record
+    render(<GameLibrary storage={storage} onOpen={vi.fn()} onStartBattle={vi.fn()} />)
+    await screen.findAllByTestId(/^record-/)
+
+    // 列表按 seq 降序：newest → middle → oldest。删中间那行，焦点到它下面的 oldest。
+    fireEvent.click(screen.getByRole('button', { name: /^删除棋谱：白方胜（对手认输），时间未知（第 \d+ 条）$/ }))
+    fireEvent.click(screen.getByRole('button', { name: /^确认删除棋谱：白方胜（对手认输），时间未知（第 \d+ 条）$/ }))
+    await waitFor(() => expect(screen.queryByTestId(`record-${middle.seq}`)).not.toBeInTheDocument())
+    expect(screen.getByTestId(`record-${oldest.seq}`)).toHaveFocus()
+
+    // 删最后一行（oldest），下面没有了，焦点到上一行 newest。
+    fireEvent.click(screen.getByRole('button', { name: /^删除棋谱：和棋，时间未知（第 \d+ 条）$/ }))
+    fireEvent.click(screen.getByRole('button', { name: /^确认删除棋谱：和棋，时间未知（第 \d+ 条）$/ }))
+    await waitFor(() => expect(screen.queryByTestId(`record-${oldest.seq}`)).not.toBeInTheDocument())
+    expect(screen.getByTestId(`record-${newest.seq}`)).toHaveFocus()
+  })
+
+  it('删光之后焦点落到空状态的「开始一局对战」', async () => {
+    const storage = memoryGameRecords()
+    await storage.put(nineMoveRecord())
+    render(<GameLibrary storage={storage} onOpen={vi.fn()} onStartBattle={vi.fn()} />)
+    await screen.findAllByTestId(/^record-/)
+
+    fireEvent.click(screen.getByRole('button', { name: /^删除棋谱：黑方胜，时间未知（第 \d+ 条）$/ }))
+    fireEvent.click(screen.getByRole('button', { name: /^确认删除棋谱：黑方胜，时间未知（第 \d+ 条）$/ }))
+    expect(await screen.findByRole('button', { name: '开始一局对战' })).toHaveFocus()
   })
 })
 
@@ -652,6 +726,8 @@ describe('ReviewScreen —— 分析失败', () => {
     fireEvent.click(await screen.findByRole('button', { name: '开始分析' }))
 
     expect(await screen.findByTestId('analysis-error')).toHaveTextContent('引擎炸了')
+    // 错误态用 danger，不用 warn（DESIGN_SYSTEM §2.2）
+    expect(screen.getByTestId('analysis-error')).toHaveClass('text-danger')
     expect(screen.getByRole('button', { name: '重新分析' })).toBeInTheDocument()
   })
 
@@ -929,14 +1005,15 @@ describe('GameLibrary —— 读不出棋谱时如实说明', () => {
 
   it('库里有棋谱时，降级提示换成对得上事实的措辞', async () => {
     const storage = memoryGameRecords(true)
-    await storage.put(nineMoveRecord())
+    // 降级兜底的号段不从 1 起（避免与库里的自增号撞车），用存进去拿到的号定位
+    const { record } = await storage.put(nineMoveRecord())
 
     render(
       <GameLibrary storage={storage} onOpen={vi.fn()} onStartBattle={vi.fn()} />,
     )
 
     // 列表照常出来
-    expect(await screen.findByTestId('record-1')).toBeInTheDocument()
+    expect(await screen.findByTestId(`record-${record.seq}`)).toBeInTheDocument()
     // 空状态那句不出现，但降级这件事照样要说——而且说的是「下面这些」
     expect(screen.queryByText('还没有保存的对局')).not.toBeInTheDocument()
     expect(screen.getByTestId('library-degraded')).toHaveTextContent('本次会话')

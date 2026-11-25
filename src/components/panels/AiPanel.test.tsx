@@ -148,6 +148,21 @@ describe('AiPanel —— 两级信息', () => {
     expect(screen.getByText('搜满档位深度')).toBeInTheDocument()
   })
 
+  /*
+   * `DESIGN_SYSTEM.md` §3.1：等宽只用于数字与坐标。「判断」「结论」两格是中文，
+   * 原先跟数字一起套了 `font-mono`，中文也被排成等宽。
+   */
+  it('技术详情里只有数字格用等宽，中文格不用', () => {
+    setup({ info: INFO })
+    openInfo()
+
+    expect(screen.getByText('搜索结果')).not.toHaveClass('font-mono')
+    expect(screen.getByText('搜满档位深度')).not.toHaveClass('font-mono')
+    for (const value of ['2 层', '42', '3 ms', '-700']) {
+      expect(screen.getByText(value)).toHaveClass('font-mono', 'tabular-nums')
+    }
+  })
+
   it('入门档搜满 1 层：说「搜满档位深度」，全页没有「精确」二字', () => {
     setup({ info: { ...INFO, depth: 1 } })
     openInfo()

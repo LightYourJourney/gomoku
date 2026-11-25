@@ -51,9 +51,11 @@ export function MoveList({ moves, firstPlayer, lastMove }: MoveListProps) {
     上限从 288px 收到 224px（可视手数 18 → 14）。
     列表本来就自带滚动，这不是「少看几手」，而是**让最后一块面板不再掉到折线以下**
     ——右栏溢出 67px 时，被切掉的正是这一块的底部。
+    收紧的条件是两栏（`wide-layout`），与对战页右栏的出现条件一致；原先写的 `lg:`
+    在 768–1023 横屏两栏下不命中，那一档列表仍按单列的 256px 算。
   */
   return (
-    <div ref={scrollRef} className="max-h-64 overflow-y-auto lg:max-h-56">
+    <div ref={scrollRef} className="max-h-64 overflow-y-auto wide-layout:max-h-56">
       <ol className="space-y-0.5 font-mono text-xs">
         {rows.map((row) => (
           <li

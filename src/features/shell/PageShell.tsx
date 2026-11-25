@@ -10,7 +10,8 @@ import { AppHeader } from './AppHeader'
  * 改成 `wide-layout` 时就有四处类名要一起改，漏一处就是「已经是两栏了，
  * 可那一栏既不滚、也没有分隔线」。
  *
- * **对战页不用它**：它自有三档（`BattleScreen`），断点仍是 `lg`。
+ * **对战页不用它**：它自有三档（`BattleScreen`）。两栏条件与这里同为 `wide-layout`
+ * （Phase 05 并过来的），三栏另由 JS 判 ≥1440。
  */
 export const SIDE_PANEL_CLASS =
   'wide-layout:overflow-y-auto wide-layout:border-l wide-layout:border-border wide-layout:px-4 wide-layout:py-4'
@@ -68,7 +69,13 @@ export function PageShell({ children, toolbar, footer, variant = 'reading', show
         </main>
       ) : (
         /*
-         * 棋盘型正文：窄屏纵向堆叠，lg 起变成「棋盘 + 344px 侧栏」两栏。
+         * 棋盘型正文：两栏条件（`wide-layout`）未命中时纵向堆叠，命中后变成「棋盘 + 侧栏」两栏。
+         *
+         * **侧栏宽 `clamp(300px,24vw,380px)`**（DESIGN_SYSTEM §10.2 第 2 条：用 `clamp()`，不用固定 px）。
+         * 与对战页三栏的右栏同一个式子；下限 300 是 §10.2 写的两栏右栏下限。
+         * 1024→300、1280→307、1440→346：1024 / 1280 比原先的固定 344 窄，棋盘列只会更宽；
+         * 1440 多出 2px，那一档棋盘被高度卡住，列宽少 2px 不影响棋盘。
+         * 768–1023 横屏那一档侧栏取下限 300，比原来省下 44px 给棋盘。
          *
          * **这里刻意没有 `grid-rows`。** 有过一次教训：三处详情页曾经写着
          * `lg:grid-rows-[auto_minmax(0,1fr)]`，那是给「工具栏当网格第一行」写的；
@@ -80,7 +87,7 @@ export function PageShell({ children, toolbar, footer, variant = 'reading', show
         <main
           ref={mainRef}
           tabIndex={-1}
-          className="flex min-h-0 flex-1 flex-col outline-none wide-layout:grid wide-layout:grid-cols-[minmax(0,1fr)_344px] ultra-wide:grid-cols-[minmax(0,1fr)_clamp(380px,26vw,520px)]"
+          className="flex min-h-0 flex-1 flex-col outline-none wide-layout:grid wide-layout:grid-cols-[minmax(0,1fr)_clamp(300px,24vw,380px)] ultra-wide:grid-cols-[minmax(0,1fr)_clamp(380px,26vw,520px)]"
         >
           {children}
         </main>

@@ -411,8 +411,9 @@ test('棋谱库：下完的一局带时间；删除要二次确认，删掉之�
   await expect(item).toContainText(/\d{4}-\d{2}-\d{2} \d{2}:\d{2}/)
   const seq = (await item.getAttribute('data-testid'))!.slice('record-'.length)
 
-  await page.getByRole('button', { name: `删除棋谱 ${seq}` }).click()
-  await page.getByRole('button', { name: `确认删除棋谱 ${seq}` }).click()
+  // 可访问名是这一行看得到的「结果，时间」，不是内部编号 seq
+  await page.getByRole('button', { name: /^删除棋谱：黑方胜，\d{4}-\d{2}-\d{2} \d{2}:\d{2}（第 \d+ 条）$/ }).click()
+  await page.getByRole('button', { name: /^确认删除棋谱：黑方胜，\d{4}-\d{2}-\d{2} \d{2}:\d{2}（第 \d+ 条）$/ }).click()
   await expect(page.getByText('已删除这局棋谱。')).toBeVisible()
   await expect(page.getByTestId(`record-${seq}`)).toHaveCount(0)
 

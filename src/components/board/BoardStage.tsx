@@ -35,12 +35,19 @@ export function BoardStage({ children, className }: BoardStageProps) {
           「已经是两栏了，可棋盘还按 `56dvh` 算」：768–1023 横屏那一档实测只剩
           256px（900×500），远低于 §8.1 的 320px 底线。
 
+          窄屏横向内边距是 `px-1`、高度是 `min(100vw−0.5rem, 56dvh)`。原先是 `px-3` +
+          `100vw−1.5rem`：对战页中列自己还有 `px-3`，360 宽时内容宽 = 360−24−24 = 312；
+          其余页面没有那层外边距，可高度是边框盒、要再扣 `py-3`，内容高 = 336−24 = 312。
+          两头都是 312，低于 §8.1 的 320（`e2e/layout.spec.ts` 的 360×800 那条）。
+          现在内容宽 = 100vw−24−8、内容高 = (100vw−8)−24，两者相等，对战页正好是正方形；
+          其余页面内容宽更宽，棋盘由高度决定，两侧各留几 px。360 宽时棋盘 328（含边框）。
+
           `wide-layout:py-2` 而不是 `py-3`：对战页中列的纵向开销直接压棋盘，
           而棋盘在 ≥1440 是被高度卡住的（见 `BattleScreen` 的注释）。
           **这个值只能改在这里**——调用方用 `className` 传是没用的，
           Tailwind 的同名工具类之间没有优先级，谁在生成的 CSS 里靠后谁赢。
         */
-        'flex h-[min(calc(100vw-1.5rem),56dvh)] items-center justify-center px-3 py-3 wide-layout:h-auto wide-layout:min-h-0 wide-layout:px-6 wide-layout:py-2',
+        'flex h-[min(calc(100vw-0.5rem),56dvh)] items-center justify-center px-1 py-3 wide-layout:h-auto wide-layout:min-h-0 wide-layout:px-6 wide-layout:py-2',
         className,
       )}
       style={{ containerType: 'size' }}

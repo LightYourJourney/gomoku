@@ -305,6 +305,51 @@ test.describe('任务书六档视口', () => {
 })
 
 /*
+ * 最小支持视口宽 360（DESIGN_SYSTEM §8.1）。
+ *
+ * 窄屏那档 `BoardStage` 的高度原先是 `min(100vw−1.5rem, 56dvh)`，没扣自己的 `py-3`：
+ * 容器查询按内容盒算，360 宽时棋盘 = min(336, 312) = **312px**，低于 320 底线。
+ * 六档里最窄的 390 恰好落在线上方（342），所以那组用例看不见它。
+ */
+test('@360×800（最小支持宽度）：棋盘 ≥320、正方形、工具栏在、无横向溢出', async ({ page }) => {
+  await page.setViewportSize({ width: 360, height: 800 })
+  await page.goto('/')
+
+  const box = await boardBox(page)
+  expect(box.width, `棋盘只有 ${box.width}px 宽`).toBeGreaterThanOrEqual(MIN_BOARD)
+  expect(Math.abs(box.width - box.height), '棋盘不是正方形').toBeLessThanOrEqual(pixelTolerance())
+  await expect(page.getByRole('button', { name: '求提示' })).toBeVisible()
+
+  const overflow = await page.evaluate(
+    () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+  )
+  expect(overflow, `@360×800 横向溢出了 ${overflow}px`).toBeLessThanOrEqual(0)
+})
+
+/*
+ * 同一条底线在**其余带棋盘的页面**上也要成立。对战页的中列自己多一层 `px-3`，
+ * 其余页面没有，原先 312 的成因不同（高度没扣 `py-3`），只量对战页会漏掉它们。
+ */
+for (const [name, path] of [
+  ['残局题', '/puzzles/win-h'],
+  ['局面编辑器', '/review/editor'],
+] as const) {
+  test(`@360×800（最小支持宽度）：${name}的棋盘 ≥320、正方形、无横向溢出`, async ({ page }) => {
+    await page.setViewportSize({ width: 360, height: 800 })
+    await page.goto(path)
+
+    const box = await boardBox(page)
+    expect(box.width, `${name}棋盘只有 ${box.width}px 宽`).toBeGreaterThanOrEqual(MIN_BOARD)
+    expect(Math.abs(box.width - box.height), `${name}棋盘不是正方形`).toBeLessThanOrEqual(pixelTolerance())
+
+    const overflow = await page.evaluate(
+      () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    )
+    expect(overflow, `${name} @360×800 横向溢出了 ${overflow}px`).toBeLessThanOrEqual(0)
+  })
+}
+
+/*
  * 极小的横屏窗口（任务书 §三 的边界）。
  *
  * 这一档棋盘**必然低于 320**：`320 + 顶栏 + 工具栏` 物理上放不进 412 的高度。

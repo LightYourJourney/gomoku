@@ -100,6 +100,64 @@ describe('ShareLinkDialog —— 生成、复制与失败提示', () => {
     expect(await screen.findByTestId('share-manual')).toHaveTextContent('手动选择')
   })
 
+  /*
+   * 选完选项，选项列表整块换成链接框：不移焦的话焦点跟着被卸载的按钮掉到 `<body>`。
+   * 「重新选择」同理，它自己也会被换掉。
+   */
+  it('选完选项焦点到链接框；点「重新选择」焦点回到第一个选项', () => {
+    render(
+      <ShareLinkDialog
+        open
+        title="分享棋谱"
+        onClose={vi.fn()}
+        options={[
+          {
+            id: 'game',
+            label: '分享整盘',
+            description: '完整棋谱',
+            generate: () => ({ ok: true, link: 'https://example.test/#share=abc' }),
+          },
+          {
+            id: 'current',
+            label: '分享当前局面',
+            description: '当前回合',
+            generate: () => ({ ok: true, link: 'https://example.test/#share=def' }),
+          },
+        ]}
+      />,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: '分享当前局面' }))
+    expect(screen.getByTestId('share-link')).toHaveFocus()
+
+    fireEvent.click(screen.getByRole('button', { name: '重新选择' }))
+    expect(screen.getByRole('button', { name: '分享整盘' })).toHaveFocus()
+  })
+
+  /*
+   * 选项的说明是用户做选择的依据。原先 `aria-label` 只写了标题，把按钮里的说明盖掉了——
+   * 读屏只念「分享整盘」，「完整棋谱」听不到。
+   */
+  it('选项的说明进入可访问描述', () => {
+    render(
+      <ShareLinkDialog
+        open
+        title="分享棋谱"
+        onClose={vi.fn()}
+        options={[
+          {
+            id: 'game',
+            label: '分享整盘',
+            description: '完整棋谱，含全部手顺',
+            generate: () => ({ ok: true, link: 'https://example.test/#share=abc' }),
+          },
+        ]}
+      />,
+    )
+
+    expect(screen.getByRole('button', { name: '分享整盘' })).toHaveAccessibleDescription('完整棋谱，含全部手顺')
+  })
+
   it('生成失败显示原因', () => {
     render(
       <ShareLinkDialog

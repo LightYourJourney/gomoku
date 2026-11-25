@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import { BLACK } from '../../core/types'
 import { DIFFICULTY_LABELS } from '../../ai/difficulty'
 import type { GameRecord, GameRecordList, GameRecordsStorage } from '../../persist/gameRecords'
@@ -46,6 +46,16 @@ function metaLabel(record: GameRecord): string {
 /** 这局下完的时间。阶段 D 之前的棋谱没有时间，如实说，不编造。 */
 function timeLabel(record: GameRecord): string {
   return (record.createdAt === null ? null : formatLocalMinute(record.createdAt)) ?? '时间未知'
+}
+
+/**
+ * 这一局在按钮可访问名里的称呼：结果 + 时间 + 列表里第几条，都是界面上看得到、数得出的。
+ * 原先用的是内部的 `seq`（「删除棋谱 17」），读屏念出一个屏幕上找不到的编号；
+ * 只用「结果 + 时间」又会重名——阶段 D 之前的旧记录全是「时间未知」，同一分钟同结果的两局也一样，
+ * 读屏用户分不出要删哪一局。所以补上序号。
+ */
+function recordName(record: GameRecord, index: number): string {
+  return `：${resultLabel(record)}，${timeLabel(record)}（第 ${index + 1} 条）`
 }
 
 /** 一批显示多少局。5,000 局全量渲染是 3 万个元素、首屏 433 ms（评估报告 §4.6）；分批够用，不上虚拟列表。 */
@@ -125,19 +135,45 @@ export function GameLibrary({
     }
   }, [storage, reloadKey])
 
+  /*
+   * 删除流程里按钮是**整颗换掉**的（「删除」→「确认删除 / 取消」→ 行消失），
+   * 被卸载的节点带走焦点，焦点掉到 `<body>`。所以每一步都指定下一个落点：
+   * 写进 `pendingFocus`，等这次状态变化渲染完再 `focus()`——元素那时才在 DOM 里。
+   */
+  const idBase = useId()
+  const focusId = (kind: 'record' | 'delete' | 'confirm', seq: number): string => `${idBase}-${kind}-${seq}`
+  const startBattleId = `${idBase}-start`
+  const pendingFocus = useRef<string | null>(null)
+  useEffect(() => {
+    const id = pendingFocus.current
+    if (id === null) return
+    pendingFocus.current = null
+    document.getElementById(id)?.focus()
+  })
+
   async function deleteRecord(seq: number): Promise<void> {
     setConfirming(null)
+    // 删掉之后焦点去这一行的下一行；它是最后一行就去上一行；删光了去空状态的主操作。
+    const records = result?.records ?? []
+    const index = records.findIndex((record) => record.seq === seq)
+    const neighbour = records[index + 1] ?? records[index - 1]
     try {
       const { persisted } = await storage.delete(seq)
-      if (!persisted) {
-        setDeleteNote({ ok: false, text: '棋谱库现在不可用，只删了本次会话里的这一局——刷新后它可能仍在。' })
-        return
-      }
+      /*
+       * 没写进库（降级到内存）时内存里那条**也已经删了**，所以列表照样移除：
+       * 留着它的话再点那一行，打开的是一局已经不存在的棋。
+       */
       setResult((current) =>
         current === null ? current : { ...current, records: current.records.filter((record) => record.seq !== seq) },
       )
-      setDeleteNote({ ok: true, text: '已删除这局棋谱。' })
+      pendingFocus.current = neighbour === undefined ? startBattleId : focusId('record', neighbour.seq)
+      setDeleteNote(
+        persisted
+          ? { ok: true, text: '已删除这局棋谱。' }
+          : { ok: false, text: '棋谱库现在不可用，只删了本次会话里的这一局——刷新后它可能仍在。' },
+      )
     } catch (err) {
+      pendingFocus.current = focusId('delete', seq)
       setDeleteNote({ ok: false, text: `删除失败：${err instanceof Error ? err.message : String(err)}` })
     }
   }
@@ -203,7 +239,7 @@ export function GameLibrary({
           <p className="mx-auto mt-2 max-w-xs text-xs text-faint">
             对局结束后会自动存进这里，之后可以逐手回放，也可以让引擎逐手分析、找出亏损最大的几手。
           </p>
-          <Button variant="primary" className="mt-4" onClick={onStartBattle}>
+          <Button id={startBattleId} variant="primary" className="mt-4" onClick={onStartBattle}>
             开始一局对战
           </Button>
           {result.degraded && (
@@ -244,10 +280,11 @@ export function GameLibrary({
             <p className="mb-2 text-xs text-warn">删除的是本机保存的这一局，删除后不能撤销。</p>
           )}
           <ul className="space-y-2">
-            {result.records.slice(0, shown).map((record) => (
+            {result.records.slice(0, shown).map((record, index) => (
               <li key={record.seq} className="flex items-stretch gap-2">
                 <button
                   type="button"
+                  id={focusId('record', record.seq)}
                   data-testid={`record-${record.seq}`}
                   onClick={() => onOpen(record)}
                   className="min-w-0 flex-1 rounded-xl border border-border bg-surface px-4 py-3 text-left transition hover:border-border-strong"
@@ -261,7 +298,7 @@ export function GameLibrary({
                 {services !== undefined && (
                   <Button
                     size="sm"
-                    aria-label={`导出棋谱 ${record.seq}`}
+                    aria-label={`导出棋谱${recordName(record, index)}`}
                     onClick={() => exportRecord(record)}
                   >
                     导出
@@ -271,22 +308,31 @@ export function GameLibrary({
                 {confirming === record.seq ? (
                   <>
                     <Button
+                      id={focusId('confirm', record.seq)}
                       size="sm"
                       variant="danger"
-                      aria-label={`确认删除棋谱 ${record.seq}`}
+                      aria-label={`确认删除棋谱${recordName(record, index)}`}
                       onClick={() => void deleteRecord(record.seq)}
                     >
                       确认删除
                     </Button>
-                    <Button size="sm" onClick={() => setConfirming(null)}>
+                    <Button
+                      size="sm"
+                      onClick={() => {
+                        pendingFocus.current = focusId('delete', record.seq)
+                        setConfirming(null)
+                      }}
+                    >
                       取消
                     </Button>
                   </>
                 ) : (
                   <Button
+                    id={focusId('delete', record.seq)}
                     size="sm"
-                    aria-label={`删除棋谱 ${record.seq}`}
+                    aria-label={`删除棋谱${recordName(record, index)}`}
                     onClick={() => {
+                      pendingFocus.current = focusId('confirm', record.seq)
                       setDeleteNote(null)
                       setConfirming(record.seq)
                     }}

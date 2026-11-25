@@ -193,6 +193,14 @@ export function Modal({
         className={cx(
           // 浮层用 shadow-overlay：它压在整页之上，比面板高一档
           'w-full max-w-sm rounded-2xl border border-border bg-surface p-5 shadow-overlay outline-none',
+          /*
+           * 限高 + 自己滚：遮罩是 `fixed inset-0` 且不滚，对话框比视口高时
+           * （横屏手机 915×412 上的分支确认框）居中后上下都被裁掉，底部按钮
+           * 既看不见也点不到。`2rem` 是遮罩的 `p-4` 上下各 1rem。
+           * Tab 到被裁掉的按钮时，浏览器会把它滚进这个容器的可视区。
+           * `e2e/mobile.spec.ts`「弹窗比视口高」钉着。
+           */
+          'max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain',
           motionClass('panelIn'),
         )}
       >

@@ -1,4 +1,5 @@
-import { useRef, useState } from 'react'
+import { useId, useRef, useState } from 'react'
+import { flushSync } from 'react-dom'
 import { Button } from '../../components/ui/Button'
 import { Modal } from '../../components/ui/Modal'
 
@@ -26,6 +27,8 @@ export interface ShareLinkDialogProps {
  */
 export function ShareLinkDialog({ open, title, options, onClose }: ShareLinkDialogProps) {
   const inputRef = useRef<HTMLInputElement>(null)
+  const firstOptionRef = useRef<HTMLButtonElement>(null)
+  const descriptionIdBase = useId()
   const [result, setResult] = useState<ShareLinkResult | null>(null)
   const [copied, setCopied] = useState<'idle' | 'copied' | 'manual'>('idle')
 
@@ -35,9 +38,23 @@ export function ShareLinkDialog({ open, title, options, onClose }: ShareLinkDial
     onClose()
   }
 
+  /*
+   * 选项列表与链接框是**互相替换**的：被点的按钮随即卸载，焦点会掉到 `<body>`。
+   * 所以换完之后把焦点交给新出现的那一块——`flushSync` 让 DOM 先更新，再 `focus()`。
+   * 生成失败时选项列表还在、被点的按钮也还在，焦点不用动。
+   */
   function choose(option: ShareOption): void {
-    setCopied('idle')
-    setResult(option.generate())
+    const next = option.generate()
+    flushSync(() => {
+      setCopied('idle')
+      setResult(next)
+    })
+    if (next.ok) inputRef.current?.focus()
+  }
+
+  function reselect(): void {
+    flushSync(() => setResult(null))
+    firstOptionRef.current?.focus()
   }
 
   async function copy(): Promise<void> {
@@ -66,16 +83,27 @@ export function ShareLinkDialog({ open, title, options, onClose }: ShareLinkDial
       <div data-testid="share-dialog" className="space-y-3">
         {result === null || !result.ok ? (
           <div className="space-y-2">
-            {options.map((option) => (
+            {options.map((option, index) => (
+              /*
+               * 名字只取标题，说明走 `aria-describedby`：说明是做选择的依据，
+               * 原先 `aria-label` 把它整个盖掉了，读屏听不到。
+               * `whitespace-normal` 挂在两个 span 上而不是按钮上：`Button` 自带
+               * `whitespace-nowrap`，同名工具类之间没有优先级，靠后的赢；
+               * 子元素上声明则一定盖过继承来的值，长说明才能换行。
+               */
               <Button
                 key={option.id}
+                ref={index === 0 ? firstOptionRef : undefined}
                 block
                 aria-label={option.label}
+                aria-describedby={`${descriptionIdBase}-${option.id}`}
                 onClick={() => choose(option)}
                 className="h-auto flex-col items-start gap-1 py-2 text-left"
               >
-                <span className="font-medium">{option.label}</span>
-                <span className="text-xs font-normal text-muted">{option.description}</span>
+                <span className="font-medium whitespace-normal">{option.label}</span>
+                <span id={`${descriptionIdBase}-${option.id}`} className="text-xs font-normal whitespace-normal text-muted">
+                  {option.description}
+                </span>
               </Button>
             ))}
             {result !== null && !result.ok && (
@@ -102,7 +130,7 @@ export function ShareLinkDialog({ open, title, options, onClose }: ShareLinkDial
                 {copied === 'copied' ? '已复制' : '复制链接'}
               </Button>
               {options.length > 1 && (
-                <Button block onClick={() => setResult(null)}>
+                <Button block onClick={reselect}>
                   重新选择
                 </Button>
               )}

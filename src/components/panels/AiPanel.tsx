@@ -72,11 +72,15 @@ export interface AiPanelProps {
   onDismissError: () => void
 }
 
-function Stat({ label, value }: { label: string; value: string }) {
+/**
+ * `numeric`：值是数字（深度、节点、耗时、评分）时才用等宽——§3.1「等宽只用于数字与坐标」。
+ * 「判断」「结论」两格是中文，套上等宽字族中文也会被排成等宽。
+ */
+function Stat({ label, value, numeric = false }: { label: string; value: string; numeric?: boolean }) {
   return (
     <div className="rounded-lg bg-surface-2 px-3 py-2">
       <div className="text-xs text-faint">{label}</div>
-      <div className="mt-1 font-mono text-xs tabular-nums text-fg">{value}</div>
+      <div className={cx('mt-1 text-xs text-fg', numeric && 'font-mono tabular-nums')}>{value}</div>
     </div>
   )
 }
@@ -148,7 +152,7 @@ export function AiPanel({ thinking, info, error, canRetry, onRetry, onDismissErr
       )}
 
       {thinking ? (
-        <p className="py-2 text-xs text-muted">AI 正在分析局面…</p>
+        <p className="py-2 text-body text-muted">AI 正在分析局面…</p>
       ) : info === null ? (
         <p className="py-2 text-xs text-faint">尚未产生分析结果。</p>
       ) : (
@@ -162,7 +166,7 @@ export function AiPanel({ thinking, info, error, canRetry, onRetry, onDismissErr
             挡掉了——所以这一句永远有坐标可报，不必防一个到不了的状态。
             守着这条不变量的用例在 `gameStore.test.ts`。
           */}
-          <p className="text-xs leading-relaxed text-fg">
+          <p className="text-body text-fg">
             <span data-testid="ai-player-view">
               {info.confidence === 'fallback' ? FALLBACK_PLAYER_TEXT : REASON_TEXT[info.reason].player}
             </span>
@@ -190,10 +194,10 @@ export function AiPanel({ thinking, info, error, canRetry, onRetry, onDismissErr
           <div className="grid grid-cols-2 gap-2">
             <Stat label="判断" value={REASON_TEXT[info.reason].label} />
             <Stat label="结论" value={CONFIDENCE_LABELS[info.confidence]} />
-            <Stat label="搜索深度" value={`${info.depth} 层`} />
-            <Stat label="搜索节点" value={String(info.nodes)} />
-            <Stat label="耗时" value={`${info.elapsedMs} ms`} />
-            <Stat label="局面评分" value={String(info.score)} />
+            <Stat label="搜索深度" value={`${info.depth} 层`} numeric />
+            <Stat label="搜索节点" value={String(info.nodes)} numeric />
+            <Stat label="耗时" value={`${info.elapsedMs} ms`} numeric />
+            <Stat label="局面评分" value={String(info.score)} numeric />
           </div>
 
           <p className="text-xs leading-relaxed text-faint">

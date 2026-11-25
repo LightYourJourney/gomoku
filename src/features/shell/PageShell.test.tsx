@@ -77,7 +77,8 @@ describe('PageShell 的棋盘型正文', () => {
     )
     const classes = screen.getByRole('main').className
     expect(classes).toContain('wide-layout:grid')
-    expect(classes).toContain('wide-layout:grid-cols-[minmax(0,1fr)_344px]')
+    // 侧栏用 clamp()，不用固定 px（DESIGN_SYSTEM §10.2 第 2 条）
+    expect(classes).toContain('wide-layout:grid-cols-[minmax(0,1fr)_clamp(300px,24vw,380px)]')
     expect(classes).not.toContain('lg:grid')
   })
 
