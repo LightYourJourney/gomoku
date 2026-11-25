@@ -46,7 +46,7 @@
 | pre-push 不看推送的 ref | 推送的提交不是 HEAD、或工作区有未提交改动时拒绝并说明 |
 | `e2e/fixtures.spec.ts` 类型不符时提前 return，后续断言空转 | 改成断言 |
 | `bench/gate.mjs` 不变量基线为空数组也通过 | 要求非空 |
-| `layers.mjs` 允许 sharing 依赖整个 persist；`..` 开头路径跳过 | 收窄到 `persist/transfer`；`src` 外的相对引用报错 |
+| `layers.mjs` 允许 sharing 依赖整个 persist；`..` 开头路径跳过 | `src` 外的相对引用报错。**「收窄到 `persist/transfer`」这次其实没做**（表里原先写成已改），2026-11-26 复审查出后补上，见 [FULL_REVIEW_2026-11-26](FULL_REVIEW_2026-11-26.md) 第三节 |
 | `tests.ratchet.mjs` 的 skip 标记匹配不全 | 补全 |
 | `tsconfig.node.json` 未开 strict | 开 |
 | 本地 e2e 复用已在跑的服务器，可能测到别的工作树 | 不复用，端口被占就响亮失败 |

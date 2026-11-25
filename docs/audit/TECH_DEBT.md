@@ -26,8 +26,8 @@ Phase D 只做**设计级影响分析**，不开发任何新功能。
 | 分析固定中级档 + 每局面 1,000 ms、同时只分析一局、满盘末局无结论 | `ReviewScreen.tsx:349`、`analysisStore.ts:29,113` | 慢 | 同上。0.7.1 起由初级档 400ms 改为中级档 1,000 ms（裁定 22） |
 | 回放游标不持久化（有意） | `store/replayStore.ts` | — | **不是债**，是产品决策 |
 | ~~基准不做断言、无 CI 门禁~~ | `bench/engine.bench.ts` | ~~中~~ | **2026-10-13 已偿还**：`yarn bench:check`（`bench/gate.mjs` + `bench/baseline.json`）断言余量充足的行与机器无关的不变量，`.github/workflows/quality.yml` 里跑。**保留残余**：耗时列仍只打印不判定——那部分仍然靠人看 |
-| 子路径部署无自动化用例 | `vite.config.ts:10` | 慢 | 靠 README 的两条 `grep` 兜着 |
-| 复盘页对读屏用户只是一张图 | `ReplayBoard.tsx:54` | 慢 | 要做需要先设计一套可读的逐步导航 |
+| 子路径部署无自动化用例 | `vite.config.ts:63` | 慢 | 靠 README 的两条 `grep` 兜着 |
+| 复盘页对读屏用户只是一张图 | `ReplayBoard.tsx` | 慢 | 要做需要先设计一套可读的逐步导航 |
 | Web Worker 降级：极老浏览器无回退路径 | `ai/browserEngine.ts` | 慢 | 目标浏览器不明确，暂不处理 |
 
 ### 1.2 未声明的债（本次新发现）

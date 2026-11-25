@@ -9,12 +9,12 @@
 - [ ] `git status` 干净，发布提交就是评审过的那个提交
 - [ ] `yarn lint` 通过
 - [ ] `yarn typecheck` 通过
-- [ ] `yarn test` 全过（2026-10-31 基线：1,447）
+- [ ] `yarn test` 全过（条数以 `quality/tests.baseline.json` 为准，棘轮只许涨）
 - [ ] `yarn build` 通过
-- [ ] `yarn e2e` 全过（2026-10-31 基线：192）
-- [ ] `yarn e2e:prod` 全过（0.6.0 基线：7）
+- [ ] `yarn e2e` 全过（条数以 `quality/tests.baseline.json` 为准，棘轮只许涨）
+- [ ] `yarn e2e:prod` 全过（条数以 `quality/tests.baseline.json` 为准，棘轮只许涨）
 - [ ] `yarn e2e:browsers` 全过（Firefox / WebKit 各 10 条，基线：20）
-- [ ] `yarn gates` 通过（循环 / 死码 / 重复 / 测试条数棘轮）
+- [ ] `yarn gates` 通过（循环 / 死码 / 重复 / 测试条数棘轮 / 包体积 / 分层）
 - [ ] `yarn ui:probe --out docs/ui-redesign/screenshots/ci && yarn check:coverage` 通过（棘轮读的是这次探针的产物）
 - [ ] `yarn ui:probe --out <临时目录>` 七条判据全过（基线：38 状态 / 308 张）
 - [ ] `yarn bench:check` 通过（基线：19/19 + 29 项不变量）
@@ -23,14 +23,14 @@
 
 ## B. 构建产物
 
-- [ ] `dist/` 只含预期文件：`index.html`、`assets/*`、`favicon.svg`、`robots.txt`、`404.html`、`_headers`
+- [ ] `dist/` 只含预期文件：`index.html`、`assets/*`、`favicon.svg`、`robots.txt`、`404.html`、`_headers`、`_redirects`
 - [ ] 无 `.map`、无 `.env`、无 `localhost` / `127.0.0.1`
 - [ ] `dist/index.html` 无内联 `<script>`；资源路径带正确的 base
 - [ ] Worker chunk 存在，且被 `index-*.js` 以同源相对路径引用
 - [ ] 页面地址的改写规则随产物部署：线上直达 `/learn/rules`、`/review` 与刷新都回到应用，`/assets/不存在.js` 仍是 404（不是 HTML），
       `/foo` 是 404 页（`public/_redirects`，阶段 C）
 - [ ] 子路径部署时：`VITE_BASE=/xxx/ yarn build` 后，HTML/JS/CSS/favicon/Worker 全部带前缀
-- [ ] 产物体积无异常增长（0.6.0 build.2：`index` 419.14 kB / gzip 129.10 kB / Worker 13.99 kB；CSS gzip 7.52 kB；`check:bundle` 的预算是 gzip ≤ 135,000 B）
+- [ ] 产物体积无异常增长（0.6.0 build.2：`index` 419.14 kB / gzip 129.10 kB / Worker 13.99 kB；CSS gzip 7.52 kB；`check:bundle` 的预算是入口 JS gzip ≤ 108,000 B、全部 JS gzip ≤ 162,000 B）
 
 ## C. 安全与元数据
 
@@ -64,7 +64,7 @@
 
 - [ ] 用户明确授权发布，并确认域名与公开范围
 - [ ] 已决定是否允许搜索引擎索引（当前 `robots.txt` 为允许）
-- [ ] 真机 Safari / iOS 至少各做一次冒烟（Firefox/WebKit 已由 CI 的 `browsers` / `browsers-full` 覆盖 20 / 301 条，真机与 Safari 官方引擎仍未验）
+- [ ] 真机 Safari / iOS 至少各做一次冒烟（Firefox/WebKit 已由 CI 的 `browsers` / `browsers-full` 覆盖 20 / 331 条，真机与 Safari 官方引擎仍未验）
 - [ ] 在发布说明中写明：无后端、数据只存本机、换域名/换浏览器不会带走进度
 - [ ] 在发布说明中写明：关闭页面前的最后一次写入是尽力而为，不是保证
 - [ ] 知悉 GitHub Pages 无法落地安全头；若选它，发布说明必须注明

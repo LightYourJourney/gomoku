@@ -26,7 +26,7 @@ analysis   learn        ← 分析结论与教学内容（两条互不依赖的�
 | `learn` | `core`、`ai`、`lib` |
 | `lib` | `core`、`ai` |
 | `persist` | `core`、`ai`、`lib` |
-| `sharing` | `core`、`persist` |
+| `sharing` | `core`、`persist/transfer`；`persist/gameRecords` 只许 `import type`（`import { type X }` 在 `verbatimModuleSyntax` 下仍会加载模块，不算） |
 | `store` | `core`、`ai`、`analysis`、`persist`、`lib` |
 | `components` | `core`、`ai`、`learn`、`lib` |
 | `features` | 以上全部 |
@@ -108,7 +108,7 @@ analysis   learn        ← 分析结论与教学内容（两条互不依赖的�
 | 模式 | 正文 | 谁在滚 | 用在 |
 | --- | --- | --- | --- |
 | `reading` | 居中限宽列 `max-w-3xl` | `<main>`（顶栏在它**外面**） | 教学 / 残局 / 复盘的列表页 |
-| `flush` | 自己管栅格（`wide-layout` 起两栏：棋盘 + 344px 侧栏） | 页面自己 | 课程讲解、练习、残局详情、复盘回放 |
+| `flush` | 自己管栅格（`wide-layout` 起两栏：棋盘 + `clamp(300px,24vw,380px)` 侧栏） | 页面自己 | 课程讲解、练习、残局详情、复盘回放 |
 
 **顶栏必须在滚动容器外面**，而不是靠 `position: sticky` 兜底：sticky 只在「最近的可滚动祖先」里生效，而列表页在 ≥1024 时滚的是内层 `main`、<1024 时滚的是文档——把顶栏放进滚动容器，这两种情况下它的行为就不一样了。放进外壳、与正文平级，两种宽度下都不用 sticky 也永远在。
 
@@ -251,7 +251,7 @@ Phase 03 之前它是一圈 `--c-danger` 的红环：`danger` 是「认输 / 错
 **布局预算由 e2e 钉住**（`e2e/layout.spec.ts`）：e2e 覆盖的常规视口下棋盘 ≥ 320px 且为正方形；
 **宽度 ≥1024 且高度 ≥900** 时 ≥ 620px（低高度窗口里棋盘受高度约束，1024×768
 实测 597px）；两栏/三栏下棋盘与侧栏互不压盖。高度极小的横屏窗口（900×480 /
-915×412）物理上放不下 `320 + 顶栏 + 工具栏`，**这一档没有尺寸断言，也不是被
+915×412）物理上放不下 `320 + 顶栏 + 工具栏`，**这一档只有下限断言（棋盘 ≥ 200px，`e2e/layout.spec.ts`「极小横屏」），也不是被
 接受为合规**——它是规范 §8.1 的绝对措辞与物理限制的冲突，记录在
 `ui-redesign/KNOWN_ISSUES.md` M-3。
 
