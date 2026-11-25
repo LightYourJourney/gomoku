@@ -43,11 +43,26 @@ describe('学习进度存储', () => {
     expect(await loadProgress()).toEqual(SAMPLE)
   })
 
-  it('覆盖写而不是追加', async () => {
+  /*
+   * 原先是「覆盖写」：后一笔整条盖掉前一笔。2026-11-26 改为完成项取并集——
+   * 读失败后的那次写、另一个标签页的写都不再抹掉库里的进度（完成项只增不减，
+   * 唯一的减法是显式清空）。位置字段仍取最后一笔；完成项不重复追加。
+   */
+  it('完成项与库里那条取并集、不重复；位置取最后一笔', async () => {
     await saveProgress(SAMPLE)
-    await saveProgress({ ...SAMPLE, completedLessons: ['defense'] })
+    await saveProgress({
+      ...SAMPLE,
+      completedLessons: ['two', 'defense'],
+      solvedPuzzles: [],
+      lastVisited: null,
+      lastView: 'puzzles',
+    })
 
-    expect((await loadProgress()).completedLessons).toEqual(['defense'])
+    const stored = await loadProgress()
+    expect(stored.completedLessons).toEqual(['rules', 'two', 'defense'])
+    expect(stored.solvedPuzzles).toEqual(['win-h'])
+    expect(stored.lastVisited).toBeNull()
+    expect(stored.lastView).toBe('puzzles')
   })
 
   it('数据真的落在 IndexedDB 里：清掉内存态之后还能读回来', async () => {

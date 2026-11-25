@@ -1,5 +1,11 @@
 import { create, type StoreApi, type UseBoundStore } from 'zustand'
-import { indexedDbProgress, EMPTY_PROGRESS, type LearningProgress, type ProgressStorage } from '../persist/progress'
+import {
+  indexedDbProgress,
+  EMPTY_PROGRESS,
+  unionCompleted,
+  type LearningProgress,
+  type ProgressStorage,
+} from '../persist/progress'
 
 export type View = LearningProgress['lastView']
 
@@ -192,7 +198,11 @@ export function createLearnStore(storage: ProgressStorage): UseBoundStore<StoreA
       async currentProgress() {
         await flush()
         const live = get()
-        return live.loaded ? live.progress : storage.load()
+        const stored = await storage.load()
+        if (!live.loaded) return stored
+        // 内存里的是这次会话的真相（写失败时库里是旧值），但启动那次读失败时它缺了库里的那一份：
+        // 两边取并集，位置以内存为准。存储读不出来时 `load` 回落到内存兜底，并集等于内存本身。
+        return unionCompleted(stored, live.progress)
       },
 
       retryPersist() {

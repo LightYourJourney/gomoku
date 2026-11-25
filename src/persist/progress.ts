@@ -191,6 +191,15 @@ function parseProgress(value: unknown): LearningProgress | null {
   }
 }
 
+/** 完成项取两边的并集（先库里、后新增，保持原有顺序），位置与版本取 `next` 的。 */
+export function unionCompleted(base: LearningProgress, next: LearningProgress): LearningProgress {
+  return {
+    ...next,
+    completedLessons: [...new Set([...base.completedLessons, ...next.completedLessons])],
+    solvedPuzzles: [...new Set([...base.solvedPuzzles, ...next.solvedPuzzles])],
+  }
+}
+
 /** 库里那条是不是更新版本的应用写的（版本号是比当前大的正整数）。 */
 function isNewerThanCurrent(value: unknown): boolean {
   if (typeof value !== 'object' || value === null) return false
@@ -230,6 +239,11 @@ async function writeToIndexedDb(progress: LearningProgress | null): Promise<void
          * 盖掉就永久丢了（SCHEMA_MIGRATION.md §4「迁移前不破坏旧数据」）。
          * 这里中止事务、如实报失败；内存兜底照常可用，界面标「保存失败」。
          * 同版本里被改坏的记录不在此列：它本来就读不出来，覆盖不损失任何可恢复的东西。
+         *
+         * 读得出来的同版本记录，完成项按**并集**写回，位置取这次的值。完成项只增不减
+         * （唯一的减法是上面的显式清空），所以并集不会把该删的留下；而整条覆盖会在两种
+         * 情况下抹掉真实进度：启动时读失败一次、内存里是空进度（读失败与「没有记录」
+         * 返回的是同一个空进度），以及另一个标签页在这期间完成了别的课。
          */
         const existing = store.get(KEY)
         existing.onsuccess = () => {
@@ -237,7 +251,9 @@ async function writeToIndexedDb(progress: LearningProgress | null): Promise<void
             tx.abort()
             return
           }
-          store.put(JSON.parse(JSON.stringify(progress)), KEY)
+          const stored = parseProgress(existing.result)
+          const next = stored === null ? progress : unionCompleted(stored, progress)
+          store.put(JSON.parse(JSON.stringify(next)), KEY)
         }
       }
       tx.oncomplete = () => resolve()

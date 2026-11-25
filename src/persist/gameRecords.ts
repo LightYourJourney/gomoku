@@ -468,9 +468,11 @@ export const indexedDbGameRecords: GameRecordsStorage = {
       })
       return { record: { ...payload, seq }, persisted: true }
     } catch {
-      // 打不开库，或事务失败（整笔回滚，旧条还在）：与 `put` 失败同一条路——内存兜底、如实报没落库。
-      // 不在内存里替换：`replacesSeq` 是库里的号，内存兜底的号与它不是一套，按号删会删错。
-      return fallbackToMemory().put(record)
+      // 打不开库，或事务失败（整笔回滚，旧条还在）：内存兜底、如实报没落库。
+      // 在内存里**替换**：兜底号与库号分属两个号段（`FALLBACK_SEQ_BASE`），库里的号在兜底里
+      // 找不到、不会删错；指向兜底那条时（库整体不可用时的「终局 → 悔棋 → 再终局」）就替换它，
+      // 否则同一局在列表里两条。
+      return fallbackToMemory().putReplacing(record, target)
     } finally {
       db?.close()
     }

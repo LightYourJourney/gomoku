@@ -828,3 +828,29 @@ describe('棋谱库 —— 删除如实报告删的是不是库里那条', () =>
   })
 })
 
+
+/*
+ * 库整体不可用时「终局 → 悔棋 → 再终局」：第二次是替换写，`replacesSeq` 指向第一次
+ * 落进内存兜底的那条。原先失败分支只 `put`、不替换（理由是兜底号与库号不是一套、按号删会删错），
+ * 号段隔离之后那条理由不成立了，结果是同一局在列表里两条。
+ */
+describe('棋谱库 —— 降级时的替换写', () => {
+  it('替换的是兜底里的那条：列表里只剩新的一条', async () => {
+    __setGameRecordsIndexedDbFactory({
+      open() {
+        throw new Error('隐私模式')
+      },
+    } as unknown as IDBFactory)
+    try {
+      const first = await indexedDbGameRecords.put(resignRecord())
+      expect(first.persisted).toBe(false)
+      const second = await saveGameReplacing(winRecord(), first.record.seq)
+      expect(second.persisted).toBe(false)
+
+      const { records } = await indexedDbGameRecords.list()
+      expect(records.map((record) => record.seq)).toEqual([second.record.seq])
+    } finally {
+      __setGameRecordsIndexedDbFactory(null)
+    }
+  })
+})

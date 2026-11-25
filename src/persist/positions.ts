@@ -183,9 +183,21 @@ export function inputFromPosition(
 
 // ── 内存实现（测试 + 降级） ──────────────────────────────────────
 
+/**
+ * 降级兜底的号段起点（与 `gameRecords.ts` 的 `FALLBACK_SEQ_BASE` 同一条理由）：
+ * 库的自增 id 从 1 起，兜底若也从 1 起，库一恢复，界面手里兜底那条的 id 就指向库里
+ * **另一条**真实局面——删它、覆盖它都落到那条上。
+ */
+const FALLBACK_ID_BASE = 1_000_000_000_000
+
+function isFallbackId(id: number): boolean {
+  return id >= FALLBACK_ID_BASE
+}
+
 export function memoryPositions(degraded = false): PositionStorage {
   const byId = new Map<number, SavedPosition>()
-  let nextId = 1
+  // 当兜底用时从大偏移起数；单独使用（测试）时仍从 1 起。
+  let nextId = degraded ? FALLBACK_ID_BASE : 1
 
   return {
     async list() {
@@ -225,10 +237,20 @@ export function memoryPositions(degraded = false): PositionStorage {
 const STORE = POSITIONS_STORE
 let factory: IDBFactory | null = null
 let memoryFallback: PositionStorage | null = null
+/**
+ * 兜底号 → 补写回库后拿到的库号。界面（编辑器的「当前打开的那条」）手里握着的还是兜底号，
+ * 补写之后 get / save / delete 照这张表改道到库里那条。
+ */
+const drainedIds = new Map<number, number>()
+
+function resolveId(id: number): number {
+  return drainedIds.get(id) ?? id
+}
 
 export function __setPositionsIndexedDbFactory(next: IDBFactory | null): void {
   factory = next
   memoryFallback = null
+  drainedIds.clear()
   // 测试隔离：换工厂等于换一个存储会话，回填也要重新允许。
   backfillDone = false
   backfillPending = null
@@ -327,21 +349,73 @@ async function backfillContentKeys(db: IDBDatabase): Promise<void> {
   })
 }
 
+/**
+ * 库恢复后把降级期间只在内存里的局面补写进库（同 `gameRecords.ts` 的 list）。
+ *
+ * 不做这一步：库短暂不可用时保存的局面，界面说「本次会话可用」，库一恢复、列表改读库，
+ * 它就在同一个会话里消失了。按内容键去重：库里已有同一盘面就只记下对应关系。
+ * 返回是否补写完；没补完时内存兜底原样保留，下一次列表再试。
+ */
+async function drainFallback(): Promise<boolean> {
+  if (memoryFallback === null) return true
+  const pending = (await memoryFallback.list()).records
+  let db: IDBDatabase
+  try {
+    db = await openDatabase()
+  } catch {
+    return false
+  }
+  try {
+    for (const record of pending) {
+      const input = inputFromPosition(positionFromSaved(record), record.title, record.provenance)
+      const key = positionContentKey(input)
+      const duplicate = await readPosition(db, (store) => store.index(POSITIONS_CONTENT_INDEX).get(key))
+      if (duplicate !== null) {
+        drainedIds.set(record.id, duplicate.id)
+        continue
+      }
+      const payload = {
+        ...positionPayload(input, 0, 0),
+        createdAt: record.createdAt,
+        updatedAt: record.updatedAt,
+      }
+      const newId = await new Promise<IDBValidKey>((resolve, reject) => {
+        const tx = db.transaction(STORE, 'readwrite')
+        const request = tx.objectStore(STORE).add(payload)
+        tx.oncomplete = () => resolve(request.result)
+        tx.onerror = () => reject(request.error ?? new Error('局面补写失败'))
+        tx.onabort = () => reject(request.error ?? new Error('局面补写被中止'))
+      })
+      drainedIds.set(record.id, Number(newId))
+    }
+    memoryFallback = null
+    return true
+  } catch {
+    return false
+  } finally {
+    db.close()
+  }
+}
+
 export const indexedDbPositions: PositionStorage = {
   async list() {
     try {
+      const drained = await drainFallback()
       const raw = await withStore<unknown[]>('readonly', (store) => store.getAll())
       const records = raw
         .map(parseSavedPosition)
         .filter((record): record is SavedPosition => record !== null)
         .sort(sortPositions)
-      return { records, degraded: false }
+      // 补写没完成时本次列表缺了兜底那几条；`degraded` 是界面能说出来的唯一信号。
+      return { records, degraded: !drained }
     } catch {
       return fallbackToMemory().list()
     }
   },
 
-  async get(id) {
+  async get(requested) {
+    const id = resolveId(requested)
+    if (isFallbackId(id)) return (await memoryFallback?.get(id)) ?? null
     try {
       const raw = await withStore<unknown>('readonly', (store) => store.get(id))
       return raw === undefined ? null : parseSavedPosition(raw)
@@ -350,7 +424,10 @@ export const indexedDbPositions: PositionStorage = {
     }
   },
 
-  async save(input, id, now) {
+  async save(input, requested, now) {
+    const id = requested === null ? null : resolveId(requested)
+    // 兜底号只在内存兜底里有意义：覆盖它不能落到库里同号的另一条上。
+    if (id !== null && isFallbackId(id)) return fallbackToMemory().save(input, id, now)
     const stamp = now()
     let db: IDBDatabase
     try {
@@ -396,7 +473,9 @@ export const indexedDbPositions: PositionStorage = {
     }
   },
 
-  async delete(id) {
+  async delete(requested) {
+    const id = resolveId(requested)
+    if (isFallbackId(id)) return fallbackToMemory().delete(id)
     let db: IDBDatabase | null = null
     try {
       db = await openDatabase()

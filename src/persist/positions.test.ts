@@ -476,3 +476,79 @@ describe('局面库 —— 校验与迁移', () => {
     expect(updated.record.updatedAt).toBe(2_000)
   })
 })
+
+/*
+ * 库暂时打不开时，保存进的是内存兜底。原先兜底的 id 从 1 起，与库的自增 id 是同一套，
+ * 且 get / save / delete 不分号段：库一恢复，界面手里那条兜底局面的 id 指向的是库里
+ * **另一条**真实局面——删它会删掉那条，覆盖保存会把那条盖掉；列表也只读库，
+ * 兜底的那条在同一个会话里就消失了。棋谱库 2026-11-25 已按号段隔离并补写回库，这里补齐。
+ */
+describe('局面库 —— 库暂时不可用后又恢复', () => {
+  const real = globalThis.indexedDB
+  let down = false
+  const switchable = {
+    open(name: string, version?: number) {
+      if (down) throw new Error('局面库被其他标签页占用')
+      return real.open(name, version)
+    },
+    deleteDatabase: (name: string) => real.deleteDatabase(name),
+    databases: () => real.databases(),
+    cmp: (a: unknown, b: unknown) => real.cmp(a, b),
+  } as IDBFactory
+
+  async function savedWhileDown() {
+    __setPositionsIndexedDbFactory(switchable)
+    down = false
+    const kept = await indexedDbPositions.save(
+      inputFromPosition(applyEdit(createPosition(), { x: 7, y: 7 }, 'black'), '库里原有', null),
+      // 钉在 1 号：库的自增从 1 起，真实用户的第一条局面就是 1 号——正是兜底原先发出的号。
+      1,
+      at(1_000),
+    )
+    down = true
+    const fallback = await indexedDbPositions.save(
+      inputFromPosition(applyEdit(createPosition(), { x: 3, y: 3 }, 'white'), '兜底那条', null),
+      null,
+      at(2_000),
+    )
+    // 前提自检：确实进了内存兜底。
+    expect(fallback.persisted).toBe(false)
+    down = false
+    return { kept: kept.record, fallback: fallback.record }
+  }
+
+  it('删除兜底那条不会删掉库里的另一条', async () => {
+    try {
+      const { kept, fallback } = await savedWhileDown()
+      await indexedDbPositions.delete(fallback.id)
+      expect(await indexedDbPositions.get(kept.id)).not.toBeNull()
+    } finally {
+      __setPositionsIndexedDbFactory(null)
+    }
+  })
+
+  it('覆盖保存兜底那条不会盖掉库里的另一条', async () => {
+    try {
+      const { kept, fallback } = await savedWhileDown()
+      await indexedDbPositions.save(
+        inputFromPosition(applyEdit(createPosition(), { x: 4, y: 4 }, 'white'), '兜底改过', null),
+        fallback.id,
+        at(3_000),
+      )
+      expect((await indexedDbPositions.get(kept.id))?.title).toBe('库里原有')
+    } finally {
+      __setPositionsIndexedDbFactory(null)
+    }
+  })
+
+  it('恢复后列表里仍有兜底那条（补写回库），也仍有库里原有的', async () => {
+    try {
+      await savedWhileDown()
+      const list = await indexedDbPositions.list()
+      expect(list.degraded).toBe(false)
+      expect(list.records.map((record) => record.title).sort()).toEqual(['兜底那条', '库里原有'])
+    } finally {
+      __setPositionsIndexedDbFactory(null)
+    }
+  })
+})
