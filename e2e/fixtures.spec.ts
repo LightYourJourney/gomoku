@@ -23,16 +23,18 @@ test('旧版本夹具：外部文件、内部记录与会话都还能被当前�
   const gameFile = load('game-v1.json')
   const game = parseImportText(JSON.stringify(gameFile))
   expect(game.ok).toBe(true)
-  if (!game.ok || game.kind !== 'game') return
+  expect(game.ok && game.kind).toBe('game')
+  // 提前 return 会把后面的断言整段跳过：类型不符时用例照样绿。先断言、再抛错做类型收窄。
+  if (!game.ok || game.kind !== 'game') throw new Error('unreachable')
   const reexported = parseImportText(JSON.stringify(toGameFile(gamePayloadToRecordInput(game.game))))
-  expect(reexported.ok).toBe(true)
-  if (!reexported.ok || reexported.kind !== 'game') return
+  expect(reexported.ok && reexported.kind).toBe('game')
+  if (!reexported.ok || reexported.kind !== 'game') throw new Error('unreachable')
   expect(gameContentKey(reexported.game)).toBe(gameContentKey(game.game))
 
   const backupText = JSON.stringify(load('backup-v1.json'))
   const backup = parseImportText(backupText)
-  expect(backup.ok).toBe(true)
-  if (!backup.ok || backup.kind !== 'backup') return
+  expect(backup.ok && backup.kind).toBe('backup')
+  if (!backup.ok || backup.kind !== 'backup') throw new Error('unreachable')
   expect(backup.games).toHaveLength(2)
   expect(backup.games.every((game) => !('createdAt' in game))).toBe(true)
   expect(backup.progress?.completedLessons).toContain('rules')

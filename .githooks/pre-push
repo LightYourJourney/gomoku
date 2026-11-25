@@ -26,15 +26,83 @@ command -v yarn >/dev/null 2>&1 || {
   exit 1
 }
 
-# 门禁跑的是**工作区**，推出去的是**提交**。工作区里有没提交的改动时两者不是一回事：
-# 一处只在工作区里的修复会让门禁变绿，推出去的提交却是红的。所以有改动就拒绝，
-# 让人先提交或 `git stash`，而不是在一个与推送内容不同的树上给出绿灯。
-# （未跟踪文件不算：它们不在任何提交里，也基本不进构建；新建源文件却忘了 `git add`
-#  的情况由 CI 兜底。）
-if [ -n "$(git status --porcelain --untracked-files=no)" ]; then
-  echo "✗ pre-push: 工作区有未提交的改动 —— 门禁会测到它们，而推出去的提交里没有。" >&2
+# ── 先确认「要推的提交」就是「门禁要测的提交」─────────────────────────
+#
+# 门禁跑的是**工作区 / HEAD**，推出去的是 stdin 里那份 ref 列表。两者不是一回事时
+# 绿灯没有意义：测的是一个提交，推的是另一个。所以挡两件事：
+#
+#   A. 推的不是当前检出的提交。git 给钩子的 stdin 每行是
+#      `<local ref> <local sha> <remote ref> <remote sha>`，`<local sha>` 就是这一行
+#      要推的提交。它不等于 `git rev-parse HEAD` 时（推别的分支、`push HEAD~1:x`、
+#      `push --all`……），工作区里检出的东西根本不是要推的东西，测了也说明不了什么。
+#      这里不替人 checkout——只拒绝，让人自己决定。
+#      `<local sha>` 全 0 的行是**删除远端分支**，没有提交要推，跳过。
+#   B. 已跟踪文件有未提交的改动（`git diff --quiet HEAD` 不通过）。门禁会测到它们，
+#      而推出去的提交里没有。
+#   未跟踪文件不算：它们不在任何提交里，也基本不进构建；新建源文件却忘了 `git add`
+#   的情况由 CI 兜底。
+#
+# 实现上注意：`... | while` 会把循环放进子 shell，循环里 `exit 1` 只退出子 shell，
+# 钩子照样往下跑。所以先把 stdin 落到临时文件，循环用输入重定向跑在本 shell 里；
+# 也不写 `某个命令 || true` 之类的兜底——那会把真错误吞成成功。
+refs_file=$(mktemp "${TMPDIR:-/tmp}/pre-push-refs.XXXXXX")
+trap 'rm -f "$refs_file"' EXIT
+cat >"$refs_file"
+
+head_sha=$(git rev-parse HEAD)
+saw_line=0
+saw_ref=0
+mismatch=''
+while read -r local_ref local_sha remote_ref remote_sha || [ -n "$local_ref" ]; do
+  # 末尾换行造成的空行、纯空白行：跳过。
+  [ -n "$local_ref" ] || continue
+  [ -n "$local_sha" ] || {
+    echo "✗ pre-push: stdin 里有读不懂的 ref 行（缺 local sha）：$local_ref" >&2
+    exit 1
+  }
+  # 删除远端分支：local sha 全 0，没有提交要推。
+  case "$local_sha" in
+    *[!0]*) ;;
+    *) saw_line=1; continue ;;
+  esac
+  saw_line=1
+  saw_ref=1
+  # 附注标签推的是标签对象而不是提交：先剥到它指向的提交再比，否则在 HEAD 上打的附注标签也会被拒。
+  local_commit=$(git rev-parse --verify --quiet "${local_sha}^{commit}") || local_commit="$local_sha"
+  if [ "$local_commit" != "$head_sha" ]; then
+    mismatch="${mismatch}  ${local_ref} -> ${remote_ref}（local sha ${local_sha}）"'
+'
+  fi
+done <"$refs_file"
+
+# 一行都没读到：钩子没拿到该拿的输入（手动调用、git 行为变化、stdin 被提前消费）。
+# 不知道推的是什么就不放行——失败关闭。整份都是「删除远端分支」的行则没有坑要查，
+# 直接放行（它们不推任何提交，门禁无事可做）。
+if [ "$saw_line" -ne 1 ]; then
+  echo "✗ pre-push: stdin 里没有任何 ref 行——无法确认推的是哪个提交，拒绝推送。" >&2
+  echo "  git 会传入 '<local ref> <local sha> <remote ref> <remote sha>'；实际读到：" >&2
+  sed 's/^/  | /' "$refs_file" >&2
+  exit 1
+fi
+
+# 只是删除远端分支：没有提交要推，工作区与它无关，放行。
+if [ "$saw_ref" -ne 1 ]; then
+  exit 0
+fi
+
+if [ -n "$mismatch" ]; then
+  echo "✗ pre-push: 推送的不是当前检出的提交（HEAD = ${head_sha}）。" >&2
+  echo "  钩子只能测 HEAD 与工作区，测不到你要推的那些提交，绿灯说明不了任何事：" >&2
+  printf '%s' "$mismatch" >&2
+  echo "  请先 checkout 该分支再推，或明知后果用 git push --no-verify。" >&2
+  exit 1
+fi
+
+if ! git diff --quiet HEAD; then
+  echo "✗ pre-push: 已跟踪文件有未提交的改动 —— 门禁跑在工作区上，未提交的改动会让它测的" >&2
+  echo "  不是推出去的东西（工作区绿、提交红）。改动的文件：" >&2
+  git diff --name-only HEAD | sed 's/^/  /' >&2
   echo "  先提交或 git stash，再推送。" >&2
-  git status --short --untracked-files=no >&2
   exit 1
 fi
 

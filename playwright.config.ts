@@ -40,7 +40,15 @@ export default defineConfig({
   webServer: {
     command: `yarn vite --port ${PORT} --host 127.0.0.1 --strictPort`,
     url: BASE_URL,
-    reuseExistingServer: !process.env.CI,
+    // 恒为 false：不复用现成的 dev server，让 Playwright 自己起自己关。
+    //
+    // 以前是 `!process.env.CI`，本地会复用 5181 上已有的服务。可是这台机器的 5181
+    // 上坐着的很可能是**别的工作树**的 dev server（多个 worktree / 多个 agent 并行时
+    // 常态如此），于是本地 e2e 测的是别人的代码：那边绿这边红、或反过来，
+    // 而且报错全指向与本改动无关的地方。--strictPort 让端口被占时 Playwright
+    // 直接起不来——**这是期望的响亮失败**：要么先停掉占端口的服务，要么换端口，
+    // 总之不测错东西。
+    reuseExistingServer: false,
     timeout: 60_000,
   },
 })

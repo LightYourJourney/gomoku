@@ -2,7 +2,7 @@
 /*
  * 依赖方向门禁：分层规则由机器守，不再靠每轮审计手工 grep。
  *
- * 规则出处是 `AGENTS.md` 的「代码约定」与 `docs/ARCHITECTURE.md` 的「依赖方向」。
+ * 规则出处是 `AGENTS.md` 的「硬性约束」与 `docs/ARCHITECTURE.md` 的「依赖方向」。
  * **改下面的允许表就是改分层**——先改 `ARCHITECTURE.md`，再改这里，提交信息写明。
  *
  * 两条判据：
@@ -14,7 +14,7 @@
  *
  * 不查的：测试文件与 `src/test/`（组装场景时跨层是常态；被排除的文件连同指向它们的边都不进图，
  * 所以生产代码若 import 了 `src/test/` 下的东西，这里也看不见——那由 knip 与审查兜着）；
- * DOM 全局（`window`、`localStorage`……不是 import，照旧靠审查）。
+ * DOM 全局（`window`、`localStorage`……不是 import）由 `yarn lint` 守（`.oxlintrc.json` 的 `no-restricted-globals`，裁定 23），这里不查。
  *
  * 解析交给 madge（`check:cycles` 用的同一个解析器，含仅类型的 import）。madge 解析不了的
  * import 会进 `skipped`、在图里看不见——除了下面 `SKIPPABLE` 写明的两类，一律**失败关闭**。
@@ -24,11 +24,12 @@
  */
 
 import { createRequire } from 'node:module'
-import { dirname, resolve } from 'node:path'
+import { dirname, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const REPO = resolve(HERE, '..')
+const SRC = resolve(REPO, 'src')
 const madge = createRequire(import.meta.url)('madge')
 
 /** 键可以依赖值里的层。根（`App.tsx` / `main.tsx`）是组装点，可以依赖一切。 */
@@ -75,6 +76,26 @@ function layerOf(file) {
   return file.includes('/') && top in ALLOWED ? top : null
 }
 
+/**
+ * 图上的一条边是不是 npm 包。
+ *
+ * 图里的键都是 `src` 下的相对路径，所以**以 `..` 开头的边不等于 npm 包**：
+ * 只有解析到 `node_modules/` 里的才是（madge 打开 `includeNpm` 后把 `zustand`
+ * 这类写成 `../node_modules/zustand/index.d.ts`）。其余以 `..` 开头的边是从 `src`
+ * 经相对路径**逃出了 src 树**——以前这里一律 `continue`，于是 `src/core/x.ts`
+ * 引入 `../../scripts/y.ts` 这种逃逸在图里既不归类也不查越层，整条隐了。
+ */
+function isNpmDep(dep) {
+  return dep.startsWith('..') && resolve(SRC, dep).split(sep).includes('node_modules')
+}
+
+/** 解析后落在 `src` 之外的相对边——失败关闭，它绕过了整个分层判据。 */
+function escapesSrc(dep) {
+  if (!dep.startsWith('..') || isNpmDep(dep)) return false
+  const abs = resolve(SRC, dep)
+  return abs !== SRC && !abs.startsWith(SRC + sep)
+}
+
 let crossEdges = 0
 for (const [file, deps] of Object.entries(graph)) {
   const from = layerOf(file)
@@ -86,7 +107,12 @@ for (const [file, deps] of Object.entries(graph)) {
     problems.push(`纯逻辑层不许有 .tsx：${file}（自动 JSX 运行时会引入 React，而图里看不见）`)
   }
   for (const dep of deps) {
-    if (dep.startsWith('..')) continue // npm 包：判据 2 管
+    if (isNpmDep(dep)) continue // npm 包：判据 2 管
+    if (escapesSrc(dep)) {
+      // 从 src 经相对路径跑到 src 之外：既不会被归层，也不会被下面任何一条判据看到。
+      problems.push(`越出 src：${file} → ${dep}（src 下的文件只能依赖 src 内的模块与 npm 包）`)
+      continue
+    }
     const to = layerOf(dep)
     if (to === null || to === from) continue // 未归类的会在它自己那一行报
     crossEdges += 1

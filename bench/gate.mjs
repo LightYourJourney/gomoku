@@ -52,9 +52,17 @@ function assertBaselineShape(baseline) {
       bad.push(`${where}：depth/nodes 不是数字`)
     }
   }
+  /*
+   * 不变量这两组必须**非空**。只查「是不是数组」的话，`"threat": []` 会让下面两轮
+   * `for` 各跑 0 次、`invariantChecks` 剩个位数，照样印 ✓ 退出 0——和 `comparisons === 0`
+   * 是同一个形态：断言集被清空，闸门自己不会知道。增删条目要显式改 bench/baseline.json。
+   */
   const inv = baseline.invariants
-  if (inv === undefined || !Array.isArray(inv.threat) || !Array.isArray(inv.vct)) {
-    bad.push('invariants.threat / invariants.vct 不是数组')
+  if (inv === undefined || !Array.isArray(inv.threat) || inv.threat.length === 0) {
+    bad.push('invariants.threat 不是非空数组（空数组＝这一组不变量一条都不会被断言）')
+  }
+  if (inv === undefined || !Array.isArray(inv.vct) || inv.vct.length === 0) {
+    bad.push('invariants.vct 不是非空数组（空数组＝这一组不变量一条都不会被断言）')
   }
   assertShape(bad, 'bench/baseline.json')
 }

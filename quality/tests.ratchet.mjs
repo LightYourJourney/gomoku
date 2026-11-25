@@ -107,23 +107,82 @@ const browsersFullList = listE2e(['--config', 'playwright.browsers-full.config.t
  * 所以这里直接扫 spec 文件里的 skip/fixme 标记，把「跳过」变成一个只许涨不许跌的数。
  */
 /*
- * 覆盖三种写法：
- *   - 声明期：`test.skip(` / `test.fixme(` / `test.describe.skip(` / `it.skip(`；
- *   - 运行期：`test.info().skip()` / `testInfo.skip()`——用例体内跳过，`--list` 照样数到它；
- *   - `fail`（声明期与运行期）：把用例标成「预期会失败」，断言红了反而算绿，同样是在关判据。
+ * 覆盖所有把用例关掉的写法。判据只有一条：**任何 `.skip(` / `.fixme(` 调用都算**
+ * （`.fail(` 一并算——预期失败也是关判据）。早先这里列的是几个固定前缀
+ * （`test.` / `describe.` / `it.` / `info().` / `testInfo.`），于是两处绕得过去：
+ *   - `test.step.skip(...)`、`test.describe.skip` 之外的点号组合；
+ *   - 形参不叫 `testInfo` 的 `xxx.skip()`（运行期跳过的第一个参数是 TestInfo，
+ *     它叫什么名字由人定，正则不该假定）。
+ * 现在不再猜调用者的名字，只要有一个 `.skip(`/`.fixme(`/`.fail(` 就计入。
  */
-const SKIP_MARKER =
-  /\b(test|describe|it)\.(skip|fixme|fail)\b|\binfo\(\)\.(skip|fixme|fail)\b|\btestInfo\.(skip|fixme|fail)\b/
+const SKIP_MARKER = /\.(skip|fixme|fail)\s*\(/
+
+/**
+ * 把注释与字符串字面量抹成空格（保留换行，行号才对得上）。
+ *
+ * 不剥的话，`// 这里不能写 test.skip(` 这类注释、以及含 `.skip(` 的用例标题都会误报。
+ * 也不用「行首是 // 就跳过」那种粗办法——行尾注释照样骗得过去。
+ * 只做剥壳，不追求完整词法：模板字符串里的 `${...}` 一律当字符串处理（那些位置的
+ * 代码本来就少见，宁可漏看注释化的 `.skip(`，也不要把真实调用误判成注释）。
+ */
+function blankOutCommentsAndStrings(source) {
+  const out = source.split('')
+  let state = 'code'
+  for (let i = 0; i < source.length; i += 1) {
+    const c = source[i]
+    const next = source[i + 1]
+    if (state === 'code') {
+      if (c === '/' && next === '/') {
+        state = 'line'
+        out[i] = ' '
+      } else if (c === '/' && next === '*') {
+        state = 'block'
+        out[i] = ' '
+      } else if (c === "'" || c === '"' || c === '`') {
+        state = c
+        out[i] = ' '
+      }
+    } else if (state === 'line') {
+      if (c === '\n') state = 'code'
+      else out[i] = ' '
+    } else if (state === 'block') {
+      if (c === '*' && next === '/') {
+        out[i] = ' '
+        out[i + 1] = ' '
+        i += 1
+        state = 'code'
+      } else if (c !== '\n') {
+        out[i] = ' '
+      }
+    } else {
+      // 字符串里
+      if (c === '\\') {
+        out[i] = ' '
+        if (next !== undefined && next !== '\n') {
+          out[i + 1] = ' '
+          i += 1
+        }
+      } else if (c === state || (state !== '`' && c === '\n')) {
+        // 普通引号字符串不跨行：没闭合就当作结束，别把后面整份文件吞进字符串。
+        out[i] = ' '
+        state = 'code'
+      } else if (c !== '\n') {
+        out[i] = ' '
+      }
+    }
+  }
+  return out.join('')
+}
+
 const e2eSpecs = (await readdir(resolve(REPO, 'e2e'))).filter((f) => f.endsWith('.spec.ts'))
 const skipHits = []
 for (const f of e2eSpecs) {
-  const lines = (await readFile(resolve(REPO, 'e2e', f), 'utf8')).split('\n')
-  lines.forEach((line, i) => {
-    const t = line.trim()
-    // 注释里提到 `test.skip` 不算
-    if (t.startsWith('//') || t.startsWith('*')) return
-    if (SKIP_MARKER.test(line)) skipHits.push(`e2e/${f}:${i + 1}`)
-  })
+  const source = await readFile(resolve(REPO, 'e2e', f), 'utf8')
+  blankOutCommentsAndStrings(source)
+    .split('\n')
+    .forEach((line, i) => {
+      if (SKIP_MARKER.test(line)) skipHits.push(`e2e/${f}:${i + 1}`)
+    })
 }
 
 const checks = [

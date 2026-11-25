@@ -29,7 +29,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          # 与本地一致（本机 v26.11.1）。仓库没有版本固定文件，这里就是唯一的钉子。
+          # 与本地一致（本机 v26.13.1）。仓库没有版本固定文件，这里就是唯一的钉子。
           # 首跑已证实 runner 上取得到。
           node-version: '26.13.1'
           cache: yarn
@@ -42,7 +42,7 @@ jobs:
 
   e2e:
     runs-on: ubuntu-latest
-    # 落地时本地 102 条跑 2.4 分钟（现在 192 条，条数以 quality/tests.baseline.json 为准）；runner 上留足余量。
+    # 落地时本地 102 条跑 2.4 分钟（现在 202 条，条数以 quality/tests.baseline.json 为准）；runner 上留足余量。
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
