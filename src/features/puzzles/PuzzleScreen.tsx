@@ -84,16 +84,18 @@ export function PuzzleScreen() {
     // 否则文案会说一句「十五道题都通过了」的假话（Phase 04 的同形缺陷）。
     const allSolved = done === PUZZLES.length
 
+    /*
+      刷新直达 `/puzzles/<id>` 时进度还没读回：那一刻挂上去，`alreadySolvedOnEntry`
+      的快照恒为 false，做对之后会说「第一次做对」。所以等载入完成再挂（通常几毫秒）。
+      不用「key 里带 loaded、载入后重建」：那样棋盘会先挂一份再整个换掉，
+      期间的落子被清掉，量棋盘的人（以及 e2e）会撞上被卸载的那一份。
+    */
+    if (!loaded) return null
+
     return (
       <PuzzleView
-        /*
-          换题必须重建：`alreadySolvedOnEntry` 是挂载时取的快照，复用实例会串题。
-          key 里还带 `loaded`：刷新直达 `/puzzles/<id>` 时进度还没读回，那一刻的快照
-          恒为 false，做对之后会说「第一次做对」——载入完成时重建一次、重新取快照。
-          代价：载入完成之前在这道题上的操作（落子、提示级数）会随重建清掉一次。
-          进度读取通常只要几毫秒，赶在它之前落子的情况极少，而说错话是每次刷新都会发生的。
-        */
-        key={`${puzzle.id}:${loaded ? 'loaded' : 'loading'}`}
+        // 换题必须重建：`alreadySolvedOnEntry` 是挂载时取的快照，复用实例会串题。
+        key={puzzle.id}
         puzzle={puzzle}
         onExit={backToList}
         exit={

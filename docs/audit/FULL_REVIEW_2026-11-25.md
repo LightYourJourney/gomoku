@@ -15,7 +15,7 @@
 | 4 | 「双四」课程练习与残局题有非交叉点解（左端补一子成活四） | `learn/lessons.ts`、`learn/puzzles.ts` | 堵住横线左端外一格，使左端补子只成冲四；全候选点枚举复核 |
 | 5 | 弹窗比视口高时底部按钮点不到 | `components/ui/Modal.tsx` | 对话框限高并可滚动；补 Playwright 矮视口用例 |
 | 6 | 360 宽竖屏棋盘 312px（高度没扣内边距） | `components/board/BoardStage.tsx` | 修高度算式；规范写明最小视口 360；补 360×800 布局断言 |
-| 7 | 冷启动打开已通过的残局题，做对后说「第一次做对」 | `features/puzzles/PuzzleView.tsx` | 进度载入后再取快照 |
+| 7 | 冷启动打开已通过的残局题，做对后说「第一次做对」 | `features/puzzles/PuzzleScreen.tsx` | 进度载入完成后才挂题目、取快照（最初用「key 带 loaded、载入后重建」，CI 抓到棋盘先挂再整份换掉，改掉，见 `TEST_REPORT.md`「〇之三十二」） |
 
 ## 二、中等问题
 

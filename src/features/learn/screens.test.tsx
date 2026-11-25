@@ -652,6 +652,26 @@ describe('PuzzleScreen —— 冷启动直达已通过的题', () => {
     expect(await screen.findByText('这一题已经通过。')).toBeInTheDocument()
     expect(screen.queryByText('第一次做对这道题。')).not.toBeInTheDocument()
   })
+
+  /*
+   * 修法曾是「key 里带 loaded、载入后重建」：棋盘先挂一份、载入完成时整个换掉，
+   * 期间的落子被清掉，CI 上量棋盘的 e2e 撞上了被卸载的那一份（boundingBox 为 null）。
+   */
+  it('载入完成之前不挂棋盘，载入之后挂上的那一份不再被换掉', () => {
+    useLearnStore.setState({ progress: EMPTY_PROGRESS, loaded: false })
+    useNavigationStore.getState().navigate({ page: 'puzzles', puzzle: 'win-h' }, { replace: true })
+    render(<PuzzleScreen />)
+    expect(screen.queryByTestId('board')).not.toBeInTheDocument()
+
+    act(() => {
+      useLearnStore.setState({ loaded: true })
+    })
+    const board = screen.getByTestId('board')
+    act(() => {
+      useLearnStore.setState({ progress: { ...EMPTY_PROGRESS, solvedPuzzles: ['win-h'] } })
+    })
+    expect(screen.getByTestId('board')).toBe(board)
+  })
 })
 
 describe('PuzzleScreen —— 首页信息（Phase 05）', () => {

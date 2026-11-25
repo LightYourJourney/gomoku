@@ -63,8 +63,8 @@ export function PuzzleView({ puzzle, exit, onExit }: PuzzleViewProps) {
     与 `solved` 不是一回事：那是 store 的当前状态，这次做对之后同样为真——
     用它分不出「头一回做对」与「重进一道做过的」。所以挂载时取一次快照。
     组件必须按题重建（`PuzzleScreen` 的 key 里带 `puzzle.id`），
-    否则换题时这份快照会跟着串到下一道题上；key 里还带 `loaded`，
-    进度载入完成时再重建一次，免得刷新直达时快照取在进度读回之前。
+    否则换题时这份快照会跟着串到下一道题上；`PuzzleScreen` 也要等进度载入完成才挂它，
+    免得刷新直达时快照取在进度读回之前。
   */
   const [alreadySolvedOnEntry] = useState(() => useLearnStore.getState().isPuzzleDone(puzzle.id))
 
