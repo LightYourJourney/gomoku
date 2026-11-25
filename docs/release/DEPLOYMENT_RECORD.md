@@ -4,7 +4,28 @@
 > 以及线上验收的原始读数。与方案/清单分开，避免「计划」和「事实」混写。
 > 最新一次在最上面。
 
-## 0.7.2 · 2026-11-25 全量审查整改（当前生产）
+## 0.7.3 · 2026-11-26 第二次全量审查整改（当前生产）
+
+| 项 | 值 |
+| --- | --- |
+| 应用版本 | `0.7.3` |
+| 引擎版本 | `search-1`（置换表换了校验分量的生成器，`bench:check` 断言行与不变量一致，搜索决策未变） |
+| 提交 / 标签 | `a45d33b`（整改 `e81fec4…767b9ee`）/ `v0.7.3` |
+| 生产部署 | `31c7cd06-9f68-4891-8689-1a983b0e5a3c`（https://31c7cd06.gomoku-lab.pages.dev） |
+| 生产地址 | **https://gomoku-lab.pages.dev** |
+| 预览部署 | `a3ae4823-b66b-4260-bba5-17d997515d7e`（https://a3ae4823.gomoku-lab-preview.pages.dev） |
+| 部署时间 | 2026-11-26（UTC+8） |
+| 部署方式 | 同 0.7.0：在 `a45d33b` 的独立工作区里构建，`npx wrangler@4.151.3 pages deploy dist …` |
+| 回滚目标 | `ccd1a69f…`（`f01ddb0` / 0.7.2）→ `bf528e8b…`（`3d3324d` / 0.7.1）→ … |
+| 产物 | `index-CReNaaNO.js`（gzip **88.4 kB**；入口另有一个共用分块 `PageShell-*.js`，入口合计 gzip 101.2 kB ≤ 108 kB）、`index-R2BnUPBD.css`、`worker-D0mxK6s8.js`（置换表改动，哈希变了） |
+| 验收 | 整改 CI `45667040959` 与发布提交 CI `45672167510` 六个 job 全绿；本机全档（五条 + `e2e:prod` 9/9 + `e2e:browsers` 22/22 + 六道闸门 + `bench:check`）绿；预览 `e2e:remote` **214 / 214**；生产 **214 / 214**；生产 meta `app-version=0.7.3`、`build-commit=a45d33b…`；`/learn/rules`、`/review/3` 200，`/foo`、`/assets/nope.js` 404；入口 `must-revalidate`、`/assets/*` `immutable`；CSP / HSTS / X-Frame-Options / nosniff / Referrer-Policy 下发 |
+
+- **授权**：裁定 26——所有者在审查裁定里选「推送并发布 0.7.3」，按裁定 20 的流程预览通过后上生产。
+- **内容**：见 `RELEASE_NOTES_0.7.3.md` 与 `docs/audit/FULL_REVIEW_2026-11-26.md`。
+- **数据格式**：无变化；进度写入改为完成项并集，存储形状不变。
+- **回滚**：回 `ccd1a69f…`（0.7.2）无数据代价，修复跟着撤回。
+
+## 0.7.2 · 2026-11-25 全量审查整改（历史）
 
 | 项 | 值 |
 | --- | --- |
@@ -414,7 +435,7 @@ REMOTE_BASE=https://gomoku-lab.pages.dev yarn e2e:remote
 
 - 部署前跑全档：`yarn lint && yarn typecheck && yarn test && yarn build && yarn e2e && yarn e2e:prod && yarn gates && yarn bench:check`；
   界面结构有改动的，还要等 CI 的 `probe`（`yarn ui:probe --out ci` + 覆盖棘轮）与 `browsers` / `browsers-full` 全绿。
-- `e2e:remote` 的当前期望是 **207/207**（0.7.2 起；预览与生产各跑一次）。
+- `e2e:remote` 的当前期望是 **214/214**（0.7.3 起；预览与生产各跑一次）。
 - 部署前在发布提交的独立工作区里构建（`git worktree add --detach <dir> <提交>`），保证 `build-commit` 与发布提交一致，不被之后的本地文档提交带偏。
 
 ---
