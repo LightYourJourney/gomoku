@@ -50,8 +50,9 @@ describe('对外格式 · 单盘', () => {
     expect(file.ending).toEqual({ type: 'five', winner: BLACK })
 
     const parsed = parseImportText(JSON.stringify(file))
-    expect(parsed.ok).toBe(true)
-    if (!parsed.ok || parsed.kind !== 'game') return
+    expect(parsed.ok && parsed.kind).toBe('game')
+    // 提前 return 会把后面的断言整段跳过：类型不符时用例照样绿。先断言 kind、再抛错做类型收窄。
+    if (!parsed.ok || parsed.kind !== 'game') throw new Error('unreachable')
     expect(parsed.game.firstPlayer).toBe(BLACK)
     expect(parsed.game.moves).toEqual(NINE_MOVES)
     expect(parsed.game.mode).toBe('pvp')
@@ -118,8 +119,8 @@ describe('对外格式 · 完整备份', () => {
     expect(backup.session).toEqual(backupSessionOf(session))
 
     const parsed = parseImportText(JSON.stringify(backup))
-    expect(parsed.ok).toBe(true)
-    if (!parsed.ok || parsed.kind !== 'backup') return
+    expect(parsed.ok && parsed.kind).toBe('backup')
+    if (!parsed.ok || parsed.kind !== 'backup') throw new Error('unreachable')
     expect(parsed.games).toHaveLength(1)
     expect(parsed.progress).toEqual(backup.progress)
     expect(parsed.preferences).toEqual(backup.preferences)
@@ -143,8 +144,8 @@ describe('对外格式 · 完整备份', () => {
         games: [good, bad],
       }),
     )
-    expect(parsed.ok).toBe(true)
-    if (!parsed.ok || parsed.kind !== 'backup') return
+    expect(parsed.ok && parsed.kind).toBe('backup')
+    if (!parsed.ok || parsed.kind !== 'backup') throw new Error('unreachable')
     expect(parsed.games).toHaveLength(1)
     expect(parsed.gameErrors).toHaveLength(1)
     expect(parsed.gameErrors[0]!.index).toBe(1)
@@ -169,8 +170,8 @@ describe('棋谱的入库时间（阶段 D，可选字段、不升版本）', ()
   it('读回文件：时间原样回到棋谱库的写入输入（毫秒）', () => {
     const parsed = parseImportText(JSON.stringify(toGameFile({ ...winRecord(), createdAt: AT })))
 
-    expect(parsed.ok).toBe(true)
-    if (!parsed.ok || parsed.kind !== 'game') return
+    expect(parsed.ok && parsed.kind).toBe('game')
+    if (!parsed.ok || parsed.kind !== 'game') throw new Error('unreachable')
     expect(parsed.warnings).toEqual([])
     expect(gamePayloadToRecordInput(parsed.game).createdAt).toBe(AT)
   })
@@ -181,8 +182,8 @@ describe('棋谱的入库时间（阶段 D，可选字段、不升版本）', ()
       const file = { ...toGameFile(winRecord()), createdAt: value }
       const parsed = parseImportText(JSON.stringify(file))
 
-      expect(parsed.ok).toBe(true)
-      if (!parsed.ok || parsed.kind !== 'game') return
+      expect(parsed.ok && parsed.kind).toBe('game')
+      if (!parsed.ok || parsed.kind !== 'game') throw new Error('unreachable')
       expect(gamePayloadToRecordInput(parsed.game).createdAt).toBeNull()
       expect(parsed.warnings.some((warning) => warning.path.endsWith('createdAt'))).toBe(true)
     },
@@ -191,8 +192,8 @@ describe('棋谱的入库时间（阶段 D，可选字段、不升版本）', ()
   it('没有时间的旧文件：时间为 null，没有告警', () => {
     const parsed = parseImportText(JSON.stringify(toGameFile(winRecord())))
 
-    expect(parsed.ok).toBe(true)
-    if (!parsed.ok || parsed.kind !== 'game') return
+    expect(parsed.ok && parsed.kind).toBe('game')
+    if (!parsed.ok || parsed.kind !== 'game') throw new Error('unreachable')
     expect(parsed.warnings).toEqual([])
     expect(gamePayloadToRecordInput(parsed.game).createdAt).toBeNull()
   })

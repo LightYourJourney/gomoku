@@ -1,0 +1,37 @@
+/*
+ * 纯逻辑层的类型级隔离（接在 `yarn typecheck` 里）。
+ *
+ * `lib` 只有 ES2023、`types: []`、不设 `jsx`：core / ai / learn / analysis 的生产文件
+ * 以及它们 import 到的任何文件（如 src/lib/coords.ts）里，凡是用到 window / document /
+ * top / parent / frames / opener / addEventListener / Blob / AudioContext /
+ * requestIdleCallback / setTimeout / console 这类宿主全局，都是「找不到名字」——
+ * 不再靠 `.oxlintrc.json` 逐个列名字（列举总有漏网，那份名单留作第二道）。
+ *
+ * 排除的只有测试与两个 Worker 外壳（ai/worker.ts、ai/browserEngine.ts，见 AGENTS.md「硬性约束」），
+ * 与 `.oxlintrc.json` 的 override 同一口径。不继承 tsconfig.app.json：那份的 DOM lib、
+ * vite/client 类型与 react-jsx（会给每个文件隐式引入 @types/react）都不能带进来。
+ */
+{
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.pure.tsbuildinfo",
+    "target": "es2023",
+    "lib": ["ES2023"],
+    "module": "esnext",
+    "types": [],
+    "skipLibCheck": true,
+
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "erasableSyntaxOnly": true,
+    "noFallthroughCasesInSwitch": true
+  },
+  "include": ["src/core", "src/ai", "src/learn", "src/analysis"],
+  "exclude": ["src/**/*.test.ts", "src/**/*.test.tsx", "src/ai/worker.ts", "src/ai/browserEngine.ts"]
+}

@@ -8,7 +8,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
-    "typecheck": "tsc -b && tsc -p tsconfig.e2e.json && tsc -p tsconfig.bench.json",
+    "typecheck": "tsc -b && tsc -p tsconfig.e2e.json && tsc -p tsconfig.bench.json && tsc -p tsconfig.pure.json",
     "test": "vitest run",
     "test:watch": "vitest",
     "e2e": "playwright test",
@@ -40,6 +40,7 @@
     "check:tests": "node quality/tests.ratchet.mjs",
     "check:bundle": "node quality/bundle-budget.mjs",
     "check:layers": "node quality/layers.mjs",
+    "check:e2e-skips": "node quality/e2e-skips.mjs",
     "e2e:browsers:full": "playwright test --config playwright.browsers-full.config.ts"
   },
   "dependencies": {

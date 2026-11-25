@@ -31,7 +31,8 @@ export default defineConfig({
   webServer: {
     command: `yarn vite --port ${PORT} --host 127.0.0.1 --strictPort`,
     url: BASE_URL,
-    reuseExistingServer: !process.env.CI,
+    // 恒为 false（理由见 playwright.config.ts）：不复用 5186 上已有的服务，端口被占就响亮失败。
+    reuseExistingServer: false,
     timeout: 60_000,
   },
 })

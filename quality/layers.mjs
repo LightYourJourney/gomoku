@@ -6,7 +6,8 @@
  * **改下面的允许表就是改分层**——先改 `ARCHITECTURE.md`，再改这里，提交信息写明。
  *
  * 两条判据：
- *   1. 跨层 import 必须在允许表里（键可以依赖值里的层；同层随意）。
+ *   1. 跨层 import 必须在允许表里（键可以依赖值里的层或层下子路径；同层随意）；
+ *      `TYPE_ONLY_ALLOWED` 里的目标只许 `import type` 引入。
  *      `src` 下不在表里的顶层目录或根文件一律红——新目录要显式归类，不能悄悄逃出门禁。
  *   2. 纯逻辑层（core / ai / analysis / learn）的生产文件，直接或**间接**都不得引入
  *      react / react-dom / zustand。间接也要查：`learn → lib` 合法，但 `lib` 里有 React hook。
@@ -23,16 +24,22 @@
  * 用法：`yarn check:layers`（在 `yarn gates` 里）。
  */
 
+import { existsSync, readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
-import { dirname, resolve, sep } from 'node:path'
+import { dirname, relative, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const REPO = resolve(HERE, '..')
 const SRC = resolve(REPO, 'src')
-const madge = createRequire(import.meta.url)('madge')
+const require = createRequire(import.meta.url)
+const madge = require('madge')
+const ts = require('typescript')
 
-/** 键可以依赖值里的层。根（`App.tsx` / `main.tsx`）是组装点，可以依赖一切。 */
+/**
+ * 键可以依赖值里的层。根（`App.tsx` / `main.tsx`）是组装点，可以依赖一切。
+ * 值里的条目是层名（`core`，整层）或层下的子路径（`persist/transfer`，只放行这个目录 / 文件及其下）。
+ */
 const ALLOWED = {
   core: [],
   ai: ['core'],
@@ -40,10 +47,19 @@ const ALLOWED = {
   learn: ['core', 'ai', 'lib'],
   lib: ['core', 'ai'],
   persist: ['core', 'ai', 'lib'],
-  sharing: ['core', 'persist'],
+  sharing: ['core', 'persist/transfer'],
   store: ['core', 'ai', 'analysis', 'persist', 'lib'],
   components: ['core', 'ai', 'learn', 'lib'],
   features: ['core', 'ai', 'analysis', 'learn', 'lib', 'persist', 'sharing', 'store', 'components'],
+}
+/**
+ * 只许**仅类型**引入的目标（条目写法同上）：每一条指向它的 import 都得是 `import type …`
+ * 或 `export type … from`——编译后整条擦掉，运行期不加载那个模块。
+ * `import { type X } from` **不算**：本项目开着 verbatimModuleSyntax，它编译成
+ * `import {} from '…'`，模块（连同它的副作用与依赖，比如 IndexedDB 那一串）照样被加载。
+ */
+const TYPE_ONLY_ALLOWED = {
+  sharing: ['persist/gameRecords'],
 }
 const ROOT_FILES = new Set(['App.tsx', 'main.tsx'])
 const PURE = ['core', 'ai', 'analysis', 'learn']
@@ -96,6 +112,48 @@ function escapesSrc(dep) {
   return abs !== SRC && !abs.startsWith(SRC + sep)
 }
 
+/** 条目（层名或子路径）是否覆盖 `src` 下的这个依赖文件。 */
+function entryCovers(entry, dep) {
+  const bare = dep.replace(/\.tsx?$/, '')
+  return bare === entry || bare.startsWith(`${entry}/`)
+}
+
+/**
+ * `file` 里指向各个 `src` 内目标的 import 是否**全部**为仅类型。返回 Map：目标（`src` 相对路径）→ 布尔。
+ * 只认静态的 import / export-from 声明；图里有边、这里却没找到声明（动态 `import()` 等）的，
+ * 调用方按「不是仅类型」处理——失败关闭。
+ */
+const typeOnlyCache = new Map()
+function typeOnlyImports(file) {
+  if (typeOnlyCache.has(file)) return typeOnlyCache.get(file)
+  const abs = resolve(SRC, file)
+  const source = ts.createSourceFile(abs, readFileSync(abs, 'utf8'), ts.ScriptTarget.Latest, false)
+  const out = new Map()
+  for (const stmt of source.statements) {
+    let typeOnly
+    if (ts.isImportDeclaration(stmt)) typeOnly = stmt.importClause?.isTypeOnly === true
+    else if (ts.isExportDeclaration(stmt) && stmt.moduleSpecifier !== undefined) typeOnly = stmt.isTypeOnly
+    else continue
+    const spec = stmt.moduleSpecifier.text
+    if (!spec.startsWith('.')) continue
+    const base = resolve(dirname(abs), spec)
+    const hit = [base, `${base}.ts`, `${base}.tsx`, resolve(base, 'index.ts'), resolve(base, 'index.tsx')].find(
+      (candidate) => /\.tsx?$/.test(candidate) && existsSync(candidate),
+    )
+    if (hit === undefined) continue
+    const target = relative(SRC, hit).split(sep).join('/')
+    out.set(target, (out.get(target) ?? true) && typeOnly)
+  }
+  typeOnlyCache.set(file, out)
+  return out
+}
+
+function edgeAllowed(from, file, dep) {
+  if (ALLOWED[from].some((entry) => entryCovers(entry, dep))) return true
+  const typeOnly = TYPE_ONLY_ALLOWED[from] ?? []
+  return typeOnly.some((entry) => entryCovers(entry, dep)) && typeOnlyImports(file).get(dep) === true
+}
+
 let crossEdges = 0
 for (const [file, deps] of Object.entries(graph)) {
   const from = layerOf(file)
@@ -116,8 +174,11 @@ for (const [file, deps] of Object.entries(graph)) {
     const to = layerOf(dep)
     if (to === null || to === from) continue // 未归类的会在它自己那一行报
     crossEdges += 1
-    if (from !== 'root' && !ALLOWED[from].includes(to)) {
-      problems.push(`越层：${file} → ${dep}（${from} 不得依赖 ${to}）`)
+    if (from !== 'root' && !edgeAllowed(from, file, dep)) {
+      const typeOnly = (TYPE_ONLY_ALLOWED[from] ?? []).some((entry) => entryCovers(entry, dep))
+      problems.push(
+        `越层：${file} → ${dep}（${from} 不得依赖 ${to}` + (typeOnly ? '，这个目标只许 `import type` 引入' : '') + '）',
+      )
     }
   }
 }

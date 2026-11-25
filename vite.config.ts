@@ -75,8 +75,9 @@ export default defineConfig({
      * 实测（内容改动，逐个单独跑）：`docs/ROADMAP.md` 会刷掉页面，而 `e2e/*.ts`、
      * `bench/*.mjs` **不会**。
      *
-     * 为什么必须挡住：`yarn e2e` 复用的就是这个 dev server
-     * （`playwright.config.ts` 的 `reuseExistingServer`）。于是「跑着 e2e、
+     * 为什么必须挡住：`yarn e2e` 跑的就是这份配置起的 dev server
+     * （`playwright.config.ts` 的 `webServer` 自己起、自己关，`reuseExistingServer`
+     * 恒为 false——不复用现成的，但它起的那一个照样盯着项目根）。于是「跑着 e2e、
      * 顺手改个文档」＝ 把正在跑的那条用例整页刷新掉，表现为一条与改动毫无关系的
      * 断言超时。`FINDINGS.md` 的 F-30 就是这么来的——刷新后会话从 localStorage
      * 恢复、AI 那一手被补完、状态条也变回「轮到你落子」，但棋盘是**新挂载**的，

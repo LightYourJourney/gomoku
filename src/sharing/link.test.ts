@@ -61,8 +61,9 @@ describe('分享链接 —— 编码与解码', () => {
     expect(encoded.ok).toBe(true)
     if (!encoded.ok) return
     const decoded = decodeShareToken(encoded.token)
-    expect(decoded.ok).toBe(true)
-    if (!decoded.ok || decoded.kind !== 'game') return
+    expect(decoded.ok && decoded.kind).toBe('game')
+    // 提前 return 会把后面的断言整段跳过：类型不符时用例照样绿。先断言 kind、再抛错做类型收窄。
+    if (!decoded.ok || decoded.kind !== 'game') throw new Error('unreachable')
     expect(decoded.game.moves).toEqual(NINE_MOVES)
     expect(decoded.game.ending).toEqual({ type: 'five', winner: BLACK })
   })
@@ -72,8 +73,8 @@ describe('分享链接 —— 编码与解码', () => {
     expect(encoded.ok).toBe(true)
     if (!encoded.ok) return
     const decoded = decodeShareToken(encoded.token)
-    expect(decoded.ok).toBe(true)
-    if (!decoded.ok || decoded.kind !== 'game') return
+    expect(decoded.ok && decoded.kind).toBe('game')
+    if (!decoded.ok || decoded.kind !== 'game') throw new Error('unreachable')
     expect(decoded.game.ending).toEqual({ type: 'resign', winner: WHITE, resignedBy: BLACK })
   })
 
@@ -82,8 +83,8 @@ describe('分享链接 —— 编码与解码', () => {
     expect(encoded.ok).toBe(true)
     if (!encoded.ok) return
     const decoded = decodeShareToken(encoded.token)
-    expect(decoded.ok).toBe(true)
-    if (!decoded.ok || decoded.kind !== 'position') return
+    expect(decoded.ok && decoded.kind).toBe('position')
+    if (!decoded.ok || decoded.kind !== 'position') throw new Error('unreachable')
     expect(decoded.position.board[7 * 15 + 3]).toBe(BLACK)
     expect(decoded.provenance?.ply).toBe(5)
     expect(decoded.title).toBe('棋谱第 5 手')
@@ -94,8 +95,8 @@ describe('分享链接 —— 编码与解码', () => {
     expect(encoded.ok).toBe(true)
     if (!encoded.ok) return
     const decoded = decodeShareToken(encoded.token)
-    expect(decoded.ok).toBe(true)
-    if (!decoded.ok || decoded.kind !== 'position') return
+    expect(decoded.ok && decoded.kind).toBe('position')
+    if (!decoded.ok || decoded.kind !== 'position') throw new Error('unreachable')
     expect(decoded.position.board.every((cell) => cell === 0)).toBe(true)
     expect(decoded.provenance).toBeNull()
   })
@@ -107,7 +108,7 @@ describe('分享链接 —— 编码与解码', () => {
     if (encodedGame.ok) {
       expect(encodedGame.token.length).toBeLessThanOrEqual(MAX_SHARE_TOKEN)
       const decoded = decodeShareToken(encodedGame.token)
-      expect(decoded.ok).toBe(true)
+      expect(decoded.ok && decoded.kind).toBe('game')
       if (decoded.ok && decoded.kind === 'game') {
         expect(decoded.game.moves).toHaveLength(225)
       }

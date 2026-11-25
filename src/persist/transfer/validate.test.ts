@@ -105,8 +105,9 @@ describe('严格导入 · 文件级', () => {
 describe('严格导入 · 棋谱内容', () => {
   it('合法棋谱通过', () => {
     const result = parse(validGame())
-    expect(result.ok).toBe(true)
-    if (!result.ok || result.kind !== 'game') return
+    expect(result.ok && result.kind).toBe('game')
+    // 提前 return 会把后面的断言整段跳过：类型不符时用例照样绿。先断言 kind、再抛错做类型收窄。
+    if (!result.ok || result.kind !== 'game') throw new Error('unreachable')
     expect(result.game.moves).toHaveLength(9)
   })
 
@@ -180,8 +181,8 @@ describe('严格导入 · 棋谱内容', () => {
     game.moves = []
     game.ending = { type: 'resign', winner: BLACK, resignedBy: WHITE }
     const result = parse(game)
-    expect(result.ok).toBe(true)
-    if (!result.ok || result.kind !== 'game') return
+    expect(result.ok && result.kind).toBe('game')
+    if (!result.ok || result.kind !== 'game') throw new Error('unreachable')
     expect(result.game.ending).toEqual({ type: 'resign', winner: BLACK, resignedBy: WHITE })
   })
 
@@ -202,8 +203,8 @@ describe('严格导入 · 棋谱内容', () => {
     game.moves = moves
     game.ending = { type: 'draw', winner: null }
     const result = parse(game)
-    expect(result.ok).toBe(true)
-    if (!result.ok || result.kind !== 'game') return
+    expect(result.ok && result.kind).toBe('game')
+    if (!result.ok || result.kind !== 'game') throw new Error('unreachable')
     expect(result.game.moves).toHaveLength(225)
     expect(result.game.ending).toEqual({ type: 'draw', winner: null })
   })
@@ -227,8 +228,8 @@ describe('严格导入 · 备份', () => {
       games: [good, bad],
     }
     const result = parse(backup)
-    expect(result.ok).toBe(true)
-    if (!result.ok || result.kind !== 'backup') return
+    expect(result.ok && result.kind).toBe('backup')
+    if (!result.ok || result.kind !== 'backup') throw new Error('unreachable')
     expect(result.games).toHaveLength(1)
     expect(result.gameErrors).toEqual([{ index: 1, errors: expect.any(Array) }])
   })
@@ -237,8 +238,8 @@ describe('严格导入 · 备份', () => {
     const backup = JSON.parse(JSON.stringify(toBackupFile({ games: [winRecord()] })))
     backup.progress = { completedLessons: ['rules', 7], solvedPuzzles: [], lastView: 'learn' }
     const result = parse(backup)
-    expect(result.ok).toBe(true)
-    if (!result.ok || result.kind !== 'backup') return
+    expect(result.ok && result.kind).toBe('backup')
+    if (!result.ok || result.kind !== 'backup') throw new Error('unreachable')
     expect(result.games).toHaveLength(1)
     expect(result.progress).toBeNull()
     expect(result.warnings.some((warning) => warning.path.includes('progress'))).toBe(true)
@@ -248,8 +249,8 @@ describe('严格导入 · 备份', () => {
     const backup = JSON.parse(JSON.stringify(toBackupFile({ games: [winRecord()] })))
     backup.session = { moves: [{ x: 99, y: 0 }], firstPlayer: 1, mode: 'pve', humanColor: 1, difficulty: 'easy', resignedBy: null }
     const result = parse(backup)
-    expect(result.ok).toBe(true)
-    if (!result.ok || result.kind !== 'backup') return
+    expect(result.ok && result.kind).toBe('backup')
+    if (!result.ok || result.kind !== 'backup') throw new Error('unreachable')
     expect(result.session).toBeNull()
     expect(result.warnings.some((warning) => warning.path.includes('session'))).toBe(true)
   })
@@ -262,8 +263,8 @@ describe('严格导入 · 备份', () => {
     expect(new TextEncoder().encode(text).length).toBeLessThan(MAX_IMPORT_BYTES)
 
     const result = parseImportText(text)
-    expect(result.ok).toBe(true)
-    if (!result.ok || result.kind !== 'backup') return
+    expect(result.ok && result.kind).toBe('backup')
+    if (!result.ok || result.kind !== 'backup') throw new Error('unreachable')
     expect(result.games).toHaveLength(2_000)
   })
 
@@ -412,8 +413,8 @@ describe('严格导入 · 告警规模', () => {
     }
 
     const result = parse(backup)
-    expect(result.ok).toBe(true)
-    if (!result.ok || result.kind !== 'backup') return
+    expect(result.ok && result.kind).toBe('backup')
+    if (!result.ok || result.kind !== 'backup') throw new Error('unreachable')
     expect(result.positions).toHaveLength(0)
     expect(result.positionErrors).toHaveLength(1)
     expect(result.positionErrors[0]!.errors.map((error) => error.message)).toContain('手顺包含非法落子')
@@ -430,8 +431,8 @@ describe('严格导入 · 告警规模', () => {
       lastView: 'settings-not-yet-existing',
     }
     const result = parse(backup)
-    expect(result.ok).toBe(true)
-    if (!result.ok || result.kind !== 'backup') return
+    expect(result.ok && result.kind).toBe('backup')
+    if (!result.ok || result.kind !== 'backup') throw new Error('unreachable')
     expect(result.progress?.completedLessons).toEqual(['rules'])
     expect(result.progress?.lastView).toBe('battle')
     expect(result.warnings.some((warning) => warning.path.endsWith('.lastView'))).toBe(true)
@@ -449,8 +450,8 @@ describe('严格导入 · 告警规模', () => {
       branch: { sourceSeq: 1, sourceContentKey: 'k', cursor: 4, sourceMoves: 9 },
     }
     const result = parse(backup)
-    expect(result.ok).toBe(true)
-    if (!result.ok || result.kind !== 'backup') return
+    expect(result.ok && result.kind).toBe('backup')
+    if (!result.ok || result.kind !== 'backup') throw new Error('unreachable')
     expect(result.session?.branch).toMatchObject({ cursor: 4, sourceMoves: 9 })
   })
 

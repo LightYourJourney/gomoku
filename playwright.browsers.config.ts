@@ -8,7 +8,7 @@ import { defineConfig, devices } from '@playwright/test'
  * 新增交互最密集的页面，先用它验证「不只 Chrome 能用」。
  */
 /**
- * 端口表（每条通道独占一个，`reuseExistingServer` 在本地会复用**任何**占着同端口的服务）：
+ * 端口表（每条通道独占一个；`reuseExistingServer` 恒为 false，端口被占就响亮失败、不复用）：
  * 5181 e2e（dev）· 5182 e2e:prod（dist 预览）· 5183 render 探针 · 5184 ui 探针 ·
  * 5185 e2e:browsers · 5186 e2e:browsers:full。曾经这里与 prod 共用 5182：prod 通道的预览
  * 还没退出时跑本通道，测到的是 dist 而不是 dev 源码，照样全绿。
@@ -40,7 +40,9 @@ export default defineConfig({
   webServer: {
     command: `yarn vite --port ${PORT} --host 127.0.0.1 --strictPort`,
     url: BASE_URL,
-    reuseExistingServer: !process.env.CI,
+    // 恒为 false，理由同 playwright.config.ts：本地 5185 上坐着的可能是别的工作树的
+    // dev server，复用它就是测别人的代码。--strictPort 让端口被占时直接起不来。
+    reuseExistingServer: false,
     timeout: 60_000,
   },
 })

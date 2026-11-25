@@ -17,6 +17,7 @@
  * 唯一的例外是提示 / 判题 / 分析这几个必须点出来的状态，它们用选择器等待。
  */
 import { spawn } from 'node:child_process'
+import { connect } from 'node:net'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -1403,16 +1404,54 @@ const MEASURE = () => {
 
 // ── 主流程 ──────────────────────────────────────────────────────
 
-function startDevServer() {
-  return spawn(
+/** 端口上已经有东西在听就是 true（连得上即占用，不管它是不是 HTTP）。 */
+function portInUse() {
+  return new Promise((resolvePort) => {
+    const socket = connect({ host: '127.0.0.1', port: PORT })
+    socket.once('connect', () => {
+      socket.destroy()
+      resolvePort(true)
+    })
+    socket.once('error', () => resolvePort(false))
+  })
+}
+
+/** 子进程的退出状态；`null` 表示还活着。 */
+let serverExit = null
+
+/*
+ * 起服务器前先探端口，占用就响亮失败。以前不探：5184 上要是坐着别的工作树 / 别的代理
+ * 的 dev server，自己这份因 --strictPort 起不来（stdio 又是 ignore，看不见），
+ * 而 waitForServer 照样从别人的服务拿到 200，于是量的是别人的代码，照样报绿。
+ */
+async function startDevServer() {
+  if (await portInUse()) {
+    console.error(
+      `✗ ${BASE_URL} 已被占用：探针要量自己起的 dev server，不复用现成的服务（它可能是别的工作树的代码）。\n` +
+        `  先停掉占着 ${PORT} 的进程（\`lsof -nP -iTCP:${PORT} -sTCP:LISTEN\`）再跑。`,
+    )
+    process.exit(2)
+  }
+  const child = spawn(
     'yarn',
     ['vite', '--host', '127.0.0.1', '--port', String(PORT), '--strictPort'],
-    { cwd: repoRoot, stdio: 'ignore' },
+    // stderr 透传：vite 起不来（端口被抢、配置错）时要看得见原因。
+    { cwd: repoRoot, stdio: ['ignore', 'ignore', 'inherit'] },
   )
+  child.once('exit', (code, signal) => {
+    serverExit = { code, signal }
+  })
+  return child
 }
 
 async function waitForServer() {
   for (let attempt = 0; attempt < 60; attempt++) {
+    // 自己的子进程已经退了：哪怕端口上此刻有响应，也不是它的，不能开测。
+    if (serverExit !== null) {
+      throw new Error(
+        `dev server 子进程提前退出（退出码 ${serverExit.code ?? '无'}，信号 ${serverExit.signal ?? '无'}），探针中止`,
+      )
+    }
     try {
       const response = await fetch(BASE_URL)
       if (response.ok) return
@@ -1444,7 +1483,7 @@ if (unknownStates.length > 0) {
   process.exit(2)
 }
 
-const server = startDevServer()
+const server = await startDevServer()
 let browser
 const measurements = []
 let shot = 0
