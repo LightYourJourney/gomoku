@@ -4,7 +4,28 @@
 > 以及线上验收的原始读数。与方案/清单分开，避免「计划」和「事实」混写。
 > 最新一次在最上面。
 
-## 0.7.1 · 复盘分析改中级档（当前生产）
+## 0.7.2 · 2026-11-25 全量审查整改（当前生产）
+
+| 项 | 值 |
+| --- | --- |
+| 应用版本 | `0.7.2` |
+| 引擎版本 | `search-1`（搜索决策未变） |
+| 提交 / 标签 | `f01ddb0`（整改 `afeaf5b…14c9303`，CI 抓到的修复 `b56ee1c`）/ `v0.7.2` |
+| 生产部署 | `ccd1a69f-1a9c-4388-8df5-fa62fda3d688`（https://ccd1a69f.gomoku-lab.pages.dev） |
+| 生产地址 | **https://gomoku-lab.pages.dev** |
+| 预览部署 | `b47c4444-30ba-4ae0-b463-b3e9535abb5e`（https://b47c4444.gomoku-lab-preview.pages.dev） |
+| 部署时间 | 2026-11-25（UTC+8） |
+| 部署方式 | 同 0.7.0：在 `f01ddb0` 的独立工作区里构建，`npx wrangler@4.151.3 pages deploy dist …` |
+| 回滚目标 | `bf528e8b…`（`3d3324d` / 0.7.1）→ `975912ae…`（`a073f37` / 0.7.0）→ … |
+| 产物 | `index-D0fo6EPq.js`（gzip **100.6 kB**）、`index-BOpQ7HGN.css`、`worker-01U1Gnzb.js`（与 0.7.1 相同） |
+| 验收 | 整改推送后 CI `45574990807` 的 `e2e` 206/207（冷启动残局题棋盘先挂再重建，`b56ee1c` 修掉），其余五个 job 绿；发布提交 CI `45578342791` 六个 job 全绿；本机发布前全档（五条 + `e2e:prod` 9/9 + 六道闸门 + `bench:check`）绿；预览 `e2e:remote` **207 / 207**；生产 **207 / 207**；生产 meta `app-version=0.7.2`、`build-commit=f01ddb0…`；`/learn/rules`、`/review/3` 200，`/foo`、`/assets/nope.js` 404；入口 `must-revalidate`、`/assets/*` `immutable`；CSP / HSTS / X-Frame-Options / nosniff / Referrer-Policy 下发 |
+
+- **授权**：裁定 25——所有者「将最新版本部署到网页端」，按裁定 20 的流程预览通过后上生产。
+- **内容**：见 `RELEASE_NOTES_0.7.2.md` 与 `docs/audit/FULL_REVIEW_2026-11-25.md`。
+- **数据格式**：无变化。
+- **回滚**：回 `bf528e8b…`（0.7.1）无数据代价；0.7.2 导出的超长分支来源会话在 0.7.1 上导入会被跳过。
+
+## 0.7.1 · 复盘分析改中级档（历史）
 
 | 项 | 值 |
 | --- | --- |
@@ -393,7 +414,7 @@ REMOTE_BASE=https://gomoku-lab.pages.dev yarn e2e:remote
 
 - 部署前跑全档：`yarn lint && yarn typecheck && yarn test && yarn build && yarn e2e && yarn e2e:prod && yarn gates && yarn bench:check`；
   界面结构有改动的，还要等 CI 的 `probe`（`yarn ui:probe --out ci` + 覆盖棘轮）与 `browsers` / `browsers-full` 全绿。
-- `e2e:remote` 的当前期望是 **202/202**（0.7.x；预览与生产各跑一次）。
+- `e2e:remote` 的当前期望是 **207/207**（0.7.2 起；预览与生产各跑一次）。
 - 部署前在发布提交的独立工作区里构建（`git worktree add --detach <dir> <提交>`），保证 `build-commit` 与发布提交一致，不被之后的本地文档提交带偏。
 
 ---
