@@ -149,6 +149,17 @@ describe('createAiEngine —— Worker 报错的消息为空', () => {
 
     await expect(pending).rejects.toThrow('AI 引擎异常')
   })
+
+  it('handleError 收到 undefined 时同样兜底（加载失败派发的是不带 message 的普通 Event）', async () => {
+    // 类型上 `ErrorEvent.message` 是 string，但脚本加载失败时浏览器派发的是普通 `Event`，
+    // `event.message` 是 undefined；`new Error(undefined).message` 是空串，界面又是一个空错误框。
+    const engine = createAiEngine(() => {})
+    const pending = engine.search(request(1))
+
+    engine.handleError(undefined as unknown as string)
+
+    await expect(pending).rejects.toThrow('AI 引擎异常')
+  })
 })
 
 describe('createAiEngine —— 取消', () => {

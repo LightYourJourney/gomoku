@@ -159,14 +159,14 @@ function hasExpired(ctx: SearchContext): boolean {
   return ctx.expired
 }
 
-/** 存表前把「距根的步数」换算成「距该节点的步数」，查表时再换算回来。 */
-function toTableScore(score: number, ply: number): number {
+/** 存表前把「距根的步数」换算成「距该节点的步数」，查表时再换算回来。导出只为单测。 */
+export function toTableScore(score: number, ply: number): number {
   if (score > WIN_SCORE - MATE_MARGIN) return score + ply
   if (score < -WIN_SCORE + MATE_MARGIN) return score - ply
   return score
 }
 
-function fromTableScore(score: number, ply: number): number {
+export function fromTableScore(score: number, ply: number): number {
   if (score > WIN_SCORE - MATE_MARGIN) return score - ply
   if (score < -WIN_SCORE + MATE_MARGIN) return score + ply
   return score

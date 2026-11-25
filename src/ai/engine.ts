@@ -75,7 +75,8 @@ export function createAiEngine(
     },
 
     handleError(message, requestIds) {
-      const error = new Error(message === '' ? 'AI 引擎异常' : message)
+      // 空串与缺失（加载失败时派发的普通 Event 没有 message）都兜底成一句能读的话
+      const error = new Error(typeof message === 'string' && message !== '' ? message : 'AI 引擎异常')
       if (requestIds === undefined) {
         failAll(error)
         return

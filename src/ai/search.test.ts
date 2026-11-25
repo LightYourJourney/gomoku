@@ -5,8 +5,8 @@ import { boardFromLines, nearlyFullBoard } from '../test/board-fixtures'
 import { startAiCounters, stopAiCounters } from './metrics'
 import { isWinningPoint } from './patterns'
 import { DIFFICULTY_PARAMS } from './difficulty'
-import { chooseMove, prescreenCandidates, searchBoard } from './search'
-import type { Difficulty, SearchRequest, SearchResponse } from './types'
+import { chooseMove, fromTableScore, prescreenCandidates, searchBoard, toTableScore } from './search'
+import { WIN_SCORE, type Difficulty, type SearchRequest, type SearchResponse } from './types'
 
 /** `purpose` 不在可覆盖之列：会被展开成 `RequestPurpose | undefined`，破坏必填性。 */
 function ask(
@@ -293,10 +293,11 @@ describe('searchBoard —— 置换表与注入时钟', () => {
     expect([{ x: 2, y: 2 }, { x: 7, y: 2 }]).toContainEqual(withTable.move)
   })
 
-  it('必胜分值不随搜索深度漂移', () => {
-    // canWinNow 返回 WIN_SCORE - ply，若直接存表就会带上「本次迭代目标深度」，
-    // 同一局面在不同 maxDepth 下会拿到不同分值。
-    const mustWin = boardFromLines(['...............', '...............', '...BBBB........'])
+  it('必胜分值不随搜索深度漂移（走的是 negamax，不是「直接成五」捷径）', () => {
+    // 原先用的是 `...BBBB` 黑先：根上一步成五，`searchRoot` 的捷径直接返回，
+    // 根本没进 negamax 与置换表——这条用例什么都没钉住。现在是活三：
+    // 黑做活四（ply 0）→ 白只能堵一头（ply 1）→ 黑成五（ply 2），必胜分来自内部节点。
+    const mustWin = boardFromLines(['...............', '...............', '....BBB........'])
     const base = {
       width: 10,
       budgetMs: 60_000,
@@ -307,10 +308,28 @@ describe('searchBoard —— 置换表与注入时钟', () => {
       defense: 1,
     }
 
-    const shallow = searchBoard(mustWin, BLACK, { ...base, maxDepth: 2 }, clock)
+    // 叶子（剩余深度 0）不判成五，所以 ply 2 的成五要 maxDepth ≥ 3 才看得见
+    const shallow = searchBoard(mustWin, BLACK, { ...base, maxDepth: 3 }, clock)
     const deep = searchBoard(mustWin, BLACK, { ...base, maxDepth: 5 }, clock)
 
+    expect(shallow.reason).toBe('search')
+    expect(shallow.score).toBeGreaterThan(WIN_SCORE - 1_000)
     expect(shallow.score).toBe(deep.score)
+  })
+
+  it('必胜分存表/查表的换算：同一局面在不同 ply 命中时，距根步数按命中处重算', () => {
+    // 归一化本身的单测。在当前引擎里它是**防御性**的：表只活在一次搜索内，
+    // 而每一层恰好落一子，同一局面在一次搜索里只会出现在同一个 ply——上面那条
+    // 行为测试因此分辨不出换算有没有做（撤掉换算它照样绿）。直接钉换算函数，
+    // 将来表若跨搜索复用（根变了、ply 就变了），这里先红。
+    const winAtNodePlusOne = WIN_SCORE - 5 // 在 ply 4 的节点上算出：下一手（ply 5）成五
+    const stored = toTableScore(winAtNodePlusOne, 4)
+    expect(fromTableScore(stored, 4)).toBe(winAtNodePlusOne)
+    expect(fromTableScore(stored, 2)).toBe(WIN_SCORE - 3)
+    // 负的必胜分（必败）对称
+    expect(fromTableScore(toTableScore(-(WIN_SCORE - 5), 4), 2)).toBe(-(WIN_SCORE - 3))
+    // 非必胜分原样
+    expect(fromTableScore(toTableScore(12_345, 4), 2)).toBe(12_345)
   })
 
   it('注入的时钟走到预算耗尽时返回超时回退，并给出合法着法', () => {
