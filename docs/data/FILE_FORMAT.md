@@ -114,6 +114,9 @@
   `preferences` / `session`。
 - 备份 v2 起包含 `positions`；每个局面是 `{ title, cells, nextPlayer, provenance }`，
   导入按内容键去重。v1 备份没有该段，仍可导入。
+- `session.branch.sourceContentKey` 上限 **2,048 字符**（`validate.ts` 的 `MAX_CONTENT_KEY_LENGTH`）。
+  它不是用户写的字符串，而是分支来源的内容键，长度随来源手数线性增长：头部不到 40 字符，
+  每手最多 8 字符，满盘 225 手约 1,840 字符。取 2,048 留余量——比这个还长的不可能是本程序导出的。
 
 ## 4. 重复判断
 

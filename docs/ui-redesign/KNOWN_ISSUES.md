@@ -9,7 +9,7 @@
 > **本文件不重复收录**——同一件事只留一个出处，避免两份清单漂移。
 >
 > **Phase 09A 处置（2026-10-20）**：P3-1（进度写入时机）已用串行 latest-wins
-> 队列 + `flush()` 修复；P3-2（分析措辞）已用显式 `SearchPath` 修复；
+> 队列 + `flush()` 修复；P3-2（分析措辞）已用显式的可靠度分类（`ai/types.ts` 的 `Confidence` / `confidenceOf`，随阶段 A 取代了当时的 `SearchPath`）修复；
 > **P3-3（判题/求解 60–132 ms 同步阻塞）撤回**——那是测量口径错误，实测纯函数
 > ≤9.08 ms（CPU 最小值；空载 wall ≤5.15 ms）、生产产物提交 1.3–4.3 ms（空载）；P3-5 已补 `robots.txt`（`llms.txt` 按本阶段
 > 要求不加）；**P3-4（超宽屏密度）已于 2026-10-31 修复**（≥1920 新档），见审计报告与 `e2e/layout.spec.ts`。
@@ -130,9 +130,9 @@ Phase 01 改了圆角/间距令牌与嵌套边框，但没有一条「全仓核�
 Phase 07 的只读结构审计（`FINAL_AUDIT.md` §5 有完整表）按「可能影响维护成本」
 标了六项 Medium；终审逐条对照「用户能不能观察到」之后**统一下调为 Low**——
 它们都不改变任何可观察行为，且多数是既有设计取舍：
-超大组件（`Board.tsx` 681 行等）、三处卡片 JSX 相似、`useAnalysis`/`useReplay`
+超大组件（`Board.tsx` 702 行等）、三处卡片 JSX 相似、`useAnalysis`/`useReplay`
 两个单行 hook wrapper、`learnStore` 的 `view` 与 `progress.lastView` 双份、
-`components/panels` 对 `features/battle/status` 的**类型**反向依赖、
+~~`components/panels` 对 `features/battle/status` 的**类型**反向依赖~~（**已消除**：`src/components` 已不 import `features`，`yarn check:layers` 机器守着）、
 测试对 DOM 结构的依赖。
 
 逐项判断：**都不构成用户可观察的缺陷**，且多数是既有设计取舍——
@@ -141,7 +141,7 @@ Phase 07 的只读结构审计（`FINAL_AUDIT.md` §5 有完整表）按「可�
   三个调用点各带一组可选 prop；
 - 两个 hook wrapper 删掉只省一行 `useStore(store)`；
 - `view`/`lastView` 只有测试的 `setState` 能让它们不一致，用户路径不经过；
-- 类型反向依赖不产生运行时循环（`madge` 通过），搬家收益是纸面整洁；
+- ~~类型反向依赖不产生运行时循环（`madge` 通过），搬家收益是纸面整洁~~——该依赖已随阶段 E 重构成 `components/core/domain` 类型下沉而消除；
 - 测试对 `data-player` / `stone-x-y` 的断言是 SVG 棋盘唯一可断言的载体。
 
 **判定：记录，不在终审阶段重构。** 任务书明令禁止「为了追求表面完成度而大规模

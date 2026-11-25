@@ -2,7 +2,7 @@
 
 这一行指向项目唯一的开发约定文件，避免两份规则各说各话。
 
-**开发约定见 [AGENTS.md](AGENTS.md)。** 通用工程原则见上层 `~/CLAUDE.md`。
+**开发约定见 [AGENTS.md](AGENTS.md)。** 通用工程原则见上层 `~/.claude/CLAUDE.md`。
 
 只有在本文件与 `AGENTS.md` 冲突时，以 `AGENTS.md` 为准——它是为这个项目写的。
 
@@ -15,10 +15,10 @@
 | 改搜索或评估 | [docs/AI_ENGINE.md](docs/AI_ENGINE.md) |
 | 改分层、接口、棋盘渲染 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) |
 | 看测试怎么跑、验证过什么 | [docs/TEST_REPORT.md](docs/TEST_REPORT.md) |
-| 改界面、视觉、响应式或交互反馈 | [docs/ui-redesign/DESIGN_SYSTEM.md](docs/ui-redesign/DESIGN_SYSTEM.md)（规范）＋ [FINDINGS.md](docs/ui-redesign/FINDINGS.md)（已知问题）＋ [PLAN.md](docs/ui-redesign/PLAN.md)（分阶段计划） |
+| 改界面、视觉、响应式或交互反馈 | [docs/ui-redesign/DESIGN_SYSTEM.md](docs/ui-redesign/DESIGN_SYSTEM.md)（规范）＋ [KNOWN_ISSUES.md](docs/ui-redesign/KNOWN_ISSUES.md)（现行已知问题清单；[FINDINGS.md](docs/ui-redesign/FINDINGS.md) 是历史快照）＋ [PLAN.md](docs/ui-redesign/PLAN.md)（分阶段计划） |
 
 ## 最容易被忽略的三条
 
-1. `core` 与 `ai` 的**算法部分**是纯逻辑层，不得引入 React、DOM、Zustand 或浏览器 API。唯一的例外是 `ai/` 下的 Worker 适配外壳——权威表述在 `AGENTS.md`，**以那份为准**，这里不复述以免两处再次分叉。
+1. `core`、`ai`、`learn`、`analysis` 是**纯逻辑层**，不得引入 React、DOM、Zustand 或浏览器 API。唯一的例外是 `ai/` 下的 Worker 适配外壳——权威表述在 `AGENTS.md`，**以那份为准**，这里不复述以免两处再次分叉。
 2. 改引擎、规则、store 的行为必须先写失败测试；改棋盘命中区或响应式布局必须补 Playwright 用例并在真实浏览器复核——jsdom 抓不到这类问题。
 3. 提交前 `yarn lint && yarn typecheck && yarn test && yarn build && yarn e2e` 五条全绿。

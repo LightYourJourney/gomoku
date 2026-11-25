@@ -14,7 +14,7 @@ analysis   learn        ← 分析结论与教学内容（两条互不依赖的�
      browser APIs       ← Worker / localStorage / IndexedDB / WebAudio
 ```
 
-**依赖方向严格单向**（箭头读作「依赖」）：`features` 依赖 `components` 与 `store`，`components` 不依赖 `features` / `store`；`store` 向下依赖 `analysis` / `ai` / `core` / `persist` / `lib`；`sharing → core` + `persist/transfer`（分享内容复用文件校验器，不反向依赖 features/store）；`analysis → ai → core`，`learn → ai → core`，两条支线互不依赖。`core` 不依赖任何其他层，也不碰 React、DOM、时间与随机数。这条约束让规则与引擎可以脱离浏览器直接单测。
+**依赖方向严格单向**（箭头读作「依赖」）：`features` 依赖 `components` 与 `store`，`components` 不依赖 `features` / `store`；`store` 向下依赖 `analysis` / `ai` / `core` / `persist` / `lib`；`sharing → core` + `persist`（分享内容复用 `persist/transfer` 的文件格式与校验器，另从 `persist/gameRecords` 取 `GameRecord` 类型；不反向依赖 features/store）；`analysis → ai → core`，`learn → ai → core`，两条支线互不依赖。`core` 不依赖任何其他层，也不碰 React、DOM、时间与随机数。这条约束让规则与引擎可以脱离浏览器直接单测。
 
 由 `yarn check:layers`（`quality/layers.mjs`，在 `yarn gates` 里）机器守。允许表（键可以依赖值里的层；同层随意；`App.tsx` / `main.tsx` 是组装点，可以依赖一切）：
 
@@ -78,17 +78,19 @@ analysis   learn        ← 分析结论与教学内容（两条互不依赖的�
 `analyze.ts` 定义单手结论（`MoveVerdict`：同视界分差（不可比时为空）+ 引擎出处，含引擎首选的 `reason`）、分差口径 `horizonLoss`、结论文案与缓存键。口径的理由与实测见 `AI_ENGINE.md` 的「复盘分差的口径」。**只做纯函数，不发请求**——请求编排在 store 层。结论里没有「最佳 / 失误」这类固定档位：把连续的分差压进几个标签等于替玩家下结论，而且阈值一拍脑袋就会把「稍有出入」说成「失误」。
 
 **`store/`** —— 状态编排。
-`gameStore.ts` 是对局与 AI 请求的状态机（工厂函数 `createGameStore(engine)`，可注入假引擎测试）；`useGameStore.ts` 组装真实引擎与存档，是应用唯一的单例入口；`learnStore.ts` 是学习进度（工厂函数 `createLearnStore(storage)`，可注入假存储测试；`progress.lastView` / `lastVisited` 两个位置字段由导航 store 写）；`navigationStore.ts` 是应用内导航：位置以地址为准（路径路由，地址规则是 `lib/routes.ts` 的两个纯函数），切页面、进出子页面 `pushState`，`popstate` 时从地址读；点顶栏进教学 / 残局时展开上次那节、冷启动打开裸的根地址时回到上次那一页，都在这里做（裁定 17）；写入走串行 latest-wins 队列，`flush()` 只等队列排空，**不承诺已落盘**；`settingsStore.ts` 是主题、坐标、音效等偏好；`replayStore.ts` 是回放器（棋谱 + 游标 + 派生局面 + 自动播放 + 播放速度）——**回放位置只有这一个游标**，时间轴、步进按钮、跳到开局/终局、点分析结论跳转全都只经它走，界面上不存在第二份「当前第几手」；`analysisStore.ts` 是分析管线（逐局面排队、请求共享、会话内缓存）；`editorStore.ts` 是局面编辑器的局部快照历史、工具与只读分析状态（`version` 闸门；不碰 gameStore）；`recordNotifier.ts` 是终局入库链（从 `gameStore.ts` 平移出来，阶段 E）：只在「进行中 → 终局」时回调 `onGameEnd`，写入排成串行链、`replacesSeq` 轮到时才读，局号闸门挡住迟到的结果，只写回 `recordSaveState` / `recordedSeq` 两个字段；`gameStore.ts` 的 `startBranch` 是棋谱探索分支的唯一接管入口——只用合法前缀经 `replay()` 构建，清空旧 AI/提示/保存状态，并在 AI 回合立即续走；`requestCounter.ts` 是**全局唯一**的请求号计数器——对局、提示、分析、编辑器请求共用它。
+`gameStore.ts` 是对局与 AI 请求的状态机（工厂函数 `createGameStore(engine)`，可注入假引擎测试）；`useGameStore.ts` 组装真实引擎与存档，是应用唯一的单例入口；`learnStore.ts` 是学习进度（工厂函数 `createLearnStore(storage)`，可注入假存储测试；`progress.lastView` / `lastVisited` 两个位置字段由导航 store 写）；写入走串行 latest-wins 队列，`flush()` 只等队列排空，**不承诺已落盘**；`currentProgress()` 先 flush，载入过就用内存进度、否则读存储——备份导出与导入合并都用它，否则库里的旧值会少掉刚完成的那一项、或在合并时盖掉它；`navigationStore.ts` 是应用内导航：位置以地址为准（路径路由，地址规则是 `lib/routes.ts` 的两个纯函数），切页面、进出子页面 `pushState`，`popstate` 时从地址读；点顶栏进教学 / 残局时展开上次那节、冷启动打开裸的根地址时回到上次那一页，都在这里做（裁定 17）；位置字段的落盘交给 `learnStore` 的同一条队列；`settingsStore.ts` 是主题、坐标、音效等偏好；`replayStore.ts` 是回放器（棋谱 + 游标 + 派生局面 + 自动播放 + 播放速度）——**回放位置只有这一个游标**，时间轴、步进按钮、跳到开局/终局、点分析结论跳转全都只经它走，界面上不存在第二份「当前第几手」；`analysisStore.ts` 是分析管线（逐局面排队、请求共享、会话内缓存）；`editorStore.ts` 是局面编辑器的局部快照历史、工具与只读分析状态（`version` 闸门；不碰 gameStore）；`recordNotifier.ts` 是终局入库链（从 `gameStore.ts` 平移出来，阶段 E）：只在「进行中 → 终局」时回调 `onGameEnd`，写入排成串行链、`replacesSeq` 轮到时才读，局号闸门挡住迟到的结果，只写回 `recordSaveState` / `recordedSeq` 两个字段；`lastSeq` 按局隔离（每局一个持有者），`reset()` 后旧局排队中的写入仍替换旧局自己那条，不会读到被清空的号、也不会顶掉新局的棋谱；`gameStore.ts` 的 `startBranch` 是棋谱探索分支的唯一接管入口——只用合法前缀经 `replay()` 构建，清空旧 AI/提示/保存状态，并在 AI 回合立即续走；`requestCounter.ts` 是**全局唯一**的请求号计数器——对局、提示、分析、编辑器请求共用它。
 
 **`sharing/`** —— 分享协议。`link.ts` 负责版本化外壳、base64url、FNV-1a 完整性校验、严格解码，以及整盘/局面分享内容与 URL 的生成；内容复用 Phase 11A/11B 的文件格式与校验器。`features/sharing/SharePreview.tsx` 负责只读预览与显式导入，`App.tsx` 只识别 `#share=` Fragment（取 token 的 `sharing/token.ts` 无依赖，入口包不必为此带上解码与校验）。分享链接的路径一律是应用根，不带页面地址。
 
 **`persist/`** —— 存档。
-`storage.ts` 负责对局存档的序列化与**结构校验**（localStorage）；`progress.ts` 负责学习进度、`gameRecords.ts` 负责多局棋谱（两者都在 IndexedDB）——它的 `list()` **从不上抛**（每一步失败都落内存兜底），所以把「读不出来」的两种情形**分开报**：`degraded`（底层不可用，数据来自兜底）与 `skipped`（读到了但没通过校验）。界面靠这两个信号如实说明，不会把两者一起说成「你还没下过棋」。棋谱的写入有两条：`put` 只写；`putReplacing` 在**一个读写事务**里找旧条（号，或内容身份）→ 写新 → 删旧，终局入库（`saveGameReplacing`）走它，「同一局只留一条」不再靠多个事务加补偿。`delete` 返回 `{ persisted }`——库打不开时只删得了内存兜底里的那份，界面据此不说「已删除」。可选字段 `createdAt`（下完的时间，时钟由 `useGameStore` 注入）不递增 `schemaVersion`，缺失读成 null；`schema.ts` 是**库名、版本与建表的唯一出处**——两个模块共用一个库，各写一份版本号的话，先打开的那个只建自己的表，另一个同版本打开不触发升级、表不存在，事务失败后被内存兜底吞掉，症状是「界面说已保存、刷新就没了」。两处同一条口径：任何一处不符合预期都当作没有数据，宁可重来也不把半成品灌进状态机。
+`storage.ts` 负责对局存档的序列化与**结构校验**（localStorage）；`progress.ts` 负责学习进度、`gameRecords.ts` 负责多局棋谱（两者都在 IndexedDB）——它的 `list()` **从不上抛**（每一步失败都落内存兜底），所以把「读不出来」的两种情形**分开报**：`degraded`（底层不可用，数据来自兜底）与 `skipped`（读到了但没通过校验）。界面靠这两个信号如实说明，不会把两者一起说成「你还没下过棋」。棋谱的写入有两条：`put` 只写；`putReplacing` 在**一个读写事务**里找旧条（号，或内容身份）→ 写新 → 删旧，终局入库（`saveGameReplacing`）走它，「同一局只留一条」不再靠多个事务加补偿。`delete` 返回 `{ persisted }`——库打不开时只删得了内存兜底里的那份，界面据此不说「已删除」。降级内存兜底的棋谱号从 1,000,000,000,000（`FALLBACK_SEQ_BASE`）起，`get` / `delete` 按号段路由，避免与库里自增号撞车、按号删掉库里另一局真实棋谱。可选字段 `createdAt`（下完的时间，时钟由 `useGameStore` 注入）不递增 `schemaVersion`，缺失读成 null；`schema.ts` 是**库名、版本与建表的唯一出处**——两个模块共用一个库，各写一份版本号的话，先打开的那个只建自己的表，另一个同版本打开不触发升级、表不存在，事务失败后被内存兜底吞掉，症状是「界面说已保存、刷新就没了」。两处同一条口径：任何一处不符合预期都当作没有数据，宁可重来也不把半成品灌进状态机。
 
-**为什么分两种存储**：对局存档每次落子都要写、数据小、丢了就丢了；学习进度写得少但**丢了会让人白学一遍**，值得用更耐久的 IndexedDB。进度层在 IndexedDB 不可用时（隐私模式、open 抛错、被其他标签页占用）整体降级为内存态——进度丢了可以接受，白屏不行。
+**为什么分两种存储**：对局存档每次落子都要写、数据小、丢了就丢了；学习进度写得少但**丢了会让人白学一遍**，值得用更耐久的 IndexedDB。进度层在 IndexedDB 不可用时（隐私模式、open 抛错、被其他标签页占用）整体降级为内存态——进度丢了可以接受，白屏不行。学习进度另有一条写入规则：库里那条是**更新版本的应用**写的记录时（`progress.ts` 的 `isNewerThanCurrent`，`schemaVersion` 比当前大），读作空进度，但写入中止、如实报失败、**不覆盖**——那是回滚部署时真实用户的进度。
 
 
 `positions.ts` 是 Phase 11B 的自定义局面库：同一个 `gomoku-lab` 库的 `positions` 表（`DB_VERSION=4`），保存 `cells + nextPlayer + 可选 provenance + 创建/更新时间 + 内容键`；`contentKey` 唯一索引兜住同标签页/跨标签页重复保存；打不开库时退内存兜底，打开后事务失败则抛错让界面标失败；列表按最近保存排序，删除返回是否真正持久化；读到与盘面不一致的已知手顺时降级为自由摆盘，不丢盘面。内部记录 v1→v2 为只读迁移，旧记录时间显示「时间未知」；旧记录缺 `contentKey` 时，每个会话首次打开局面库后按读取路径的规范化值回填一次（冲突只跳过该条，不中止）。
+
+**偏好（`settingsStore.ts`）写 localStorage 失败不抛**（配额满、浏览器禁用存储）：吞掉异常、置运行时信号 `persistFailed`，由对战页的设置面板（可见文字）与顶栏主题按钮（可访问名与提示文字，每页都在）提示；`persistFailed` 不落盘，成功一次就清掉。导出侧还有一条同源的自检：`features/review/DataManagementPanel.tsx` 的 `downloadIfRestorable` 在下载前用**导入解析器**量一遍将要下载的文本，导不回来的文件不下载并说明是哪条上限超了；整体能导但会少掉一段（进度 / 偏好 / 会话段被跳过）或少掉几局、几个局面的，同样不下载。
 
 **`persist/transfer/`** —— 对外交换格式（Phase 11A）。`format.ts` 定义 `gomoku-lab.game`（v1）/ `gomoku-lab.backup`（v2）两个版本化文件形状，备份 v2 含自定义局面，并用 `toGameFile` / `toBackupFile` 把内部记录转成**不含 `seq`** 的载荷；`validate.ts` 把导入文件当不可信输入，先查大小/深度，再用**单次 `replay()`** 做严格手顺校验（把截断变成明确失败），最后核对结束方式、认输方与胜负。`recordIdentity.ts` 定义规范化的内容身份——重复判断不看自增 `seq`，看先手、手顺、模式、执子、难度与认输方。批量写入 `GameRecordsStorage.importMany` 在**一个 IndexedDB 事务**内去重 + 插入；失败整笔回滚并如实报 `persisted=false`。`restore.ts` 是恢复备份的策略（`restoreImport(plan, deps)`，依赖全部注入，阶段 E 从 `DataManagementPanel` 平移出来）：备份的棋谱段整笔失败则其余各段不动、进度 / 偏好 / 会话各自独立成败、局面逐条去重逐条写；组件只管预览与结果展示。读库、读文件共用的小守卫（`isObj` / `isPlayer` / `isFiniteInt` / `parsePoint`）在 `persist/parse.ts`，`transfer/guards.ts` 只留导入告警相关的类型与构造。session v3 持久化分支来源；外部格式版本与内部 `DB_VERSION` / `schemaVersion` **分开维护**，规范见 `docs/data/FILE_FORMAT.md`。
 
@@ -188,7 +190,7 @@ type PuzzleGoal =
 
 1. **多解是自然结果**，不需要把每种正确走法都列出来。
 2. **出题人没有机会把答案写错**——没有答案表可写。
-3. **求解器（`solveMove`）建立在判定器之上**，所以「题目可解」与「玩家做对」用的是同一把尺子，不可能出现「提示指的那一手被判错」。
+3. **求解器（`solveMove`）建立在判定器之上**，所以「题目可解」与「玩家做对」用的是同一把尺子，不可能出现「提示指的那一手被判错」。唯一的例外是超时：`forcedWin` 判题给算杀 2000ms、求解给 3000ms，判题那一次没算完时 `judgeMove` 返回「未定」（`inconclusive: true`，界面显示中性的「?」与「暂无结论。」、可重试），而不是判错。
 
 `content.test.ts` 是这套模型的验收装置：它把全部课程与题目逐个跑一遍求解器，任何一道无解、任何一道开局就已经分出胜负、任何一处手数奇偶对不上，都会在那里被点名。
 
@@ -208,7 +210,7 @@ type PuzzleGoal =
 
 **存档必须能还原「结果」。** 手顺能还原出胜负与和棋——最后一手就在手顺里。唯独认输还原不出来，所以 `PersistedSession` 单独存一个 `resignedBy`（由 `winner` 反推）。少了它，认输后刷新页面会让这局复活成进行中，AI 还会接着往下走。
 
-**分析绝不改变棋局，也不挡住落子。** 分析请求 `purpose: 'analyze'`、`gameVersion: 0`：它的过期校验走**三重闸门**——响应必须属于当前这一次分析（`runId`，每次 `start` 递增）、是当前在飞的那一个（`inflight`，局面、对照或续搜请求）、且手序号与局面版本对得上（`moveIndex` / `gameVersion`）。只比手序号是不够的：每一次分析的序号都从 0 开始，上一局的迟到响应会被下一局当成自己的。三类请求（落子 / 提示 / 分析）的 `requestId` 全部来自 `requestCounter.ts` 的同一个计数器——分成多个计数器迟早撞号，撞号意味着迟到的分析响应可能被当成对局请求去兑现。分析在复盘页与局面编辑器发起，走只读车道，与落子不在同一个 Worker 上；复盘分析串行排队、同一时刻最多 1 个在飞，400ms 预算有界。离开复盘页 / 编辑器时在飞的分析被取消。
+**分析绝不改变棋局，也不挡住落子。** 分析请求 `purpose: 'analyze'`、`gameVersion: 0`：它的过期校验走**三重闸门**——响应必须属于当前这一次分析（`runId`，每次 `start` 递增）、是当前在飞的那一个（`inflight`，局面、对照或续搜请求）、且手序号与局面版本对得上（`moveIndex` / `gameVersion`）。只比手序号是不够的：每一次分析的序号都从 0 开始，上一局的迟到响应会被下一局当成自己的。三类请求（落子 / 提示 / 分析）的 `requestId` 全部来自 `requestCounter.ts` 的同一个计数器——分成多个计数器迟早撞号，撞号意味着迟到的分析响应可能被当成对局请求去兑现。复盘分析在复盘页发起，走只读车道，与落子不在同一个 Worker 上；串行排队、同一时刻最多 1 个在飞，中级档每局面 `ANALYSIS_BUDGET_MS = 1000` ms 预算有界。局面编辑器的分析请求则是 `purpose: 'hint'`、`gameVersion: version`（编辑器自己的快照版本），过期校验是 `version` + `requestId` 双闸门（响应还要求 `response.gameVersion` 与发起时一致），同样走只读车道。离开复盘页 / 编辑器时在飞的请求被取消。
 
 **提示请求与落子请求必须彻底隔离。** 两者走同一条引擎、同一套过期校验，但分别记在 `pendingHintRequestId` 与 `pendingRequestId` 上：**提示在飞时玩家照常落子**（`canHumanPlay` 不看提示状态）。（请求号仍来自同一个只增不减的计数器——分成两个计数器迟早会撞号，撞号意味着迟到的提示响应会去兑现落子请求。）
 

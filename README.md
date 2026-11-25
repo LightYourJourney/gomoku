@@ -5,9 +5,9 @@
 页面加载时从**同源**取静态资源；之后的对局、教学与复盘全部在本机完成（不含 Service Worker，
 断网后刷新页面仍需能访问宿主）。
 
-**线上地址：<https://gomoku-lab.pages.dev>**（Cloudflare Pages；应用 `0.6.0`、引擎 `search-1`、提交 `6301201`，标签 `v0.6.0+build.3`）。
+**线上地址：<https://gomoku-lab.pages.dev>**（Cloudflare Pages；应用 `0.7.1`、引擎 `search-1`、提交 `3d3324d`，标签 `v0.7.1`）。
 
-**当前进度：Phase 1–5、UI/UX 改版 Phase 00–07、Phase 08 独立审计、Phase 09A/09B 发布与首次上线、Phase 10A–10F AI 评测 / 优化 / 标定 / 审计 / 正式发布、Phase 11A 数据备份与导入导出、Phase 11B 棋盘编辑器与局面研究已正式发布；Phase 11C/11D/11E 已随 `0.5.0` 发布；`0.6.0` 已发布：备份 v2、DB v4、进度失败提示、分支来源持久化与跨浏览器全量。**
+**当前进度：Phase 1–5、UI/UX 改版 Phase 00–07、Phase 08 独立审计、Phase 09A/09B 发布与首次上线、Phase 10A–10F AI 评测 / 优化 / 标定 / 审计 / 正式发布、Phase 11A 数据备份与导入导出、Phase 11B 棋盘编辑器与局面研究已正式发布；Phase 11C/11D/11E 已随 `0.5.0` 发布；`0.6.0` 已发布：备份 v2、DB v4、进度失败提示、分支来源持久化与跨浏览器全量；`0.7.0`（重构评估 A–E 合集）与 `0.7.1`（复盘分析改中级档）已发布。**
 键盘与读屏可用、平板与触屏专项验证过、生产构建有独立的冒烟通道、用法有[使用说明](docs/USAGE.md)；
 发布就绪评估与部署方案见 [RELEASE_READINESS.md](docs/release/RELEASE_READINESS.md)；
 最终审计与残留问题见 [FINAL_AUDIT.md](docs/ui-redesign/FINAL_AUDIT.md) 与 [KNOWN_ISSUES.md](docs/ui-redesign/KNOWN_ISSUES.md)。
@@ -51,17 +51,17 @@ yarn dev          # 开发服务器
 | `yarn strength` | **AI 棋力评测**：配对赛 + 置信区间 + 搜索指标。`STRENGTH_MODE=smoke/standard/extended`、`STRENGTH_A/B=<难度>`；报告写 `bench/strength/results/` |
 | `yarn profile` | **搜索热点剖析**：V8 采样（固定深度 / 真实预算）、热点单价、增量评估生命周期；结果解读见 [CPU_PROFILE](docs/ai-research/CPU_PROFILE.md) |
 | `yarn strength:bundle` | 把任意源码树（含 `git worktree`）的引擎打成独立包，用于**版本对照** |
-| `yarn gates` | 五道防退化闸门串跑（`check:cycles` + `check:deadcode` + `check:dupes` + `check:tests` + `check:bundle`）。**pre-push 钩子跑的就是它**，见 [AGENTS.md](AGENTS.md) |
+| `yarn gates` | 六道防退化闸门串跑（`check:cycles` + `check:deadcode` + `check:dupes` + `check:tests` + `check:bundle` + `check:layers`）。**pre-push 钩子跑的就是它**，见 [AGENTS.md](AGENTS.md) |
 | `yarn check:tests` | 测试条数棘轮：单测/e2e 条数与跳过数只许涨不许跌。删用例、加 `.skip` 都会红，要减就显式改 `quality/tests.baseline.json`。e2e 的跳过是**静态扫 spec 文件**数出来的——`playwright --list` 对跳过的用例不打标记，工具这条路走不通 |
 | `yarn check:coverage` | 覆盖棘轮：探针扫到的状态、每行的控件与棋盘，必须是入库基线的**超集**。**基线**的来源是 `docs/ui-redesign/screenshots/after-phase02/measurements.json`（写在 `quality/coverage.baseline.json` 的 `source` 里）。**脚本没有默认值**：必须用 `--current` 指定本次探针产物（`yarn check:coverage` 里固定传 `docs/ui-redesign/screenshots/ci/measurements.json`，与 CI 完全一致）；不给就退出 2 并打印用法——曾经那个默认值指向旧快照，本地跑永远恒绿。**改了界面之后要在 CI 的 probe job 里跑**（本地单跑用的是上一期产物，不是这次的新量测） |
-| `yarn check:bundle` | 入口 JS 体积预算：gzip 后 ≤ **135,000 B**（`quality/bundle-budget.mjs`）。上限按当前产物（约 130 kB，2026-11-15 实测 130,136 B）留出余量：真要涨，先说明为什么这笔代码必须进主包 |
+| `yarn check:bundle` | JS 体积预算：入口（`index.html` 的入口脚本 + `modulepreload`）gzip 后 ≤ **108,000 B**、`dist/assets` 全部 JS gzip 后 ≤ **162,000 B**（`quality/bundle-budget.mjs`）。上限按 2026-11-18 拆包后的实测（入口约 98.5 kB、总量约 147.7 kB）留出约 10% 余量：真要涨，先说明为什么这笔代码必须进主包 |
 | `yarn check:cycles` | 循环依赖闸门（madge）。**范围只到 `src/`**——`bench/`、`e2e/` 是脚本，循环风险低，但别以为全仓都查过。有环即红并点名环路 |
 | `yarn check:dupes` | 重复代码闸门（jscpd）。范围 `src/`、排除测试、**阈值 0**（零容忍），已接受的 2 个文件（教学内容字面量）显式豁免并在 `TECH_DEBT.md` 写明理由。**它只认逐字相同的克隆**：复制粘贴会红，**改掉标识符的复制不会**——别把它当成「重复实现」检测器 |
 | `yarn check:deadcode` | 死代码闸门（knip）。基线写在 `knip.jsonc` 里，**理由也在里面**——放行的是「只被签名引用的类型导出」整类（见 `TECH_DEBT.md` §1.3 的裁定），真·多余导出照样会红 |
 
 提交前的完整清单见 [AGENTS.md](AGENTS.md)。
 
-`git push` 会被本地 pre-push 钩子拦一道（快档：lint / typecheck / test / build / 五道闸门，
+`git push` 会被本地 pre-push 钩子拦一道（快档：lint / typecheck / test / build / 六道闸门，
 热跑 30–45 秒，看机器负载）。**但它不含 e2e 与 `ui:probe`** —— 本地绿了只说明快档过了；
 改了界面结构、布局或扫描范围的人，要等 CI 的全档绿。装钩子靠 `yarn install`（`prepare` 里配的）。
 
@@ -164,9 +164,9 @@ bench/         引擎基准、渲染探针与棋力评测（测量脚本不进�
 
 | 项 | 数量 |
 | --- | --- |
-| 单元 / 组件用例 | **1475**（90 个文件） |
-| 端到端用例 | **193**（桌面 169 + 移动触屏 14 + 平板 10），另有 Firefox/WebKit 编辑器专项 20 条、全量核心 307 条 |
-| 生产构建冒烟 | 7（`yarn e2e:prod`，含构建版本标识核对与分享预览） |
+| 单元 / 组件用例 | **1768**（98 个文件） |
+| 端到端用例 | **207**（桌面 182 + 移动触屏 15 + 平板 10），另有 Firefox/WebKit 编辑器专项 20 条、全量核心 331 条 |
+| 生产构建冒烟 | 9（`yarn e2e:prod`，含构建版本标识核对、分享预览、冷启动直达与分块载入失败） |
 
 关键实现都有反向验证记录（改坏实现确认用例会红），详见 [docs/TEST_REPORT.md](docs/TEST_REPORT.md)。
 性能数字全部可复跑：`yarn bench`（引擎）与 `yarn bench:render`
@@ -181,8 +181,8 @@ bench/         引擎基准、渲染探针与棋力评测（测量脚本不进�
 - **无禁手**：自由规则，长连也算胜。不做连珠式的三三 / 四四 / 长连禁手。
 - **算杀只用 VCF**：VCT（含活三的算杀）实现与测试都在，但实测代价是 VCF 的 38–520 倍，故默认关闭——这是一处**有意的漏杀**。
 - **专家档不保证搜到底**：中盘的宽局面上够不到深度上限 8 层（构造基准最多 6，真实对局的中盘观察到 7）；开局头几手与接近满盘时搜得满。难度来自预算，不是承诺。
-- **分析缓存只在复盘页打开期间有效**：缓存随页面的 store 创建，离开即失效；来回翻看同一局会重跑（9 手约 4 秒）。
-- **分析固定用「初级」档 + 400ms 预算**，结论区标注了这一点；没有「深挖某一手」的入口。
+- **分析缓存只在复盘页打开期间有效**：缓存随页面的 store 创建，离开即失效；来回翻看同一局会重跑。
+- **分析固定用「中级」档 + 每局面 1,000 ms 预算**，结论区标注了这一点；没有「深挖某一手」的入口。
 - **满盘和棋的末手不参与分析**：那一手之后已无棋可走，没有可比的首选着法，直接跳过而不是编造结论。
 - **Worker 无降级路径**：极老的浏览器不支持 module worker 时无法运行 AI（其余功能不受影响）。
 - **基准做断言，但只对余量充足的行**：`yarn bench:check` 断言的是两半——(1) 基线耗时

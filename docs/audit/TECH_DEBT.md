@@ -17,12 +17,13 @@ Phase D 只做**设计级影响分析**，不开发任何新功能。
 
 | 债 | 位置 | 复利速度 | 说明 |
 | --- | --- | --- | --- |
-| **专家档深度上限从未达到** | `ai/difficulty.ts:74` | **快** | 用户能直接看到「专家」名不副实。真正的杠杆已定位到 `evaluateBoard` 的 O(整盘) 扫描，但**改动它要同时面对正确性与性能两个约束**，且性能数字必须能 `yarn bench` 复现 |
-| **局面评估不识别跨方向组合形状** | `ai/evaluate.ts:176-185` | **快** | 与上一条同源：都在 `evaluate.ts`。做增量评估时顺手做掉最划算 |
+| **专家档在中盘的宽局面上够不到深度上限（8 层）** | `ai/difficulty.ts:79`（`expert.depth`） | **快** | 构造基准最多 6 层、真实对局中盘观察到 7 层；**开局（盘上 3–5 子）与接近满盘的窄局面能搜满 8 层**（`AI_ENGINE.md` 已知局限第 1 条）。真正的瓶颈是**着法排序**不是整盘评估（第 5 条，Phase 10B 测量、10C 优化后依旧约占七成），但**改动它要同时面对正确性与性能两个约束**，且性能数字必须能 `yarn bench` 复现 |
+| **局面评估不识别跨方向组合形状** | `ai/evaluate.ts` 的 `evaluateBoard` / `scoreSegment` | **快** | 与上一条同源：都在 `evaluate.ts`。做增量评估时顺手做掉最划算 |
+| **着法排序把双四 / 四三与单冲四同分** | `ai/patterns.ts` 的 `threatScoreWith`（搜索着法排序） | **中** | `AI_ENGINE.md` 已知局限第 7 条：只要有冲四就返回 14,000，排在双活三之后；内部节点按宽度截断时这类必胜着可能被剪掉（目前是推断，未构造出漏杀实例）。**2026-11-25 全量审查查出、待专门的引擎阶段处理**——改排序即改搜索决策，按约定要递增 `ENGINE_VERSION` 并跑棋力 / 战术 A/B |
 | ~~学习进度无迁移机制~~ | `persist/progress.ts` | — | **2026-10-31 已偿还**：`migrateProgress` 逐级迁移 + `PROGRESS_MIGRATIONS` 注册表；仍不认识的版本/缺步骤一律拒绝，不猜。另：认不出的 `lastView` 回落到对战页，不再丢弃整条进度 |
-| 不算 VCT、活三链只允许一层 | `ai/threat.ts:37`、`difficulty.ts` 的 `threatThrees: false` | 慢 | 有意的漏杀，有实测数据支撑决策，不随时间恶化 |
-| 分析缓存只在页面打开期间有效 | `store/analysisStore.ts:56` | 慢 | 设计取舍，不是遗漏 |
-| 分析固定初级档 + 400ms、同时只分析一局、满盘末局无结论 | `ReviewScreen.tsx:112`、`analysisStore.ts:36,92` | 慢 | 同上 |
+| 不算 VCT、活三链只允许一层 | `ai/threat.ts:38`、`difficulty.ts` 的 `threatThrees: false` | 慢 | 有意的漏杀，有实测数据支撑决策，不随时间恶化 |
+| 分析缓存只在页面打开期间有效 | `store/analysisStore.ts:108` | 慢 | 设计取舍，不是遗漏 |
+| 分析固定中级档 + 每局面 1,000 ms、同时只分析一局、满盘末局无结论 | `ReviewScreen.tsx:349`、`analysisStore.ts:29,113` | 慢 | 同上。0.7.1 起由初级档 400ms 改为中级档 1,000 ms（裁定 22） |
 | 回放游标不持久化（有意） | `store/replayStore.ts` | — | **不是债**，是产品决策 |
 | ~~基准不做断言、无 CI 门禁~~ | `bench/engine.bench.ts` | ~~中~~ | **2026-10-13 已偿还**：`yarn bench:check`（`bench/gate.mjs` + `bench/baseline.json`）断言余量充足的行与机器无关的不变量，`.github/workflows/quality.yml` 里跑。**保留残余**：耗时列仍只打印不判定——那部分仍然靠人看 |
 | 子路径部署无自动化用例 | `vite.config.ts:10` | 慢 | 靠 README 的两条 `grep` 兜着 |
@@ -85,7 +86,7 @@ Phase D 只做**设计级影响分析**，不开发任何新功能。
 
 ---
 
-### 1.4 2026-11-15 全仓两轴审查：**仍在案上**的（已修的见 `TEST_REPORT.md`「〇之二四」）
+### 1.4 2026-11-15 全仓两轴审查：**仍在案上**的（已修的见 `TEST_REPORT.md`「〇之二三」）
 
 十个只读审查员（五块 × 标准 / 规格两轴）逐文件读过 HEAD `85eab63`，每条发现都由主控复核过。
 下面是**复核属实、但本轮没动**的，按「会不会骗用户」排序。没动的理由写在最后一列——
@@ -98,7 +99,7 @@ Phase D 只做**设计级影响分析**，不开发任何新功能。
 | 规范外的第三级阴影 `shadow-sm` / `shadow`、`bg-white` 写死 | `Segmented.tsx`（选中项）、`Switch.tsx`（滑块）、`AppHeader.tsx`（品牌标记） | 去掉后选中项与滑块的可辨识度要重新目视确认 |
 | 顶栏与遮罩用 `backdrop-blur`，接近 §1「不做玻璃拟态」 | `AppHeader.tsx`、`Modal.tsx` | 判断题，留给下一次界面迭代裁定 |
 | 原始异常消息直接进界面，可能露出英文 | `DataManagementPanel.tsx`、`PositionEditor.tsx`、`GameLibrary.tsx`、`ReviewScreen.tsx` 里的 `error.message` | 要先列出每条路径可能抛的错，再决定翻译表还是统一兜底文案 |
-| 复盘分析与编辑器分析没有响应超时兜底（落子与提示有） | `analysisStore.ts`、`editorStore.ts` | 用户可恢复（离开复盘页 / 再编辑一手即清空）；落子与提示这两条卡死不可恢复的已补 |
+| ~~复盘分析与编辑器分析没有响应超时兜底（落子与提示有）~~ | `analysisStore.ts`、`editorStore.ts` | **已修**：两处都已走 `store/searchDeadline.ts` 的 `withDeadline`（15 秒硬上限），到时以超时错误取消请求 |
 | 置换表跨迭代的条目基本用不上（`probe` 深度不足即未命中，上一轮存的恰好少 1） | `transposition.ts` 的 `probe`、`search.ts` 内部节点的 `cached?.move` | 改了会动着法排序与节点数，按 AGENTS 要走 `yarn bench` + 固定深度 A/B，属引擎迭代 |
 | 判题只认冲四开路的杀（`allowThrees: false`），以活三开路的真杀会被判错 | `learn/verify.ts` 的 `forcedWin` | 实测现有 4 道算杀题在 VCT 口径下可接受着法集合不变；改成 VCT 最坏单次判题 1.2 s，与判题预算 2 s 太近。判错理由已改成如实说「没找到冲四取胜路线」 |
 | 分享链接内层 `v` 不符 / 顶层是数组时报 `invalid_data`，与 `LINK_FORMAT.md` §5 的分类不完全一致 | `sharing/link.ts` 解码 | 用户看到的都是「打不开」，分类差异只影响错误码；与文档一起裁定 |
