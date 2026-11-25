@@ -29,8 +29,6 @@ export interface SettingsPanelProps {
    */
   beforeModeChange?: (mode: GameMode) => boolean
   beforeHumanColorChange?: (color: Player) => boolean
-  /** 显示偏好没能写进浏览器存储（配额满、存储被禁用）。只影响刷新后，界面要如实说。 */
-  preferencesSaveFailed?: boolean
 }
 
 function Field({ label, hint, children }: { label: string; hint?: string; children: ReactNode }) {
@@ -61,7 +59,6 @@ export function SettingsPanel(props: SettingsPanelProps) {
     onSoundEnabledChange,
     beforeModeChange,
     beforeHumanColorChange,
-    preferencesSaveFailed = false,
   } = props
 
   return (
@@ -150,11 +147,6 @@ export function SettingsPanel(props: SettingsPanelProps) {
             onChange={onSoundEnabledChange}
           />
         </div>
-        {preferencesSaveFailed && (
-          <p role="status" className="pt-1 text-xs text-danger">
-            设置没能保存到浏览器（存储已满或被禁用），本次照常生效，刷新后会恢复原样。
-          </p>
-        )}
       </Panel>
     </div>
   )

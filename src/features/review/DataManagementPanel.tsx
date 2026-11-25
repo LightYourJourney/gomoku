@@ -393,7 +393,9 @@ export function DataManagementPanel({
           (withPositions && pending.positions.length > 0))))
 
   return (
-    <Panel title="数据管理" bodyClassName="space-y-3">
+    // `flex gap` 而不是 `space-y`：末尾的播报区常驻，空着时靠 `empty:absolute` 退出排版；
+    // `space-y` 按选择器给「非末位」加边距，空节点也会让面板底部多出一截空白。
+    <Panel title="数据管理" bodyClassName="flex flex-col gap-3">
       <p className="text-xs text-faint">
         数据只保存在本机浏览器。换设备或清缓存前，先导出完整备份；导入只做合并，
         不会删除现有棋谱。
@@ -438,50 +440,55 @@ export function DataManagementPanel({
         </p>
       )}
 
-      {exportNotice !== null && (
-        <p role="status" data-testid="export-notice" className="text-xs text-muted">
-          {exportNotice}
-        </p>
-      )}
-
-      {outcome !== null && (
-        <div
-          role="status"
-          data-testid="import-result"
-          className="rounded-lg bg-surface-2 px-3 py-2 text-xs text-muted"
-        >
-          <p className="font-medium text-fg">
-            已导入 {outcome.imported} 条，跳过重复 {outcome.duplicates} 条
-            {outcome.invalid > 0 ? `，无效 ${outcome.invalid} 条` : ''}。
+      {/*
+        导出说明与导入结果共用一个**常驻**播报区，只换里面的内容：
+        `role="status"` 随内容一起挂载时部分读屏不播报（`FeedbackBanner` 的约定）。
+      */}
+      <div role="status" data-testid="data-status" className="flex flex-col gap-3 empty:absolute">
+        {exportNotice !== null && (
+          <p data-testid="export-notice" className="text-xs text-muted">
+            {exportNotice}
           </p>
-          {outcome.progress !== 'absent' && (
-            <p>学习/残局进度：{sectionLabel(outcome.progress, '合并')}</p>
-          )}
-          {outcome.preferences !== 'absent' && (
-            <p>显示偏好：{outcome.preferences === 'restored' ? '已恢复' : sectionLabel(outcome.preferences, '恢复')}</p>
-          )}
-          {outcome.session !== 'absent' && (
-            <p>当前对局会话：{outcome.session === 'restored' ? '已恢复' : sectionLabel(outcome.session, '恢复')}</p>
-          )}
-          {(outcome.positionsImported > 0 || outcome.positionsDuplicates > 0 || outcome.positionsFailed > 0) && (
-            <p>
-              自定义局面：导入 {outcome.positionsImported} 个，跳过重复 {outcome.positionsDuplicates} 个
-              {outcome.positionsFailed > 0 ? `，失败 ${outcome.positionsFailed} 个` : ''}
-              {outcome.positionsMemory > 0 ? `，其中 ${outcome.positionsMemory} 个仅本次会话可用` : ''}
+        )}
+
+        {outcome !== null && (
+          <div
+            data-testid="import-result"
+            className="rounded-lg bg-surface-2 px-3 py-2 text-xs text-muted"
+          >
+            <p className="font-medium text-fg">
+              已导入 {outcome.imported} 条，跳过重复 {outcome.duplicates} 条
+              {outcome.invalid > 0 ? `，无效 ${outcome.invalid} 条` : ''}。
             </p>
-          )}
-          {outcome.storage === 'memory' && (
-            <p className="mt-1 text-warn">
-              这次只写进了内存兜底：本次会话可用，刷新后可能丢失。
-            </p>
-          )}
-          {outcome.storage === 'failed' && (
-            <p className="mt-1 text-danger">
-              没有写入任何棋谱：浏览器存储不可用或事务失败；旧数据未变。
-            </p>
-          )}
-        </div>
-      )}
+            {outcome.progress !== 'absent' && (
+              <p>学习/残局进度：{sectionLabel(outcome.progress, '合并')}</p>
+            )}
+            {outcome.preferences !== 'absent' && (
+              <p>显示偏好：{outcome.preferences === 'restored' ? '已恢复' : sectionLabel(outcome.preferences, '恢复')}</p>
+            )}
+            {outcome.session !== 'absent' && (
+              <p>当前对局会话：{outcome.session === 'restored' ? '已恢复' : sectionLabel(outcome.session, '恢复')}</p>
+            )}
+            {(outcome.positionsImported > 0 || outcome.positionsDuplicates > 0 || outcome.positionsFailed > 0) && (
+              <p>
+                自定义局面：导入 {outcome.positionsImported} 个，跳过重复 {outcome.positionsDuplicates} 个
+                {outcome.positionsFailed > 0 ? `，失败 ${outcome.positionsFailed} 个` : ''}
+                {outcome.positionsMemory > 0 ? `，其中 ${outcome.positionsMemory} 个仅本次会话可用` : ''}
+              </p>
+            )}
+            {outcome.storage === 'memory' && (
+              <p className="mt-1 text-warn">
+                这次只写进了内存兜底：本次会话可用，刷新后可能丢失。
+              </p>
+            )}
+            {outcome.storage === 'failed' && (
+              <p className="mt-1 text-danger">
+                没有写入任何棋谱：浏览器存储不可用或事务失败；旧数据未变。
+              </p>
+            )}
+          </div>
+        )}
+      </div>
 
       <Modal
         open={pending !== null}

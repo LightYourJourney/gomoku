@@ -1,4 +1,4 @@
-import { useId, useState } from 'react'
+import { useId, useRef, useState } from 'react'
 import type { AiInfo, SearchReason } from '../../ai/types'
 import { CONFIDENCE_LABELS, FALLBACK_WARNING } from '../../lib/confidence-labels'
 import { formatPoint } from '../../lib/coords'
@@ -6,6 +6,7 @@ import { cx } from '../../lib/cx'
 import { Button } from '../ui/Button'
 import { InfoButton } from '../ui/InfoDisclosure'
 import { Panel } from '../ui/Panel'
+import { useFocusHandoff } from '../ui/useFocusHandoff'
 
 /**
  * 「AI 为什么走了这一手」的**唯一**一张表，两个消费方共用：
@@ -101,6 +102,14 @@ export function AiPanel({ thinking, info, error, canRetry, onRetry, onDismissErr
   const [showInfo, setShowInfo] = useState(false)
   const infoId = useId()
   const hasResult = info !== null
+  /*
+   * 「知道了」按下去就卸载，焦点掉到 `<body>`。AI 还欠着一手时落到「重试」——
+   * 那是这块提示里剩下的唯一操作；否则整块提示都没了，落回面板正文，
+   * 读屏接着念 AI 现在的状态。
+   */
+  const handoff = useFocusHandoff()
+  const retryRef = useRef<HTMLButtonElement>(null)
+  const stateRef = useRef<HTMLDivElement>(null)
 
   return (
     <Panel
@@ -138,12 +147,19 @@ export function AiPanel({ thinking, info, error, canRetry, onRetry, onDismissErr
           */}
           <div className="mt-2 flex items-center gap-2">
             {canRetry && (
-              <Button variant="ghost" size="sm" onClick={onRetry}>
+              <Button ref={retryRef} variant="ghost" size="sm" onClick={onRetry}>
                 重试
               </Button>
             )}
             {error !== null && (
-              <Button variant="ghost" size="sm" onClick={onDismissError}>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={(event) => {
+                  handoff(event.currentTarget, () => retryRef.current ?? stateRef.current)
+                  onDismissError()
+                }}
+              >
                 知道了
               </Button>
             )}
@@ -151,43 +167,45 @@ export function AiPanel({ thinking, info, error, canRetry, onRetry, onDismissErr
         </div>
       )}
 
-      {thinking ? (
-        <p className="py-2 text-body text-muted">AI 正在分析局面…</p>
-      ) : info === null ? (
-        <p className="py-2 text-xs text-faint">尚未产生分析结果。</p>
-      ) : (
-        <div className="space-y-2">
-          {/*
-            落点单独成一句：任务书 §七 给玩家视图举的两个例子里就有一个是
-            「推荐落点：H8」。
+      <div ref={stateRef} tabIndex={-1} data-testid="ai-panel-state" className="outline-none">
+        {thinking ? (
+          <p className="py-2 text-body text-muted">AI 正在分析局面…</p>
+        ) : info === null ? (
+          <p className="py-2 text-xs text-faint">尚未产生分析结果。</p>
+        ) : (
+          <div className="space-y-2">
+            {/*
+              落点单独成一句：任务书 §七 给玩家视图举的两个例子里就有一个是
+              「推荐落点：H8」。
 
-            这里**没有**「落点为空」的分支：`AiInfo.move` 的类型是 `Point`，
-            `requestAiMove` 在写 `aiInfo` 之前就把 `no_move`（棋盘已满、`move: null`）
-            挡掉了——所以这一句永远有坐标可报，不必防一个到不了的状态。
-            守着这条不变量的用例在 `gameStore.test.ts`。
-          */}
-          <p className="text-body text-fg">
-            <span data-testid="ai-player-view">
-              {info.confidence === 'fallback' ? FALLBACK_PLAYER_TEXT : REASON_TEXT[info.reason].player}
-            </span>
-            {' '}落点{' '}
-            <span data-testid="ai-move" className="font-mono font-semibold tabular-nums">
-              {formatPoint(info.move)}
-            </span>
-            。
-          </p>
+              这里**没有**「落点为空」的分支：`AiInfo.move` 的类型是 `Point`，
+              `requestAiMove` 在写 `aiInfo` 之前就把 `no_move`（棋盘已满、`move: null`）
+              挡掉了——所以这一句永远有坐标可报，不必防一个到不了的状态。
+              守着这条不变量的用例在 `gameStore.test.ts`。
+            */}
+            <p className="text-body text-fg">
+              <span data-testid="ai-player-view">
+                {info.confidence === 'fallback' ? FALLBACK_PLAYER_TEXT : REASON_TEXT[info.reason].player}
+              </span>
+              {' '}落点{' '}
+              <span data-testid="ai-move" className="font-mono font-semibold tabular-nums">
+                {formatPoint(info.move)}
+              </span>
+              。
+            </p>
 
-          {/*
-            贪心兜底的免责说明**恒在默认层**。任务书 §七：「禁止把启发式判断包装成确定性结论」。
-            **只有 `fallback` 配它**——一层都没搜完、手里只有一步贪心的那种。
-            超时但搜完了若干层（`partial`）不配：那是一次完整的浅一层搜索，此前把它也算进来，
-            专家档约四成的着法都顶着这条警示。
-          */}
-          {info.confidence === 'fallback' && (
-            <p className="rounded-lg bg-warn-soft px-3 py-2 text-xs text-warn">{FALLBACK_WARNING}</p>
-          )}
-        </div>
-      )}
+            {/*
+              贪心兜底的免责说明**恒在默认层**。任务书 §七：「禁止把启发式判断包装成确定性结论」。
+              **只有 `fallback` 配它**——一层都没搜完、手里只有一步贪心的那种。
+              超时但搜完了若干层（`partial`）不配：那是一次完整的浅一层搜索，此前把它也算进来，
+              专家档约四成的着法都顶着这条警示。
+            */}
+            {info.confidence === 'fallback' && (
+              <p className="rounded-lg bg-warn-soft px-3 py-2 text-xs text-warn">{FALLBACK_WARNING}</p>
+            )}
+          </div>
+        )}
+      </div>
 
       {hasResult && showInfo && (
         <div id={infoId} className="mt-3 space-y-3 border-t border-border pt-3">

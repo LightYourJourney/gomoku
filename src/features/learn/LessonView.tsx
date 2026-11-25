@@ -1,5 +1,6 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import { Button } from '../../components/ui/Button'
+import { useFocusHandoff } from '../../components/ui/useFocusHandoff'
 import type { Lesson } from '../../learn/types'
 import { PageShell } from '../shell/PageShell'
 import { PracticeBoard } from './PracticeBoard'
@@ -40,6 +41,16 @@ export function LessonView({ lesson, solved, onExit, onSolved, exit }: LessonVie
   const stepCount = lesson.steps.length
   const lastStep = stepCount - 1
   const onPractice = step >= stepCount
+  /*
+    「进入练习 →」「回到讲解」按下去，按钮随讲解 / 练习一起被换掉，而 `PageShell`
+    不重挂——没人接的话焦点掉到 `<body>`。按过其中一颗之后，讲解页与练习的
+    **每一次挂载**都来自这两颗按钮（换课时整个组件按 `lesson.id` 重建，这个值回到 false），
+    所以一个布尔值就够：它为真时，新挂上的那一块把焦点接过去。
+  */
+  const [swapped, setSwapped] = useState(false)
+  // 第 2 页按「上一步」回到第 1 页，这颗按钮拿着焦点被禁用：交给「下一步」。
+  const handoff = useFocusHandoff()
+  const nextRef = useRef<HTMLButtonElement>(null)
 
   // PracticeBoard 在 effect 里回调，这里把它稳定住，免得每帧都重新触发。
   const handleSolved = useCallback(() => onSolved(), [onSolved])
@@ -88,21 +99,41 @@ export function LessonView({ lesson, solved, onExit, onSolved, exit }: LessonVie
               **这个按钮不碰进度**：它只移页码，`completeLesson` 只在 PracticeBoard
               判定通过时由 `onSolved` 触发（有一条用例专门钉这件事）。
             */
-            <Button onClick={() => setStep(lastStep)}>回到讲解</Button>
+            <Button
+              onClick={() => {
+                setSwapped(true)
+                setStep(lastStep)
+              }}
+            >
+              回到讲解
+            </Button>
           ) : (
             <>
               {/*
                 第一步**禁用**而不是隐藏（任务书 §六 允许「禁用或隐藏」）：
                 隐藏会让工具栏左右跳动，而「不能后退」用禁用表达得更准确。
               */}
-              <Button disabled={step === 0} onClick={() => setStep((value) => Math.max(0, value - 1))}>
+              <Button
+                disabled={step === 0}
+                onClick={(event) => {
+                  handoff(event.currentTarget, () => nextRef.current)
+                  setStep((value) => Math.max(0, value - 1))
+                }}
+              >
                 上一步
               </Button>
               {/*
                 最后一步点下去发生的是「进练习」——**按钮就该这么写**。
                 写「下一步」时动作发生了却没人说，玩家会以为还有讲解没看完。
               */}
-              <Button variant="primary" onClick={() => setStep((value) => value + 1)}>
+              <Button
+                ref={nextRef}
+                variant="primary"
+                onClick={() => {
+                  if (step === lastStep) setSwapped(true)
+                  setStep((value) => value + 1)
+                }}
+              >
                 {step === lastStep ? '进入练习 →' : '下一步'}
               </Button>
             </>
@@ -125,6 +156,7 @@ export function LessonView({ lesson, solved, onExit, onSolved, exit }: LessonVie
           practice={lesson.practice}
           onSolved={handleSolved}
           alreadySolved={solved}
+          focusOnMount={swapped}
           footer={
             exit === undefined ? (
               <Button block onClick={onExit}>
@@ -142,7 +174,7 @@ export function LessonView({ lesson, solved, onExit, onSolved, exit }: LessonVie
           }
         />
       ) : (
-        <StepView step={lesson.steps[step]!} index={step} total={stepCount} />
+        <StepView step={lesson.steps[step]!} index={step} total={stepCount} focusOnMount={swapped} />
       )}
     </PageShell>
   )

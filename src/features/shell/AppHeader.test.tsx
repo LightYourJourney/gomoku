@@ -108,4 +108,63 @@ describe('AppHeader —— 偏好写入失败', () => {
 
     expect(screen.getByRole('button', { name: /^主题：/ })).not.toHaveAccessibleName(/刷新后会恢复原样/)
   })
+
+  /*
+   * 用户裁定：失败要在**每一页**都看得见。原先只有两处——主题按钮的名字（看不见）
+   * 与对战页设置面板「显示与声音」里的一行（默认折叠，也看不见）。
+   * 提示条长在顶栏下方：`AppHeader` 是四个页面与分享预览共用的那一份。
+   * （SettingsPanel 里那行与它重复，已删；原先那两条断言改到这里。）
+   */
+  it('写不进存储时顶栏下方出现一行可见提示，用 danger 色', () => {
+    const setItem = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new DOMException('full', 'QuotaExceededError')
+    })
+    try {
+      render(<AppHeader />)
+      expect(screen.queryByTestId('prefs-save-failed')).toBeNull()
+
+      fireEvent.click(screen.getByRole('button', { name: /^主题：/ }))
+
+      const bar = screen.getByTestId('prefs-save-failed')
+      expect(bar).toHaveTextContent('设置没能保存到浏览器')
+      expect(bar).toHaveTextContent('刷新后会恢复原样')
+      expect(bar).toHaveClass('text-danger')
+      expect(bar).toHaveAttribute('role', 'status')
+      // 在顶栏下方，不挤进顶栏那一行
+      expect(bar.closest('header')).toBeNull()
+    } finally {
+      setItem.mockRestore()
+    }
+  })
+
+  it('写入恢复（persistFailed 变回 false）后提示条消失', () => {
+    const setItem = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new DOMException('full', 'QuotaExceededError')
+    })
+    render(<AppHeader />)
+    fireEvent.click(screen.getByRole('button', { name: /^主题：/ }))
+    expect(screen.getByTestId('prefs-save-failed')).toBeInTheDocument()
+
+    // 存储恢复：再写一次就成功，store 自己把 persistFailed 清掉
+    setItem.mockRestore()
+    fireEvent.click(screen.getByRole('button', { name: /^主题：/ }))
+
+    expect(useSettingsStore.getState().persistFailed).toBe(false)
+    expect(screen.queryByTestId('prefs-save-failed')).toBeNull()
+    expect(screen.queryByText(/设置没能保存到浏览器/)).toBeNull()
+  })
+
+  it('分享预览这类不带导航的页面也有提示条', () => {
+    const setItem = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new DOMException('full', 'QuotaExceededError')
+    })
+    try {
+      render(<AppHeader showNav={false} />)
+      fireEvent.click(screen.getByRole('button', { name: /^主题：/ }))
+
+      expect(screen.getByTestId('prefs-save-failed')).toBeVisible()
+    } finally {
+      setItem.mockRestore()
+    }
+  })
 })

@@ -296,6 +296,30 @@ test('收起提示只清标记，不动棋局', async ({ page }) => {
   await expect(page.getByTestId(/^stone-/)).toHaveCount(1)
 })
 
+/*
+ * 「求提示」原先在计算期间用原生 `disabled`：按回车的那一刻按钮被禁用，焦点掉到
+ * `<body>`（生产构建 Chrome 实测 activeElement 是 BODY），提示算完也没人接回来。
+ * jsdom 不做焦点修正，这一条只有真浏览器说得清。
+ */
+test('键盘求提示：算完之后焦点仍在「求提示」上；「收起」后也回到它', async ({ page }) => {
+  await page.goto('/')
+  await page.getByRole('radio', { name: '本地双人' }).click()
+  await page.getByTestId('intersection-7-7').click()
+  await expect(page.getByTestId('stone-7-7')).toBeVisible()
+
+  const hint = page.getByRole('button', { name: '求提示' })
+  await hint.focus()
+  await page.keyboard.press('Enter')
+  await expect(page.getByTestId(/^board-mark-/)).toHaveCount(3)
+  await expect(hint).toBeFocused()
+
+  const collapse = page.getByRole('button', { name: '收起提示' })
+  await collapse.focus()
+  await page.keyboard.press('Enter')
+  await expect(page.getByTestId(/^board-mark-/)).toHaveCount(0)
+  await expect(hint).toBeFocused()
+})
+
 test('专家档深算期间悔棋，迟到的 AI 响应不会把棋子补回来', async ({ page }) => {
   await page.goto('/')
 

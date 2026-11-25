@@ -143,6 +143,8 @@ export function GameLibrary({
   const idBase = useId()
   const focusId = (kind: 'record' | 'delete' | 'confirm', seq: number): string => `${idBase}-${kind}-${seq}`
   const startBattleId = `${idBase}-start`
+  // 「不能撤销」那句警告：焦点直接送到「确认删除」，不挂到按钮的描述上读屏就念不到它
+  const deleteWarningId = `${idBase}-delete-warning`
   const pendingFocus = useRef<string | null>(null)
   useEffect(() => {
     const id = pendingFocus.current
@@ -215,11 +217,16 @@ export function GameLibrary({
         </div>
       )}
 
-      {deleteNote !== null && (
-        <p
-          role={deleteNote.ok ? 'status' : 'alert'}
-          className={`mb-3 text-xs ${deleteNote.ok ? 'text-muted' : 'text-danger'}`}
-        >
+      {/*
+        成功的提示进**常驻**播报区、只换内容：`role="status"` 随内容一起挂载时
+        部分读屏不播报（`FeedbackBanner` 的约定）。空着时没有高度——边距挂在里面那行上。
+        失败仍是 `alert`：它本来就要打断，插入即播报。
+      */}
+      <div role="status">
+        {deleteNote?.ok === true && <p className="mb-3 text-xs text-muted">{deleteNote.text}</p>}
+      </div>
+      {deleteNote?.ok === false && (
+        <p role="alert" className="mb-3 text-xs text-danger">
           {deleteNote.text}
         </p>
       )}
@@ -277,7 +284,9 @@ export function GameLibrary({
             </p>
           )}
           {confirming !== null && (
-            <p className="mb-2 text-xs text-warn">删除的是本机保存的这一局，删除后不能撤销。</p>
+            <p id={deleteWarningId} className="mb-2 text-xs text-warn">
+              删除的是本机保存的这一局，删除后不能撤销。
+            </p>
           )}
           <ul className="space-y-2">
             {result.records.slice(0, shown).map((record, index) => (
@@ -312,6 +321,7 @@ export function GameLibrary({
                       size="sm"
                       variant="danger"
                       aria-label={`确认删除棋谱${recordName(record, index)}`}
+                      aria-describedby={deleteWarningId}
                       onClick={() => void deleteRecord(record.seq)}
                     >
                       确认删除

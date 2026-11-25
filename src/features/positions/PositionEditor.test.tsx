@@ -376,4 +376,41 @@ describe('PositionEditor —— 保存与载入', () => {
     expect(screen.getByLabelText('打开已保存局面')).toHaveValue(String(savedId))
     expect((await positions.list()).records).toHaveLength(1)
   })
+
+  /*
+    「确认删除」「取消」按下去，按钮自己被卸载（删成功时整块都没了），焦点掉到 body。
+    先 focus() 再点，模拟键盘按下——`fireEvent.click` 自己不移焦点。
+  */
+  it('取消删除后焦点回到「删除已保存局面」，不掉到 body', async () => {
+    setup()
+    fireEvent.click(screen.getByTestId('intersection-7-7'))
+    fireEvent.click(screen.getByRole('button', { name: '保存局面' }))
+    await screen.findByText(/只写进了内存兜底/)
+
+    fireEvent.click(screen.getByRole('button', { name: '删除已保存局面' }))
+    const cancel = screen.getByRole('button', { name: '取消' })
+    cancel.focus()
+    fireEvent.click(cancel)
+
+    expect(document.activeElement).not.toBe(document.body)
+    expect(screen.getByRole('button', { name: '删除已保存局面' })).toHaveFocus()
+  })
+
+  it('确认删除后焦点落到「打开已保存局面」下拉框，不掉到 body', async () => {
+    setup()
+    fireEvent.click(screen.getByTestId('intersection-7-7'))
+    fireEvent.click(screen.getByRole('button', { name: '保存局面' }))
+    await screen.findByText(/只写进了内存兜底/)
+
+    fireEvent.click(screen.getByRole('button', { name: '删除已保存局面' }))
+    const confirm = screen.getByRole('button', { name: '确认删除' })
+    confirm.focus()
+    fireEvent.click(confirm)
+
+    await waitFor(() =>
+      expect(screen.getByTestId('position-notice')).toHaveTextContent('只删了本次会话'),
+    )
+    expect(document.activeElement).not.toBe(document.body)
+    expect(screen.getByLabelText('打开已保存局面')).toHaveFocus()
+  })
 })

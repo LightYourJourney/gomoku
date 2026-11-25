@@ -185,6 +185,28 @@ describe('数据管理面板 · 导入', () => {
     expect(onImported).toHaveBeenCalledTimes(1)
   })
 
+  /*
+   * `role="status"` 随内容一起挂载时部分读屏不播报（`FeedbackBanner` 的约定）。
+   * 导入结果与导出说明共用一个常驻播报区，只往里填内容。
+   */
+  it('导入结果写进常驻的播报区：导入之前它就在（空的）', async () => {
+    render(
+      <DataManagementPanel positions={memoryPositions()} storage={memoryGameRecords()} services={services()} onImported={vi.fn()} degraded={false} />,
+    )
+    const region = screen.getByTestId('data-status')
+    expect(region).toHaveAttribute('role', 'status')
+    expect(region).toBeEmptyDOMElement()
+
+    fireEvent.change(screen.getByTestId('import-file'), {
+      target: { files: [fileOf(toGameFile(record()))] },
+    })
+    fireEvent.click(await screen.findByRole('button', { name: '确认导入' }))
+
+    const result = await screen.findByTestId('import-result')
+    expect(region).toContainElement(result)
+    expect(result).not.toHaveAttribute('role')
+  })
+
   it('重复单盘：预览明确说会跳过，确认后仍是 1 条', async () => {
     const storage = memoryGameRecords()
     await storage.put(record())
@@ -358,6 +380,9 @@ describe('数据管理面板 · 导入', () => {
 
     fireEvent.click(screen.getByRole('button', { name: '导出全部棋谱' }))
     expect(await screen.findByTestId('export-notice')).toHaveTextContent('跳过 3 条')
+    // 导出说明同样填进常驻播报区，自己不带 role 现挂
+    expect(screen.getByTestId('data-status')).toContainElement(screen.getByTestId('export-notice'))
+    expect(screen.getByTestId('export-notice')).not.toHaveAttribute('role')
   })
 
   it('局面库降级时拒绝生成完整备份，不静默导出空局面段', async () => {

@@ -175,6 +175,26 @@ async function openFirstRecord(page: Page, moves: Moves = NINE_MOVE_WIN): Promis
 }
 
 /*
+ * 走到头的那颗按钮当场被禁用，焦点掉到 `<body>`（生产构建 Chrome 实测）。
+ * 落点是反方向那颗。jsdom 不做焦点修正，只有真浏览器能证明焦点真的没丢。
+ */
+test('键盘逐步走到终局：焦点从被禁用的「下一步」落到「上一步」；「终局」「开局」互为落点', async ({ page }) => {
+  await openFirstRecord(page)
+
+  const next = page.getByRole('button', { name: '下一步' })
+  await next.focus()
+  for (let i = 0; i < 9; i++) await page.keyboard.press('Enter')
+  await expect(page.getByTestId('move-counter')).toHaveText('9 / 9')
+  await expect(next).toBeDisabled()
+  await expect(page.getByRole('button', { name: '上一步' })).toBeFocused()
+
+  await page.getByRole('button', { name: '开局' }).focus()
+  await page.keyboard.press('Enter')
+  await expect(page.getByTestId('move-counter')).toHaveText('0 / 9')
+  await expect(page.getByRole('button', { name: '终局' })).toBeFocused()
+})
+
+/*
  * 复盘回放也吃同一套桌面棋盘预算。
  *
  * `layout.spec.ts` 的 620px 断言覆盖教学练习与残局详情，唯独没覆盖复盘回放——

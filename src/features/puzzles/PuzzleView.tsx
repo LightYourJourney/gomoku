@@ -103,6 +103,9 @@ export function PuzzleView({ puzzle, exit, onExit }: PuzzleViewProps) {
         practice={puzzle}
         onSolved={handleSolved}
         alreadySolved={solved}
+        // 「再做一次」按下去，按钮随旧棋盘一起卸载、外壳不重挂——新棋盘把焦点接到题面上。
+        // 首轮（round 0）是换页进来的，焦点归 `PageShell` 的正文，不抢。
+        focusOnMount={round > 0}
         footer={
           <div className="space-y-2">
             <p className="text-xs text-good">

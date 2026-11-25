@@ -82,6 +82,12 @@ export function PositionEditor({
   const [error, setError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
+  /*
+    删除确认块里的「确认删除」「取消」按下去会被卸载（删成功时整块都没了），
+    焦点没人接就掉到 `<body>`。取消 → 回到「删除」那颗；删成功 → 下拉框（常驻，下一步多半是另选一条）。
+  */
+  const deleteButtonRef = useRef<HTMLButtonElement>(null)
+  const savedSelectRef = useRef<HTMLSelectElement>(null)
 
   // 离开编辑器时放弃在飞的分析：它在只读 Worker 上，留着会挡住之后的提示。
   useEffect(() => () => editor.getState().abandonAnalysis(), [editor])
@@ -208,6 +214,8 @@ export function PositionEditor({
     setSavedId(null)
     setPicked(null)
     setConfirmDelete(false)
+    // 下拉框常驻，此刻就在 DOM 里，可以直接聚焦
+    savedSelectRef.current?.focus()
     if (result.persisted) {
       flash(`已删除「${name}」`)
     } else {
@@ -490,6 +498,7 @@ export function PositionEditor({
             <label className="block min-w-0 flex-1 text-xs text-faint">
               打开已保存局面
               <select
+                ref={savedSelectRef}
                 value={pickedValue}
                 onChange={(event) => setPicked(event.target.value)}
                 className="mt-1 w-full rounded-lg border border-border bg-surface-2 px-3 py-2 text-sm text-fg"
@@ -521,6 +530,7 @@ export function PositionEditor({
               </p>
               <div className="flex flex-wrap gap-2">
                 <Button
+                  ref={deleteButtonRef}
                   size="sm"
                   variant={confirmDelete ? 'danger' : 'secondary'}
                   onClick={() => void deleteSaved()}
@@ -528,7 +538,13 @@ export function PositionEditor({
                   {confirmDelete ? '确认删除' : '删除已保存局面'}
                 </Button>
                 {confirmDelete && (
-                  <Button size="sm" onClick={() => setConfirmDelete(false)}>
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      setConfirmDelete(false)
+                      deleteButtonRef.current?.focus()
+                    }}
+                  >
                     取消
                   </Button>
                 )}

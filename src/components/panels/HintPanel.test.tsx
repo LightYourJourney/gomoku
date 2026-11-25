@@ -216,6 +216,35 @@ describe('HintPanel —— 候选', () => {
     expect(onClear).toHaveBeenCalledTimes(1)
   })
 
+  /*
+   * 「收起」按下去就连同候选一起卸载，焦点掉到 `<body>`。它收起的是「求提示」
+   * 要来的东西，所以焦点交还给「求提示」——那颗按钮在工具栏里，由调用方传 ref 进来。
+   */
+  it('收起之后焦点回到调用方指定的「求提示」，不掉到 body', () => {
+    const hintButton = document.createElement('button')
+    hintButton.textContent = '求提示'
+    document.body.append(hintButton)
+    try {
+      const focusAfterClear = { current: hintButton }
+      const props: HintPanelProps = {
+        candidates: SUGGESTIONS, urgency: 'normal', confidence: 'complete',
+        thinking: false, error: null, onClear: vi.fn(), focusAfterClear,
+      }
+      const { rerender } = render(<HintPanel {...props} />)
+
+      const collapse = screen.getByRole('button', { name: '收起提示' })
+      collapse.focus()
+      fireEvent.click(collapse)
+      // 调用方清掉提示：候选与「收起」一起卸载
+      rerender(<HintPanel {...props} candidates={null} urgency={null} confidence={null} />)
+
+      expect(document.activeElement).not.toBe(document.body)
+      expect(document.activeElement).toBe(hintButton)
+    } finally {
+      hintButton.remove()
+    }
+  })
+
   it('没有候选时不显示收起按钮', () => {
     setup()
 

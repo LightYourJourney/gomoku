@@ -113,7 +113,9 @@ export function ShareLinkDialog({ open, title, options, onClose }: ShareLinkDial
             )}
           </div>
         ) : (
-          <div className="space-y-3">
+          // `flex gap` 而不是 `space-y`：下面的播报区常驻，空着时靠 `empty:absolute` 退出排版；
+          // `space-y` 按选择器加边距，空节点也会多占一截间距。
+          <div className="flex flex-col gap-3">
             <label className="block text-xs text-faint">
               分享链接
               <input
@@ -135,11 +137,14 @@ export function ShareLinkDialog({ open, title, options, onClose }: ShareLinkDial
                 </Button>
               )}
             </div>
-            {copied === 'manual' && (
-              <p role="status" data-testid="share-manual" className="text-xs text-warn">
-                无法自动复制，请手动选择上面的链接。
-              </p>
-            )}
+            {/* 播报区常驻、只换内容：随内容一起挂载的 `role="status"` 部分读屏不播报 */}
+            <div role="status" data-testid="share-copy-status" className="empty:absolute">
+              {copied === 'manual' && (
+                <p data-testid="share-manual" className="text-xs text-warn">
+                  无法自动复制，请手动选择上面的链接。
+                </p>
+              )}
+            </div>
             <p className="text-xs text-faint">
               链接只包含本次选择的内容；打开预览不会自动写入本地棋谱库。
             </p>

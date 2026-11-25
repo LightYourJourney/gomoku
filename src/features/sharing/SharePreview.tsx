@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { replay } from '../../core/game'
 import { findWins } from '../../core/position'
 import type { GamePayload } from '../../persist/transfer/format'
@@ -13,6 +13,8 @@ import { Board } from '../../components/board/Board'
 import { BoardStage } from '../../components/board/BoardStage'
 import { Button } from '../../components/ui/Button'
 import { Panel } from '../../components/ui/Panel'
+import { useFocusHandoff } from '../../components/ui/useFocusHandoff'
+import { cx } from '../../lib/cx'
 import { useSettingsStore } from '../../store/settingsStore'
 import {
   decodeShareToken,
@@ -68,6 +70,9 @@ export function SharePreview({ token, games, positions, now, onExit }: SharePrev
   const decoded = useMemo(() => decodeShareToken(token), [token])
   const showCoords = useSettingsStore((settings) => settings.showCoords)
   const [saveState, setSaveState] = useState<SaveState>('idle')
+  // 「保存」按下去当场禁用（保存中 / 已保存），焦点掉到 body：落到下面那行结果
+  const handoff = useFocusHandoff()
+  const saveStateRef = useRef<HTMLParagraphElement>(null)
 
   const message = (() => {
     switch (saveState) {
@@ -85,6 +90,14 @@ export function SharePreview({ token, games, positions, now, onExit }: SharePrev
         return null
     }
   })()
+
+  /*
+   * 结果的色调（§2.2）：失败是错误，用 `danger`；只进了内存兜底**不是失败**——
+   * 这次会话里确实存下了，只是刷新后可能丢——是警示，用 `warn`，
+   * 与数据管理面板「这次只写进了内存兜底」那一句同色。其余是中性的过程信息。
+   */
+  const messageTone =
+    saveState === 'failed' ? 'text-danger' : saveState === 'memory' ? 'text-warn' : 'text-muted'
 
   async function saveGame(game: GamePayload): Promise<void> {
     setSaveState('saving')
@@ -199,13 +212,18 @@ export function SharePreview({ token, games, positions, now, onExit }: SharePrev
           <p className="text-xs text-faint">只读预览；打开链接不会自动写入本地。</p>
         </Panel>
 
-        <Panel title="导入" bodyClassName="space-y-2">
+        {/*
+          `flex gap` 而不是 `space-y`：下面那行结果常驻（空着时 `empty:absolute` 退出排版），
+          `space-y` 按选择器给「非末位」加边距，空节点也会让按钮下面多出一截空白。
+        */}
+        <Panel title="导入" bodyClassName="flex flex-col gap-2">
           <Button
             block
             variant="primary"
             disabled={saveState === 'saving' || saveState === 'saved' || saveState === 'duplicate'}
             data-testid="share-save"
-            onClick={() => {
+            onClick={(event) => {
+              handoff(event.currentTarget, () => saveStateRef.current)
               if (game !== null) {
                 void saveGame(game)
               } else if (decoded.kind === 'position') {
@@ -221,11 +239,19 @@ export function SharePreview({ token, games, positions, now, onExit }: SharePrev
           >
             {decoded.kind === 'game' ? '保存到我的棋谱' : '保存为我的局面'}
           </Button>
-          {message !== null && (
-            <p role="status" data-testid="share-save-state" className="text-xs text-muted">
-              {message}
-            </p>
-          )}
+          {/*
+            播报区常驻、只换内容：`role="status"` 随内容一起挂载时部分读屏不播报
+            （`FeedbackBanner` 的约定）。`tabIndex={-1}` 是给上面「保存」交焦点用的。
+          */}
+          <p
+            ref={saveStateRef}
+            role="status"
+            tabIndex={-1}
+            data-testid="share-save-state"
+            className={cx('text-xs outline-none empty:absolute', messageTone)}
+          >
+            {message}
+          </p>
         </Panel>
       </aside>
     </PageShell>

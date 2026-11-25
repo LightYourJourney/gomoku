@@ -178,3 +178,38 @@ describe('ShareLinkDialog —— 生成、复制与失败提示', () => {
     expect(screen.getByTestId('share-error')).toHaveTextContent('内容超过上限')
   })
 })
+
+describe('ShareLinkDialog —— 手动复制提示的播报区', () => {
+  /* `role="status"` 随内容一起挂载时部分读屏不播报：链接框一出现播报区就在，复制失败只往里填字 */
+  it('播报区在复制之前就在（空的），失败提示填进同一个节点', async () => {
+    Object.defineProperty(window.navigator, 'clipboard', {
+      value: { writeText: vi.fn().mockRejectedValue(new Error('blocked')) },
+      configurable: true,
+    })
+    render(
+      <ShareLinkDialog
+        open
+        title="分享局面"
+        onClose={vi.fn()}
+        options={[
+          {
+            id: 'position',
+            label: '分享当前局面',
+            description: '自由摆盘',
+            generate: () => ({ ok: true, link: 'https://example.test/#share=xyz' }),
+          },
+        ]}
+      />,
+    )
+    fireEvent.click(screen.getByRole('button', { name: '分享当前局面' }))
+
+    const region = screen.getByTestId('share-copy-status')
+    expect(region).toHaveAttribute('role', 'status')
+    expect(region).toBeEmptyDOMElement()
+
+    fireEvent.click(screen.getByRole('button', { name: '复制链接' }))
+    expect(await screen.findByTestId('share-manual')).toHaveTextContent('手动选择')
+    expect(region).toContainElement(screen.getByTestId('share-manual'))
+    expect(screen.getByTestId('share-manual')).not.toHaveAttribute('role')
+  })
+})

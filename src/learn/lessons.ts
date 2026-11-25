@@ -103,7 +103,7 @@ export const LESSONS: readonly Lesson[] = [
       ),
       player: BLACK,
       goal: { kind: 'makeShape', shape: 'openTwo' },
-      hints: ['活二的两端都必须是空的。', '贴着你自己的一颗子下，并且别让两头都贴上白子。'],
+      hints: ['活二的两端都必须是空的。', '贴着你自己的一颗子下，并且连成的两颗子两端都得空着。'],
       solution: '贴着任意一颗黑子落子，只要连成的两颗子两端都空着，就是活二。',
     },
   },

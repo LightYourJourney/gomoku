@@ -19,6 +19,8 @@ export interface ControlBarProps {
    * （见 `ResultDialog` 的 `focusAfterClose`）——键盘用户不必从页面最开头重新 Tab。
    */
   restartButtonRef?: Ref<HTMLButtonElement>
+  /** 「求提示」按钮的 ref。提示面板的「收起」把焦点交还到这里（见 `HintPanel` 的 `focusAfterClear`）。 */
+  hintButtonRef?: Ref<HTMLButtonElement>
 }
 
 /**
@@ -42,6 +44,7 @@ export function ControlBar({
   onRestart,
   onResign,
   restartButtonRef,
+  hintButtonRef,
 }: ControlBarProps) {
   return (
     <div role="group" aria-label="对局操作" className="flex flex-wrap items-center gap-2">
@@ -50,9 +53,21 @@ export function ControlBar({
       </Button>
       {/*
         `primary`：它是「主动去问引擎」的那一颗，也是这一屏唯一的下一步。
-        提示正在算的时候必须禁用——否则能连点，而提示与落子共用同一只引擎。
+        提示正在算的时候必须不可用——否则能连点，而提示与落子共用同一只引擎。
+
+        「正在算」用 `aria-disabled` 而不是原生 `disabled`：原生禁用的那一刻焦点掉到
+        `<body>`（生产构建 Chrome 实测），按回车求提示的键盘用户当场丢了位置。
+        `aria-disabled` 让读屏照样说「不可用」、焦点留在原处，连点由 onClick 挡掉。
+        轮不到自己（`!canHint`）仍用原生禁用——那不是按这颗按钮造成的。
       */}
-      <Button variant="primary" onClick={onHint} disabled={!canHint || hintThinking}>
+      <Button
+        ref={hintButtonRef}
+        variant="primary"
+        onClick={hintThinking ? undefined : onHint}
+        disabled={!canHint}
+        aria-disabled={hintThinking || undefined}
+        className="aria-disabled:cursor-not-allowed aria-disabled:opacity-40"
+      >
         求提示
       </Button>
       <Button ref={restartButtonRef} onClick={onRestart}>

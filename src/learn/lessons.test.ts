@@ -117,3 +117,24 @@ describe('课程的练习都能做', () => {
     }
   })
 })
+
+/*
+  第 2 节（活二）的第二级提示原先是「贴着你自己的一颗子下，并且别让两头都贴上白子」——
+  按字面，一头贴白子是允许的。可判定要的是**两端都空**：落 (3,4) 贴着 (4,5) 的黑子，
+  斜线另一头 (5,6) 是白子，判成眠二。提示与判定必须说同一件事。
+*/
+describe('第 2 节的提示与判定一致', () => {
+  const lesson = LESSONS.find((entry) => entry.id === 'two')!
+  const { board, player, goal, hints } = lesson.practice
+
+  it('照旧提示字面走（贴自己的子、只有一头贴白子）会被判错', () => {
+    const verdict = judgeMove(parseBoardLines(board.lines), player, { x: 3, y: 4 }, goal, NOW)
+
+    expect(verdict.ok).toBe(false)
+  })
+
+  it('第二级提示不放过「一头贴白子」，并且要求两端都空', () => {
+    expect(hints[1]).not.toMatch(/别让两头都/)
+    expect(hints[1]).toMatch(/两端都/)
+  })
+})

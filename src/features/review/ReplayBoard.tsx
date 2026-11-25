@@ -1,9 +1,10 @@
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { useStore } from 'zustand'
 import { Board } from '../../components/board/Board'
 import { BoardStage } from '../../components/board/BoardStage'
 import { Button } from '../../components/ui/Button'
 import { Panel } from '../../components/ui/Panel'
+import { useFocusHandoff } from '../../components/ui/useFocusHandoff'
 import type { UseBoundStore, StoreApi } from 'zustand'
 import { cx } from '../../lib/cx'
 import { REPLAY_SPEED_LABELS, type ReplaySpeed, type ReplayStore } from '../../store/replayStore'
@@ -65,6 +66,16 @@ export function ReplayBoard({ store, onExit, extraPanel, onContinue, onShare }: 
     hasPrev, hasNext, stepPrev, stepNext, goTo, play, pause, setSpeed,
   } = useReplay(store)
   const [shareOpen, setShareOpen] = useState(false)
+
+  /*
+   * 走到头的那颗按钮当场被禁用，焦点掉到 `<body>`。落点是**反方向**那颗——
+   * 到了终局还能往回走，回到开局还能往前走。自动播放播到头同理，落到「上一步」。
+   */
+  const handoff = useFocusHandoff()
+  const startRef = useRef<HTMLButtonElement>(null)
+  const endRef = useRef<HTMLButtonElement>(null)
+  const prevRef = useRef<HTMLButtonElement>(null)
+  const nextRef = useRef<HTMLButtonElement>(null)
 
   // 卸载时若还在播放，停掉 store 的定时器
   useEffect(() => {
@@ -145,19 +156,51 @@ export function ReplayBoard({ store, onExit, extraPanel, onContinue, onShare }: 
           )}
 
           <div className="flex gap-2">
-            <Button block disabled={!hasPrev} onClick={() => goTo(0)}>
+            <Button
+              ref={startRef}
+              block
+              disabled={!hasPrev}
+              onClick={(event) => {
+                handoff(event.currentTarget, () => endRef.current)
+                goTo(0)
+              }}
+            >
               开局
             </Button>
-            <Button block disabled={!hasNext} onClick={() => goTo(total)}>
+            <Button
+              ref={endRef}
+              block
+              disabled={!hasNext}
+              onClick={(event) => {
+                handoff(event.currentTarget, () => startRef.current)
+                goTo(total)
+              }}
+            >
               终局
             </Button>
           </div>
 
           <div className="flex gap-2">
-            <Button block disabled={!hasPrev} onClick={stepPrev}>
+            <Button
+              ref={prevRef}
+              block
+              disabled={!hasPrev}
+              onClick={(event) => {
+                handoff(event.currentTarget, () => nextRef.current)
+                stepPrev()
+              }}
+            >
               上一步
             </Button>
-            <Button block disabled={!hasNext} onClick={stepNext}>
+            <Button
+              ref={nextRef}
+              block
+              disabled={!hasNext}
+              onClick={(event) => {
+                handoff(event.currentTarget, () => prevRef.current)
+                stepNext()
+              }}
+            >
               下一步
             </Button>
           </div>
@@ -167,7 +210,15 @@ export function ReplayBoard({ store, onExit, extraPanel, onContinue, onShare }: 
             原先它只按 `total === 0` 禁用，于是终局上按下去会先把按钮变成
             「暂停」、等一个 tick 才发现到头——现在 store 里也拦了一道。
           */}
-          <Button block disabled={!hasNext} onClick={() => (playing ? pause() : play())}>
+          <Button
+            block
+            disabled={!hasNext}
+            onClick={(event) => {
+              handoff(event.currentTarget, () => prevRef.current)
+              if (playing) pause()
+              else play()
+            }}
+          >
             {playing ? '暂停' : '自动播放'}
           </Button>
 

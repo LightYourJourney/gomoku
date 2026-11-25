@@ -1,4 +1,4 @@
-import { useId, useState } from 'react'
+import { useId, useState, type RefObject } from 'react'
 import { HINT_BUDGET_MS } from '../../ai/difficulty'
 import type { Confidence, MoveSuggestion, Urgency } from '../../ai/types'
 import { formatPoint } from '../../lib/coords'
@@ -8,6 +8,7 @@ import { threatLabel } from '../../learn/shape-labels'
 import { Button } from '../ui/Button'
 import { InfoButton } from '../ui/InfoDisclosure'
 import { Panel } from '../ui/Panel'
+import { useFocusHandoff } from '../ui/useFocusHandoff'
 
 const URGENCY_LABELS: Record<Urgency, { label: string; tone: string }> = {
   win: { label: '必胜', tone: 'bg-accent-soft text-accent' },
@@ -28,6 +29,11 @@ export interface HintPanelProps {
   thinking: boolean
   error: string | null
   onClear: () => void
+  /**
+   * 「收起」之后焦点去哪。「收起」会连同候选一起卸载，焦点随之掉到 `<body>`；
+   * 它收起的是「求提示」要来的东西，所以调用方把工具栏上那颗「求提示」传进来。
+   */
+  focusAfterClear?: RefObject<HTMLElement | null>
 }
 
 function Candidate({ suggestion, rank }: { suggestion: MoveSuggestion; rank: number }) {
@@ -68,8 +74,17 @@ function Candidate({ suggestion, rank }: { suggestion: MoveSuggestion; rank: num
  * 任务书 §四 要求把常用操作收到棋盘附近，同时「不得导致同一请求被多个入口重复触发」。
  * 所以本面板只展示候选、紧急度、置信度，以及一个「收起」。
  */
-export function HintPanel({ candidates, urgency, confidence, thinking, error, onClear }: HintPanelProps) {
+export function HintPanel({
+  candidates,
+  urgency,
+  confidence,
+  thinking,
+  error,
+  onClear,
+  focusAfterClear,
+}: HintPanelProps) {
   const [showInfo, setShowInfo] = useState(false)
+  const handoff = useFocusHandoff()
   const infoId = useId()
   const shown = (candidates ?? []).slice(0, MAX_SHOWN)
   const badge = urgency === null ? null : URGENCY_LABELS[urgency]
@@ -93,7 +108,15 @@ export function HintPanel({ candidates, urgency, confidence, thinking, error, on
     >
       {shown.length > 0 && (
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" onClick={onClear} aria-label="收起提示">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={(event) => {
+              handoff(event.currentTarget, () => focusAfterClear?.current ?? null)
+              onClear()
+            }}
+            aria-label="收起提示"
+          >
             收起
           </Button>
 

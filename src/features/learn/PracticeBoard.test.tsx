@@ -153,6 +153,23 @@ describe('PracticeBoard —— 三级提示', () => {
     expect(hintButton()).toBeDisabled()
   })
 
+  /*
+    第三级那句说明是**所有题共用的固定文案**，所以它只能说对每道题都成立的话。
+    原先写着「判定看的是棋型，别的走法同样算对」：23 题里 14 题只有一个正确点，
+    算杀题（forcedWin）判的是能不能算出杀、不是棋型——对多数题这是假话。
+  */
+  it('第三级的说明只说对每道题都成立的话：不许诺「别的走法同样算对」', () => {
+    setup()
+
+    const hintButton = () => screen.getByRole('button', { name: /提示|再具体一点/ })
+    fireEvent.click(hintButton())
+    fireEvent.click(hintButton())
+    fireEvent.click(hintButton())
+
+    expect(screen.getByText('棋盘上标出了一种解法，走上去试试。')).toBeInTheDocument()
+    expect(screen.queryByText(/别的走法|判定看的是棋型/)).not.toBeInTheDocument()
+  })
+
   /**
    * **无解的题，第三级也不能说「棋盘上标出了」。**
    *

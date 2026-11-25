@@ -81,6 +81,31 @@ test('编辑器：保存局面 → 刷新后显示时间并删除', async ({ pag
   await expect(page.getByTestId('stone-7-7')).toBeVisible()
 })
 
+/**
+ * 「取消」「确认删除」按下去自己被卸载（删成功时整块都没了）。真浏览器会把焦点丢到
+ * body，键盘用户得从页面开头重新 Tab；这里用键盘按下，确认焦点有了落点。
+ */
+test('编辑器：键盘取消 / 确认删除后焦点不掉到 body', async ({ page }) => {
+  await openEditor(page)
+  await page.getByTestId('intersection-7-7').click()
+  await page.getByRole('button', { name: '保存局面', exact: true }).click()
+  await expect(page.getByTestId('position-notice')).toContainText('已保存')
+
+  const deleteButton = page.getByRole('button', { name: '删除已保存局面' })
+  await deleteButton.focus()
+  await page.keyboard.press('Enter')
+  await page.getByRole('button', { name: '取消' }).focus()
+  await page.keyboard.press('Enter')
+  await expect(page.getByRole('button', { name: '确认删除' })).toHaveCount(0)
+  await expect(deleteButton).toBeFocused()
+
+  await page.keyboard.press('Enter')
+  await page.getByRole('button', { name: '确认删除' }).focus()
+  await page.keyboard.press('Enter')
+  await expect(page.getByTestId('position-saved-at')).toHaveCount(0)
+  await expect(page.getByLabel('打开已保存局面')).toBeFocused()
+})
+
 test('编辑器：从合法棋谱载入第 9 手', async ({ page }) => {
   test.setTimeout(60_000)
   await playNineMoveWin(page)

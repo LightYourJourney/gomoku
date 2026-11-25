@@ -28,6 +28,14 @@ export interface PracticeBoardProps {
   readonly alreadySolved?: boolean
   /** 通过之后（或此前已通过时）额外渲染的内容，例如「下一节」按钮。 */
   readonly footer?: React.ReactNode
+  /**
+   * 挂载时把焦点交给题面。
+   *
+   * 只给「按钮按下后换出这块棋盘」的调用点用（「进入练习 →」「再做一次」）：
+   * 那颗按钮随旧内容一起卸载、外壳不重挂，焦点没人接就掉到 `<body>`。
+   * 换页进来时不要开——那时焦点归 `PageShell` 的正文，两处一起抢只会让读屏念两遍。
+   */
+  readonly focusOnMount?: boolean
 }
 
 /**
@@ -42,7 +50,13 @@ export interface PracticeBoardProps {
  * 3. **点位是算出来的**，不是题目里写死的——所以出一道题不必附带答案表，
  *    多解也天然成立。
  */
-export function PracticeBoard({ practice, onSolved, alreadySolved = false, footer }: PracticeBoardProps) {
+export function PracticeBoard({
+  practice,
+  onSolved,
+  alreadySolved = false,
+  footer,
+  focusOnMount = false,
+}: PracticeBoardProps) {
   const base = useMemo(() => parseBoardLines(practice.board.lines), [practice])
   const [attempt, setAttempt] = useState<{ move: Point; verdict: Verdict } | null>(null)
   const [hintLevel, setHintLevel] = useState(0)
@@ -126,6 +140,13 @@ export function PracticeBoard({ practice, onSolved, alreadySolved = false, foote
     if (stranded) feedbackRef.current?.focus({ preventScroll: true })
   }, [attempt])
 
+  // 只看挂载那一刻的值：之后的变化不该把焦点从玩家正在用的控件上拽走。
+  const promptRef = useRef<HTMLParagraphElement>(null)
+  const focusOnMountRef = useRef(focusOnMount)
+  useEffect(() => {
+    if (focusOnMountRef.current) promptRef.current?.focus({ preventScroll: true })
+  }, [])
+
   const askHint = (): void => {
     setHintLevel((level) => Math.min(level + 1, HINT_LEVELS))
   }
@@ -200,7 +221,10 @@ export function PracticeBoard({ practice, onSolved, alreadySolved = false, foote
 
       <aside className={cx('order-2 space-y-3 px-3 pb-4 wide-layout:order-3', SIDE_PANEL_CLASS)}>
         <Panel title="练习">
-          <p className="text-sm leading-relaxed text-fg">{practice.prompt}</p>
+          {/* `tabIndex={-1}`：可编程聚焦（见 `focusOnMount`），不进 Tab 顺序 */}
+          <p ref={promptRef} tabIndex={-1} className="text-sm leading-relaxed text-fg outline-none">
+            {practice.prompt}
+          </p>
           <p className="mt-2 flex items-center gap-2 text-xs text-faint">
             <span
               aria-hidden="true"
@@ -272,7 +296,11 @@ export function PracticeBoard({ practice, onSolved, alreadySolved = false, foote
             */}
             {solutionMark !== null && (
               <p className="mt-2 text-xs text-faint">
-                棋盘上标出了其中一种解法。走上去试试——判定看的是棋型，别的走法同样算对。
+                {/*
+                  所有题共用这一句，所以只说对每道题都成立的话。不写「别的走法同样算对」：
+                  多数题只有一个正确点，算杀题判的也不是棋型。
+                */}
+                棋盘上标出了一种解法，走上去试试。
               </p>
             )}
           </Panel>

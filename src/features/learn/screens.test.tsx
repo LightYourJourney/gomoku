@@ -923,3 +923,109 @@ describe('PuzzleScreen —— 出口（Phase 05）', () => {
     expect(screen.queryByText(/这一类全部通过了/)).not.toBeInTheDocument()
   })
 })
+
+/**
+ * **按下后自己被卸载的按钮，焦点要有人接。**
+ *
+ * 「进入练习 →」「回到讲解」「再做一次」按下去，按钮本身随内容一起换掉，
+ * 而外壳（`PageShell`）不重挂——`useFocusOnMount` 不会再跑，新棋盘的
+ * `hasEverFocusedRef` 也是 false，没人接管，焦点掉到 `<body>`：读屏不播报换了什么，
+ * 键盘用户得从页面开头重新 Tab。
+ *
+ * 这里先 `focus()` 再点，模拟键盘按下（`fireEvent.click` 自己不移焦点）。
+ */
+describe('换内容的按钮按下后，焦点不掉到 body', () => {
+  const pressFocused = (button: HTMLElement): void => {
+    button.focus()
+    expect(button).toHaveFocus()
+    fireEvent.click(button)
+  }
+
+  it('「进入练习 →」之后焦点落在练习题面上', () => {
+    const lesson = LESSONS[0]!
+    render(<LearnScreen />)
+    openLesson(lesson.id)
+    for (let i = 0; i < lesson.steps.length - 1; i++) {
+      fireEvent.click(screen.getByRole('button', { name: '下一步' }))
+    }
+
+    pressFocused(screen.getByRole('button', { name: '进入练习 →' }))
+
+    expect(document.activeElement).not.toBe(document.body)
+    expect(screen.getByText(lesson.practice.prompt)).toHaveFocus()
+  })
+
+  it('「回到讲解」之后焦点落在讲解页的标题上', () => {
+    const lesson = LESSONS[0]!
+    render(<LearnScreen />)
+    openLesson(lesson.id)
+    walkToPractice(lesson)
+
+    pressFocused(screen.getByRole('button', { name: '回到讲解' }))
+
+    expect(document.activeElement).not.toBe(document.body)
+    expect(
+      screen.getByRole('heading', { name: lesson.steps[lesson.steps.length - 1]!.title }),
+    ).toHaveFocus()
+  })
+
+  it('「再做一次」之后焦点落在新棋盘的题面上', async () => {
+    const puzzle = PUZZLES.find((entry) => entry.id === 'win-h')!
+    render(<PuzzleScreen />)
+    fireEvent.click(screen.getByTestId('puzzle-win-h'))
+    fireEvent.click(screen.getByTestId('intersection-4-7'))
+    await screen.findByText('第一次做对这道题。')
+
+    pressFocused(screen.getByRole('button', { name: '再做一次' }))
+
+    expect(screen.queryByTestId('feedback')).not.toBeInTheDocument()
+    expect(document.activeElement).not.toBe(document.body)
+    expect(screen.getByText(puzzle.prompt)).toHaveFocus()
+  })
+
+  it('刚进一道题时题面不抢焦点：换页的焦点仍归正文（PageShell）', () => {
+    const puzzle = PUZZLES.find((entry) => entry.id === 'win-h')!
+    render(<PuzzleScreen />)
+    fireEvent.click(screen.getByTestId('puzzle-win-h'))
+
+    expect(screen.getByRole('main')).toHaveFocus()
+    expect(screen.getByText(puzzle.prompt)).not.toHaveFocus()
+  })
+})
+
+/*
+ * 讲解页与演示里「走到头就禁用」的按钮：拿着焦点被禁用时，浏览器把焦点丢到 body。
+ * 与复盘页走到头同一类问题（2026-11-26 全量审查），落点是反方向那颗。
+ * jsdom 里被禁用的按钮仍是 activeElement，所以断言「落在反方向按钮上」而不只是「不在 body」。
+ */
+describe('LearnScreen —— 走到头的按钮交出焦点', () => {
+  it('第 2 页按「上一步」回到第 1 页：焦点落在「下一步」', () => {
+    render(<LearnScreen />)
+    openLesson('rules')
+    fireEvent.click(screen.getByRole('button', { name: '下一步' }))
+
+    const prev = screen.getByRole('button', { name: '上一步' })
+    prev.focus()
+    fireEvent.click(prev)
+
+    expect(prev).toBeDisabled()
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: '下一步' }))
+  })
+
+  it('演示走到末手：焦点落在「上一手」；退回第 0 手：焦点落在「下一手」', () => {
+    render(<LearnScreen />)
+    openLesson('rules')
+    fireEvent.click(screen.getByRole('button', { name: '下一步' }))
+
+    const next = screen.getByRole('button', { name: '下一手' })
+    next.focus()
+    for (let i = 0; i < 9; i++) fireEvent.click(next)
+    expect(next).toBeDisabled()
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: '上一手' }))
+
+    const prev = screen.getByRole('button', { name: '上一手' })
+    for (let i = 0; i < 9; i++) fireEvent.click(prev)
+    expect(prev).toBeDisabled()
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: '下一手' }))
+  })
+})

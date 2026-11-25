@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type MouseEvent } from 'react'
 import { useStore } from 'zustand'
 import { createReplayStore } from '../../store/replayStore'
 import { ANALYSIS_BUDGET_MS, createAnalysisStore } from '../../store/analysisStore'
@@ -12,6 +12,7 @@ import { confidenceOf } from '../../ai/types'
 import { cx } from '../../lib/cx'
 import { Button } from '../../components/ui/Button'
 import { Panel } from '../../components/ui/Panel'
+import { useFocusHandoff } from '../../components/ui/useFocusHandoff'
 import { PageShell } from '../shell/PageShell'
 import type { AiEngine } from '../../ai/engine'
 import type { BranchConfig, BranchStartInput, BranchStartResult } from '../../store/gameStore'
@@ -341,6 +342,13 @@ function AnalysisPanel({ store, engine, replay }: AnalysisPanelProps) {
   const state = useAnalysis(store)
   // 订阅整个回放状态：游标一动，选中态与「当前手」那行都要跟着变。
   const { record, cursor } = useReplay(replay)
+  /*
+   * 「开始分析」「重新分析」按下去就被整颗换掉，焦点掉到 `<body>`。
+   * 落点是下面那块常驻的分析状态区：进度、结论、错误都在它里面换，
+   * 落在这里读屏能接着念进度，Tab 也从这里往下走到结论。
+   */
+  const handoff = useFocusHandoff()
+  const stateRef = useRef<HTMLDivElement>(null)
 
   if (record === null) return null
 
@@ -349,7 +357,8 @@ function AnalysisPanel({ store, engine, replay }: AnalysisPanelProps) {
   const difficulty = 'medium' as const
   const budgetMs = ANALYSIS_BUDGET_MS
 
-  function start() {
+  function start(event: MouseEvent<HTMLButtonElement>) {
+    handoff(event.currentTarget, () => stateRef.current)
     const current = replay.getState().record
     if (current === null) return
     store.getState().start({ record: current, engine, difficulty, budgetMs })
@@ -396,125 +405,129 @@ function AnalysisPanel({ store, engine, replay }: AnalysisPanelProps) {
       <p data-testid="analysis-caveat" className="text-xs text-faint">
         分差按棋型评分粗算，不是精确子数；两种走法之后的评分没法用同一把尺子比时，不算分差。
       </p>
-      {state.error !== null && state.running === false ? (
-        /*
-         * 分析失败要**说出来**。原先 `error` 只是躺在 store 里没人渲染，
-         * 失败之后界面静默退回「开始分析」按钮——与「从没分析过」长得一模一样。
-         * 这是错误态，用 `danger`（§2.2：`warn` 不用在错误上）。
-         */
-        <>
-          <p data-testid="analysis-error" className="text-xs text-danger">
-            这次分析没跑完：{state.error}
-          </p>
-          <Button block variant="primary" onClick={start}>
-            重新分析
-          </Button>
-        </>
-      ) : record.moves.length === 0 ? (
-        /*
-         * 一步都没走就认输：没有可分析的手，不摆那颗「开始分析」。
-         * `start` 对这种局面会立刻收尾（`running` 置回 false、`verdicts`
-         * 仍为空），面板又渲染回这颗按钮——按下去与没按过长得一模一样，
-         * 正是任务书 §二 说的「只有外观、没有实际效果的按钮」。
-         */
-        <p data-testid="analysis-empty" className="text-xs text-faint">
-          这一局没有落子，没有可分析的手。
-        </p>
-      ) : !state.running && verdicts.length === 0 ? (
-        <>
-          <p className="text-xs text-faint">
-            逐手跑一遍引擎，找出与引擎首选差得最多的几手。分析只读，不会改动棋谱。
-          </p>
-          <Button block variant="primary" onClick={start}>
-            开始分析
-          </Button>
-        </>
-      ) : state.running ? (
-        <p className="text-xs text-muted">
-          分析中…{' '}
-          <span data-testid="analysis-progress">
-            {verdicts.length} / {total}
-          </span>
-        </p>
-      ) : (
-        <div className="space-y-2">
-          <p data-testid="analysis-progress" className="text-xs text-faint">
-            已完成 {verdicts.length} / {total} 手
-          </p>
-
-          {cursor > 0 && (
-            <p data-testid="analysis-current" className="text-xs text-muted">
-              当前第 {cursor} 手：
-              {/*
-                取不到结论 ≠ 结论是「没亏损」。
-                `verdicts` 里**装着** loss 为 0 的手（`buildVerdict` 总会产出一条，
-                而「与引擎一致」正是 `verdictLabel` 的一个分支），所以取不到只有
-                两种可能：这一手被跳过了（引擎对某个局面答「无棋可走」，
-                `analysisStore` 不编结论，见那边的注释），或者分析没跑到它。
-                两种都该如实说——原先这里一律说成「与引擎一致，没有亏损」，
-                store 拒绝编造，界面替它编了。
-              */}
-              {currentVerdict === undefined ? '没有分析结果。' : verdictLabel(currentVerdict)}
+      <div ref={stateRef} tabIndex={-1} data-testid="analysis-state" className="space-y-3 outline-none">
+        {state.error !== null && state.running === false ? (
+          /*
+           * 分析失败要**说出来**。原先 `error` 只是躺在 store 里没人渲染，
+           * 失败之后界面静默退回「开始分析」按钮——与「从没分析过」长得一模一样。
+           * 这是错误态，用 `danger`（§2.2：`warn` 不用在错误上）。
+           */
+          <>
+            <p data-testid="analysis-error" className="text-xs text-danger">
+              这次分析没跑完：{state.error}
             </p>
-          )}
-
-          {/*
-            空榜要说出来。同视界口径下它比以前常见（不可比的手不进榜，捷径量纲造出来的
-            假亏损也没了）；跑完了却一片空白，看起来像分析坏了。
-          */}
-          {topLosses.length === 0 && (
-            <p data-testid="analysis-no-loss" className="text-xs text-faint">
-              这一局没有算出亏损的手。
+            <Button block variant="primary" onClick={start}>
+              重新分析
+            </Button>
+          </>
+        ) : record.moves.length === 0 ? (
+          /*
+           * 一步都没走就认输：没有可分析的手，不摆那颗「开始分析」。
+           * `start` 对这种局面会立刻收尾（`running` 置回 false、`verdicts`
+           * 仍为空），面板又渲染回这颗按钮——按下去与没按过长得一模一样，
+           * 正是任务书 §二 说的「只有外观、没有实际效果的按钮」。
+           */
+          <p data-testid="analysis-empty" className="text-xs text-faint">
+            这一局没有落子，没有可分析的手。
+          </p>
+        ) : !state.running && verdicts.length === 0 ? (
+          <>
+            <p className="text-xs text-faint">
+              逐手跑一遍引擎，找出与引擎首选差得最多的几手。分析只读，不会改动棋谱。
             </p>
-          )}
+            <Button block variant="primary" onClick={start}>
+              开始分析
+            </Button>
+          </>
+        ) : state.running ? (
+          <p className="text-xs text-muted">
+            分析中…{' '}
+            <span data-testid="analysis-progress">
+              {verdicts.length} / {total}
+            </span>
+          </p>
+        ) : (
+          <div className="space-y-2">
+            <p data-testid="analysis-progress" className="text-xs text-faint">
+              已完成 {verdicts.length} / {total} 手
+            </p>
 
-          {topLosses.map((verdict) => {
-            const selected = verdict.moveIndex === selectedMoveIndex
-            return (
-              <button
-                key={verdict.moveIndex}
-                type="button"
-                data-testid={`verdict-${verdict.moveIndex}`}
-                data-selected={selected}
-                /*
-                 * 跳转就是这一行。`moveIndex` 是**零基**的着法序号，
-                 * 而 `goTo` 的游标语义是「已看到第几手」——第 17 手之后
-                 * 即 cursor = 17 = moveIndex + 1，两者恰好对齐，不需要补丁。
-                 */
-                onClick={() => replay.getState().goTo(verdict.moveIndex + 1)}
-                /*
-                 * 选中**只改边框，不改底色**。
-                 *
-                 * 第一版写的是 `border-accent bg-accent-soft`——探针当场报了 16 处
-                 * 对比度违规：卡片里那两行是 `text-faint`，铺上 `accent-soft` 之后
-                 * 浅色掉到 4.49:1（判据要 4.5）、深色只有 3.91:1。
-                 * **换底色却不换文字色**，正是下面否决「给当前手换 tone」的同一条理由，
-                 * 结果在另一处又踩了一次。边框变强调色已经够「适度突出」，
-                 * 而它一个像素的对比度都不动。
-                 */
-                className={cx(
-                  'w-full rounded-lg border p-2 text-left transition',
-                  selected ? 'border-accent' : 'border-border hover:border-border-strong',
-                )}
-              >
-                <div className="flex items-baseline justify-between text-xs">
-                  <span className={selected ? 'text-accent' : 'text-muted'}>
-                    第 {verdict.moveIndex + 1} 手
-                  </span>
-                  <span className="text-fg">{verdictLabel(verdict)}</span>
-                </div>
-                <div className="mt-1 font-mono text-xs text-faint">
-                  实际 {formatPoint(verdict.move)} · 引擎推荐 {formatPoint(verdict.engineMove)}
-                </div>
-                <div className="mt-1 text-xs text-faint">
-                  深度 {verdict.engineDepth} · 节点 {verdict.engineNodes} ·{' '}
-                  {CONFIDENCE_LABELS[confidenceOf(verdict.reason, verdict.engineDepth)]}
-                </div>
-              </button>
-            )
-          })}
-        </div>
-      )}
+            {cursor > 0 && (
+              <p data-testid="analysis-current" className="text-xs text-muted">
+                当前第 {cursor} 手：
+                {/*
+                  取不到结论 ≠ 结论是「没亏损」。
+                  `verdicts` 里**装着** loss 为 0 的手（`buildVerdict` 总会产出一条，
+                  而「与引擎一致」正是 `verdictLabel` 的一个分支），所以取不到只有
+                  两种可能：这一手被跳过了（引擎对某个局面答「无棋可走」，
+                  `analysisStore` 不编结论，见那边的注释），或者分析没跑到它。
+                  两种都该如实说——原先这里一律说成「与引擎一致，没有亏损」，
+                  store 拒绝编造，界面替它编了。
+                */}
+                {currentVerdict === undefined ? '没有分析结果。' : verdictLabel(currentVerdict)}
+              </p>
+            )}
+
+            {/*
+              空榜要说出来。同视界口径下它比以前常见（不可比的手不进榜，捷径量纲造出来的
+              假亏损也没了）；跑完了却一片空白，看起来像分析坏了。
+            */}
+            {topLosses.length === 0 && (
+              <p data-testid="analysis-no-loss" className="text-xs text-faint">
+                这一局没有算出亏损的手。
+              </p>
+            )}
+
+            {topLosses.map((verdict) => {
+              const selected = verdict.moveIndex === selectedMoveIndex
+              return (
+                <button
+                  key={verdict.moveIndex}
+                  type="button"
+                  data-testid={`verdict-${verdict.moveIndex}`}
+                  data-selected={selected}
+                  /*
+                   * 跳转就是这一行。`moveIndex` 是**零基**的着法序号，
+                   * 而 `goTo` 的游标语义是「已看到第几手」——第 17 手之后
+                   * 即 cursor = 17 = moveIndex + 1，两者恰好对齐，不需要补丁。
+                   */
+                  onClick={() => replay.getState().goTo(verdict.moveIndex + 1)}
+                  /*
+                   * 选中**只改边框，不改底色**。
+                   *
+                   * 第一版写的是 `border-accent bg-accent-soft`——探针当场报了 16 处
+                   * 对比度违规：卡片里那两行是 `text-faint`，铺上 `accent-soft` 之后
+                   * 浅色掉到 4.49:1（判据要 4.5）、深色只有 3.91:1。
+                   * **换底色却不换文字色**，正是下面否决「给当前手换 tone」的同一条理由，
+                   * 结果在另一处又踩了一次。边框变强调色已经够「适度突出」，
+                   * 而它一个像素的对比度都不动。
+                   */
+                  className={cx(
+                    'w-full rounded-lg border p-2 text-left transition',
+                    selected ? 'border-accent' : 'border-border hover:border-border-strong',
+                  )}
+                >
+                  <div className="flex items-baseline justify-between text-xs">
+                    <span className={selected ? 'text-accent' : 'text-muted'}>
+                      第 {verdict.moveIndex + 1} 手
+                    </span>
+                    <span className="text-fg">{verdictLabel(verdict)}</span>
+                  </div>
+                  {/* §3.1：等宽只给坐标，「实际」「引擎推荐」是中文，不套等宽 */}
+                  <div className="mt-1 text-xs text-faint">
+                    实际 <span className="font-mono tabular-nums">{formatPoint(verdict.move)}</span> · 引擎推荐{' '}
+                    <span className="font-mono tabular-nums">{formatPoint(verdict.engineMove)}</span>
+                  </div>
+                  <div className="mt-1 text-xs text-faint">
+                    深度 {verdict.engineDepth} · 节点 {verdict.engineNodes} ·{' '}
+                    {CONFIDENCE_LABELS[confidenceOf(verdict.reason, verdict.engineDepth)]}
+                  </div>
+                </button>
+              )
+            })}
+          </div>
+        )}
+      </div>
     </Panel>
   )
 }

@@ -243,6 +243,39 @@ describe('GameLibrary —— 时间、分批、删除（阶段 D）', () => {
     expect(screen.getByRole('button', { name: /^删除棋谱：黑方胜，时间未知（第 \d+ 条）$/ })).toHaveFocus()
   })
 
+  /*
+   * 焦点直接送到「确认删除」，读屏只念按钮名——那句「删除后不能撤销」念不到。
+   * 用 `aria-describedby` 把警告挂到按钮上。
+   */
+  it('「确认删除」的可访问描述里有「不能撤销」', async () => {
+    const storage = memoryGameRecords()
+    await storage.put(nineMoveRecord())
+    render(<GameLibrary storage={storage} onOpen={vi.fn()} onStartBattle={vi.fn()} />)
+    await screen.findAllByTestId(/^record-/)
+
+    fireEvent.click(screen.getByRole('button', { name: /^删除棋谱：/ }))
+
+    expect(screen.getByRole('button', { name: /^确认删除棋谱：/ })).toHaveAccessibleDescription(/不能撤销/)
+  })
+
+  /* `role="status"` 随内容一起挂载时部分读屏不播报：删除结果要填进一个早就在的播报区 */
+  it('删除成功的提示写进常驻的播报区：删除之前它就在（空的）', async () => {
+    const storage = memoryGameRecords()
+    await storage.put(nineMoveRecord())
+    vi.spyOn(storage, 'delete').mockResolvedValue({ persisted: true })
+    render(<GameLibrary storage={storage} onOpen={vi.fn()} onStartBattle={vi.fn()} />)
+    await screen.findAllByTestId(/^record-/)
+
+    const region = screen.getByRole('status')
+    expect(region).toBeEmptyDOMElement()
+
+    fireEvent.click(screen.getByRole('button', { name: /^删除棋谱：/ }))
+    fireEvent.click(screen.getByRole('button', { name: /^确认删除棋谱：/ }))
+
+    await waitFor(() => expect(region).toHaveTextContent('已删除'))
+    expect(screen.getByRole('status')).toBe(region)
+  })
+
   it('确认删除后焦点落到下一行；删的是最后一行就落到上一行', async () => {
     const storage = memoryGameRecords()
     const oldest = (await storage.put(threeMoveRecord())).record
@@ -318,6 +351,72 @@ describe('ReplayBoard', () => {
     act(() => replay.getState().goTo(9))
     expect(screen.getByRole('button', { name: '下一步' })).toBeDisabled()
     expect(screen.getByRole('button', { name: '上一步' })).toBeEnabled()
+  })
+
+  /*
+   * 走到头的那颗按钮当场被禁用，焦点掉到 `<body>`（生产构建 Chrome 实测）。
+   * 落点是**反方向**那颗：走到终局还能往回走，走回开局还能往前走。
+   * jsdom 不做焦点修正（被禁用的按钮仍是 activeElement），所以连「停在被禁用的控件上」一起判掉。
+   */
+  function pressFocused(name: string): void {
+    const target = screen.getByRole('button', { name })
+    target.focus()
+    fireEvent.click(target)
+  }
+
+  function expectFocusOn(name: string): void {
+    expect(document.activeElement).not.toBe(document.body)
+    expect(document.activeElement).toBe(screen.getByRole('button', { name }))
+    expect(document.activeElement).toBeEnabled()
+  }
+
+  it('一步步走到终局：焦点从被禁用的「下一步」移到「上一步」', () => {
+    act(() => replay.getState().open(fullRecord))
+    render(<ReplayBoard store={replay} onExit={vi.fn()} />)
+
+    for (let i = 0; i < 8; i++) pressFocused('下一步')
+    // 还没到头：焦点不动
+    expectFocusOn('下一步')
+    pressFocused('下一步')
+    expect(screen.getByTestId('move-counter')).toHaveTextContent('9 / 9')
+    expectFocusOn('上一步')
+  })
+
+  it('退回开局：焦点从被禁用的「上一步」移到「下一步」', () => {
+    act(() => replay.getState().open(fullRecord))
+    act(() => replay.getState().goTo(1))
+    render(<ReplayBoard store={replay} onExit={vi.fn()} />)
+
+    pressFocused('上一步')
+    expectFocusOn('下一步')
+  })
+
+  it('「终局」「开局」互为落点', () => {
+    act(() => replay.getState().open(fullRecord))
+    render(<ReplayBoard store={replay} onExit={vi.fn()} />)
+
+    pressFocused('终局')
+    expectFocusOn('开局')
+    pressFocused('开局')
+    expectFocusOn('终局')
+  })
+
+  it('自动播放到头：焦点从被禁用的播放按钮移到「上一步」', () => {
+    vi.useFakeTimers()
+    try {
+      act(() => replay.getState().open(fullRecord))
+      render(<ReplayBoard store={replay} onExit={vi.fn()} />)
+
+      pressFocused('自动播放')
+      act(() => vi.advanceTimersByTime(REPLAY_STEP_MS * 3))
+      // 播到一半：焦点还在（此时它叫「暂停」）
+      expectFocusOn('暂停')
+      act(() => vi.advanceTimersByTime(REPLAY_STEP_MS * 20))
+      expect(screen.getByTestId('move-counter')).toHaveTextContent('9 / 9')
+      expectFocusOn('上一步')
+    } finally {
+      vi.useRealTimers()
+    }
   })
 
   it('卸载后自动播放定时器不再推进（Review Focus 第 4 条）', () => {
@@ -437,6 +536,73 @@ describe('ReviewScreen 三段流转', () => {
     fireEvent.click(screen.getByRole('button', { name: '开始分析' }))
 
     expect(await screen.findByTestId('analysis-progress')).toHaveTextContent('0 / 9')
+  })
+})
+
+describe('分析面板 —— 按钮卸载后焦点有处可去', () => {
+  /*
+   * 「开始分析」「重新分析」按下去就被整颗换掉（换成进度、换成结论），焦点掉到 `<body>`。
+   * 落点是分析状态区本身：它常驻，进度、结论、错误都在它里面换。
+   */
+  it('按「开始分析」后焦点落到分析状态区', async () => {
+    const storage = memoryGameRecords()
+    await storage.put(nineMoveRecord())
+    render(<ReviewScreen storage={storage} engine={idleEngine()} />)
+    fireEvent.click((await screen.findAllByTestId(/^record-/))[0]!)
+
+    const start = await screen.findByRole('button', { name: '开始分析' })
+    start.focus()
+    fireEvent.click(start)
+    await screen.findByTestId('analysis-progress')
+
+    expect(document.activeElement).not.toBe(document.body)
+    expect(document.activeElement).toBe(screen.getByTestId('analysis-state'))
+    expect(screen.getByTestId('analysis-state')).toContainElement(screen.getByTestId('analysis-progress'))
+  })
+
+  it('按「重新分析」后焦点同样落到分析状态区，失败后还在那里', async () => {
+    const storage = memoryGameRecords()
+    await storage.put(nineMoveRecord())
+    render(<ReviewScreen storage={storage} engine={failingEngine()} />)
+    fireEvent.click((await screen.findAllByTestId(/^record-/))[0]!)
+    fireEvent.click(await screen.findByRole('button', { name: '开始分析' }))
+
+    const again = await screen.findByRole('button', { name: '重新分析' })
+    again.focus()
+    fireEvent.click(again)
+    await screen.findByRole('button', { name: '重新分析' })
+
+    expect(document.activeElement).not.toBe(document.body)
+    expect(document.activeElement).toBe(screen.getByTestId('analysis-state'))
+  })
+})
+
+describe('分析面板 —— 等宽只给坐标', () => {
+  /* DESIGN_SYSTEM §3.1：等宽只用于数字与坐标。「实际」「引擎推荐」是中文，不能套等宽。 */
+  it('榜单里「实际 … · 引擎推荐 …」那行只有坐标是等宽', async () => {
+    const storage = memoryGameRecords()
+    await storage.put(nineMoveRecord())
+    const injectedAnalysis = createAnalysisStore()
+    render(
+      <ReviewScreen
+        storage={storage}
+        engine={scriptedEngine([])}
+        stores={{ replay: createReplayStore(), analysis: injectedAnalysis }}
+      />,
+    )
+    fireEvent.click((await screen.findAllByTestId(/^record-/))[0]!)
+    fireEvent.click(await screen.findByRole('button', { name: '开始分析' }))
+    await waitFor(() => expect(injectedAnalysis.getState().running).toBe(false))
+
+    const rows = screen.getAllByTestId(/^verdict-/)
+    expect(rows.length).toBeGreaterThan(0)
+    for (const row of rows) {
+      const line = within(row).getByText(/引擎推荐/)
+      expect(line).not.toHaveClass('font-mono')
+      const mono = [...row.querySelectorAll('.font-mono')]
+      expect(mono.length).toBeGreaterThan(0)
+      for (const element of mono) expect(element.textContent).toMatch(/^[A-O]\d{1,2}$/)
+    }
   })
 })
 

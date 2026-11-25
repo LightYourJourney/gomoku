@@ -59,6 +59,42 @@ test.describe('播报区', () => {
   })
 })
 
+/*
+ * 偏好写入失败的全站提示条（用户裁定）：每一页顶栏下方都看得见。
+ * 原先只有主题按钮的 title / aria-label（看不见）与对战页设置面板折叠区里的一行（默认折叠）。
+ * 两档视口各跑一遍：窄屏上顶栏换行成两行，提示条不能被挤掉或盖住。
+ */
+test.describe('偏好写入失败的全站提示条', () => {
+  for (const viewport of [{ width: 390, height: 844 }, { width: 1440, height: 900 }] as const) {
+    test(`@${viewport.width}×${viewport.height}：写不进 localStorage 时对战页与复盘页都看得到提示`, async ({ page }) => {
+      await page.setViewportSize(viewport)
+      // 只让 localStorage 写失败（配额满就是这个样子）；sessionStorage 照常，beforeEach 的清场还要用它
+      await page.addInitScript(() => {
+        const original = Storage.prototype.setItem
+        Storage.prototype.setItem = function (this: Storage, key: string, value: string) {
+          if (this === window.localStorage) throw new DOMException('full', 'QuotaExceededError')
+          return original.call(this, key, value)
+        }
+      })
+      await page.goto('/')
+
+      const bar = page.getByTestId('prefs-save-failed')
+      await expect(bar).toHaveCount(0)
+
+      await page.getByRole('button', { name: /^主题：/ }).click()
+      await expect(bar).toBeVisible()
+      await expect(bar).toContainText('设置没能保存到浏览器')
+      await expect(bar).toBeInViewport()
+
+      await page.getByRole('button', { name: '复盘', exact: true }).click()
+      await expect(page.getByRole('heading', { level: 1, name: '复盘' })).toBeVisible()
+      await expect(bar).toBeVisible()
+      await expect(bar).toContainText('刷新后会恢复原样')
+      await expect(bar).toBeInViewport()
+    })
+  }
+})
+
 /**
  * 把 Worker 换成一个**永不回应**的桩，于是「AI 思考中」这个窗口不会自己关上。
  *

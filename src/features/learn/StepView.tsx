@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Board } from '../../components/board/Board'
 import { BoardStage } from '../../components/board/BoardStage'
 import { Button } from '../../components/ui/Button'
+import { useFocusHandoff } from '../../components/ui/useFocusHandoff'
 import { Panel } from '../../components/ui/Panel'
 import { cx } from '../../lib/cx'
 import { parseBoardLines } from '../../lib/board-lines'
@@ -14,6 +15,11 @@ export interface StepViewProps {
   readonly step: LessonStep
   readonly index: number
   readonly total: number
+  /**
+   * 挂载时把焦点交给这一页的标题。只给「回到讲解」用：那颗按钮随练习一起卸载、
+   * 外壳不重挂，焦点没人接就掉到 `<body>`。换页进来时不开，焦点归 `PageShell` 的正文。
+   */
+  readonly focusOnMount?: boolean
 }
 
 /**
@@ -22,8 +28,19 @@ export interface StepViewProps {
  * 演示的每一帧都用 `replay(手顺.slice(0, k))` 还原，**不另写一套摆子逻辑**——
  * `replay` 已经在 core 里且经过完整测试，重写一遍只会多一处会走样的地方。
  */
-export function StepView({ step, index, total }: StepViewProps) {
+export function StepView({ step, index, total, focusOnMount = false }: StepViewProps) {
   const [frame, setFrame] = useState(0)
+  // 演示走到头（第 0 手 / 末手），按下的那颗拿着焦点被禁用：交给反方向那颗。
+  const handoff = useFocusHandoff()
+  const prevFrameRef = useRef<HTMLButtonElement>(null)
+  const nextFrameRef = useRef<HTMLButtonElement>(null)
+
+  // 只看挂载那一刻的值：翻页不重挂这个组件，不该每翻一页都把焦点拽到标题上。
+  const titleRef = useRef<HTMLHeadingElement>(null)
+  const focusOnMountRef = useRef(focusOnMount)
+  useEffect(() => {
+    if (focusOnMountRef.current) titleRef.current?.focus({ preventScroll: true })
+  }, [])
   const sequence = step.sequence
 
   const frameCount = sequence?.moves.length ?? 0
@@ -63,7 +80,9 @@ export function StepView({ step, index, total }: StepViewProps) {
         这一页的 h1 在工具栏上（课名），所以这里只能是 h2——
         原先它是 h1，于是「讲解 2 / 3」那个 h2 之后又冒出一个 h1（层级倒着走）。
       */}
-        <h2 className="text-base font-semibold text-fg">{step.title}</h2>
+        <h2 ref={titleRef} tabIndex={-1} className="text-base font-semibold text-fg outline-none">
+          {step.title}
+        </h2>
           <p className="mt-2 text-sm leading-relaxed text-muted">{step.body}</p>
         </Panel>
 
@@ -71,15 +90,23 @@ export function StepView({ step, index, total }: StepViewProps) {
           <Panel title="棋盘演示">
             <div className="flex items-center gap-2">
               <Button
+                ref={prevFrameRef}
                 disabled={frame === 0}
-                onClick={() => setFrame((value) => Math.max(0, value - 1))}
+                onClick={(event) => {
+                  handoff(event.currentTarget, () => nextFrameRef.current)
+                  setFrame((value) => Math.max(0, value - 1))
+                }}
               >
                 上一手
               </Button>
               <Button
+                ref={nextFrameRef}
                 variant="primary"
                 disabled={frame >= frameCount}
-                onClick={() => setFrame((value) => Math.min(frameCount, value + 1))}
+                onClick={(event) => {
+                  handoff(event.currentTarget, () => prevFrameRef.current)
+                  setFrame((value) => Math.min(frameCount, value + 1))
+                }}
               >
                 下一手
               </Button>

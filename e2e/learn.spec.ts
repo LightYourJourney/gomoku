@@ -103,6 +103,24 @@ test('键盘回车判题后，焦点落在反馈条上而不是掉到 body', asy
   await expect(page.getByRole('status').filter({ has: feedback })).toHaveCount(1)
 })
 
+/**
+ * 「进入练习 →」「回到讲解」按下去，按钮随内容一起换掉、外壳不重挂——
+ * 真浏览器会把焦点丢到 body。键盘按下后，焦点应落到新内容的开头。
+ */
+test('键盘「进入练习 →」/「回到讲解」后焦点落在新内容上', async ({ page }) => {
+  await gotoLearn(page)
+  await page.getByTestId('lesson-rules').click()
+  for (let i = 0; i < 2; i++) await page.getByRole('button', { name: '下一步' }).click()
+
+  await page.getByRole('button', { name: '进入练习 →' }).focus()
+  await page.keyboard.press('Enter')
+  await expect(page.getByText(/补上哪一点能让它变成五子/)).toBeFocused()
+
+  await page.getByRole('button', { name: '回到讲解' }).focus()
+  await page.keyboard.press('Enter')
+  await expect(page.getByRole('heading', { name: '下满没人赢就是和棋' })).toBeFocused()
+})
+
 test('三级提示：第三次才在棋盘上标出点位', async ({ page }) => {
   await gotoLearn(page)
   await page.getByTestId('lesson-rules').click()

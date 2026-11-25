@@ -67,10 +67,40 @@ describe('ControlBar 的动作', () => {
     expect(button('求提示')).toBeDisabled()
   })
 
-  it('提示正在算的时候求提示也禁用，防止连点', () => {
-    setup({ hintThinking: true })
+  /*
+   * 「正在算」不用原生 `disabled`：按钮被禁用的那一刻焦点掉到 `<body>`，
+   * 键盘用户按完回车就丢了位置。改用 `aria-disabled`——读屏照样说「不可用」，
+   * 焦点留在原处；连点由 onClick 自己挡。
+   * （此前这条断言的是 `toBeDisabled()`；行为变了，断言改成「标为不可用 + 点了不触发」。）
+   */
+  it('提示正在算的时候求提示标为不可用，再点也不会触发，防止连点', async () => {
+    const user = userEvent.setup()
+    const { onHint } = setup({ hintThinking: true })
 
-    expect(button('求提示')).toBeDisabled()
+    expect(button('求提示')).toHaveAttribute('aria-disabled', 'true')
+    await user.click(button('求提示'))
+    await user.keyboard('{Enter}')
+    expect(onHint).not.toHaveBeenCalled()
+  })
+
+  it('按下求提示进入计算中，焦点仍留在这颗按钮上，不掉到 body', async () => {
+    const user = userEvent.setup()
+    const { rerender, onUndo, onHint, onRestart, onResign } = setup()
+    const props: ControlBarProps = {
+      canUndo: true, canHint: true, hintThinking: false, canResign: true,
+      onUndo, onHint, onRestart, onResign,
+    }
+
+    button('求提示').focus()
+    await user.keyboard('{Enter}')
+    expect(onHint).toHaveBeenCalledTimes(1)
+    rerender(<ControlBar {...props} hintThinking />)
+
+    // jsdom 不做「焦点修正」：被禁用的按钮在这里仍是 activeElement，真浏览器里焦点已经掉到 body。
+    // 所以要连「焦点停在一颗被禁用的控件上」一起判掉。
+    expect(document.activeElement).not.toBe(document.body)
+    expect(document.activeElement).toBe(button('求提示'))
+    expect(button('求提示')).toBeEnabled()
   })
 
   it('终局后认输与悔棋都不可用', () => {

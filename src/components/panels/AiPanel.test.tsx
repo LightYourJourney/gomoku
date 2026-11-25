@@ -279,6 +279,44 @@ describe('AiPanel —— 引擎失败', () => {
     expect(onRetry).toHaveBeenCalledTimes(1)
   })
 
+  /*
+   * 「知道了」按下去就卸载，焦点掉到 `<body>`。AI 还欠着一手时落到「重试」——
+   * 那是这块提示里剩下的唯一操作；不欠时整块提示消失，落回面板正文
+   * （读屏接着念 AI 现在的状态）。
+   */
+  it('知道了之后 AI 还欠着一手：焦点落到「重试」', () => {
+    const props: AiPanelProps = {
+      thinking: false, info: null, error: 'Worker 挂了', canRetry: true,
+      onRetry: vi.fn(), onDismissError: vi.fn(),
+    }
+    const { rerender } = render(<AiPanel {...props} />)
+
+    const dismiss = screen.getByRole('button', { name: '知道了' })
+    dismiss.focus()
+    fireEvent.click(dismiss)
+    rerender(<AiPanel {...props} error={null} />)
+
+    expect(document.activeElement).not.toBe(document.body)
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: '重试' }))
+  })
+
+  it('知道了之后整块提示消失：焦点落回面板正文', () => {
+    const props: AiPanelProps = {
+      thinking: false, info: INFO, error: 'Worker 挂了', canRetry: false,
+      onRetry: vi.fn(), onDismissError: vi.fn(),
+    }
+    const { rerender } = render(<AiPanel {...props} />)
+
+    const dismiss = screen.getByRole('button', { name: '知道了' })
+    dismiss.focus()
+    fireEvent.click(dismiss)
+    rerender(<AiPanel {...props} error={null} />)
+
+    expect(document.activeElement).not.toBe(document.body)
+    expect(document.activeElement).toBe(screen.getByTestId('ai-panel-state'))
+    expect(screen.getByTestId('ai-panel-state')).toContainElement(screen.getByTestId('ai-move'))
+  })
+
   it('知道了只负责关掉提示', () => {
     const { onDismissError } = setup({ error: 'Worker 挂了', canRetry: true })
 

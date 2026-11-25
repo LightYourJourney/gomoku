@@ -112,3 +112,69 @@ describe('SharePreview —— 只读预览与显式导入', () => {
     expect(screen.getByText('分享链接格式不完整')).toBeInTheDocument()
   })
 })
+
+describe('SharePreview —— 保存结果的播报与焦点', () => {
+  function renderWith(games = memoryGameRecords()) {
+    return render(
+      <SharePreview token={gameShare()} games={games} positions={memoryPositions()} now={() => 1} onExit={vi.fn()} />,
+    )
+  }
+
+  /*
+   * `role="status"` 若随内容一起挂载，部分读屏不播报第一次出现的内容
+   * （`FeedbackBanner` 的约定）：播报区要常驻，只换里面的字。
+   */
+  it('保存状态区在点保存之前就在（空的），结果写进同一个节点', async () => {
+    renderWith()
+
+    const region = await screen.findByTestId('share-save-state')
+    expect(region).toHaveAttribute('role', 'status')
+    expect(region).toBeEmptyDOMElement()
+
+    fireEvent.click(screen.getByTestId('share-save'))
+    await waitFor(() => expect(region).toHaveTextContent('内存兜底'))
+    expect(screen.getByTestId('share-save-state')).toBe(region)
+  })
+
+  it('保存失败用 danger 色（§2.2：错误用 danger）', async () => {
+    const games = { ...memoryGameRecords(), importMany: () => Promise.reject(new Error('quota')) }
+    renderWith(games)
+
+    fireEvent.click(await screen.findByTestId('share-save'))
+    await waitFor(() => expect(screen.getByTestId('share-save-state')).toHaveTextContent('保存失败'))
+    expect(screen.getByTestId('share-save-state')).toHaveClass('text-danger')
+    expect(screen.getByTestId('share-save-state')).not.toHaveClass('text-muted')
+  })
+
+  /* 内存兜底不是失败（这次会话里确实存下了），是「刷新后可能丢」的警示：warn，与数据管理面板的同一句同色 */
+  it('只写进内存兜底用 warn 色', async () => {
+    renderWith()
+
+    fireEvent.click(await screen.findByTestId('share-save'))
+    await waitFor(() => expect(screen.getByTestId('share-save-state')).toHaveTextContent('内存兜底'))
+    expect(screen.getByTestId('share-save-state')).toHaveClass('text-warn')
+    expect(screen.getByTestId('share-save-state')).not.toHaveClass('text-muted')
+  })
+
+  /* 「保存」按下去当场禁用（保存中 / 已保存），焦点掉到 body。落点是结果那一行。 */
+  it('按下保存后焦点落到结果状态区，保存完还在那里', async () => {
+    const base = memoryGameRecords()
+    const games = {
+      ...base,
+      importMany: async (...args: Parameters<typeof base.importMany>) => ({
+        ...(await base.importMany(...args)),
+        persisted: true,
+      }),
+    }
+    renderWith(games)
+
+    const save = await screen.findByTestId('share-save')
+    save.focus()
+    fireEvent.click(save)
+    await waitFor(() => expect(screen.getByTestId('share-save-state')).toHaveTextContent('已保存'))
+
+    expect(save).toBeDisabled()
+    expect(document.activeElement).not.toBe(document.body)
+    expect(document.activeElement).toBe(screen.getByTestId('share-save-state'))
+  })
+})

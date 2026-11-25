@@ -115,6 +115,8 @@ export function BattleScreen({ sound: injectedSound }: BattleScreenProps = {}) {
    * 为什么不能「还给打开弹窗的那个元素」：见 `Modal` 的 `focusAfterClose` 注释。
    */
   const restartRef = useRef<HTMLButtonElement>(null)
+  /** 「求提示」按钮。提示面板的「收起」把焦点交还到这里——收起的正是它要来的东西。 */
+  const hintButtonRef = useRef<HTMLButtonElement>(null)
 
   const ownSound = useMemo(() => createStoneSound(), [])
   const sound = injectedSound ?? ownSound
@@ -258,7 +260,6 @@ export function BattleScreen({ sound: injectedSound }: BattleScreenProps = {}) {
       onThemeChange={settings.setTheme}
       onShowCoordsChange={settings.setShowCoords}
       onSoundEnabledChange={settings.setSoundEnabled}
-      preferencesSaveFailed={settings.persistFailed}
       beforeModeChange={beforeModeChange}
       beforeHumanColorChange={beforeHumanColorChange}
     />
@@ -370,6 +371,7 @@ export function BattleScreen({ sound: injectedSound }: BattleScreenProps = {}) {
             onRestart={handleRestart}
             onResign={() => setConfirm({ kind: 'resign' })}
             restartButtonRef={restartRef}
+            hintButtonRef={hintButtonRef}
           />
         </div>
 
@@ -411,6 +413,7 @@ export function BattleScreen({ sound: injectedSound }: BattleScreenProps = {}) {
             thinking={hintThinking}
             error={hintError}
             onClear={clearHint}
+            focusAfterClear={hintButtonRef}
           />
 
           {mode === 'pve' && (

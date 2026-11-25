@@ -187,6 +187,30 @@ export interface AppHeaderProps {
 }
 
 /**
+ * 偏好写入失败的全站提示条（用户裁定）。顶栏是每一页共用的那一份，所以它长在顶栏下方，
+ * 哪一页点的主题按钮都看得见；写入恢复（`persistFailed` 变回 false）就消失。
+ *
+ * **它是「播报区常驻」约定的一个例外**：只在失败时才渲染 `role="status"`。
+ * 常驻的话对战页会多出一个空的 live region，而 `e2e/a11y.spec.ts` 与 `e2e/variations.spec.ts`
+ * 守着「对局界面只有棋盘播报区一个 live region」——那条守卫防的是两处各念一遍局面。
+ * 代价是部分读屏可能不播报它第一次出现；所以主题按钮的可访问名里**保留**同一句失败说明，
+ * 按下按钮的键盘 / 读屏用户在原地就能听到。
+ */
+function PrefsSaveFailedBar() {
+  const failed = useSettingsStore((state) => state.persistFailed)
+  if (!failed) return null
+  return (
+    <p
+      role="status"
+      data-testid="prefs-save-failed"
+      className="shrink-0 border-b border-border bg-danger-soft px-4 py-2 text-xs text-danger lg:px-6"
+    >
+      设置没能保存到浏览器（存储已满或被禁用），本次照常生效，刷新后会恢复原样。
+    </p>
+  )
+}
+
+/**
  * 应用顶栏。对战页原本自带一份，课程页与残局页进来之后抽出来共用——
  * 三个页面各写一份「品牌 + 导航 + 主题」迟早会长歪。
  *
@@ -196,22 +220,25 @@ export interface AppHeaderProps {
  */
 export function AppHeader({ children, showNav = true }: AppHeaderProps) {
   return (
-    <header className="sticky top-0 z-20 flex min-h-15 shrink-0 flex-wrap items-center gap-x-3 gap-y-2 border-b border-border bg-surface/80 px-4 py-3 backdrop-blur lg:px-6">
-      <BrandMark />
-      {/*
-        导航紧跟在品牌后面；窄屏上靠 `order-last w-full` 换行到第二行，**铺满整行**。
-        只给 `w-full` 而不铺满时，四个按钮挤在左边、右边空出一大片，
-        看起来像没排完版。
-      */}
-      {showNav && (
-        <div className="order-last w-full sm:order-none sm:ml-1 sm:w-auto">
-          <AppNav />
+    <>
+      <header className="sticky top-0 z-20 flex min-h-15 shrink-0 flex-wrap items-center gap-x-3 gap-y-2 border-b border-border bg-surface/80 px-4 py-3 backdrop-blur lg:px-6">
+        <BrandMark />
+        {/*
+          导航紧跟在品牌后面；窄屏上靠 `order-last w-full` 换行到第二行，**铺满整行**。
+          只给 `w-full` 而不铺满时，四个按钮挤在左边、右边空出一大片，
+          看起来像没排完版。
+        */}
+        {showNav && (
+          <div className="order-last w-full sm:order-none sm:ml-1 sm:w-auto">
+            <AppNav />
+          </div>
+        )}
+        <div className="ml-auto flex shrink-0 items-center gap-2">
+          {children}
+          <ThemeToggle />
         </div>
-      )}
-      <div className="ml-auto flex shrink-0 items-center gap-2">
-        {children}
-        <ThemeToggle />
-      </div>
-    </header>
+      </header>
+      <PrefsSaveFailedBar />
+    </>
   )
 }

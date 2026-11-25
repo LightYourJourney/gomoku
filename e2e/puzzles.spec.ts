@@ -142,6 +142,22 @@ test('做对之后「下一题」直接换题，上一题的反馈不跟过来',
  * 换题时的**临时状态清理**：上一题的判错反馈、已经揭开的提示，
  * 都不许出现在新题上——它们是「那一次答题」的状态，不是题目的属性。
  */
+/**
+ * 「再做一次」只重建棋盘，外壳不重挂、新棋盘也不接管焦点——真浏览器里按下后
+ * 焦点掉到 body。现在应落在新棋盘的题面上。
+ */
+test('键盘「再做一次」后焦点落在新棋盘的题面上', async ({ page }) => {
+  const puzzle = PUZZLES.find((entry) => entry.id === 'win-h')!
+  await gotoPuzzles(page)
+  await openPuzzle(page, puzzle.id)
+  await solveWithHints(page)
+
+  await page.getByRole('button', { name: '再做一次' }).focus()
+  await page.keyboard.press('Enter')
+  await expect(page.getByTestId('feedback')).toHaveCount(0)
+  await expect(page.getByText(puzzle.prompt)).toBeFocused()
+})
+
 test('判错之后换一道题，反馈与提示都不跟过来', async ({ page }) => {
   await gotoPuzzles(page)
   await openPuzzle(page, 'win-h')
