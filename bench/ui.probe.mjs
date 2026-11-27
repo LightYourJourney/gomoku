@@ -497,8 +497,9 @@ const STATES = [
     id: 'battle-finish-unsaved',
     group: 'battle',
     async boot(page) {
-      // 存储不可用（隐私模式一类）：终局弹窗要如实说「没能保存这局」，
-      // 同时棋盘、按钮照常可用——降级不等于不可操作。
+      // 存储不可用（隐私模式一类）：终局弹窗要如实说「已存入本次会话（刷新后就没了）」，
+      // 同时棋盘、按钮照常可用——降级不等于不可操作。0.7.4 起这一局在会话里确实存下了，
+      // 文案从「没能保存这局」改为如实说明它的寿命（`recordSaveState: 'session'`）。
       await page.addInitScript(() => {
         Object.defineProperty(window, 'indexedDB', {
           configurable: true,
@@ -512,7 +513,7 @@ const STATES = [
       // 所以播种前 8 手，再由页面点下最后一手。
       await seedSession(page, session({ moves: BLACK_WINS.slice(0, 8) }))
       await page.getByTestId('intersection-7-11').click()
-      await page.waitForSelector('[role="dialog"]:has-text("没能保存这局")')
+      await page.waitForSelector('[role="dialog"]:has-text("已存入本次会话")')
     },
   },
   {
