@@ -20,7 +20,8 @@ export interface ResultDialogProps {
 const SAVE_LABELS: Record<Exclude<RecordSaveState, 'idle'>, string> = {
   saving: '正在存入棋谱库…',
   saved: '这局已存入棋谱库',
-  session: '已存入本次会话（浏览器暂时存不了数据，刷新页面后就没了）',
+  // 与「没能保存这局」等长：终局弹窗的高度/宽度会直接影响它遮住几颗获胜子（探针 §7 会量）。
+  session: '已存入本次会话',
   failed: '没能保存这局',
   // 恢复的对局不会自动入库；查过库之后才敢这么说。
   absent: '这局不在棋谱库（恢复的对局不会自动入库）',

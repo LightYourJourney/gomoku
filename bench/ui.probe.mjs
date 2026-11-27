@@ -497,7 +497,8 @@ const STATES = [
     id: 'battle-finish-unsaved',
     group: 'battle',
     async boot(page) {
-      // 存储不可用（隐私模式一类）：终局弹窗要如实说「已存入本次会话（刷新后就没了）」，
+      // 存储不可用（隐私模式一类）：终局弹窗要如实说「已存入本次会话」（刷新就没了，
+      // 棋谱库的降级横幅里写着这件事；文案刻意与「没能保存这局」等长，见 ResultDialog），
       // 同时棋盘、按钮照常可用——降级不等于不可操作。0.7.4 起这一局在会话里确实存下了，
       // 文案从「没能保存这局」改为如实说明它的寿命（`recordSaveState: 'session'`）。
       await page.addInitScript(() => {
