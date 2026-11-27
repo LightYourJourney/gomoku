@@ -13,7 +13,7 @@
 - [ ] `yarn build` 通过
 - [ ] `yarn e2e` 全过（条数以 `quality/tests.baseline.json` 为准，棘轮只许涨）
 - [ ] `yarn e2e:prod` 全过（条数以 `quality/tests.baseline.json` 为准，棘轮只许涨）
-- [ ] `yarn e2e:browsers` 全过（Firefox / WebKit 各 10 条，基线：20）
+- [ ] `yarn e2e:browsers` 全过（Firefox / WebKit 各 11 条，基线：22）
 - [ ] `yarn gates` 通过（循环 / 死码 / 重复 / 测试条数棘轮 / 包体积 / 分层）
 - [ ] `yarn ui:probe --out docs/ui-redesign/screenshots/ci && yarn check:coverage` 通过（棘轮读的是这次探针的产物）
 - [ ] `yarn ui:probe --out <临时目录>` 七条判据全过（基线：38 状态 / 308 张）
@@ -64,7 +64,7 @@
 
 - [ ] 用户明确授权发布，并确认域名与公开范围
 - [ ] 已决定是否允许搜索引擎索引（当前 `robots.txt` 为允许）
-- [ ] 真机 Safari / iOS 至少各做一次冒烟（Firefox/WebKit 已由 CI 的 `browsers` / `browsers-full` 覆盖 20 / 331 条，真机与 Safari 官方引擎仍未验）
+- [ ] 真机 Safari / iOS 至少各做一次冒烟（Firefox/WebKit 已由 CI 的 `browsers` / `browsers-full` 覆盖 22 / 335 条，真机与 Safari 官方引擎仍未验）
 - [ ] 在发布说明中写明：无后端、数据只存本机、换域名/换浏览器不会带走进度
 - [ ] 在发布说明中写明：关闭页面前的最后一次写入是尽力而为，不是保证
 - [ ] 知悉 GitHub Pages 无法落地安全头；若选它，发布说明必须注明

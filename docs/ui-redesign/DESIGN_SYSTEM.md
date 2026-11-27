@@ -509,7 +509,7 @@ yarn lint && yarn typecheck && yarn test && yarn build && yarn e2e && yarn e2e:p
 yarn ui:probe --out after-phaseNN     # 与 screenshots/before/ 逐张对照
 ```
 
-`e2e/layout.spec.ts`（`playwright test e2e/layout.spec.ts --list` 当前 **61 条**，
+`e2e/layout.spec.ts`（`playwright test e2e/layout.spec.ts --list` 当前 **66 条**，
 循环里的每一档各算一条）把下面几条变成了可断言的：
 棋盘 ≥320px 且是正方形（六档宽度、三个页面）、**宽度 ≥1024 且高度 ≥900** 时
 棋盘 ≥620px（620 只在 `height: 900` 下断言；低高度窗口受高度约束，1024×768

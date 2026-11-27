@@ -11,9 +11,9 @@ Gomoku Lab 的开发约定。通用工程原则（想清楚再写、保持简单
 ## 硬性约束
 
 - **不使用 `enum`**。`tsconfig.app.json` 开了 `erasableSyntaxOnly`，一律用 `as const` 对象加联合类型。
-- **`core` / `ai` / `learn` 的算法部分不得引入 React、DOM、Zustand、localStorage、IndexedDB、Worker**。引擎逻辑本身（`patterns` / `evaluate` / `candidates` / `difficulty` / `search`）与全部 `core` 模块必须是能脱离浏览器直接单测的纯逻辑。
+- **`core` / `ai` / `analysis` / `learn` 的算法部分不得引入 React、DOM、Zustand、localStorage、IndexedDB、Worker**。引擎逻辑本身（`patterns` / `evaluate` / `candidates` / `difficulty` / `search`）与全部 `core` 模块必须是能脱离浏览器直接单测的纯逻辑。
   - `learn/` 是教学内容层：`types.ts` / `verify.ts` / `hints.ts` / `lessons.ts` / `puzzles.ts` / `shape-labels.ts` 全是纯逻辑，依赖方向 `features → learn → ai → core` 单向，**不得被 `ai`/`core` 反向依赖**。`store` 不依赖 `learn`、`features`、`components`；它从 `core` / `persist` / `ai` / `analysis` / `lib` 取纯逻辑（`settingsStore` 用 `lib/theme`、`analysisStore` 用 `analysis` 是不碰 DOM 的纯模块；`lib/theme` 里的 `applyTheme` 会写 `document.documentElement`，不算纯模块）。棋盘的字符画解析器住在 `lib/board-lines.ts`（内容与测试共用）。
-  - **这些方向由 `yarn check:layers` 机器守**（在 `yarn gates` 里）：跨层 import 必须在允许表内，`core` / `ai` / `analysis` / `learn` 直接或间接都不得引入 React / Zustand。允许表在 `quality/layers.mjs`；改它就是改分层，先改 `docs/ARCHITECTURE.md`。它只看 import；DOM 全局由两道守：**类型级**是 `tsconfig.pure.json`（`yarn typecheck` 的一部分）——`core` / `ai` / `learn` / `analysis` 的生产文件在不含 DOM / WebWorker 类型库的配置下编译，`top`、`parent`、`addEventListener`、`new Blob()` 这类名单列不全的写法也直接报类型错（2026-11-26 起）；**名单**是 `yarn lint`——`.oxlintrc.json` 在同四层上开了 `no-restricted-globals`（裁定 23）。两道都只放开下面两个 Worker 外壳与测试文件。
+  - **这些方向由 `yarn check:layers` 机器守**（在 `yarn gates` 里）：跨层 import 必须在允许表内，`core` / `ai` / `analysis` / `learn` 直接或间接都不得引入 React / Zustand。允许表在 `quality/layers.mjs`；改它就是改分层，先改 `docs/ARCHITECTURE.md`。它只看 import；DOM 全局由两道守：**类型级**是 `tsconfig.pure.json`（`yarn typecheck` 的一部分）——`core` / `ai` / `learn` / `analysis` 的生产文件在不含 DOM / WebWorker 类型库的配置下编译，`top`、`parent`、`addEventListener`、`new Blob()` 这类名单列不全的写法也直接报类型错（2026-11-26 起）；**名单**是 `yarn lint`——`.oxlintrc.json` 在同四层上开了 `no-restricted-globals`（裁定 23）。另有两道防止前两道被绕开（2026-11-27 起）：**类型压制**是 `yarn check:suppressions`——纯逻辑层任何 `@ts-nocheck` / `@ts-ignore` / `@ts-expect-error` / 三斜线 reference 都红（`@ts-nocheck` 在 `src` 全范围禁），否则一行注释就能让类型级检查对一个文件失效；**依赖解析**是 `check:layers` 的一部分——动态 `import()` 与 `@testing-library` / `vitest` / `jsdom` 等测试库都按普通 import 算，非字面量动态 import 在纯逻辑层直接红。这些只放开下面两个 Worker 外壳与测试文件。
   - **例外**：`ai/worker.ts` 与 `ai/browserEngine.ts`。前者是 Worker 的入口，后者负责创建 Worker——只有这两个文件允许触碰 Worker，且只做消息收发，不含任何搜索逻辑。`ai/engine.ts` 与 `ai/lanes.ts` 虽然也住在 `ai/` 下，但它们连 Worker 都不碰（发送 / 中止函数、新建 Worker 的 `spawn` 都是注入进来的），仍是可单测的纯状态机。
 - **时钟一律可注入。** `Date.now()` 的**调用**只允许出现在 `ai/search.ts` 的时间预算里，
   且超时行为必须仍然可以通过 `budgetMs` 参数在测试里强制触发——不要把它改成不可覆盖的常量。
@@ -65,8 +65,8 @@ yarn lint && yarn typecheck && yarn test && yarn build && yarn e2e
 
 | | 跑什么 | 什么时候跑 | 挡不住什么 |
 | --- | --- | --- | --- |
-| **快档** | `lint` / `typecheck` / `test` / `build` / `yarn gates`（六道防退化闸门） | **本地 `git push` 自动拦**（`.githooks/pre-push`，热跑 30–45 秒，看机器负载）+ CI 的 `fast` job | e2e、探针、基准 |
-| **全档** | 上面 + `e2e` + `e2e:prod` + `e2e:browsers` + `e2e:browsers:full` + 探针 + 覆盖棘轮 + `bench:check` | 只有 CI（`.github/workflows/quality.yml`） | — |
+| **快档** | `lint` / `typecheck` / `test` / `build` / `yarn gates`（七道防退化闸门） | **本地 `git push` 自动拦**（`.githooks/pre-push`，热跑 30–45 秒，看机器负载）+ CI 的 `fast` job | e2e、探针、基准 |
+| **全档** | 上面 + `e2e` + `e2e:prod` + `e2e:browsers` + `e2e:browsers:full` + `check:e2e-skips` + 探针 + 覆盖棘轮 + `bench:check` | 只有 CI（`.github/workflows/quality.yml`） | — |
 
 **「本地绿了、推得出去」不等于「安全网没缩水」**：快档不含 e2e 与探针，
 而「某颗控件从所有扫描里消失」这类退化（Phase 02 真发生过一次）**只有探针 + 覆盖棘轮抓得到**。
@@ -74,7 +74,7 @@ yarn lint && yarn typecheck && yarn test && yarn build && yarn e2e
 
 **绕过与调松都是违规，不是选项**：`git push --no-verify` 是明确接受的逃生门（代价自负），
 但**闸门自己的那几份文件**是 **review 必看项**：`knip.jsonc` / `.jscpd.json` /
-`bench/baseline.json` / `quality/*.baseline.json` / `quality/bundle-budget.mjs`（阈值写在脚本里）/ `quality/layers.mjs`（允许表写在脚本里）/ `.githooks/`，
+`bench/baseline.json` / `quality/*.baseline.json` / `quality/bundle-budget.mjs`（阈值写在脚本里）/ `quality/layers.mjs`（允许表写在脚本里）/ `quality/e2e-skips.mjs`（运行期跳过判据写在脚本里）/ `.githooks/`，
 以及 **`.github/workflows/quality.yml`**——最后这个是决定「闸门跑不跑」的总开关
 （一个 `continue-on-error` 就能让它变成只打印不判红）。
 工具坏了或环境变了，正确动作是**更新钉住的版本并说明**，不是放宽配置。

@@ -51,7 +51,7 @@ yarn dev          # 开发服务器
 | `yarn strength` | **AI 棋力评测**：配对赛 + 置信区间 + 搜索指标。`STRENGTH_MODE=smoke/standard/extended`、`STRENGTH_A/B=<难度>`；报告写 `bench/strength/results/` |
 | `yarn profile` | **搜索热点剖析**：V8 采样（固定深度 / 真实预算）、热点单价、增量评估生命周期；结果解读见 [CPU_PROFILE](docs/ai-research/CPU_PROFILE.md) |
 | `yarn strength:bundle` | 把任意源码树（含 `git worktree`）的引擎打成独立包，用于**版本对照** |
-| `yarn gates` | 六道防退化闸门串跑（`check:cycles` + `check:deadcode` + `check:dupes` + `check:tests` + `check:bundle` + `check:layers`）。**pre-push 钩子跑的就是它**，见 [AGENTS.md](AGENTS.md) |
+| `yarn gates` | 七道防退化闸门串跑（`check:cycles` + `check:deadcode` + `check:dupes` + `check:tests` + `check:bundle` + `check:layers` + `check:suppressions`）。**pre-push 钩子跑的就是它**，见 [AGENTS.md](AGENTS.md) |
 | `yarn check:tests` | 测试条数棘轮：单测/e2e 条数与跳过数只许涨不许跌。删用例、加 `.skip` 都会红，要减就显式改 `quality/tests.baseline.json`。e2e 的跳过有两道：**静态**扫 `e2e/` 下所有 `.ts`（含 `helpers/`），代码里出现 `skip` / `fixme` / `fail` 就算——`playwright --list` 对跳过的用例不打标记；**运行期**由 `yarn check:e2e-skips` 读 Playwright JSON 报告，被跳过或预期失败的用例一条也不许有（CI 的 e2e / browsers / browsers-full 三个 job 跑完就查），别名、helper 里的跳过静态认不出也逃不掉 |
 | `yarn check:coverage` | 覆盖棘轮：探针扫到的状态、每行的控件与棋盘，必须是入库基线的**超集**。**基线**的来源是 `docs/ui-redesign/screenshots/ci/measurements.json`（2026-11-15 重拍，写在 `quality/coverage.baseline.json` 的 `source` 里）。**脚本没有默认值**：必须用 `--current` 指定本次探针产物（`yarn check:coverage` 里固定传 `docs/ui-redesign/screenshots/ci/measurements.json`，与 CI 完全一致）；不给就退出 2 并打印用法——曾经那个默认值指向旧快照，本地跑永远恒绿。**改了界面之后要在 CI 的 probe job 里跑**（本地单跑用的是上一期产物，不是这次的新量测） |
 | `yarn check:bundle` | JS 体积预算：入口（`index.html` 的入口脚本 + `modulepreload`）gzip 后 ≤ **108,000 B**、`dist/assets` 全部 JS gzip 后 ≤ **162,000 B**（`quality/bundle-budget.mjs`）。上限按 2026-11-18 拆包后的实测（入口约 98.5 kB、总量约 147.7 kB）留出约 10% 余量：真要涨，先说明为什么这笔代码必须进主包 |
@@ -61,7 +61,7 @@ yarn dev          # 开发服务器
 
 提交前的完整清单见 [AGENTS.md](AGENTS.md)。
 
-`git push` 会被本地 pre-push 钩子拦一道（快档：lint / typecheck / test / build / 六道闸门，
+`git push` 会被本地 pre-push 钩子拦一道（快档：lint / typecheck / test / build / 七道闸门，
 热跑 30–45 秒，看机器负载）。**但它不含 e2e 与 `ui:probe`** —— 本地绿了只说明快档过了；
 改了界面结构、布局或扫描范围的人，要等 CI 的全档绿。装钩子靠 `yarn install`（`prepare` 里配的）。
 

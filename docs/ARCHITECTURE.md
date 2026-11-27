@@ -27,6 +27,8 @@ analysis   learn        ← 分析结论与教学内容（两条互不依赖的�
 | `lib` | `core`、`ai` |
 | `persist` | `core`、`ai`、`lib` |
 | `sharing` | `core`、`persist/transfer`；`persist/gameRecords` 只许 `import type`（`import { type X }` 在 `verbatimModuleSyntax` 下仍会加载模块，不算） |
+
+依赖解析按 TypeScript AST 做，**动态 `import()` 也算 import**：字面量按其路径过允许表，非字面量在纯逻辑层直接失败；测试与渲染库（`@testing-library/*`、`vitest`、`jsdom`、`fake-indexeddb`）在纯逻辑层与生产文件上一律禁止。纯逻辑层的类型检查另有一道防绕：`check:suppressions` 扫四层生产文件里的 `@ts-nocheck` / `@ts-ignore` / `@ts-expect-error` / 三斜线 reference，`@ts-nocheck` 在 `src` 全范围禁。
 | `store` | `core`、`ai`、`analysis`、`persist`、`lib` |
 | `components` | `core`、`ai`、`learn`、`lib` |
 | `features` | 以上全部 |
@@ -83,16 +85,16 @@ analysis   learn        ← 分析结论与教学内容（两条互不依赖的�
 **`sharing/`** —— 分享协议。`link.ts` 负责版本化外壳、base64url、FNV-1a 完整性校验、严格解码，以及整盘/局面分享内容与 URL 的生成；内容复用 Phase 11A/11B 的文件格式与校验器。`features/sharing/SharePreview.tsx` 负责只读预览与显式导入，`App.tsx` 只识别 `#share=` Fragment（取 token 的 `sharing/token.ts` 无依赖，入口包不必为此带上解码与校验）。分享链接的路径一律是应用根，不带页面地址。
 
 **`persist/`** —— 存档。
-`storage.ts` 负责对局存档的序列化与**结构校验**（localStorage）；`progress.ts` 负责学习进度、`gameRecords.ts` 负责多局棋谱（两者都在 IndexedDB）——它的 `list()` **从不上抛**（每一步失败都落内存兜底），所以把「读不出来」的两种情形**分开报**：`degraded`（底层不可用，数据来自兜底）与 `skipped`（读到了但没通过校验）。界面靠这两个信号如实说明，不会把两者一起说成「你还没下过棋」。棋谱的写入有两条：`put` 只写；`putReplacing` 在**一个读写事务**里找旧条（号，或内容身份）→ 写新 → 删旧，终局入库（`saveGameReplacing`）走它，「同一局只留一条」不再靠多个事务加补偿。`delete` 返回 `{ persisted }`——库打不开时只删得了内存兜底里的那份，界面据此不说「已删除」。降级内存兜底的棋谱号从 1,000,000,000,000（`FALLBACK_SEQ_BASE`）起，`get` / `delete` 按号段路由，避免与库里自增号撞车、按号删掉库里另一局真实棋谱。可选字段 `createdAt`（下完的时间，时钟由 `useGameStore` 注入）不递增 `schemaVersion`，缺失读成 null；`schema.ts` 是**库名、版本与建表的唯一出处**——两个模块共用一个库，各写一份版本号的话，先打开的那个只建自己的表，另一个同版本打开不触发升级、表不存在，事务失败后被内存兜底吞掉，症状是「界面说已保存、刷新就没了」。两处同一条口径：任何一处不符合预期都当作没有数据，宁可重来也不把半成品灌进状态机。
+`storage.ts` 负责对局存档的序列化与**结构校验**（localStorage）；`progress.ts` 负责学习进度、`gameRecords.ts` 负责多局棋谱（两者都在 IndexedDB）——它的 `list()` **从不上抛**（每一步失败都落内存兜底），所以把「读不出来」的两种情形**分开报**：`degraded`（列表里含只在本次会话里的记录，或整份列表来自内存兜底）与 `skipped`（读到了但没通过校验）。界面靠这两个信号如实说明，不会把两者一起说成「你还没下过棋」。棋谱的写入有两条：`put` 只写；`putReplacing` 在**一个读写事务**里找旧条（号，或内容身份）→ 写新 → 删旧，终局入库（`saveGameReplacing`）走它，「同一局只留一条」不再靠多个事务加补偿。`delete` 返回 `{ persisted }`——库打不开时只删得了内存兜底里的那份，界面据此不说「已删除」。降级内存兜底的棋谱号从 1,000,000,000,000（`FALLBACK_SEQ_BASE`）起，`get` / `delete` 按号段路由，避免与库里自增号撞车、按号删掉库里另一局真实棋谱。可选字段 `createdAt`（下完的时间，时钟由 `useGameStore` 注入）不递增 `schemaVersion`，缺失读成 null；`schema.ts` 是**库名、版本与建表的唯一出处**——两个模块共用一个库，各写一份版本号的话，先打开的那个只建自己的表，另一个同版本打开不触发升级、表不存在，事务失败后被内存兜底吞掉，症状是「界面说已保存、刷新就没了」。两处同一条口径：任何一处不符合预期都当作没有数据，宁可重来也不把半成品灌进状态机。
 
 **为什么分两种存储**：对局存档每次落子都要写、数据小、丢了就丢了；学习进度写得少但**丢了会让人白学一遍**，值得用更耐久的 IndexedDB。进度层在 IndexedDB 不可用时（隐私模式、open 抛错、被其他标签页占用）整体降级为内存态——进度丢了可以接受，白屏不行。学习进度另有一条写入规则：库里那条是**更新版本的应用**写的记录时（`progress.ts` 的 `isNewerThanCurrent`，`schemaVersion` 比当前大），读作空进度，但写入中止、如实报失败、**不覆盖**——那是回滚部署时真实用户的进度。
 
 
 `positions.ts` 是 Phase 11B 的自定义局面库：同一个 `gomoku-lab` 库的 `positions` 表（`DB_VERSION=4`），保存 `cells + nextPlayer + 可选 provenance + 创建/更新时间 + 内容键`；`contentKey` 唯一索引兜住同标签页/跨标签页重复保存；打不开库时退内存兜底，打开后事务失败则抛错让界面标失败；列表按最近保存排序，删除返回是否真正持久化；读到与盘面不一致的已知手顺时降级为自由摆盘，不丢盘面。内部记录 v1→v2 为只读迁移，旧记录时间显示「时间未知」；旧记录缺 `contentKey` 时，每个会话首次打开局面库后按读取路径的规范化值回填一次（冲突只跳过该条，不中止）。
 
-**偏好（`settingsStore.ts`）写 localStorage 失败不抛**（配额满、浏览器禁用存储）：吞掉异常、置运行时信号 `persistFailed`，由对战页的设置面板（可见文字）与顶栏主题按钮（可访问名与提示文字，每页都在）提示；`persistFailed` 不落盘，成功一次就清掉。导出侧还有一条同源的自检：`features/review/DataManagementPanel.tsx` 的 `downloadIfRestorable` 在下载前用**导入解析器**量一遍将要下载的文本，导不回来的文件不下载并说明是哪条上限超了；整体能导但会少掉一段（进度 / 偏好 / 会话段被跳过）或少掉几局、几个局面的，同样不下载。
+**偏好（`settingsStore.ts`）写 localStorage 失败不抛**（配额满、浏览器禁用存储）：吞掉异常、置运行时信号 `persistFailed`，由顶栏下方的全站提示条 `PrefsSaveFailedBar`（`features/shell/AppHeader.tsx`，`role="status"`）告知，主题按钮的可访问名与提示文字里也带同一句说明（每页都在）；`persistFailed` 不落盘，成功一次就清掉。导出侧还有一条同源的自检：`features/review/DataManagementPanel.tsx` 的 `downloadIfRestorable` 在下载前用**导入解析器**量一遍将要下载的文本，导不回来的文件不下载并说明是哪条上限超了；整体能导但会少掉一段（进度 / 偏好 / 会话段被跳过）或少掉几局、几个局面的，同样不下载。
 
-**`persist/transfer/`** —— 对外交换格式（Phase 11A）。`format.ts` 定义 `gomoku-lab.game`（v1）/ `gomoku-lab.backup`（v2）两个版本化文件形状，备份 v2 含自定义局面，并用 `toGameFile` / `toBackupFile` 把内部记录转成**不含 `seq`** 的载荷；`validate.ts` 把导入文件当不可信输入，先查大小/深度，再用**单次 `replay()`** 做严格手顺校验（把截断变成明确失败），最后核对结束方式、认输方与胜负。`recordIdentity.ts` 定义规范化的内容身份——重复判断不看自增 `seq`，看先手、手顺、模式、执子、难度与认输方。批量写入 `GameRecordsStorage.importMany` 在**一个 IndexedDB 事务**内去重 + 插入；失败整笔回滚并如实报 `persisted=false`。`restore.ts` 是恢复备份的策略（`restoreImport(plan, deps)`，依赖全部注入，阶段 E 从 `DataManagementPanel` 平移出来）：备份的棋谱段整笔失败则其余各段不动、进度 / 偏好 / 会话各自独立成败、局面逐条去重逐条写；组件只管预览与结果展示。读库、读文件共用的小守卫（`isObj` / `isPlayer` / `isFiniteInt` / `parsePoint`）在 `persist/parse.ts`，`transfer/guards.ts` 只留导入告警相关的类型与构造。session v3 持久化分支来源；外部格式版本与内部 `DB_VERSION` / `schemaVersion` **分开维护**，规范见 `docs/data/FILE_FORMAT.md`。
+**`persist/transfer/`** —— 对外交换格式（Phase 11A）。`format.ts` 定义 `gomoku-lab.game`（v1）/ `gomoku-lab.backup`（v2）两个版本化文件形状，备份 v2 含自定义局面，并用 `toGameFile` / `toBackupFile` 把内部记录转成**不含 `seq`** 的载荷；`validate.ts` 把导入文件当不可信输入，先查大小/深度，再用**单次 `replay()`** 做严格手顺校验（把截断变成明确失败），最后核对结束方式、认输方与胜负。`persist/recordIdentity.ts`（不在 `transfer/` 内；`format.ts` 从 `../recordIdentity` 导入）定义规范化的内容身份——重复判断不看自增 `seq`，看先手、手顺、模式、执子、难度与认输方。批量写入 `GameRecordsStorage.importMany` 在**一个 IndexedDB 事务**内去重 + 插入；失败整笔回滚并如实报 `persisted=false`。`restore.ts` 是恢复备份的策略（`restoreImport(plan, deps)`，依赖全部注入，阶段 E 从 `DataManagementPanel` 平移出来）：备份的棋谱段整笔失败则其余各段不动、进度 / 偏好 / 会话各自独立成败、局面逐条去重逐条写；组件只管预览与结果展示。读库、读文件共用的小守卫（`isObj` / `isPlayer` / `isFiniteInt` / `parsePoint`）在 `persist/parse.ts`，`transfer/guards.ts` 只留导入告警相关的类型与构造。session v3 持久化分支来源；外部格式版本与内部 `DB_VERSION` / `schemaVersion` **分开维护**，规范见 `docs/data/FILE_FORMAT.md`。
 
 **`lib/`** —— 跨 feature 共用的小工具与小组件级 hook：主题解析、WebAudio 音效合成、动效类名（`motion.ts`）、坐标格式化、类名拼接、媒体查询（`useMediaQuery.ts`）、换页时的焦点接管（`useFocusOnMount.ts`）。**这些模块都没有一个 import store**——要碰 store 的东西属于 `store/` 或 `features/`。（`contrast.test.tsx` 是例外，它为了渲染真实组件才引 store，那是测试的本分。原先这里写的是「无状态工具」，但 `useMediaQuery` 早就是个有状态的 hook 了。）
 
@@ -154,7 +156,7 @@ gameStore 的 notifyGameEnd：只在「进行中 → 终局」这一跃迁上回
    ↓
 useGameStore 装配的 onGameEnd → saveGameReplacing → indexedDbGameRecords.putReplacing（棋谱库，单事务替换）
    ↓
-recordSaveState: saving → saved / failed —— 结果弹窗如实显示
+recordSaveState: saving → saved / session / failed —— 结果弹窗如实显示（`session` = 只进了本次会话的内存兜底）
 ```
 
 ```

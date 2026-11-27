@@ -108,7 +108,7 @@ pill 会宽到 1.189 用户单位，相邻两个重叠 **0.1886 单位**（@390 
 ### L-1 · 视觉规范没有逐项核销（F-UI-25）
 
 Phase 01 改了圆角/间距令牌与嵌套边框，但没有一条「全仓核销」的记录。Phase 07
-重新量化：矩形圆角现为 `rounded-md` **7** 处 / `rounded-lg` 15 处 / `rounded-xl` 8 处 /
+重新量化，2026-11-27 复核：矩形圆角现为 `rounded-md` **7** 处 / `rounded-lg` 27 处 / `rounded-xl` 8 处 /
 `rounded-2xl` 2 处（另有 `rounded-full` 15 处，用于棋子、徽标、药丸，不属于体系发散）。
 `rounded-md` 比 Phase 07 初次统计多 3 处，是收尾时把 `HintPanel` 两处与 `MoveList`
 一处的裸 `rounded` 归并进来的结果；裸 `rounded` 现在全仓 0 处。
