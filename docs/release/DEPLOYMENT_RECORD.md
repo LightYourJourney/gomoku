@@ -4,7 +4,28 @@
 > 以及线上验收的原始读数。与方案/清单分开，避免「计划」和「事实」混写。
 > 最新一次在最上面。
 
-## 0.7.3 · 2026-11-26 第二次全量审查整改（当前生产）
+## 0.7.4 · 2026-11-27 第三次全量审查整改（当前生产）
+
+| 项 | 值 |
+| --- | --- |
+| 应用版本 | `0.7.4` |
+| 引擎版本 | `search-1`（索引写法统一走 `idx`、注释改正；`bench:check` 断言行与不变量一致，搜索决策未变） |
+| 提交 / 标签 | `37bd3f7`（整改 `648afa4…a9b9d56`，探针与文案修复 `4ae418d`、`37bd3f7`）/ `v0.7.4` |
+| 生产部署 | `47fb7004-e3c2-4b21-8dec-4f1683914078`（https://47fb7004.gomoku-lab.pages.dev） |
+| 生产地址 | **https://gomoku-lab.pages.dev** |
+| 预览部署 | `d9cb8282-136c-421b-95e4-7667534344ec`（https://d9cb8282.gomoku-lab-preview.pages.dev） |
+| 部署时间 | 2026-11-27（UTC+8） |
+| 部署方式 | 同 0.7.0：在 `37bd3f7` 的独立工作区里构建，`npx wrangler@4.151.3 pages deploy dist …` |
+| 回滚目标 | `31c7cd06…`（`a45d33b` / 0.7.3）→ `ccd1a69f…`（`f01ddb0` / 0.7.2）→ … |
+| 产物 | `index-BlzPzB1U.js`（gzip **101.7 kB**）、`index-R2BnUPBD.css`、`worker-DZtF2DXL.js` |
+| 验收 | 发布提交 CI `45927677544` 七个 job 全绿（其中 `probe` 抓到一处并在 `37bd3f7` 修掉：会话入库文案撑大终局弹窗、遮住 1 颗获胜子；改后本地 `ui:probe` 308 条量测与覆盖棘轮通过）；本机全档（五条 + `e2e:prod` 9/9 + `e2e:browsers` 22/22 + 七道闸门 + `bench:check`）绿；预览 `e2e:remote` **217 / 217**；生产 **217 / 217**；生产 meta `app-version=0.7.4`、`build-commit=37bd3f7…`；`/learn/rules`、`/review/3` 200，`/foo`、`/assets/nope.js` 404；安全头 5 项下发 |
+
+- **授权**：裁定 27——所有者在审查裁定里选「推送并发布 0.7.4」，按裁定 20 的流程预览通过后上生产。
+- **内容**：见 `RELEASE_NOTES_0.7.4.md` 与 `docs/audit/FULL_REVIEW_2026-11-27.md`。
+- **数据格式**：无变化；只改了「存储不可用 → 恢复」期间的编号、补写与导出行为。
+- **回滚**：回 `31c7cd06…`（0.7.3）无数据代价，修复跟着撤回。
+
+## 0.7.3 · 2026-11-26 第二次全量审查整改（历史）
 
 | 项 | 值 |
 | --- | --- |
@@ -435,7 +456,7 @@ REMOTE_BASE=https://gomoku-lab.pages.dev yarn e2e:remote
 
 - 部署前跑全档：`yarn lint && yarn typecheck && yarn test && yarn build && yarn e2e && yarn e2e:prod && yarn gates && yarn bench:check`；
   界面结构有改动的，还要等 CI 的 `probe`（`yarn ui:probe --out ci` + 覆盖棘轮）与 `browsers` / `browsers-full` 全绿。
-- `e2e:remote` 的当前期望是 **214/214**（0.7.3 起；预览与生产各跑一次）。
+- `e2e:remote` 的当前期望是 **217/217**（0.7.4 起；预览与生产各跑一次）。
 - 部署前在发布提交的独立工作区里构建（`git worktree add --detach <dir> <提交>`），保证 `build-commit` 与发布提交一致，不被之后的本地文档提交带偏。
 
 ---
