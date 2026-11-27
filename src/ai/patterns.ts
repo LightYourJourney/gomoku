@@ -95,7 +95,8 @@ function buildLine(
       continue
     }
 
-    const cell = board[y * BOARD_SIZE + x]
+    // 坐标到索引只经 `idx`（`RULES.md` §棋盘表示）：`stride` 是索引空间上的步长，不在此列。
+    const cell = board[idx(x, y)]
     line[i] = cell === 0 ? 0 : cell === player ? 1 : -1
   }
 
@@ -208,7 +209,8 @@ function scanDirection(
     dx > 0 ? point.x : dx < 0 ? BOARD_SIZE - 1 - point.x : BOARD_SIZE,
     dy > 0 ? point.y : dy < 0 ? BOARD_SIZE - 1 - point.y : BOARD_SIZE,
   )
-  const base = point.y * BOARD_SIZE + point.x
+  const base = idx(point.x, point.y)
+  // 行/列方向在索引空间上的步长；换行跨边界由下面的边界检查挡住。
   const stride = dy * BOARD_SIZE + dx
   const winningSteps: number[] = []
 

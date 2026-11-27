@@ -14,7 +14,7 @@
  */
 
 export interface AiCallCounters {
-  /** `evaluateBoard()` 的调用次数（叶子评估 + 超时兜底）。 */
+  /** `evaluateBoard()` 的调用次数。只在直接调用它时增加；搜索叶子已走增量评估，真实搜索里恒为 0。 */
   evaluateBoard: number
   /** `candidateMoves()` 的调用次数。 */
   candidateMoves: number

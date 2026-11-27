@@ -260,7 +260,7 @@ function roughScore(board: Board, point: Point, player: Player, opponent: Player
     for (let dx = -NEIGHBOR_RADIUS; dx <= NEIGHBOR_RADIUS; dx++) {
       const x = point.x + dx
       if (x < 0 || x >= BOARD_SIZE) continue
-      const cell = board[y * BOARD_SIZE + x]
+      const cell = board[idx(x, y)]
       if (cell === 0) continue
       const distance = Math.max(Math.abs(dx), Math.abs(dy))
       if (distance < nearest) nearest = distance
