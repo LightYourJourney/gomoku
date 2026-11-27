@@ -10,7 +10,8 @@
  *      `TYPE_ONLY_ALLOWED` 里的目标只许 `import type` 引入。
  *      `src` 下不在表里的顶层目录或根文件一律红——新目录要显式归类，不能悄悄逃出门禁。
  *   2. 纯逻辑层（core / ai / analysis / learn）的生产文件，直接或**间接**都不得引入
- *      react / react-dom / zustand。间接也要查：`learn → lib` 合法，但 `lib` 里有 React hook。
+ *      react / react-dom / zustand 以及测试与渲染库（@testing-library、vitest 等）。
+ *      间接也要查：`learn → lib` 合法，但 `lib` 里有 React hook。
  *      纯逻辑层也不许有 `.tsx`：自动 JSX 运行时引入的 React 不是写出来的 import，图里看不见。
  *
  * 不查的：测试文件与 `src/test/`（组装场景时跨层是常态；被排除的文件连同指向它们的边都不进图，
@@ -19,6 +20,8 @@
  *
  * 解析交给 madge（`check:cycles` 用的同一个解析器，含仅类型的 import）。madge 解析不了的
  * import 会进 `skipped`、在图里看不见——除了下面 `SKIPPABLE` 写明的两类，一律**失败关闭**。
+ * 动态 `import()` **不进 skipped 也不能放过**：非字面量（纯逻辑层）直接红，字面量按普通
+ * import 入图并计入「仅类型」判断（见 dynamicImports）。
  * 图是空的（madge 没扫到文件）同样失败关闭：一个什么都没查的门禁不能报绿。
  *
  * 用法：`yarn check:layers`（在 `yarn gates` 里）。
@@ -63,7 +66,15 @@ const TYPE_ONLY_ALLOWED = {
 }
 const ROOT_FILES = new Set(['App.tsx', 'main.tsx'])
 const PURE = ['core', 'ai', 'analysis', 'learn']
-const FORBIDDEN_IN_PURE = /node_modules\/(?:@types\/)?(?:react|react-dom|zustand)\//
+/**
+ * 纯逻辑层不许碰的 npm 包。除了 React / Zustand，还包括测试与渲染库：
+ * `src/core` 里 `import { render } from '@testing-library/react'` 曾同时骗过
+ * `tsconfig.pure.json`（它只清空 `types`，不阻止按需加载 .d.ts）与本文件（名单太窄）。
+ * 生产文件对这些包没有合法用法（2026-11-27 grep 确认；只有 `src/test/setup.ts` 用，
+ * 而测试文件不进图）。
+ */
+const FORBIDDEN_IN_PURE =
+  /node_modules\/(?:@types\/)?(?:react|react-dom|zustand|vitest|jsdom|fake-indexeddb|@testing-library|@playwright)\//
 
 /**
  * madge 解析不了的 import 不进图。只放过两种，其余一律失败关闭：
@@ -118,10 +129,49 @@ function entryCovers(entry, dep) {
   return bare === entry || bare.startsWith(`${entry}/`)
 }
 
+/** 相对模块说明符解析到实际文件；解析不到返回 `undefined`。 */
+function resolveRelative(abs, spec) {
+  const base = resolve(dirname(abs), spec)
+  return [base, `${base}.ts`, `${base}.tsx`, resolve(base, 'index.ts'), resolve(base, 'index.tsx')].find(
+    (candidate) => /\.tsx?$/.test(candidate) && existsSync(candidate),
+  )
+}
+
+/**
+ * `file` 里的动态 `import()`：字面量记下说明符，非字面量记 `null`（无法静态判定）。
+ *
+ * madge 能看见字面量动态 import（precinct 会解析 `import('x')`），但看不见
+ * `const t = 'react'; await import(t)`；而且它不回答「这次引用是不是仅类型」。
+ * 两件事都得自己走 AST。
+ */
+const dynamicCache = new Map()
+function dynamicImports(file) {
+  if (dynamicCache.has(file)) return dynamicCache.get(file)
+  const abs = resolve(SRC, file)
+  const source = ts.createSourceFile(abs, readFileSync(abs, 'utf8'), ts.ScriptTarget.Latest, false)
+  const out = []
+  const visit = (node) => {
+    if (ts.isCallExpression(node) && node.expression.kind === ts.SyntaxKind.ImportKeyword) {
+      const arg = node.arguments[0]
+      const literal =
+        arg !== undefined && (ts.isStringLiteral(arg) || ts.isNoSubstitutionTemplateLiteral(arg))
+      out.push({
+        spec: literal ? arg.text : null,
+        line: source.getLineAndCharacterOfPosition(node.getStart(source)).line + 1,
+      })
+    }
+    ts.forEachChild(node, visit)
+  }
+  visit(source)
+  dynamicCache.set(file, out)
+  return out
+}
+
 /**
  * `file` 里指向各个 `src` 内目标的 import 是否**全部**为仅类型。返回 Map：目标（`src` 相对路径）→ 布尔。
- * 只认静态的 import / export-from 声明；图里有边、这里却没找到声明（动态 `import()` 等）的，
- * 调用方按「不是仅类型」处理——失败关闭。
+ * 静态的 import / export-from 声明与动态 `import()` 都看：动态引用是运行期加载，
+ * **不是**仅类型，同一个目标只要被动态引用过一次就记 false——否则一行
+ * `import type` 就能把 `await import(同一个模块)` 洗白（实测曾如此）。
  */
 const typeOnlyCache = new Map()
 function typeOnlyImports(file) {
@@ -136,13 +186,17 @@ function typeOnlyImports(file) {
     else continue
     const spec = stmt.moduleSpecifier.text
     if (!spec.startsWith('.')) continue
-    const base = resolve(dirname(abs), spec)
-    const hit = [base, `${base}.ts`, `${base}.tsx`, resolve(base, 'index.ts'), resolve(base, 'index.tsx')].find(
-      (candidate) => /\.tsx?$/.test(candidate) && existsSync(candidate),
-    )
+    const hit = resolveRelative(abs, spec)
     if (hit === undefined) continue
     const target = relative(SRC, hit).split(sep).join('/')
     out.set(target, (out.get(target) ?? true) && typeOnly)
+  }
+  for (const { spec } of dynamicImports(file)) {
+    if (spec === null || !spec.startsWith('.')) continue
+    const hit = resolveRelative(abs, spec)
+    if (hit === undefined) continue
+    const target = relative(SRC, hit).split(sep).join('/')
+    out.set(target, false)
   }
   typeOnlyCache.set(file, out)
   return out
@@ -152,6 +206,47 @@ function edgeAllowed(from, file, dep) {
   if (ALLOWED[from].some((entry) => entryCovers(entry, dep))) return true
   const typeOnly = TYPE_ONLY_ALLOWED[from] ?? []
   return typeOnly.some((entry) => entryCovers(entry, dep)) && typeOnlyImports(file).get(dep) === true
+}
+
+/*
+ * 动态 import() 先过一遍：
+ *   - 纯逻辑层的非字面量动态 import（`const t='react'; await import(t)`）无法静态判定，
+ *     直接红——以前 madge 只把它丢进 `skipped` 就完事，门禁照样绿（实测）；
+ *   - 字面量相对路径当作普通 import 入图：跨层允许表、越出 src、纯逻辑层可达性都看得见；
+ *   - 字面量 npm 包在纯逻辑层按禁用名单判；
+ *   - 相对路径解析不到就红（运行期会炸，门禁不该放过）。
+ * 字面量动态 import 若已由 madge 入图，不重复添加；「是不是仅类型」由
+ * typeOnlyImports 单独记 false。
+ */
+for (const file of Object.keys(graph)) {
+  const from = layerOf(file)
+  if (from === null) continue // 未归类的会在下面那一轮报
+  const abs = resolve(SRC, file)
+  for (const { spec, line } of dynamicImports(file)) {
+    if (spec === null) {
+      if (PURE.includes(from)) {
+        problems.push(`纯逻辑层的动态 import 目标不是字面量：${file}:${line}（无法静态判定，失败关闭）`)
+      }
+      continue
+    }
+    if (!spec.startsWith('.')) {
+      if (PURE.includes(from) && FORBIDDEN_IN_PURE.test(`../node_modules/${spec}/`)) {
+        problems.push(`纯逻辑层引入了禁用包：${file}:${line} → import('${spec}')`)
+      }
+      continue
+    }
+    const hit = resolveRelative(abs, spec)
+    if (hit === undefined) {
+      problems.push(`动态 import 解析不到：${file}:${line} → '${spec}'（失败关闭）`)
+      continue
+    }
+    if (!hit.startsWith(SRC + sep)) {
+      problems.push(`越出 src：${file}:${line} → '${spec}'（解析到 ${hit}）`)
+      continue
+    }
+    const dep = relative(SRC, hit).split(sep).join('/')
+    if (!graph[file].includes(dep)) graph[file].push(dep)
+  }
 }
 
 let crossEdges = 0
@@ -204,7 +299,7 @@ for (const start of Object.keys(graph)) {
   if (hit !== null) {
     const path = []
     for (let at = hit; at !== null; at = seen.get(at)) path.unshift(at)
-    problems.push(`纯逻辑层引入了 React / Zustand：${path.join(' → ')}`)
+    problems.push(`纯逻辑层引入了 React / Zustand / 测试渲染库：${path.join(' → ')}`)
   }
 }
 
@@ -214,4 +309,7 @@ if (problems.length > 0) {
   console.error('  规则见 AGENTS.md 与 docs/ARCHITECTURE.md「依赖方向」；允许表在 quality/layers.mjs。')
   process.exit(1)
 }
-console.log(`✓ 依赖方向：${Object.keys(graph).length} 个生产文件、${crossEdges} 条跨层 import，均在允许表内；纯逻辑层不引入 React / Zustand`)
+console.log(
+  `✓ 依赖方向：${Object.keys(graph).length} 个生产文件、${crossEdges} 条跨层 import，均在允许表内；` +
+    '纯逻辑层不引入 React / Zustand / 测试渲染库（含字面量动态 import）',
+)

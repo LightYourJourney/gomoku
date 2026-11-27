@@ -63,6 +63,12 @@ jobs:
       # 多挂一个 JSON 报告，跑完交给 check:e2e-skips 数运行期跳过 / 预期失败的用例：
       # 静态扫描（check:tests）认不出的写法（helper 里拼出来的、运行期条件跳过）在这里现形。
       # 报告放 playwright-report/（已 gitignore；test-results/ 每次跑会被清空，不能放那里）。
+      #
+      # **报告文件名决定期望条数**（quality/e2e-skips.mjs 的 EXPECTED_KEYS）：
+      #   e2e.json → tests.baseline.json 的 e2eTotal（214）
+      #   e2e-prod.json → e2eProdTotal（9）
+      # 每份报告的条数必须精确等于对应基线值——`--grep` 只跑一条也会在这里红，
+      # 不再只看「0 条真跑」。
       - run: yarn e2e --reporter=list,json
         env:
           PLAYWRIGHT_JSON_OUTPUT_FILE: playwright-report/e2e.json
@@ -86,6 +92,7 @@ jobs:
       # 这里刻意不用 channel: chrome：跑的就是 Playwright 自带引擎。
       - run: yarn playwright install --with-deps firefox webkit
       # JSON 报告与 check:e2e-skips 的理由见 e2e job。
+      # 文件名固定为 e2e-browsers.json → 期望 e2eBrowsersTotal（22），条数必须精确一致。
       - run: yarn e2e:browsers --reporter=list,json
         env:
           PLAYWRIGHT_JSON_OUTPUT_FILE: playwright-report/e2e-browsers.json
@@ -103,6 +110,7 @@ jobs:
       - run: yarn install --frozen-lockfile
       - uses: ./.github/actions/install-cjk-font
       - run: yarn playwright install --with-deps firefox webkit
+      # 文件名固定为 e2e-browsers-full.json → 期望 e2eBrowsersFullTotal（335），条数必须精确一致。
       - run: yarn e2e:browsers:full --reporter=list,json
         env:
           PLAYWRIGHT_JSON_OUTPUT_FILE: playwright-report/e2e-browsers-full.json

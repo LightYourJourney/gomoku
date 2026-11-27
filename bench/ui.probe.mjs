@@ -16,13 +16,17 @@
  * 都在应用启动之前落好，不点几十手去凑一个局面（那既慢又不可复现）。
  * 唯一的例外是提示 / 判题 / 分析这几个必须点出来的状态，它们用选择器等待。
  */
-import { spawn } from 'node:child_process'
+import { execFile, spawn } from 'node:child_process'
+import { existsSync } from 'node:fs'
 import { connect } from 'node:net'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { setTimeout as delay } from 'node:timers/promises'
+import { promisify } from 'node:util'
 import { chromium } from '@playwright/test'
+
+const execFileAsync = promisify(execFile)
 
 const PORT = 5184
 const BASE_URL = `http://127.0.0.1:${PORT}`
@@ -1419,10 +1423,39 @@ function portInUse() {
 /** 子进程的退出状态；`null` 表示还活着。 */
 let serverExit = null
 
+/**
+ * `PORT` 上正在 LISTEN 的进程 PID。
+ *
+ * lsof 是 macOS 自带、GitHub Actions 的 ubuntu runner 预装的；**查不清就失败关闭**——
+ * 「不知道谁在听」不能当成「是自己在听」。lsof 没匹配到监听者时退出码为 1、stdout 为空，
+ * 那是「没人听」，不是错误。
+ */
+async function listeningPids() {
+  try {
+    const { stdout } = await execFileAsync('lsof', ['-nP', `-iTCP:${PORT}`, '-sTCP:LISTEN', '-t'], { timeout: 10_000 })
+    return stdout
+      .split('\n')
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .map(Number)
+  } catch (err) {
+    if (err.code === 1 && String(err.stdout ?? '').trim() === '') return []
+    throw new Error(
+      `lsof 查不到 ${PORT} 的监听进程（${err.code ?? err.message}）：无法确认 200 是不是自己起的服务给的，探针中止`,
+    )
+  }
+}
+
 /*
  * 起服务器前先探端口，占用就响亮失败。以前不探：5184 上要是坐着别的工作树 / 别的代理
  * 的 dev server，自己这份因 --strictPort 起不来（stdio 又是 ignore，看不见），
  * 而 waitForServer 照样从别人的服务拿到 200，于是量的是别人的代码，照样报绿。
+ *
+ * 但「探测」与「spawn」之间仍有 TOCTOU：判空之后、vite 绑定之前，别的工作树可能抢先
+ * 绑上 5184。所以端口探测只是第一道；200 之后还必须确认监听 PID 是自己的子进程
+ * （waitForServer 里的 listeningPids）。为了拿到可比的 PID，这里**直接 spawn
+ * `node vite/bin/vite.js`**，而不是 `yarn vite`——中间的 yarn 进程不监听端口，
+ * 监听的是它的子进程，还要再爬一层进程树才判得清。
  */
 async function startDevServer() {
   if (await portInUse()) {
@@ -1432,9 +1465,14 @@ async function startDevServer() {
     )
     process.exit(2)
   }
+  const viteBin = resolve(repoRoot, 'node_modules/vite/bin/vite.js')
+  if (!existsSync(viteBin)) {
+    console.error(`✗ 找不到 ${viteBin}：探针直接用它起 dev server（这样监听 PID 才是自己这个子进程）。先 yarn install。`)
+    process.exit(2)
+  }
   const child = spawn(
-    'yarn',
-    ['vite', '--host', '127.0.0.1', '--port', String(PORT), '--strictPort'],
+    process.execPath,
+    [viteBin, '--host', '127.0.0.1', '--port', String(PORT), '--strictPort'],
     // stderr 透传：vite 起不来（端口被抢、配置错）时要看得见原因。
     { cwd: repoRoot, stdio: ['ignore', 'ignore', 'inherit'] },
   )
@@ -1444,7 +1482,8 @@ async function startDevServer() {
   return child
 }
 
-async function waitForServer() {
+async function waitForServer(child) {
+  let lastForeign = []
   for (let attempt = 0; attempt < 60; attempt++) {
     // 自己的子进程已经退了：哪怕端口上此刻有响应，也不是它的，不能开测。
     if (serverExit !== null) {
@@ -1452,15 +1491,31 @@ async function waitForServer() {
         `dev server 子进程提前退出（退出码 ${serverExit.code ?? '无'}，信号 ${serverExit.signal ?? '无'}），探针中止`,
       )
     }
+    let response
     try {
-      const response = await fetch(BASE_URL)
-      if (response.ok) return
+      response = await fetch(BASE_URL)
     } catch {
-      // 还没起来
+      await delay(500)
+      continue // 还没起来
     }
+    if (!response.ok) {
+      await delay(500)
+      continue
+    }
+    // 200 只证明「有人在答」，不证明是**自己**的服务。监听 PID 必须是自己 spawn 的
+    // 那个进程；否则（TOCTOU 窗口里别的工作树抢先绑了端口）继续等——自己的子进程
+    // 要么随后绑上，要么因 --strictPort 退出并在下一轮报错。
+    const pids = await listeningPids()
+    if (pids.includes(child.pid)) return
+    lastForeign = pids
     await delay(500)
   }
-  throw new Error(`dev server 在 ${BASE_URL} 上没起来`)
+  throw new Error(
+    `dev server 在 ${BASE_URL} 上没起来` +
+      (lastForeign.length > 0
+        ? `：端口上的监听进程是 ${lastForeign.join('、')}，不是自己的子进程 ${child.pid}`
+        : ''),
+  )
 }
 
 const args = process.argv.slice(2)
@@ -1509,7 +1564,7 @@ if (OUT_DIR.endsWith(`/${DEFAULT_DIR}`) && !process.argv.includes('--force')) {
 }
 
 try {
-  await waitForServer()
+  await waitForServer(server)
   await mkdir(OUT_DIR, { recursive: true })
 
   browser = await chromium.launch({ channel: 'chrome' })
