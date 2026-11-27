@@ -4,6 +4,7 @@ import { BoardStage } from '../../components/board/BoardStage'
 import { FeedbackBanner } from '../../components/panels/FeedbackBanner'
 import { Panel } from '../../components/ui/Panel'
 import { Button } from '../../components/ui/Button'
+import { useFocusHandoff } from '../../components/ui/useFocusHandoff'
 import { cx } from '../../lib/cx'
 import { parseBoardLines } from '../../lib/board-lines'
 import { goalHint, HINT_LEVELS } from '../../learn/hints'
@@ -147,6 +148,14 @@ export function PracticeBoard({
     if (focusOnMountRef.current) promptRef.current?.focus({ preventScroll: true })
   }, [])
 
+  /*
+   * 第三次点「要提示」时这颗按钮会自我禁用；按下的那一刻它正握着焦点，
+   * 真浏览器会把焦点丢到 body。把焦点交给刚展开的提示文字，键盘用户留在原地，
+   * 读屏也直接念出最后一级提示。
+   */
+  const handoff = useFocusHandoff()
+  const hintRef = useRef<HTMLParagraphElement>(null)
+
   const askHint = (): void => {
     setHintLevel((level) => Math.min(level + 1, HINT_LEVELS))
   }
@@ -275,7 +284,10 @@ export function PracticeBoard({
             variant={alreadySolved ? 'default' : 'primary'}
             block
             disabled={solved || hintLevel >= HINT_LEVELS}
-            onClick={askHint}
+            onClick={(event) => {
+              handoff(event.currentTarget, () => hintRef.current)
+              askHint()
+            }}
           >
             {hintLevel === 0 ? '要提示' : `再具体一点（${hintLevel}/${HINT_LEVELS}）`}
           </Button>
@@ -283,7 +295,13 @@ export function PracticeBoard({
 
         {hintText !== null && (
           <Panel title="提示">
-            <p data-testid="hint" className="text-xs leading-relaxed text-muted">
+            {/* `tabIndex={-1}`：提示用满后按钮自我禁用，焦点交接的落点在这里 */}
+            <p
+              ref={hintRef}
+              tabIndex={-1}
+              data-testid="hint"
+              className="text-xs leading-relaxed text-muted outline-none"
+            >
               {hintText}
             </p>
             {/*
@@ -299,8 +317,13 @@ export function PracticeBoard({
                 {/*
                   所有题共用这一句，所以只说对每道题都成立的话。不写「别的走法同样算对」：
                   多数题只有一个正确点，算杀题判的也不是棋型。
+
+                  判错之后棋盘锁住（`interactive=false`），这时还说「走上去试试」
+                  等于让玩家去点一块不响应的棋盘；改口让他先「重试」。
                 */}
-                棋盘上标出了一种解法，走上去试试。
+                {attempt === null
+                  ? '棋盘上标出了一种解法，走上去试试。'
+                  : '棋盘上标出了一种解法，先点「重试」再走。'}
               </p>
             )}
           </Panel>

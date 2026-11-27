@@ -154,6 +154,47 @@ describe('PracticeBoard —— 三级提示', () => {
   })
 
   /*
+   * 第三级提示之后按钮原生 `disabled`，而按下去的那一刻它正握着焦点——
+   * 真浏览器会把焦点丢到 body，键盘用户得从页面开头重新 Tab。
+   * 用 `useFocusHandoff` 把焦点交给刚展开的提示文字（jsdom 里禁用按钮仍是
+   * activeElement，所以断言落点，而不只是「不是 body」）。
+   */
+  it('提示用满三级、按钮自我禁用后，焦点交给提示文字', () => {
+    setup()
+
+    const hintButton = screen.getByTestId('ask-hint')
+    hintButton.focus()
+    fireEvent.click(hintButton)
+    fireEvent.click(hintButton)
+    fireEvent.click(hintButton)
+
+    expect(hintButton).toBeDisabled()
+    expect(document.activeElement).not.toBe(document.body)
+    expect(document.activeElement).toBe(screen.getByTestId('hint'))
+  })
+
+  /*
+   * 判错之后棋盘锁住（`interactive=false`），提示文字却还说「走上去试试」——
+   * 文字与状态对不上，玩家会以为棋盘没响应。锁盘时改说「先点重试」。
+   */
+  it('判错锁盘后第三级说明改口，重试之后恢复', () => {
+    setup()
+
+    const hintButton = () => screen.getByRole('button', { name: /提示|再具体一点/ })
+    fireEvent.click(hintButton())
+    fireEvent.click(hintButton())
+    fireEvent.click(hintButton())
+
+    play(0, 0)
+
+    expect(screen.getByText('棋盘上标出了一种解法，先点「重试」再走。')).toBeInTheDocument()
+    expect(screen.queryByText('棋盘上标出了一种解法，走上去试试。')).not.toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: '重试' }))
+    expect(screen.getByText('棋盘上标出了一种解法，走上去试试。')).toBeInTheDocument()
+  })
+
+  /*
     第三级那句说明是**所有题共用的固定文案**，所以它只能说对每道题都成立的话。
     原先写着「判定看的是棋型，别的走法同样算对」：23 题里 14 题只有一个正确点，
     算杀题（forcedWin）判的是能不能算出杀、不是棋型——对多数题这是假话。

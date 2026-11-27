@@ -220,8 +220,16 @@ function PrefsSaveFailedBar() {
  */
 export function AppHeader({ children, showNav = true }: AppHeaderProps) {
   return (
-    <>
-      <header className="sticky top-0 z-20 flex min-h-15 shrink-0 flex-wrap items-center gap-x-3 gap-y-2 border-b border-border bg-surface/80 px-4 py-3 backdrop-blur lg:px-6">
+    /*
+     * 顶栏与失败提示条**共用一个 sticky 容器**。提示条原先只是 sticky 顶栏之后的
+     * 静态兄弟节点：页面滚下去后它跟着内容走（390×844 实测 barTop=-391），
+     * 用户在滚动后点主题按钮看不到任何反馈。容器吸顶，两者一起停在视口顶部。
+     *
+     * 容器高度只能由内容决定：窄屏顶栏会换行，`min-h-15` 不是固定高度，
+     * 写死任何 px 都会在某一档把提示条裁掉。
+     */
+    <div className="sticky top-0 z-20 shrink-0">
+      <header className="flex min-h-15 flex-wrap items-center gap-x-3 gap-y-2 border-b border-border bg-surface/80 px-4 py-3 backdrop-blur lg:px-6">
         <BrandMark />
         {/*
           导航紧跟在品牌后面；窄屏上靠 `order-last w-full` 换行到第二行，**铺满整行**。
@@ -239,6 +247,6 @@ export function AppHeader({ children, showNav = true }: AppHeaderProps) {
         </div>
       </header>
       <PrefsSaveFailedBar />
-    </>
+    </div>
   )
 }

@@ -93,6 +93,90 @@ test.describe('偏好写入失败的全站提示条', () => {
       await expect(bar).toBeInViewport()
     })
   }
+
+  /*
+   * 提示条原先只是 sticky 顶栏之后的静态兄弟节点：窄屏滚到下半屏再点主题按钮，
+   * 它出现在负坐标（生产实测 390×844 下 barTop=-391），用户看不到任何反馈。
+   * 现在它与顶栏同处一个 sticky 容器；滚动后触发也必须停在视口里。
+   *
+   * 两档视口用各自的滚动容器：390 是窗口在滚，1440 是阅读列 `main` 自己在滚。
+   * 同时钉住「点击没有把页面滚回顶部」——否则 toBeInViewport 可能只是整页被
+   * Playwright 滚回开头造成的假绿。
+   */
+  for (const viewport of [{ width: 390, height: 844 }, { width: 1440, height: 900 }] as const) {
+    test(`@${viewport.width}×${viewport.height}：滚动后点主题按钮，提示条仍在视口内`, async ({ page }) => {
+      await page.setViewportSize(viewport)
+      await page.addInitScript(() => {
+        const original = Storage.prototype.setItem
+        Storage.prototype.setItem = function (this: Storage, key: string, value: string) {
+          if (this === window.localStorage) throw new DOMException('full', 'QuotaExceededError')
+          return original.call(this, key, value)
+        }
+      })
+      await page.goto('/')
+      await page.getByRole('button', { name: '教学', exact: true }).click()
+      await expect(page.getByRole('heading', { level: 1, name: '互动教学' })).toBeVisible()
+
+      const before = await page.evaluate(() => {
+        const main = document.querySelector('main')
+        if (main !== null && main.scrollHeight > main.clientHeight + 1) {
+          main.scrollTop = Math.min(320, main.scrollHeight - main.clientHeight)
+          return { kind: 'main' as const, value: main.scrollTop }
+        }
+        window.scrollTo(0, Math.min(320, document.documentElement.scrollHeight - window.innerHeight))
+        return { kind: 'window' as const, value: window.scrollY }
+      })
+      expect(before.value).toBeGreaterThan(0)
+
+      const themeButton = page.getByRole('button', { name: /^主题：/ })
+      await expect(themeButton).toBeInViewport()
+      await themeButton.click()
+
+      const bar = page.getByTestId('prefs-save-failed')
+      await expect(bar).toBeVisible()
+      await expect(bar).toContainText('设置没能保存到浏览器')
+      await expect(bar).toBeInViewport()
+      await expect(page.getByRole('banner')).toBeInViewport()
+
+      const after = await page.evaluate(
+        (kind) =>
+          kind === 'main'
+            ? (document.querySelector('main')?.scrollTop ?? 0)
+            : window.scrollY,
+        before.kind,
+      )
+      // 提示条出现会让吸顶容器变高，浏览器滚动锚定会把滚动位置顺带推后一点；
+      // 关键是**没有回到顶部**——否则「在视口内」可能只是整页被滚回开头造成的假绿。
+      expect(after).toBeGreaterThan(0)
+    })
+  }
+})
+
+/**
+ * 三级提示用满之后「要提示」自我禁用：真浏览器会把焦点丢到 body。
+ * 焦点应交给刚展开的提示文字；判错锁盘时那句「走上去试试」也要改口。
+ */
+test('三级提示用满后焦点落在提示文字上；判错锁盘后文案改为先重试', async ({ page }) => {
+  await page.goto('/')
+  await page.getByRole('button', { name: '教学', exact: true }).click()
+  await page.getByTestId('lesson-rules').click()
+  for (let i = 0; i < 2; i++) await page.getByRole('button', { name: '下一步' }).click()
+  await page.getByRole('button', { name: '进入练习 →' }).click()
+
+  const hintButton = page.getByTestId('ask-hint')
+  await hintButton.focus()
+  for (let i = 0; i < 3; i++) await page.keyboard.press('Enter')
+
+  await expect(hintButton).toBeDisabled()
+  await expect(page.getByTestId('hint')).toBeFocused()
+  await expect(page.getByText('棋盘上标出了一种解法，走上去试试。')).toBeVisible()
+
+  await page.getByTestId('intersection-0-0').click()
+  await expect(page.getByTestId('feedback')).toHaveAttribute('data-ok', 'false')
+  await expect(page.getByText('棋盘上标出了一种解法，先点「重试」再走。')).toBeVisible()
+
+  await page.getByRole('button', { name: '重试' }).click()
+  await expect(page.getByText('棋盘上标出了一种解法，走上去试试。')).toBeVisible()
 })
 
 /**

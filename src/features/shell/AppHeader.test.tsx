@@ -137,6 +137,29 @@ describe('AppHeader —— 偏好写入失败', () => {
     }
   })
 
+  /*
+   * 提示条与顶栏必须一起吸顶。原先提示条是 sticky 顶栏之后的**静态兄弟节点**：
+   * 窄屏滚到下半屏再点主题按钮，提示条出现在负坐标（生产实测 barTop=-391），
+   * 用户看不到任何反馈。包进同一个 sticky 容器后，两者不会再走散。
+   */
+  it('提示条与顶栏在同一个 sticky 容器里', () => {
+    const setItem = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new DOMException('full', 'QuotaExceededError')
+    })
+    try {
+      render(<AppHeader />)
+      fireEvent.click(screen.getByRole('button', { name: /^主题：/ }))
+
+      const bar = screen.getByTestId('prefs-save-failed')
+      const header = screen.getByRole('banner')
+      expect(bar.parentElement).toBe(header.parentElement)
+      expect(header.parentElement).toHaveClass('sticky')
+      expect(header.parentElement).toHaveClass('top-0')
+    } finally {
+      setItem.mockRestore()
+    }
+  })
+
   it('写入恢复（persistFailed 变回 false）后提示条消失', () => {
     const setItem = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
       throw new DOMException('full', 'QuotaExceededError')
