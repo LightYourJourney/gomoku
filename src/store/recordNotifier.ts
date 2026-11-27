@@ -25,8 +25,19 @@ export interface GameEndInput {
   readonly replacesSeq: number | null
 }
 
-/** 终局回调：返回 promise 时兑现为入库的 seq（拿不到 seq 时为 undefined）。 */
-export type GameEndCallback = (input: GameEndInput) => void | Promise<number | void>
+/** 入库结果：号拿到了，但可能只进了本次会话的内存兜底。 */
+export interface GameEndSaved {
+  readonly seq: number
+  /** true = 真正写进了 IndexedDB；false = 只在内存里，刷新就没了。 */
+  readonly persisted: boolean
+}
+
+/**
+ * 终局回调：返回 promise 时兑现为入库的 seq（拿不到 seq 时为 `undefined`），
+ * 或「号 + 是否落库」。**只在本次会话时才存下的那一局也要把号交出来**——
+ * 否则「终局 → 悔棋 → 再终局」拿不到要替换的旧条，列表里会留下两条同一局。
+ */
+export type GameEndCallback = (input: GameEndInput) => void | Promise<number | GameEndSaved | void>
 
 /** 入库链写回 store 的两个字段。 */
 interface RecordSaveFields {
@@ -105,16 +116,25 @@ export function createRecordNotifier(
         return
       }
 
-      const seq = await result
+      const saved = await result
+      let seq: number | null = null
+      let sessionOnly = false
+      if (typeof saved === 'number') {
+        seq = saved
+      } else if (typeof saved === 'object' && saved !== null) {
+        seq = saved.seq
+        sessionOnly = !saved.persisted
+      }
 
       // 号记在**这一局自己的**持有者上：即使这一局已经翻篇，它排在链上的后续写入
       // 仍要拿这个号去替换，否则会多出一条。新局用的是另一个持有者，不受影响。
-      if (typeof seq === 'number') holder.seq = seq
+      // 只存进内存的那一局同样记——兜底号在存储层里改道到库号（`drainedSeqs`）。
+      if (seq !== null) holder.seq = seq
 
       // 这一局已经翻篇了（开了新局 / 恢复了存档）：**界面状态不许写**——它现在属于新局。
       if (gen !== generation) return
 
-      set({ recordSaveState: 'saved', recordedSeq: holder.seq })
+      set({ recordSaveState: sessionOnly ? 'session' : 'saved', recordedSeq: holder.seq })
     } catch {
       if (gen !== generation) return
       // 失败要如实说，而且**不动持有者里的号**——这一局还是没进库

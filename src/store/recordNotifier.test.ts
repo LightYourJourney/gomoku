@@ -50,3 +50,39 @@ describe('入库链在开新局时的局号隔离', () => {
     expect(saves.calls[1].replacesSeq).toBeNull()
   })
 })
+
+/*
+ * 2026-11-27 全量审查：存储不可用时那次终局只进了内存兜底。它也要把号交出来，
+ * 否则「终局 → 悔棋 → 再终局」拿不到旧条，同一局在列表里两条；
+ * 界面则要说「已存入本次会话」，不能说「没能保存」。
+ */
+describe('只存进本次会话的那一局', () => {
+  const playing = createGame()
+  const context = { game: playing, mode: 'pve' as const, humanColor: BLACK, difficulty: 'easy' as const, branch: null }
+
+  it('记下兜底号并标 session；第二次终局拿它当 replacesSeq', async () => {
+    const calls: GameEndInput[] = []
+    const states: Array<string | undefined> = []
+    let n = 0
+    const notifier = createRecordNotifier(
+      (input) => {
+        calls.push(input)
+        n += 1
+        // 第一次只进内存，第二次才真正落库（库恢复）
+        return Promise.resolve({ seq: 100 + n, persisted: n > 1 })
+      },
+      (partial) => {
+        if (partial.recordSaveState !== undefined) states.push(partial.recordSaveState)
+      },
+    )
+
+    notifier.notifyGameEnd(context, resign(playing, BLACK))
+    await flush()
+    notifier.notifyGameEnd(context, resign(playing, BLACK))
+    await flush()
+
+    expect(calls[1].replacesSeq).toBe(101)
+    expect(states).toContain('session')
+    expect(states).toContain('saved')
+  })
+})

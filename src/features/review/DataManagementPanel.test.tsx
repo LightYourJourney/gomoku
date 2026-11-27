@@ -16,6 +16,15 @@ const MOVES: readonly Point[] = [
   { x: 7, y: 7 },
 ]
 
+/** 另一盘黑棋竖着成五的棋谱：内容键与 `MOVES` 不同，导入时不会被判成重复。 */
+const OTHER_MOVES: readonly Point[] = [
+  { x: 2, y: 2 }, { x: 4, y: 2 },
+  { x: 2, y: 3 }, { x: 4, y: 3 },
+  { x: 2, y: 4 }, { x: 4, y: 4 },
+  { x: 2, y: 5 }, { x: 4, y: 5 },
+  { x: 2, y: 6 },
+]
+
 function record(): GameRecordInput {
   return {
     moves: [...MOVES],
@@ -25,6 +34,10 @@ function record(): GameRecordInput {
     difficulty: 'easy',
     resignedBy: null,
   }
+}
+
+function otherRecord(): GameRecordInput {
+  return { ...record(), moves: [...OTHER_MOVES] }
 }
 
 const PROGRESS: LearningProgress = {
@@ -207,6 +220,35 @@ describe('数据管理面板 · 导入', () => {
     expect(result).not.toHaveAttribute('role')
   })
 
+  /*
+   * 同一个 `role="status"` 隐含 aria-atomic：两条消息同时留在里面时，读屏会把
+   * 旧的那条整段重念一遍（生产实测「已导出 1 条。已导入 1 条…」）。
+   * 新事件开始时清掉旧事件，播报区只保留最后一条。
+   */
+  it('导出后再导入：播报区只含导入结果，旧导出说明被清掉', async () => {
+    const storage = memoryGameRecords()
+    await storage.put(record())
+    render(
+      <DataManagementPanel positions={memoryPositions()} storage={storage} services={services()} onImported={vi.fn()} degraded={false} />,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: '导出全部棋谱' }))
+    expect(await screen.findByTestId('export-notice')).toHaveTextContent('已导出 1 条')
+
+    fireEvent.change(screen.getByTestId('import-file'), {
+      target: { files: [fileOf(toGameFile(otherRecord()))] },
+    })
+    await screen.findByRole('heading', { name: '导入预览' })
+    fireEvent.click(screen.getByRole('button', { name: '确认导入' }))
+
+    const result = await screen.findByTestId('import-result')
+    const region = screen.getByTestId('data-status')
+    expect(result).toHaveTextContent('已导入 1 条')
+    expect(region).toContainElement(result)
+    expect(screen.queryByTestId('export-notice')).not.toBeInTheDocument()
+    expect(region).not.toHaveTextContent('已导出')
+  })
+
   it('重复单盘：预览明确说会跳过，确认后仍是 1 条', async () => {
     const storage = memoryGameRecords()
     await storage.put(record())
@@ -385,18 +427,44 @@ describe('数据管理面板 · 导入', () => {
     expect(screen.getByTestId('export-notice')).not.toHaveAttribute('role')
   })
 
-  it('局面库降级时拒绝生成完整备份，不静默导出空局面段', async () => {
+  /*
+   * 原先是拒绝导出（怕产出「成功」的空备份）。**2026-11-27 改为照常导出并写明**：
+   * 拒绝会把用户手上那点只在会话里的数据也堵死（配额满时正是需要导出腾空间的时候），
+   * 而备份里各段形状本来就能表达「这一段是空的」。诚实靠说明，不靠堵。
+   */
+  it('局面库降级时仍生成完整备份，并在说明里写明局面段只来自本次会话', async () => {
     render(
       <DataManagementPanel positions={memoryPositions(true)} storage={memoryGameRecords()} services={services()} onImported={vi.fn()} degraded={false} />,
     )
     fireEvent.click(screen.getByRole('button', { name: '完整备份' }))
-    expect(await screen.findByTestId('import-error')).toHaveTextContent('局面库当前不可用')
+    expect(await screen.findByTestId('export-notice')).toHaveTextContent(/局面含只在本次会话里的记录/)
+    expect(blobs).toHaveLength(1)
   })
 
-  it('棋谱库降级时两种导出都拒绝，不产出「成功」的空备份', async () => {
+  it('棋谱库降级时照常导出屏幕上能看到的那些，并写明只来自本次会话', async () => {
     const base = memoryGameRecords()
+    // 存储整体不可用时的读法：列表来自内存兜底，里面确实有一局。
+    const sessionOnly = await base.put(record())
     const degradedStorage = {
       ...base,
+      list: async () => ({ records: [sessionOnly.record], degraded: true, skipped: 0 }),
+    }
+
+    render(
+      <DataManagementPanel positions={memoryPositions()} storage={degradedStorage} services={services()} onImported={vi.fn()} degraded={false} />,
+    )
+    fireEvent.click(screen.getByRole('button', { name: '导出全部棋谱' }))
+    expect(await screen.findByTestId('export-notice')).toHaveTextContent(/含只在本次会话里的记录/)
+    expect(blobs).toHaveLength(1)
+
+    fireEvent.click(screen.getByRole('button', { name: '完整备份' }))
+    expect(await screen.findByTestId('export-notice')).toHaveTextContent(/棋谱含只在本次会话里的记录/)
+    expect(blobs).toHaveLength(2)
+  })
+
+  it('棋谱库降级且一条都没有时，仍如实说「空的」而不是导出一份空备份', async () => {
+    const degradedStorage = {
+      ...memoryGameRecords(),
       list: async () => ({ records: [], degraded: true, skipped: 0 }),
     }
 
@@ -404,10 +472,7 @@ describe('数据管理面板 · 导入', () => {
       <DataManagementPanel positions={memoryPositions()} storage={degradedStorage} services={services()} onImported={vi.fn()} degraded={false} />,
     )
     fireEvent.click(screen.getByRole('button', { name: '导出全部棋谱' }))
-    expect(await screen.findByTestId('import-error')).toHaveTextContent('棋谱库当前不可用')
-
-    fireEvent.click(screen.getByRole('button', { name: '完整备份' }))
-    expect(await screen.findByTestId('import-error')).toHaveTextContent('无法生成完整备份')
+    expect(await screen.findByTestId('import-error')).toHaveTextContent('棋谱库是空的')
     expect(blobs).toHaveLength(0)
   })
 

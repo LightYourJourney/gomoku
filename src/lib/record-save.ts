@@ -3,5 +3,8 @@
  *
  * `absent` 只出现在「恢复了一局已经结束的存档」：那不是刚刚入库，而是查过库之后
  * 确认不在里面。`idle` 表示既没有动作、也没有结论（进行中，或查不了）。
+ *
+ * `session`：存储不可用时只写进了本次会话的内存兜底。它与 `failed` 不是一回事——
+ * 这一局在**这次会话里**确实存下了、能回看，只是刷新就没了，文案不能吓唬人。
  */
-export type RecordSaveState = 'idle' | 'saving' | 'saved' | 'failed' | 'absent'
+export type RecordSaveState = 'idle' | 'saving' | 'saved' | 'session' | 'failed' | 'absent'

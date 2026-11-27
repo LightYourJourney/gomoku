@@ -414,3 +414,81 @@ describe('PositionEditor —— 保存与载入', () => {
     expect(screen.getByLabelText('打开已保存局面')).toHaveFocus()
   })
 })
+
+/*
+ * 2026-11-27 全量审查：库不可用期间保存的那条只进了内存兜底，补写回库时换了号。
+ * 编辑器手里还是兜底号，按号在列表里找不到——「最近保存」与删除区块整块消失。
+ * 内容键在补写前后不变（唯一索引就是它），所以按它兜底。
+ */
+describe('PositionEditor —— 补写回库换了号之后', () => {
+  it('最近保存与删除仍在：按内容键找到那一条', async () => {
+    const base = memoryPositions()
+    const positions = {
+      ...base,
+      // 保存返回兜底号；随后列表里同一条的号已经变成库号。
+      save: async (input: Parameters<typeof base.save>[0], id: number | null, now: () => number) => {
+        const result = await base.save(input, id, now)
+        return { ...result, record: { ...result.record, id: 900_000 } }
+      },
+      list: async () => {
+        const listed = await base.list()
+        return { ...listed, records: listed.records.map((record) => ({ ...record, id: 5 })) }
+      },
+    }
+    setup({ positions })
+    fireEvent.click(screen.getByTestId('intersection-7-7'))
+    fireEvent.click(screen.getByRole('button', { name: '保存局面' }))
+
+    await screen.findByText(/只写进了内存兜底/)
+    expect(screen.getByTestId('position-saved-at')).toHaveTextContent(/最近保存/)
+    expect(screen.getByRole('button', { name: '删除已保存局面' })).toBeInTheDocument()
+  })
+})
+
+/*
+ * 「按下即被禁用」的三颗按钮：撤销/重做走到头、保存期间。Chrome 会把焦点丢到 body，
+ * 与对战页「求提示」同一机制（那里已改用 aria-disabled；这三颗的状态是临时的，
+ * 用焦点交接把落点交给反方向那颗 / 名称输入框）。
+ */
+describe('PositionEditor —— 按钮被禁用后焦点不掉到 body', () => {
+  it('撤销走到头 → 焦点落在「重做」；重做走到头 → 回到「撤销」', () => {
+    setup()
+    fireEvent.click(screen.getByTestId('intersection-7-7'))
+
+    const undo = screen.getByRole('button', { name: '撤销' })
+    undo.focus()
+    fireEvent.click(undo)
+    expect(undo).toBeDisabled()
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: '重做' }))
+
+    const redo = screen.getByRole('button', { name: '重做' })
+    redo.focus()
+    fireEvent.click(redo)
+    expect(redo).toBeDisabled()
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: '撤销' }))
+  })
+
+  it('保存期间按钮禁用，焦点落在「局面名称」输入框', async () => {
+    const base = memoryPositions()
+    let release: (() => void) | null = null
+    const positions = {
+      ...base,
+      save: (input: Parameters<typeof base.save>[0], id: number | null, now: () => number) =>
+        new Promise<Awaited<ReturnType<typeof base.save>>>((resolve) => {
+          release = () => resolve(base.save(input, id, now))
+        }),
+    }
+    setup({ positions })
+    fireEvent.click(screen.getByTestId('intersection-7-7'))
+
+    const saveButton = screen.getByRole('button', { name: '保存局面' })
+    saveButton.focus()
+    fireEvent.click(saveButton)
+
+    expect(saveButton).toBeDisabled()
+    expect(document.activeElement).toBe(screen.getByLabelText('局面名称'))
+
+    release!()
+    await screen.findByText(/已保存|只写进了内存兜底/)
+  })
+})

@@ -251,7 +251,7 @@ export function GameLibrary({
           </Button>
           {result.degraded && (
             <p data-testid="library-degraded" className="mt-3 text-xs text-warn">
-              这个浏览器不让本站保存数据，所以对局关掉页面就没了。
+              存储暂时不可用：新下的对局关掉页面就没了。
             </p>
           )}
           {result.skipped > 0 && (
@@ -272,7 +272,7 @@ export function GameLibrary({
             <p className="mb-3 text-xs">
               {result.degraded && (
                 <span data-testid="library-degraded" className="text-warn">
-                  这个浏览器不让本站保存数据，下面这些是本次会话里的对局，关掉页面就没了。
+                  存储暂时不可用：下面有些对局还没写进浏览器，关掉页面就没了。
                 </span>
               )}
               {result.degraded && result.skipped > 0 && ' '}

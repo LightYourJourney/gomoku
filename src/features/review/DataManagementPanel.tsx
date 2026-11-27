@@ -129,6 +129,12 @@ export function DataManagementPanel({
   const [pending, setPending] = useState<Preview | null>(null)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  /*
+   * 导出说明与导入结果**互斥**：它们在同一个 `role="status"` 里，而该角色隐含
+   * `aria-atomic=true`——两条同时存在时读屏会把旧的那条整段重念一遍
+   * （实测「已导出 1 条。已导入 1 条…」）。新事件开始时清掉旧事件，
+   * 播报区只保留最后一条。
+   */
   const [exportNotice, setExportNotice] = useState<string | null>(null)
   const [outcome, setOutcome] = useState<RestoreOutcome | null>(null)
   const [withProgress, setWithProgress] = useState(true)
@@ -139,6 +145,7 @@ export function DataManagementPanel({
   function fail(message: string): void {
     setError(message)
     setOutcome(null)
+    setExportNotice(null)
   }
 
   async function existingKeys(): Promise<Set<string>> {
@@ -149,6 +156,7 @@ export function DataManagementPanel({
   async function openPreview(file: File): Promise<void> {
     setError(null)
     setOutcome(null)
+    setExportNotice(null)
 
     if (file.size > MAX_IMPORT_BYTES) {
       fail(`文件超过 ${MAX_IMPORT_BYTES} 字节，拒绝读取`)
@@ -249,6 +257,8 @@ export function DataManagementPanel({
       setBusy(false)
       return
     }
+    // 导入结果是播报区里最新的一条；导出说明若还留着，会一起被整段重念。
+    setExportNotice(null)
     setOutcome(result.outcome)
     setBusy(false)
     onImported()
@@ -313,16 +323,15 @@ export function DataManagementPanel({
   async function exportGames(): Promise<void> {
     setError(null)
     setExportNotice(null)
+    setOutcome(null)
     try {
       const { records, skipped, degraded: recordsDegraded } = await storage.list()
-      // 降级时 records 来自内存兜底（通常是空的）：照常导出会得到一份「成功」的空备份，
-      // 而用户可能正是拿它当清数据前的保险。与局面库同一口径：拒绝，并说清楚原因。
-      if (recordsDegraded) {
-        fail(
-          '棋谱库当前不可用（浏览器不允许持久化或被其他标签页占用），无法导出棋谱；请恢复存储后重试',
-        )
-        return
-      }
+      /*
+       * 降级**不拒绝导出**：列表里已经是能拿到的全部记录（存储整体不可用时是内存里那几条，
+       * 补写失败时是库里的加上内存里的）。拒绝只会让用户拿不到这些数据，而它们恰恰
+       * 是关掉页面就没了的那部分；配额满时更糟——正需要先导出去腾空间。
+       * 改为照常导出，并在说明里写清「含只在本次会话里的记录」。空库仍走下面的空提示。
+       */
       const { games, dropped } = exportableGames(records, skipped)
       if (games.length === 0) {
         fail(
@@ -333,7 +342,9 @@ export function DataManagementPanel({
         return
       }
       if (!downloadIfRestorable(exportFilename('games', services.now), toBackupFile({ games }))) return
-      setExportNotice(`已导出 ${games.length} 条${dropped > 0 ? `，跳过 ${dropped} 条损坏/未结束记录` : ''}。`)
+      setExportNotice(
+        `已导出 ${games.length} 条${recordsDegraded ? '（含只在本次会话里的记录，请尽快另存）' : ''}${dropped > 0 ? `，跳过 ${dropped} 条损坏/未结束记录` : ''}。`,
+      )
     } catch (err) {
       fail(err instanceof Error ? err.message : String(err))
     }
@@ -342,21 +353,16 @@ export function DataManagementPanel({
   async function exportBackup(): Promise<void> {
     setError(null)
     setExportNotice(null)
+    setOutcome(null)
     try {
       const { records, skipped, degraded: recordsDegraded } = await storage.list()
-      if (recordsDegraded) {
-        fail(
-          '棋谱库当前不可用（浏览器不允许持久化或被其他标签页占用），无法生成完整备份；请恢复存储后重试',
-        )
-        return
-      }
       const progress = await services.loadProgress()
       const session = services.loadSession()
       const positionList = await positions.list()
-      if (positionList.degraded) {
-        fail('局面库当前不可用，无法生成完整备份；请先恢复 IndexedDB 或使用局面文件单独导出')
-        return
-      }
+      /*
+       * 同上面导出的口径：降级不拒绝，导出手上有的全部，并在说明里逐个点明哪一段
+       * 只含本次会话里的内容。备份里各段的形状不变，导入侧照常处理。
+       */
       const { games, dropped } = exportableGames(records, skipped)
       const backup = toBackupFile({
         games,
@@ -366,7 +372,13 @@ export function DataManagementPanel({
         positions: positionList.records.map(backupPositionOf),
       })
       if (!downloadIfRestorable(exportFilename('backup', services.now), backup)) return
-      setExportNotice(`已导出 ${games.length} 条棋谱、${positionList.records.length} 个局面${dropped > 0 ? `；跳过 ${dropped} 条损坏/未结束记录` : ''}。`)
+      const sessionNotes = [
+        recordsDegraded ? '棋谱含只在本次会话里的记录' : null,
+        positionList.degraded ? '局面含只在本次会话里的记录' : null,
+      ].filter((note): note is string => note !== null)
+      setExportNotice(
+        `已导出 ${games.length} 条棋谱、${positionList.records.length} 个局面${sessionNotes.length > 0 ? `（${sessionNotes.join('；')}，请尽快另存）` : ''}${dropped > 0 ? `；跳过 ${dropped} 条损坏/未结束记录` : ''}。`,
+      )
     } catch (err) {
       fail(err instanceof Error ? err.message : String(err))
     }
@@ -430,7 +442,7 @@ export function DataManagementPanel({
 
       {degraded && (
         <p data-testid="data-degraded" className="text-xs text-warn">
-          当前浏览器不允许持久化，导出的内容只来自本次会话；刷新后可能丢失。
+          存储暂时不可用：有些数据只在本次会话里。导出会包含它们，请尽快另存。
         </p>
       )}
 

@@ -1182,7 +1182,8 @@ describe('GameLibrary —— 读不出棋谱时如实说明', () => {
     expect(await screen.findByTestId(`record-${record.seq}`)).toBeInTheDocument()
     // 空状态那句不出现，但降级这件事照样要说——而且说的是「下面这些」
     expect(screen.queryByText('还没有保存的对局')).not.toBeInTheDocument()
-    expect(screen.getByTestId('library-degraded')).toHaveTextContent('本次会话')
+    // 文案 2026-11-27 改过：降级不只是「整份列表来自内存」，也可能是「有些记录还没补写进库」。
+    expect(screen.getByTestId('library-degraded')).toHaveTextContent('还没写进浏览器')
   })
 })
 

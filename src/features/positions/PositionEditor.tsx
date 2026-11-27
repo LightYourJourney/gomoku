@@ -12,6 +12,7 @@ import { formatPoint } from '../../lib/coords'
 import { cx } from '../../lib/cx'
 import { createEditorStore } from '../../store/editorStore'
 import { useSettingsStore } from '../../store/settingsStore'
+import { useFocusHandoff } from '../../components/ui/useFocusHandoff'
 import { Board } from '../../components/board/Board'
 import { BoardStage } from '../../components/board/BoardStage'
 import { Button } from '../../components/ui/Button'
@@ -67,6 +68,12 @@ export function PositionEditor({
   const [positionsDegraded, setPositionsDegraded] = useState(false)
   const [savedId, setSavedId] = useState<number | null>(null)
   /*
+    当前打开的那条局面的内容键。**库不可用期间保存过之后，号会变**：那次只进了内存兜底，
+    补写回库时拿到的是库里的新号，`savedId` 还是兜底号，列表里按号找不到——「最近保存」
+    与删除区块整块消失。内容键在补写前后不变（唯一索引就是它），按它兜底找到那一条。
+  */
+  const [savedKey, setSavedKey] = useState<string | null>(null)
+  /*
     下拉框里**选中但还没打开**的那一条（option 的 value）；null 表示跟着 `savedId` 走。
     下拉框只记录所选，点「打开」才覆盖盘面：`onChange` 直接载入的话，键盘方向键
     会逐条触发 change、把当前盘面一条条盖掉，而编辑器的撤销撤不回「打开」。
@@ -88,6 +95,11 @@ export function PositionEditor({
   */
   const deleteButtonRef = useRef<HTMLButtonElement>(null)
   const savedSelectRef = useRef<HTMLSelectElement>(null)
+  const undoRef = useRef<HTMLButtonElement>(null)
+  const redoRef = useRef<HTMLButtonElement>(null)
+  const titleInputRef = useRef<HTMLInputElement>(null)
+  // 撤销/重做走到头、保存期间按钮被禁用：按下的那一刻就失效，焦点没人接会掉到 body。
+  const handoff = useFocusHandoff()
 
   // 离开编辑器时放弃在飞的分析：它在只读 Worker 上，留着会挡住之后的提示。
   useEffect(() => () => editor.getState().abandonAnalysis(), [editor])
@@ -109,7 +121,10 @@ export function PositionEditor({
   }, [records, positions])
 
   const report = analyzePosition(state.position, state.provenance?.firstPlayer)
-  const selectedSaved = saved.find((entry) => entry.id === savedId) ?? null
+  const selectedSaved =
+    saved.find((entry) => entry.id === savedId) ??
+    (savedKey === null ? null : saved.find((entry) => entry.contentKey === savedKey)) ??
+    null
   const pickedValue = picked ?? (savedId === null ? '' : String(savedId))
   const pickedRecord = saved.find((entry) => String(entry.id) === pickedValue)
   const analysis = state.analysis
@@ -133,6 +148,7 @@ export function PositionEditor({
   function loadSaved(record: SavedPosition): void {
     editor.getState().load(positionFromSaved(record), record.provenance)
     setSavedId(record.id)
+    setSavedKey(record.contentKey)
     setPicked(null)
     setTitle(record.title)
     setConfirmDelete(false)
@@ -153,6 +169,7 @@ export function PositionEditor({
     const loaded = positionFromReplay(record.moves, record.firstPlayer, n)
     editor.getState().load(loaded.position, loaded.provenance)
     setSavedId(null)
+    setSavedKey(null)
     setPicked(null)
     setConfirmDelete(false)
     setTitle(`棋谱 #${record.seq} 第 ${n} 手`)
@@ -177,12 +194,16 @@ export function PositionEditor({
       return
     }
     setSavedId(result.record.id)
+    setSavedKey(result.record.contentKey)
     setPicked(null)
     setConfirmDelete(false)
     setTitle(result.record.title)
     try {
       const list = await positions.list()
       setSaved(list.records)
+      // 刚才那条可能已经补写回库、换了号：把选择改到它的库号上（按内容键找，唯一）。
+      const canonical = list.records.find((entry) => entry.contentKey === result.record.contentKey)
+      if (canonical !== undefined) setSavedId(canonical.id)
     } catch {
       // 保存已经成功；列表刷新失败不该把结果改写成“保存失败”。
     }
@@ -212,6 +233,7 @@ export function PositionEditor({
     const list = await positions.list()
     setSaved(list.records)
     setSavedId(null)
+    setSavedKey(null)
     setPicked(null)
     setConfirmDelete(false)
     // 下拉框常驻，此刻就在 DOM 里，可以直接聚焦
@@ -260,6 +282,7 @@ export function PositionEditor({
       }
       editor.getState().load(parsed.position, parsed.provenance)
       setSavedId(null)
+      setSavedKey(null)
       setConfirmDelete(false)
       setTitle(parsed.title ?? '导入的局面')
       flash('局面文件已导入')
@@ -339,16 +362,24 @@ export function PositionEditor({
 
           <div className="flex flex-wrap gap-2">
             <Button
+              ref={undoRef}
               size="sm"
               disabled={state.history.length === 0}
-              onClick={() => editor.getState().undo()}
+              onClick={(event) => {
+                handoff(event.currentTarget, () => redoRef.current)
+                editor.getState().undo()
+              }}
             >
               撤销
             </Button>
             <Button
+              ref={redoRef}
               size="sm"
               disabled={state.future.length === 0}
-              onClick={() => editor.getState().redo()}
+              onClick={(event) => {
+                handoff(event.currentTarget, () => undoRef.current)
+                editor.getState().redo()
+              }}
             >
               重做
             </Button>
@@ -460,6 +491,7 @@ export function PositionEditor({
           <label className="block text-xs text-faint">
             局面名称
             <input
+              ref={titleInputRef}
               value={title}
               maxLength={80}
               onChange={(event) => setTitle(event.target.value)}
@@ -467,7 +499,16 @@ export function PositionEditor({
             />
           </label>
           <div className="flex flex-wrap gap-2">
-            <Button size="sm" variant="primary" disabled={saving} onClick={() => void save()}>
+            <Button
+              size="sm"
+              variant="primary"
+              disabled={saving}
+              onClick={(event) => {
+                // 保存期间按钮被禁用；焦点交给名称输入框，别掉到 body。
+                handoff(event.currentTarget, () => titleInputRef.current)
+                void save()
+              }}
+            >
               {saving ? '保存中…' : '保存局面'}
             </Button>
             <Button size="sm" onClick={exportPosition}>
@@ -596,7 +637,7 @@ export function PositionEditor({
 
           {positionsDegraded && (
             <p data-testid="position-degraded" className="text-xs text-warn">
-              当前浏览器不允许持久化：保存的局面只在本次会话可用，刷新后可能丢失。
+              存储暂时不可用：有些局面只在本次会话可用，刷新后可能丢失。
             </p>
           )}
           {error !== null && (

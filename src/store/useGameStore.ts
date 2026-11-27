@@ -25,10 +25,12 @@ export const useGameStore = createGameStore(appEngine, {
       // 入库时间：这局下完的时间。时钟在这里注入，store 与存储层都不读时钟。
       now: Date.now,
     })
-    // 没真正落库（隐私模式退了内存兜底）→ 抛错，让界面如实说「没能保存这局」，
-    // 而不是显示「已存入」然后刷新就没了。
-    if (!persisted) throw new Error('没能写入棋谱库')
-    return record.seq
+    /*
+     * 没真正落库（隐私模式退了内存兜底）**不再抛错**：这一局在本次会话里确实存下了，
+     * 界面据 `persisted` 说「已存入本次会话（刷新后就没了）」，比「没能保存这局」更准。
+     * 更关键的是号要交出去——「终局 → 悔棋 → 再终局」靠它找旧条替换（`recordNotifier`）。
+     */
+    return { seq: record.seq, persisted }
   },
   // 恢复一局已结束的存档时回答「这局在不在库里」；存储降级时返回 null，不猜。
   findSavedGame: async (input) => {

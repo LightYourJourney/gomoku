@@ -1,5 +1,5 @@
 import 'fake-indexeddb/auto'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { BLACK, WHITE } from '../core/types'
 import { DB_NAME, DB_VERSION, RECORDS_STORE, PROGRESS_STORE, POSITIONS_STORE, ensureSchema } from './schema'
 import {
@@ -550,5 +550,109 @@ describe('局面库 —— 库暂时不可用后又恢复', () => {
     } finally {
       __setPositionsIndexedDbFactory(null)
     }
+  })
+})
+
+/*
+ * 2026-11-27 全量审查：昨天加的兜底号段还有三个洞，各自的后果都是「改错/删错库里另一条」。
+ * 这一组按真实时序走：库里先有一条 → 库不可用 → 在内存里改/存 → 库恢复、列表补写。
+ */
+describe('局面库 —— 降级期间编辑、多轮降级、只改标题', () => {
+  const real = globalThis.indexedDB
+  let down = false
+  const switchable = {
+    open(name: string, version?: number) {
+      if (down) throw new Error('局面库被其他标签页占用')
+      return real.open(name, version)
+    },
+    deleteDatabase: (name: string) => real.deleteDatabase(name),
+    databases: () => real.databases(),
+    cmp: (a: unknown, b: unknown) => real.cmp(a, b),
+  } as IDBFactory
+
+  function record(title: string, x: number) {
+    return inputFromPosition(applyEdit(createPosition(), { x, y: 7 }, 'black'), title, null)
+  }
+
+  beforeEach(() => {
+    __setPositionsIndexedDbFactory(switchable)
+    down = false
+  })
+
+  afterEach(() => {
+    down = false
+    __setPositionsIndexedDbFactory(null)
+  })
+
+  it('库不可用时改一条已保存的局面：恢复后覆盖原记录，不多出一条，也不改到别的记录上', async () => {
+    const original = await indexedDbPositions.save(record('原来', 7), null, at(1_000))
+    const other = await indexedDbPositions.save(record('另一条', 3), null, at(1_000))
+
+    down = true
+    const edited = await indexedDbPositions.save(record('改过', 7), original.record.id, at(2_000))
+    // 前提自检：确实进了内存兜底，而且没有沿用库号。
+    expect(edited.persisted).toBe(false)
+    expect(edited.record.id).not.toBe(original.record.id)
+
+    down = false
+    const list = await indexedDbPositions.list()
+    expect(list.degraded).toBe(false)
+    expect(list.records.map((entry) => entry.title).sort()).toEqual(['另一条', '改过'])
+    // 原来那条被覆盖，不是新增；另一条原样。
+    expect((await indexedDbPositions.get(original.record.id))?.title).toBe('改过')
+    expect((await indexedDbPositions.get(other.record.id))?.title).toBe('另一条')
+    // 界面手里那个兜底号仍能取到改过的那条。
+    expect((await indexedDbPositions.get(edited.record.id))?.title).toBe('改过')
+  })
+
+  it('库不可用时删除一条：删的是它自己，库恢复后不会把别的记录顶替进来', async () => {
+    const kept = await indexedDbPositions.save(record('留下的', 7), null, at(1_000))
+
+    down = true
+    const extra = await indexedDbPositions.save(record('临时', 3), null, at(2_000))
+    await indexedDbPositions.delete(extra.record.id)
+    down = false
+
+    const list = await indexedDbPositions.list()
+    expect(list.records.map((entry) => entry.title)).toEqual(['留下的'])
+    expect((await indexedDbPositions.get(kept.record.id))?.title).toBe('留下的')
+  })
+
+  it('两轮降级发的兜底号不重叠：第二轮不会覆盖第一轮已经补写进库的记录', async () => {
+    down = true
+    const first = await indexedDbPositions.save(record('第一轮', 7), null, at(1_000))
+    down = false
+    await indexedDbPositions.list()
+    const firstInDb = await indexedDbPositions.get(first.record.id)
+    expect(firstInDb?.title).toBe('第一轮')
+
+    down = true
+    const second = await indexedDbPositions.save(record('第二轮', 3), null, at(2_000))
+    expect(second.record.id).not.toBe(first.record.id)
+    /*
+     * 这一句是这条用例的牙：旧实现每个兜底实例都从同一个基数发号，第二轮的兜底号
+     * 与第一轮相同，而映射表还留着「第一轮 → 库号」，于是按第二轮的号去取会先改道到
+     * 库里第一轮那条（库还打不开时取不到，库刚恢复时取到的是错的）。
+     */
+    expect((await indexedDbPositions.get(second.record.id))?.title).toBe('第二轮')
+    down = false
+
+    const list = await indexedDbPositions.list()
+    expect(list.records.map((entry) => entry.title).sort()).toEqual(['第一轮', '第二轮'])
+    expect((await indexedDbPositions.get(firstInDb!.id))?.title).toBe('第一轮')
+    expect((await indexedDbPositions.get(first.record.id))?.title).toBe('第一轮')
+    expect((await indexedDbPositions.get(second.record.id))?.title).toBe('第二轮')
+  })
+
+  it('只改了标题：补写时把标题写上去，不按内容键判重丢掉', async () => {
+    await indexedDbPositions.save(record('旧标题', 7), null, at(1_000))
+
+    down = true
+    await indexedDbPositions.save(record('新标题', 7), null, at(2_000))
+    down = false
+
+    const list = await indexedDbPositions.list()
+    expect(list.records.map((entry) => entry.title)).toEqual(['新标题'])
+    expect(list.records[0]!.updatedAt).toBe(2_000)
   })
 })

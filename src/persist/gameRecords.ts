@@ -191,6 +191,17 @@ function parseRecord(value: unknown): GameRecord | null {
  * 它仍是正整数，复盘页地址（`/review/<seq>`）照常认得。
  */
 const FALLBACK_SEQ_BASE = 1_000_000_000_000
+/** 每个兜底实例占一个这么宽的号段。 */
+const FALLBACK_SEQ_STRIDE = 1_000_000_000
+
+/**
+ * 每一个新的兜底实例换一个号段。
+ *
+ * 库不可用可能在一段时间里反复发生。若每次新建的兜底实例都从同一个基数发号，
+ * 第二次降级发出的号会和第一次已经补写进库的那条对上（`drainedSeqs` 还留着
+ * 第一次的对应关系），于是下一次终局的替换会去找库里那条，改错对象或在列表里多一条。
+ */
+let fallbackGeneration = 0
 
 /** 这个号是不是降级兜底发出去的（而不是库里的）。 */
 function isFallbackSeq(seq: number): boolean {
@@ -204,9 +215,10 @@ function isFallbackSeq(seq: number): boolean {
  */
 export function memoryGameRecords(degraded = false): GameRecordsStorage {
   const bySeq = new Map<number, GameRecord>()
-  // 当兜底用时从一个大偏移起数：库恢复后界面手里还握着这些号，若与库的自增号同一套，
+  // 当兜底用时从本代号段起数：库恢复后界面手里还握着这些号，若与库的自增号同一套，
   // 按号删除会删掉库里另一局真实棋谱（见 `isFallbackSeq`）。单独使用（测试）时仍从 1 起。
-  let nextSeq = degraded ? FALLBACK_SEQ_BASE : 1
+  if (degraded) fallbackGeneration += 1
+  let nextSeq = degraded ? FALLBACK_SEQ_BASE + fallbackGeneration * FALLBACK_SEQ_STRIDE : 1
 
   function put(record: GameRecordInput): PutResult {
     const stored: GameRecord = {
@@ -342,6 +354,8 @@ let factory: IDBFactory | null = null
 export function __setGameRecordsIndexedDbFactory(next: IDBFactory | null): void {
   factory = next
   memoryFallback = null
+  // 换工厂等于换一个存储会话：旧的「兜底号 → 库号」对应关系在这里不再有意义。
+  drainedSeqs.clear()
 }
 
 /**
@@ -356,6 +370,15 @@ function openDatabase(): Promise<IDBDatabase> {
     blockedMessage: '棋谱库被其他标签页占用',
   })
 }
+
+/**
+ * 兜底号 → 补写回库后拿到的库号。
+ *
+ * 入库链（`recordNotifier`）会把上一次终局拿到的号当下一次终局的 `replacesSeq`。
+ * 那次保存只进了内存时，号是兜底号；补写之后记录在库里的号变了，不记下对应关系，
+ * 下一次「悔棋重下再终局」就会按旧号找不到旧条，同一局在列表里两条。
+ */
+const drainedSeqs = new Map<number, number>()
 
 /** 任何一步失败都退到内存态，并让本次调用照常完成——绝不向上抛。 */
 function fallbackToMemory(): GameRecordsStorage {
@@ -384,8 +407,10 @@ export const indexedDbGameRecords: GameRecordsStorage = {
        * 提示与行为对不上。补写走 `importMany`（按内容身份去重），失败就保持原样、
        * 下一次列表再试，不影响本次读数。
        */
+      let pendingRecords: readonly GameRecord[] = []
       if (memoryFallback !== null) {
         const pending = await memoryFallback.list()
+        pendingRecords = pending.records
         if (pending.records.length > 0) {
           const imported = await indexedDbGameRecords.importMany(
             pending.records.map((record) => ({
@@ -401,6 +426,17 @@ export const indexedDbGameRecords: GameRecordsStorage = {
           if (imported.storage === 'indexeddb') {
             memoryFallback = null
             raw = await withStore<unknown[]>('readonly', (store) => store.getAll())
+            // 记下「兜底号 → 库号」：入库链下一次终局会拿兜底号当 `replacesSeq`。
+            const byKey = new Map(
+              raw
+                .map((entry) => parseRecord(entry))
+                .filter((record): record is GameRecord => record !== null)
+                .map((record) => [recordContentKey(record), record.seq] as const),
+            )
+            for (const record of pending.records) {
+              const seq = byKey.get(recordContentKey(record))
+              if (seq !== undefined) drainedSeqs.set(record.seq, seq)
+            }
           } else {
             drainFailed = true
           }
@@ -408,7 +444,17 @@ export const indexedDbGameRecords: GameRecordsStorage = {
       }
 
       const parsed = raw.map((entry) => parseRecord(entry))
-      const records = parsed.filter((record): record is GameRecord => record !== null)
+      const fromDb = parsed.filter((record): record is GameRecord => record !== null)
+      /*
+       * 补写没完成（典型是配额满）时把仍在内存里的那几条也列出来：它们就是
+       * 「只在本次会话里的」。不列出来，界面要么说「本次会话可用」却看不见（说假话），
+       * 要么用户想把它们导出去腾空间时无处可取。
+       */
+      const seen = new Set(fromDb.map((record) => recordContentKey(record)))
+      const records = [
+        ...fromDb,
+        ...pendingRecords.filter((record) => !seen.has(recordContentKey(record))),
+      ]
       return {
         records: records.sort((a, b) => b.seq - a.seq),
         degraded: drainFailed,
@@ -421,8 +467,10 @@ export const indexedDbGameRecords: GameRecordsStorage = {
     }
   },
 
-  async get(seq) {
-    // 兜底发出去的号只可能在内存里；拿去问库，命中的也只会是别的局。
+  async get(requested) {
+    // 兜底发出去的号只可能在内存里（补写完成后按对应关系改道到库号）；
+    // 拿去问库，命中的也只会是别的局。
+    const seq = drainedSeqs.get(requested) ?? requested
     if (isFallbackSeq(seq)) return (await memoryFallback?.get(seq)) ?? null
     try {
       const raw = await withStore<unknown>('readonly', (store) => store.get(seq))
@@ -443,7 +491,27 @@ export const indexedDbGameRecords: GameRecordsStorage = {
     }
   },
 
-  async putReplacing(record, target) {
+  async putReplacing(record, requested) {
+    /*
+     * 要替换的号可能已经改名：降级期间的那次保存只进了内存，补写之后它在库里的号变了。
+     * 先按对应关系改道；仍然查不到的兜底号说明旧条还在内存兜底里，就在内存里替换，
+     * 不再去库里找（库里没有它，找到的会是别的局）。
+     */
+    const mapped =
+      requested.replacesSeq === null
+        ? null
+        : (drainedSeqs.get(requested.replacesSeq) ?? requested.replacesSeq)
+    if (mapped !== null && isFallbackSeq(mapped) && memoryFallback !== null) {
+      const replaced = await memoryFallback.putReplacing(record, {
+        replacesSeq: mapped,
+        allowContentMatch: false,
+      })
+      return { record: replaced.record, persisted: false }
+    }
+    const target = {
+      ...requested,
+      replacesSeq: mapped !== null && isFallbackSeq(mapped) ? null : mapped,
+    }
     const payload = { ...createGameRecord(record), schemaVersion: GAME_RECORDS_SCHEMA_VERSION }
     let db: IDBDatabase | null = null
     try {
@@ -466,6 +534,12 @@ export const indexedDbGameRecords: GameRecordsStorage = {
         tx.onerror = () => reject(new Error('棋谱库替换失败'))
         tx.onabort = () => reject(new Error('棋谱库替换被中止'))
       })
+      // 旧条被换掉了：指向它的兜底号要改道到新条，否则界面手里的兜底号会取到空。
+      if (target.replacesSeq !== null) {
+        for (const [from, to] of drainedSeqs) {
+          if (to === target.replacesSeq) drainedSeqs.set(from, seq)
+        }
+      }
       return { record: { ...payload, seq }, persisted: true }
     } catch {
       // 打不开库，或事务失败（整笔回滚，旧条还在）：内存兜底、如实报没落库。
@@ -533,10 +607,11 @@ export const indexedDbGameRecords: GameRecordsStorage = {
     }
   },
 
-  async delete(seq) {
+  async delete(requested) {
     // 与 `importMany` 同一口径：**打不开库**才退内存（并报 `persisted: false`）；事务失败要如实抛——
     // 吞掉异常再退内存的话（内存里本来就没有这条），界面会说「已删除」，刷新后它又回来了。
     // 兜底的号不许拿去删库：库恢复后同号的是另一局真实棋谱。
+    const seq = drainedSeqs.get(requested) ?? requested
     if (isFallbackSeq(seq)) return fallbackToMemory().delete(seq)
     let db: IDBDatabase | null = null
     try {

@@ -189,15 +189,27 @@ export function inputFromPosition(
  * **另一条**真实局面——删它、覆盖它都落到那条上。
  */
 const FALLBACK_ID_BASE = 1_000_000_000_000
+/** 每个兜底实例占一个这么宽的号段。 */
+const FALLBACK_ID_STRIDE = 1_000_000_000
 
 function isFallbackId(id: number): boolean {
   return id >= FALLBACK_ID_BASE
 }
 
+/**
+ * 每一个新的兜底实例换一个号段。
+ *
+ * 库不可用可能在一段时间里反复发生（另一个标签页偶尔占着库）。若每次新建的兜底实例
+ * 都从同一个基数发号，第二次降级发出的 `F` 会和第一次已经补写进库的那条对上——
+ * 映射表还留着第一次的 `F → 库号`，于是保存会覆盖、删除会删掉库里**另一条**真实局面。
+ */
+let fallbackGeneration = 0
+
 export function memoryPositions(degraded = false): PositionStorage {
   const byId = new Map<number, SavedPosition>()
-  // 当兜底用时从大偏移起数；单独使用（测试）时仍从 1 起。
-  let nextId = degraded ? FALLBACK_ID_BASE : 1
+  // 当兜底用时从本代号段起数；单独使用（测试）时仍从 1 起。
+  if (degraded) fallbackGeneration += 1
+  let nextId = degraded ? FALLBACK_ID_BASE + fallbackGeneration * FALLBACK_ID_STRIDE : 1
 
   return {
     async list() {
@@ -242,6 +254,14 @@ let memoryFallback: PositionStorage | null = null
  * 补写之后 get / save / delete 照这张表改道到库里那条。
  */
 const drainedIds = new Map<number, number>()
+/**
+ * 兜底号 → 它要覆盖的库号。
+ *
+ * 库打不开时编辑一条已保存的局面，不能把库号直接写进内存兜底：库里那条还在，
+ * 补写时按号写回会互相覆盖错对象。改为发一个兜底号、记下「它替换谁」，
+ * 库恢复后按覆盖写回原记录，而不是多出一条。
+ */
+const pendingReplaces = new Map<number, number>()
 
 function resolveId(id: number): number {
   return drainedIds.get(id) ?? id
@@ -251,6 +271,7 @@ export function __setPositionsIndexedDbFactory(next: IDBFactory | null): void {
   factory = next
   memoryFallback = null
   drainedIds.clear()
+  pendingReplaces.clear()
   // 测试隔离：换工厂等于换一个存储会话，回填也要重新允许。
   backfillDone = false
   backfillPending = null
@@ -365,36 +386,78 @@ async function drainFallback(): Promise<boolean> {
   } catch {
     return false
   }
+  /*
+   * 逐条补写、逐条出队。任何一条失败只影响它自己：剩下的留在内存兜底里，
+   * 下一次 list 再试——整批一起失败重来，会让已经写进去的那些在列表里出现两次
+   * （库一份、内存一份），或者干脆丢一条。
+   */
+  let complete = true
   try {
     for (const record of pending) {
       const input = inputFromPosition(positionFromSaved(record), record.title, record.provenance)
       const key = positionContentKey(input)
-      const duplicate = await readPosition(db, (store) => store.index(POSITIONS_CONTENT_INDEX).get(key))
-      if (duplicate !== null) {
-        drainedIds.set(record.id, duplicate.id)
-        continue
+      try {
+        const replaceTargetId = pendingReplaces.get(record.id)
+        const replaceTarget =
+          replaceTargetId === undefined
+            ? null
+            : await readPosition(db, (store) => store.get(replaceTargetId))
+        if (replaceTarget !== null) {
+          // 编辑的是库里已有的那条：覆盖写回原记录（保留它的创建时间），不多出一条。
+          await writeRecord(db, {
+            ...positionPayload(input, replaceTarget.createdAt ?? record.createdAt ?? 0, record.updatedAt ?? 0),
+            id: replaceTarget.id,
+          })
+          drainedIds.set(record.id, replaceTarget.id)
+        } else {
+          const duplicate = await readPosition(db, (store) => store.index(POSITIONS_CONTENT_INDEX).get(key))
+          if (duplicate !== null) {
+            /*
+             * 同一盘面已在库里（例如库里那条只差标题）。**把内存这份的标题与时间写上去**：
+             * 只按内容键判重就跳过，用户刚改的标题会悄悄丢掉。
+             */
+            await writeRecord(db, {
+              ...duplicate,
+              title: record.title,
+              provenance: record.provenance,
+              updatedAt: record.updatedAt ?? duplicate.updatedAt,
+            })
+            drainedIds.set(record.id, duplicate.id)
+          } else {
+            const newId = await new Promise<IDBValidKey>((resolve, reject) => {
+              const tx = db.transaction(STORE, 'readwrite')
+              const request = tx.objectStore(STORE).add({
+                ...positionPayload(input, record.createdAt ?? 0, record.updatedAt ?? 0),
+              })
+              tx.oncomplete = () => resolve(request.result)
+              tx.onerror = () => reject(request.error ?? new Error('局面补写失败'))
+              tx.onabort = () => reject(request.error ?? new Error('局面补写被中止'))
+            })
+            drainedIds.set(record.id, Number(newId))
+          }
+        }
+        pendingReplaces.delete(record.id)
+        await memoryFallback?.delete(record.id)
+      } catch {
+        complete = false
       }
-      const payload = {
-        ...positionPayload(input, 0, 0),
-        createdAt: record.createdAt,
-        updatedAt: record.updatedAt,
-      }
-      const newId = await new Promise<IDBValidKey>((resolve, reject) => {
-        const tx = db.transaction(STORE, 'readwrite')
-        const request = tx.objectStore(STORE).add(payload)
-        tx.oncomplete = () => resolve(request.result)
-        tx.onerror = () => reject(request.error ?? new Error('局面补写失败'))
-        tx.onabort = () => reject(request.error ?? new Error('局面补写被中止'))
-      })
-      drainedIds.set(record.id, Number(newId))
     }
-    memoryFallback = null
-    return true
-  } catch {
-    return false
   } finally {
     db.close()
   }
+  if (complete) memoryFallback = null
+  return complete
+}
+
+/** 覆盖写一条已在库里的记录（按 `id` 原样写回）。 */
+function writeRecord(db: IDBDatabase, record: SavedPosition): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE, 'readwrite')
+    tx.objectStore(STORE).put(record)
+    tx.oncomplete = () => resolve()
+    tx.onerror = () => reject(new Error('局面补写失败'))
+    tx.onabort = () => reject(new Error('局面补写被中止'))
+  })
 }
 
 export const indexedDbPositions: PositionStorage = {
@@ -402,11 +465,20 @@ export const indexedDbPositions: PositionStorage = {
     try {
       const drained = await drainFallback()
       const raw = await withStore<unknown[]>('readonly', (store) => store.getAll())
-      const records = raw
+      const fromDb = raw
         .map(parseSavedPosition)
         .filter((record): record is SavedPosition => record !== null)
-        .sort(sortPositions)
-      // 补写没完成时本次列表缺了兜底那几条；`degraded` 是界面能说出来的唯一信号。
+      /*
+       * 补写没完成（典型是配额满）时，把仍在内存里的那几条也列出来——它们就是
+       * 「只在本次会话里的」，不列出来才是说假话（界面写着有，列表里没有），
+       * 用户也没法把它们导出去腾空间。按内容键去重：库里有同一盘面时以库里的为准。
+       */
+      const pending = memoryFallback === null ? [] : (await memoryFallback.list()).records
+      const seen = new Set(fromDb.map((record) => record.contentKey))
+      const records = [...fromDb, ...pending.filter((record) => !seen.has(record.contentKey))].sort(
+        sortPositions,
+      )
+      // `degraded` 的含义：**列表里含只在本次会话里的记录**（或整份列表来自内存兜底）。
       return { records, degraded: !drained }
     } catch {
       return fallbackToMemory().list()
@@ -433,8 +505,14 @@ export const indexedDbPositions: PositionStorage = {
     try {
       db = await openDatabase()
     } catch {
-      // 打不开库才是“本次会话内存兜底”；list() 也会走同一份兜底。
-      return fallbackToMemory().save(input, id, () => stamp)
+      /*
+       * 打不开库才是「本次会话内存兜底」；list() 也会走同一份兜底。
+       * **不能沿用库号**：库里那条还在，与内存里那条同号，之后按号读、改、删都会落到
+       * 库里那条上。发一个兜底号，并记下它要替换哪一条——库恢复补写时按覆盖写回。
+       */
+      const saved = await fallbackToMemory().save(input, id !== null && isFallbackId(id) ? id : null, () => stamp)
+      if (id !== null && !isFallbackId(id)) pendingReplaces.set(saved.record.id, id)
+      return saved
     }
 
     const contentKey = positionContentKey(input)
@@ -475,7 +553,10 @@ export const indexedDbPositions: PositionStorage = {
 
   async delete(requested) {
     const id = resolveId(requested)
-    if (isFallbackId(id)) return fallbackToMemory().delete(id)
+    if (isFallbackId(id)) {
+      pendingReplaces.delete(id)
+      return fallbackToMemory().delete(id)
+    }
     let db: IDBDatabase | null = null
     try {
       db = await openDatabase()

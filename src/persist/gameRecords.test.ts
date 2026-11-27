@@ -1,5 +1,5 @@
 import 'fake-indexeddb/auto'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { BLACK, WHITE } from '../core/types'
 import { replay } from '../core/game'
 import {
@@ -852,5 +852,76 @@ describe('棋谱库 —— 降级时的替换写', () => {
     } finally {
       __setGameRecordsIndexedDbFactory(null)
     }
+  })
+})
+
+/*
+ * 2026-11-27 全量审查：入库链把上一次终局的号当下一次终局的 `replacesSeq`。那次保存
+ * 只进了内存时号是兜底号，补写之后库里的号变了——不记下对应关系，下一次「悔棋重下
+ * 再终局」就找不到旧条，同一局在列表里两条。另外补写失败时列表要把内存里那几条列出来。
+ */
+describe('棋谱库 —— 补写之后的替换链与列表', () => {
+  const real = globalThis.indexedDB
+  let down = false
+  const switchable = {
+    open(name: string, version?: number) {
+      if (down) throw new Error('隐私模式')
+      return real.open(name, version)
+    },
+    deleteDatabase: (name: string) => real.deleteDatabase(name),
+    databases: () => real.databases(),
+    cmp: (a: unknown, b: unknown) => real.cmp(a, b),
+  } as IDBFactory
+
+  beforeEach(() => {
+    down = false
+    __setGameRecordsIndexedDbFactory(switchable)
+  })
+
+  it('降级时存下、库恢复补写之后，再用兜底号替换：还是同一条，不新增', async () => {
+    down = true
+    const first = await indexedDbGameRecords.put(resignRecord())
+    expect(first.persisted).toBe(false)
+
+    down = false
+    const drained = await indexedDbGameRecords.list()
+    expect(drained.degraded).toBe(false)
+    expect(drained.records).toHaveLength(1)
+
+    const second = await saveGameReplacing(winRecord(), first.record.seq)
+    expect(second.persisted).toBe(true)
+
+    const after = await indexedDbGameRecords.list()
+    expect(after.records.map((record) => record.seq)).toEqual([second.record.seq])
+    // 兜底号仍然能取到这条（补写后它改了库号）。
+    expect((await indexedDbGameRecords.get(first.record.seq))?.seq).toBe(second.record.seq)
+  })
+
+  it('补写失败（配额满）时，内存里那条照样出现在列表里，并如实标 degraded', async () => {
+    down = true
+    const session = await indexedDbGameRecords.put(resignRecord())
+    down = false
+
+    // 让补写那次事务里的 add 抛错，模拟配额满：整笔失败，记录留在内存兜底。
+    const add = vi.spyOn(IDBObjectStore.prototype, 'add').mockImplementationOnce(() => {
+      throw new Error('QuotaExceededError')
+    })
+    try {
+      const listed = await indexedDbGameRecords.list()
+      expect(listed.degraded).toBe(true)
+      expect(listed.records.map((record) => record.seq)).toContain(session.record.seq)
+    } finally {
+      add.mockRestore()
+    }
+
+    // 下一次列表再试：补写成功，列表回到库里的那条，不再重复。
+    const after = await indexedDbGameRecords.list()
+    expect(after.degraded).toBe(false)
+    expect(after.records).toHaveLength(1)
+  })
+
+  afterEach(() => {
+    down = false
+    __setGameRecordsIndexedDbFactory(null)
   })
 })
